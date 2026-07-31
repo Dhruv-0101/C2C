@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BrandFlow — Product Requirements Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --border-hover: #cbd5e1;
+
+        --marigold: #f59e0b;
+        --marigold-deep: #d97706;
+        --marigold-soft: #fef3c7;
+        --marigold-glow: rgba(245, 158, 11, 0.15);
+
+        --teal: #0d9488;
+        --teal-deep: #0f766e;
+        --teal-soft: #ccfbf1;
+
+        --indigo: #6366f1;
+        --indigo-soft: #eef2ff;
+
+        --dark-bg: #0b0f19;
+        --dark-card: #161f32;
+        --dark-border: rgba(255, 255, 255, 0.1);
+
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        --shadow-lg:
+          0 10px 15px -3px rgba(0, 0, 0, 0.07),
+          0 4px 6px -4px rgba(0, 0, 0, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg-page);
+        color: var(--text-primary);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: "Space Grotesk", sans-serif;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: var(--text-primary);
+      }
+
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* COVER HEADER */
+      .cover-header {
+        position: relative;
+        background: var(--dark-bg);
+        color: #ffffff;
+        padding: 72px 8vw 60px;
+        overflow: hidden;
+        border-bottom: 1px solid var(--dark-border);
+      }
+
+      .cover-header::before {
+        content: "";
+        position: absolute;
+        top: -140px;
+        right: -100px;
+        width: 480px;
+        height: 480px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(245, 158, 11, 0.35),
+          transparent 70%
+        );
+        filter: blur(40px);
+        pointer-events: none;
+      }
+      .cover-header::after {
+        content: "";
+        position: absolute;
+        bottom: -180px;
+        left: -80px;
+        width: 440px;
+        height: 440px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 60% 60%,
+          rgba(13, 148, 136, 0.3),
+          transparent 70%
+        );
+        filter: blur(40px);
+        pointer-events: none;
+      }
+
+      .cover-container {
+        max-width: 1320px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+      }
+
+      .doc-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--marigold);
+        text-transform: uppercase;
+        background: var(--marigold-glow);
+        border: 1px solid rgba(245, 158, 11, 0.4);
+        padding: 6px 14px;
+        border-radius: 100px;
+        backdrop-filter: blur(8px);
+      }
+
+      .cover-header h1 {
+        font-size: clamp(34px, 5vw, 56px);
+        font-weight: 700;
+        margin-top: 20px;
+        line-height: 1.15;
+        max-width: 22ch;
+        background: linear-gradient(135deg, #ffffff 60%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .cover-header .tagline {
+        margin-top: 16px;
+        font-size: 18px;
+        color: #94a3b8;
+        max-width: 68ch;
+        line-height: 1.6;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-top: 40px;
+        padding-top: 32px;
+        border-top: 1px solid var(--dark-border);
+      }
+
+      .meta-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        padding: 14px 18px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+      }
+      .meta-card .meta-label {
+        font-size: 12px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .meta-card .meta-value {
+        display: block;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 15px;
+        color: #ffffff;
+        margin-top: 4px;
+        font-weight: 600;
+      }
+
+      /* LAYOUT SHELL */
+      .shell {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 40px;
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 40px 32px 100px;
+      }
+
+      nav.toc-sidebar {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px 16px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .toc-title {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 0 10px 14px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 12px;
+      }
+
+      .toc-nav-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      nav.toc-sidebar a {
+        display: flex;
+        align-items: center;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: all 0.15s ease-in-out;
+      }
+      nav.toc-sidebar a:hover {
+        color: var(--text-primary);
+        background: var(--marigold-soft);
+      }
+      nav.toc-sidebar a.active {
+        color: var(--marigold-deep);
+        background: var(--marigold-soft);
+        font-weight: 700;
+      }
+      nav.toc-sidebar .num {
+        font-family: "JetBrains Mono", monospace;
+        color: var(--marigold-deep);
+        margin-right: 10px;
+        font-size: 11.5px;
+        font-weight: 600;
+      }
+
+      main.main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+        min-width: 0;
+      }
+
+      section.prd-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: var(--shadow-md);
+        scroll-margin-top: 30px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      section.prd-section:hover {
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--marigold-deep);
+        margin-bottom: 12px;
+      }
+      .eyebrow .num-badge {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--text-primary);
+        color: var(--marigold);
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      section.prd-section h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      section.prd-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 32px 0 12px;
+      }
+
+      p {
+        color: var(--text-secondary);
+        max-width: 75ch;
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: 15px;
+        line-height: 1.7;
+      }
+      section.prd-section > p.lede {
+        font-size: 16.5px;
+        color: var(--text-secondary);
+        max-width: 72ch;
+        margin-bottom: 12px;
+      }
+
+      .callout {
+        background: var(--marigold-soft);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-left: 4px solid var(--marigold-deep);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin: 24px 0;
+        font-size: 15px;
+      }
+      .callout strong {
+        color: var(--marigold-deep);
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        padding: 4px 10px;
+        border-radius: 100px;
+        background: var(--teal-soft);
+        color: var(--teal-deep);
+        font-weight: 600;
+      }
+      .chip.admin {
+        background: var(--marigold-soft);
+        color: var(--marigold-deep);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+      .card {
+        background: #fafafc;
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 20px;
+        transition: all 0.2s ease-in-out;
+      }
+      .card:hover {
+        background: #ffffff;
+        border-color: var(--marigold);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+      .card h4 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .card p {
+        font-size: 13.5px;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.5;
+      }
+      .card .icon-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--marigold-deep);
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .flow {
+        margin-top: 28px;
+        background: var(--dark-bg);
+        border-radius: 16px;
+        padding: 36px 30px;
+        color: #ffffff;
+        border: 1px solid var(--dark-border);
+        box-shadow: var(--shadow-lg);
+      }
+      .flow-track {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 0;
+      }
+      .flow-node {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: var(--dark-card);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        padding: 14px 16px;
+        min-width: 150px;
+        flex: 1 1 150px;
+      }
+      .flow-node .n {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        color: var(--marigold);
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+      .flow-node .t {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #f8fafc;
+      }
+      .flow-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+        color: var(--marigold);
+        font-size: 18px;
+        flex: 0 0 auto;
+      }
+
+      ol.steps {
+        list-style: none;
+        margin: 20px 0 0;
+        padding: 0;
+        counter-reset: step;
+      }
+      ol.steps li {
+        counter-increment: step;
+        display: flex;
+        gap: 18px;
+        padding: 18px 0;
+        border-top: 1px solid var(--border-color);
+      }
+      ol.steps li:first-child {
+        border-top: none;
+      }
+      ol.steps li::before {
+        content: counter(step, decimal-leading-zero);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--marigold-deep);
+        background: var(--marigold-soft);
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 36px;
+      }
+
+      .positioning {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 24px;
+      }
+      .positioning .box {
+        border-radius: 14px;
+        padding: 24px;
+      }
+      .positioning .no {
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+      }
+      .positioning .yes {
+        background: var(--teal-soft);
+        border: 1px solid #99f6e4;
+      }
+      .positioning .label {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: block;
+      }
+      .positioning .no .label {
+        color: #dc2626;
+      }
+      .positioning .yes .label {
+        color: var(--teal-deep);
+      }
+      .positioning .quote {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      footer {
+        background: var(--dark-bg);
+        color: #94a3b8;
+        padding: 40px 8vw;
+        text-align: center;
+        font-size: 13px;
+        font-family: "JetBrains Mono", monospace;
+        border-top: 1px solid var(--dark-border);
+      }
+
+      @media (max-width: 992px) {
+        .shell {
+          grid-template-columns: 1fr;
+          padding: 24px 20px;
+        }
+        nav.toc-sidebar {
+          position: relative;
+          top: 0;
+          max-height: none;
+          margin-bottom: 24px;
+        }
+        .positioning {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- COVER HEADER -->
+    <header class="cover-header">
+      <div class="cover-container">
+        <span class="doc-badge"
+          >PRD · BRANDFLOW · v2.0 (UNIFIED AUTH & ROLE ARCHITECTURE)</span
+        >
+        <h1>BrandFlow — AI Social Media Manager for Small Businesses</h1>
+        <p class="tagline">
+          One unified platform for End Users (SMBs) and System Admins. Single
+          login/signup screen with Role-Based Routing (User vs Admin). Users
+          choose what to promote — the platform handles design generation,
+          platform copy, scheduling, and multi-channel publishing automatically.
+        </p>
+
+        <div class="meta-grid">
+          <div class="meta-card">
+            <span class="meta-label">Owner</span>
+            <span class="meta-value">Dhruv</span>
+          </div>
+          <div class="meta-card">
+            <span class="meta-label">Status</span>
+            <span class="meta-value">Draft for review</span>
+          </div>
+          <div class="meta-card">
+            <span class="meta-label">Architecture</span>
+            <span class="meta-value">Single Web/App Login (Role-Based)</span>
+          </div>
+          <div class="meta-card">
+            <span class="meta-label">Primary Market</span>
+            <span class="meta-value">India, SMB</span>
+          </div>
+          <div class="meta-card">
+            <span class="meta-label">Last Updated</span>
+            <span class="meta-value">29 Jul 2026</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN SHELL -->
+    <div class="shell">
+      <!-- TOC SIDEBAR -->
+      <nav class="toc-sidebar" aria-label="Table of Contents">
+        <div class="toc-title">Contents</div>
+        <div class="toc-nav-list">
+          <a href="#overview"
+            ><span class="num">01</span>Overview & Core Promise</a
+          >
+          <a href="#auth-role"
+            ><span class="num">02</span>Unified Auth & Role Routing</a
+          >
+          <a href="#positioning"><span class="num">03</span>Positioning</a>
+          <a href="#personas"><span class="num">04</span>Users & Goals</a>
+          <a href="#flow"><span class="num">05</span>End-to-End Pipeline</a>
+          <a href="#onboarding"
+            ><span class="num">06</span>Onboarding & AI Brand Kit</a
+          >
+          <a href="#social"><span class="num">07</span>Social Connections</a>
+          <a href="#dashboard"
+            ><span class="num">08</span>Dashboard & Content Types</a
+          >
+          <a href="#generation"
+            ><span class="num">09</span>AI Engine & Style Matrix</a
+          >
+          <a href="#editing"><span class="num">10</span>Micro-Editing Engine</a>
+          <a href="#captions"
+            ><span class="num">11</span>Captions & Copy Generation</a
+          >
+          <a href="#scheduling"
+            ><span class="num">12</span>Scheduling, Publishing & Vault</a
+          >
+          <a href="#admin"
+            ><span class="num">13</span>Admin Panel Capabilities</a
+          >
+          <!-- <a href="#nfr"
+            ><span class="num">14</span>Non-Functional Requirements</a
+          > -->
+        </div>
+      </nav>
+
+      <!-- MAIN CONTENT DETAILS -->
+      <main class="main-content">
+        <section id="overview" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">01</span>Overview & Core Promise
+          </div>
+          <h2>Overview</h2>
+          <p class="lede">
+            Most small business owners know they should post on social media
+            consistently, but don't have the time, design skill, or team to do
+            it. BrandFlow removes every step between "I have something to
+            promote" and "it's live, on-brand, on every platform."
+          </p>
+          <div class="callout">
+            <strong>Core promise:</strong> an SMB owner with zero design
+            knowledge can create and schedule a professional social media post
+            in under 30 seconds.
+          </div>
+          <h3>Problem statement</h3>
+          <p>
+            Small businesses (restaurants, salons, gyms, clinics, jewellery
+            stores, retail, real estate, schools, travel) need a constant stream
+            of festival greetings, offers, and announcements to stay visible —
+            but hiring a designer is expensive, and generic tools like Canva
+            still require design skill and manual publishing across platforms.
+          </p>
+        </section>
+
+        <section id="auth-role" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">02</span>Unified Auth & Role Routing
+          </div>
+          <h2>Single Login & Access Control</h2>
+          <p class="lede">
+            There is only
+            <strong>ONE single application/web entry point</strong> for both End
+            Users and System Admins. Upon login, the platform detects the user's
+            role and routes them accordingly.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <span class="icon-tag">ROLE: END_USER</span>
+              <h4>SMB Owner / Manager</h4>
+              <p>
+                Redirects to Brand Kit creation, Single-Choice Dashboard, AI
+                Post Generator, Multi-Platform Scheduler, and Content Vault.
+              </p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">ROLE: ADMIN</span>
+              <h4>System Administrator</h4>
+              <p>
+                Redirects to Admin Management Console: Add Categories, Add
+                Festivals/Days, Upload Base Templates, Add Design Styles, Manage
+                Users.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="positioning" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">03</span>Positioning
+          </div>
+          <h2>How we position the product</h2>
+          <p class="lede">
+            The product is not sold as an editor. It's sold as a hire.
+          </p>
+          <div class="positioning">
+            <div class="box no">
+              <span class="label">Avoid</span>
+              <div class="quote">"An AI social media design platform."</div>
+            </div>
+            <div class="box yes">
+              <span class="label">Use instead</span>
+              <div class="quote">
+                "Your AI Social Media Manager for Small Businesses."
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="personas" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">04</span>Users & Goals
+          </div>
+          <h2>Primary user</h2>
+          <p class="lede">
+            A non-technical, non-design SMB owner or manager who needs to post
+            regularly but has no in-house designer.
+          </p>
+          <h3>What success looks like for them</h3>
+          <ol class="steps">
+            <li>
+              <div>
+                <h4>Zero blank-canvas moments</h4>
+                <p>Asked what to promote — never handed an empty editor.</p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h4>Always on-brand</h4>
+                <p>
+                  Logo, colors, fonts, phone, address, and handles applied
+                  automatically, every time.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h4>Never miss a festival or celebration day</h4>
+                <p>
+                  System surfaces upcoming festivals and national/global days to
+                  generate content.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h4>One dashboard, every platform</h4>
+                <p>
+                  Instagram, Facebook, LinkedIn, X, Pinterest, Threads, and
+                  WhatsApp managed in one place.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section id="flow" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">05</span>End-to-End Pipeline
+          </div>
+          <h2>The entire flow, one screen</h2>
+          <p class="lede">
+            This pipeline links all user choices directly to system automation
+            steps.
+          </p>
+          <div class="flow">
+            <div class="flow-track">
+              <div class="flow-node">
+                <span class="n">01</span
+                ><span class="t">Single Login / Sign Up</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">02</span
+                ><span class="t">Role Detection (User / Admin)</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">03</span
+                ><span class="t">Brand Kit Capture</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">04</span
+                ><span class="t">Connect Social Handles</span>
+              </div>
+            </div>
+            <div class="flow-track" style="margin-top: 12px">
+              <div class="flow-node">
+                <span class="n">05</span
+                ><span class="t">Select Content Type & Occasion</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">06</span
+                ><span class="t">Select Style (Admin-configured)</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">07</span
+                ><span class="t">Template Engine Merge</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">08</span
+                ><span class="t">Render 4 Designs (< 30s)</span>
+              </div>
+            </div>
+            <div class="flow-track" style="margin-top: 12px">
+              <div class="flow-node">
+                <span class="n">09</span
+                ><span class="t">Pick Variant + Micro-Edit</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">10</span
+                ><span class="t">Auto-Generate Captions</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">11</span
+                ><span class="t">Select Handles & Schedule</span>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node">
+                <span class="n">12</span
+                ><span class="t">Background API Worker</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="onboarding" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">06</span>Onboarding & AI Brand Kit
+          </div>
+          <h2>Required Brand Kit Inputs for AI Generation</h2>
+          <p class="lede">
+            To ensure every post generated by AI is 100% brand-accurate, the
+            platform captures key business details once during onboarding.
+          </p>
+          <h3>Fields captured & required by AI Engine:</h3>
+          <div class="grid">
+            <div class="card">
+              <span class="icon-tag">AI INPUT</span>
+              <h4>Business Name</h4>
+              <p>Primary title used across graphic overlays and captions.</p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">AI INPUT (ADMIN-CURATED)</span>
+              <h4>Business Category</h4>
+              <p>
+                Selected from Admin-configured categories (Restaurant, Gym,
+                Salon, Medical, Jewellery, Clothing, Real Estate, School,
+                Travel, Electronics).
+              </p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">AI INPUT</span>
+              <h4>Brand Logo</h4>
+              <p>
+                Uploaded PNG/SVG logo automatically rendered across all 4 design
+                variants.
+              </p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">AI INPUT (ADMIN-CURATED)</span>
+              <h4>Brand Colors & Presets</h4>
+              <p>
+                Primary & Secondary hex colors picked from Admin-curated color
+                palettes or custom hex codes to recolor design elements.
+              </p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">AI INPUT (ADMIN-CURATED)</span>
+              <h4>Primary Font & Typography</h4>
+              <p>
+                Chosen from Admin-configured font library (Space Grotesk, Inter,
+                Playfair Display, Outfit, Montserrat) applied to headers & body
+                text.
+              </p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">AI INPUT</span>
+              <h4>Contact Phone & WhatsApp</h4>
+              <p>Included on promotional & offer design overlays.</p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">AI INPUT</span>
+              <h4>Physical Address & Location</h4>
+              <p>Geo-location details for local SMB discovery.</p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">AI INPUT</span>
+              <h4>Website URL & Tagline</h4>
+              <p>Footer banner details on graphics.</p>
+            </div>
+            <div class="card">
+              <span class="icon-tag">SYSTEM FILE UPLOAD</span>
+              <h4>Custom Product & Store Media Library</h4>
+              <p>Direct upload of local photos/dishes/products stored in Cloudinary/S3 & Brand Vault for reuse across posts.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="social" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">07</span>Social Connections
+          </div>
+          <h2>Supported Social Media Platforms</h2>
+          <p class="lede">
+            The user connects their social media accounts via persistent OAuth.
+            Tokens are refreshed silently without forcing re-authentication.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <h4>📸 Instagram Business</h4>
+              <p>Feed Posts & Stories publishing via Instagram Graph API.</p>
+            </div>
+            <div class="card">
+              <h4>📘 Facebook Page</h4>
+              <p>Page post publishing via Meta Graph API.</p>
+            </div>
+            <div class="card">
+              <h4>💼 LinkedIn Company</h4>
+              <p>Corporate update publishing via LinkedIn API.</p>
+            </div>
+            <div class="card">
+              <h4>🐦 Twitter / X</h4>
+              <p>Tweet & image posting via X API v2.</p>
+            </div>
+            <div class="card">
+              <h4>📌 Pinterest</h4>
+              <p>Pin creation via Pinterest API.</p>
+            </div>
+            <div class="card">
+              <h4>🧵 Threads</h4>
+              <p>Threads post publishing.</p>
+            </div>
+            <div class="card">
+              <h4>💬 WhatsApp Business</h4>
+              <p>Direct promotional messaging & status sharing.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="dashboard" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">08</span>Dashboard & Content Types
+          </div>
+          <h2>All Supported Content Types</h2>
+          <p class="lede">
+            "Good morning 👋 What do you want to create today?" Single-choice
+            screen covering all marketing post formats.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <h4>1. Festival & Occasion Greetings</h4>
+              <p>
+                Diwali, Raksha Bandhan, Independence Day, Women's Day, New Year,
+                etc.
+              </p>
+            </div>
+            <div class="card">
+              <h4>2. Offers & Discounts</h4>
+              <p>
+                Promotional banners, seasonal sales (e.g., "20% OFF", "Buy 1 Get
+                1").
+              </p>
+            </div>
+            <div class="card">
+              <h4>3. Product Spotlight & Promotions</h4>
+              <p>
+                Showcasing specific dishes, products, services, or collections.
+              </p>
+            </div>
+            <div class="card">
+              <h4>4. Events & Invitations</h4>
+              <p>
+                Store openings, workshop invites, webinars, launch celebrations.
+              </p>
+            </div>
+            <div class="card">
+              <h4>5. Announcements & News</h4>
+              <p>New store hours, holiday notices, awards, achievements.</p>
+            </div>
+            <div class="card">
+              <h4>6. Quotes & Thought Leadership</h4>
+              <p>Brand-styled motivational or industry quote cards.</p>
+            </div>
+            <!-- <div class="card"><h4>7. Stories (Vertical 9:16)</h4><p>Ephemeral vertical format for IG / FB Stories & WhatsApp Status.</p></div>
+        <div class="card"><h4>8. Reels (Short Video)</h4><p>Animated video templates and short-form video clips.</p></div>
+        <div class="card"><h4>9. Custom Design</h4><p>Open-ended prompt creation for unique edge cases.</p></div> -->
+          </div>
+        </section>
+
+        <section id="generation" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">09</span>AI Engine & Style Matrix
+          </div>
+          <h2>Generative Engine & Styles</h2>
+          <p class="lede">
+            Given Category + Occasion + Style + Offer, the system renders 4
+            distinct design variants in parallel (< 30s).
+          </p>
+          <h3>Supported Design Styles (Configurable by Admin):</h3>
+          <div class="grid">
+            <div class="card">
+              <span class="chip">STYLE</span>
+              <h4>Luxury</h4>
+              <p>
+                Gold accents, dark marble textures, high-end serif typography.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">STYLE</span>
+              <h4>Premium</h4>
+              <p>
+                Sleek glassmorphism, elegant gradients, balanced composition.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">STYLE</span>
+              <h4>Modern</h4>
+              <p>
+                Bold sans-serif, vibrant color blocks, clean geometric layouts.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">STYLE</span>
+              <h4>Minimal</h4>
+              <p>
+                Ample white space, subtle line borders, minimalist typography.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">STYLE</span>
+              <h4>Traditional</h4>
+              <p>
+                Ethnic cultural motifs, festive borders, festive motifs
+                (Diwali/Holi/Eid).
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">STYLE</span>
+              <h4>Corporate</h4>
+              <p>
+                Professional blue/slate tones, structured grid layout, clean
+                cards.
+              </p>
+            </div>
+          </div>
+
+          <h3>Server-Side Image Overlay Engine (Node.js Sharp Architecture)</h3>
+          <p>
+            When an end-user selects a template or creates a post, the platform uses Node.js <strong><code>sharp</code></strong> (high-performance C++ libvips library) for ultra-fast, server-side dynamic image composition. This seamlessly places the user's business brand details (logo, name, phone, address, website, offer badges) onto the Admin-uploaded base template.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <span class="chip">SHARP ENGINE</span>
+              <h4>1. Multi-Layer Image Composition</h4>
+              <p>
+                Composites base template image buffer + user PNG/SVG logo buffer + dynamic vector SVG text layers (Business Name, Phone, Address, Offer Code, Website) in a single atomic <code>sharp().composite()</code> pipeline.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">SHARP ENGINE</span>
+              <h4>2. Precise Coordinate Mapping</h4>
+              <p>
+                Reads layout coordinate metadata defined by Admin (Logo bounding box <code>x, y, w, h</code>, Text Anchor zones, Contact Bar position) to place user assets with pixel-perfect accuracy.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">SHARP ENGINE</span>
+              <h4>3. Sub-Millisecond Speed (&lt; 15ms)</h4>
+              <p>
+                Renders customized posters in 5–15ms per image. Uses 90% less memory than Puppeteer/Canvas, scaling effortlessly across concurrent BullMQ background workers for 100,000+ users.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip">SHARP ENGINE</span>
+              <h4>4. Multi-Format Social Resolution</h4>
+              <p>
+                Outputs pristine 1080x1080 (1:1 Feed Post), 1080x1920 (9:16 Story/Status), and WebP/JPEG formats optimized for social platform API publishing.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="editing" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">10</span>Micro-Editing Engine
+          </div>
+          <h2>Editing Without Canvas Complexity</h2>
+          <p class="lede">
+            No layers, no dragging, no canvas — only single-click action buttons
+            that modify specific elements.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <h4>Change Background</h4>
+              <p>Instant background texture & pattern regeneration.</p>
+            </div>
+            <div class="card">
+              <span class="chip">LOCAL FILE UPLOAD</span>
+              <h4>Direct Custom Image Upload</h4>
+              <p>
+                Upload custom product, dish, store, or promotional photos directly from local computer/device (PNG, JPEG, WebP up to 25MB). Node.js Sharp automatically auto-crops and fits it into template image frames.
+              </p>
+            </div>
+            <div class="card">
+              <h4>Stock Image Library</h4>
+              <p>
+                Swap domain stock photography curated by category (Restaurant, Gym, Salon, Jewellery, Real Estate, etc.).
+              </p>
+            </div>
+            <div class="card">
+              <h4>Change Style</h4>
+              <p>
+                Switch between Luxury / Premium / Modern / Minimal / Traditional / Corporate aesthetics.
+              </p>
+            </div>
+            <div class="card">
+              <h4>Change Text & Offer</h4>
+              <p>Adjust headline, discount percentage, promo code, or contact details.</p>
+            </div>
+            <div class="card">
+              <h4>Replace Logo</h4>
+              <p>Switch logo placement, variant, or upload an updated logo file.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="captions" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">11</span>Captions & Copy Generation
+          </div>
+          <h2>AI Copywriting per Social Network</h2>
+          <p class="lede">
+            Auto-generates tailored caption copy & trending hashtags per
+            connected social handle.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <h4>Instagram Copy</h4>
+              <p>
+                Emoji-rich engaging copy with call to action & 15 hashtag block.
+              </p>
+            </div>
+            <div class="card">
+              <h4>Facebook Copy</h4>
+              <p>Conversational storytelling text with link preview text.</p>
+            </div>
+            <div class="card">
+              <h4>LinkedIn Copy</h4>
+              <p>Professional business tone with industry-relevant hashtags.</p>
+            </div>
+            <div class="card">
+              <h4>Twitter / X Copy</h4>
+              <p>Concise 280-character post with high-impact hooks.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="scheduling" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">12</span>Scheduling, Publishing & Vault
+          </div>
+          <h2>Multi-Platform Posting</h2>
+          <p>
+            Publish Now · Tomorrow · Custom Date · Festival Morning — scheduled
+            automatically by background queue worker.
+          </p>
+          <div class="callout">
+            <strong>Content Vault:</strong> Every published and draft graphic
+            asset is retained in a searchable library categorized by occasion,
+            offer, and post type.
+          </div>
+        </section>
+
+        <section id="admin" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">13</span>Admin Panel Capabilities
+          </div>
+          <h2>Admin Control Features</h2>
+          <p class="lede">
+            Accessible only to users logged in with `ROLE: ADMIN`. Admin
+            configures the master system assets that power all SMB users.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <span class="chip admin">ADMIN POWER</span>
+              <h4>1. Business Category Management</h4>
+              <p>
+                Add, edit, or disable industry categories (Restaurant, Gym,
+                Salon, Medical, Jewellery, Real Estate, School, Travel, etc.)
+                and configure domain image banks.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip admin">ADMIN POWER</span>
+              <h4>2. Master Font & Color Palette Library</h4>
+              <p>
+                Add and manage approved Google/Custom Fonts (Space Grotesk,
+                Inter, Playfair, Outfit, Montserrat) and curated Color
+                Palettes/Presets available to SMB users during Brand Kit setup.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip admin">ADMIN POWER</span>
+              <h4>3. Festivals & Celebration Days</h4>
+              <p>
+                Add upcoming festivals (Diwali, Holi, Christmas) &
+                national/global celebration days (Independence Day, Women's Day,
+                Environment Day) with target dates and regional tags.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip admin">ADMIN POWER</span>
+              <h4>4. Base Template Management & Sharp Coordinate Mapping</h4>
+              <p>
+                Upload master SVG/PNG Base Templates per festival/occasion and configure placeholder coordinate metadata (Logo placement box <code>x, y, w, h</code>, Business Title anchor, Contact Bar, CTA badge). The server-side <strong>Sharp Engine</strong> automatically overlays each SMB user's Brand Kit details onto these exact coordinates during post generation.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip admin">ADMIN POWER</span>
+              <h4>5. Design Style Control</h4>
+              <p>
+                Add & configure design aesthetic styles (Luxury, Premium,
+                Modern, Minimal, Traditional, Corporate) with typography and
+                color composition rules.
+              </p>
+            </div>
+            <div class="card">
+              <span class="chip admin">ADMIN POWER</span>
+              <h4>6. User & System Management</h4>
+              <p>
+                View registered users, manage roles (`ROLE: END_USER` vs `ROLE:
+                ADMIN`), monitor activity, and send push notifications.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- <section id="nfr" class="prd-section">
+          <div class="eyebrow">
+            <span class="num-badge">14</span>Non-Functional Requirements
+          </div>
+          <h2>Engineering Requirements</h2>
+          <div class="grid">
+            <div class="card">
+              <h4>Reliability</h4>
+              <p>
+                Asynchronous queue worker retries API posting up to 3 times on
+                throttle errors.
+              </p>
+            </div>
+            <div class="card">
+              <h4>Generation Latency</h4>
+              <p>
+                4-variant parallel render engine completes in under 30 seconds.
+              </p>
+            </div>
+            <div class="card">
+              <h4>Token Security</h4>
+              <p>
+                Social platform OAuth tokens encrypted using AES-256 at rest.
+              </p>
+            </div>
+          </div>
+        </section> -->
+      </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      BRANDFLOW · PRD v2.0 · Prepared for internal review — not for external
+      distribution.
+    </footer>
+
+    <!-- SCROLLSPY SCRIPT -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const sections = document.querySelectorAll("section.prd-section");
+        const navLinks = document.querySelectorAll("nav.toc-sidebar a");
+
+        const observerOptions = {
+          root: null,
+          rootMargin: "-20% 0px -60% 0px",
+          threshold: 0,
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const id = entry.target.getAttribute("id");
+              navLinks.forEach((link) => {
+                if (link.getAttribute("href") === `#${id}`) {
+                  link.classList.add("active");
+                  link.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                } else {
+                  link.classList.remove("active");
+                }
+              });
+            }
+          });
+        }, observerOptions);
+
+        sections.forEach((section) => observer.observe(section));
+      });
+    </script>
+  </body>
+</html>

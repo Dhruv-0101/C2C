@@ -1,0 +1,517 @@
+{
+  "info": {
+    "_postman_id": "bf-auth-module-v4",
+    "name": "BrandFlow — Auth, RBAC, 2FA & Business Categories",
+    "description": "API collection for BrandFlow Platform. Includes Public Signup, Login 2FA challenges, QR code TOTP setup, backup codes, SuperAdmin SubAdmin delegation, and Master Business Category Management.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Signup Regular User (Public)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
+              "    pm.environment.set('access_token', jsonData.data.accessToken);",
+              "    console.log('✅ Regular User Access Token stored in access_token');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Dhruv Sharma\",\n  \"email\": \"user@brandflow.ai\",\n  \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/signup",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "signup"
+          ]
+        },
+        "description": "Registers a new public SMB user. Returns JWT Access Token & sets HTTP-Only refresh cookie."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Login User / SuperAdmin / SubAdmin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
+              "    pm.environment.set('access_token', jsonData.data.accessToken);",
+              "    console.log('✅ Access Token stored in Postman environment variable: access_token');",
+              "}",
+              "if (jsonData.data && jsonData.data.require2FA) {",
+              "    pm.environment.set('mfa_token', jsonData.data.mfaToken);",
+              "    console.log('🔐 2FA Required! MFA Token stored in mfa_token');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"superadmin@brandflow.com\",\n  \"password\": \"SuperAdmin123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Authenticates user credentials. If 2FA is active, returns require2FA: true and mfaToken for /2fa/verify-login."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Verify 2FA Login Challenge",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
+              "    pm.environment.set('access_token', jsonData.data.accessToken);",
+              "    console.log('✅ 2FA Verified! Access Token stored in access_token');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mfaToken\": \"{{mfa_token}}\",\n  \"code\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/2fa/verify-login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "2fa",
+            "verify-login"
+          ]
+        },
+        "description": "Verifies 6-digit TOTP authenticator code or 8-character backup recovery code during login. Returns final Access Token."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Setup 2FA (Get QR Code & Secret)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/2fa/setup",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "2fa",
+            "setup"
+          ]
+        },
+        "description": "Generates 2FA TOTP secret and QR Code Data URL for Google Authenticator / Authy app scanning."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Enable 2FA (Confirm Code & Get Backup Codes)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/2fa/enable",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "2fa",
+            "enable"
+          ]
+        },
+        "description": "Confirms 6-digit TOTP code, enables 2FA on account, and returns 8 single-use Backup Recovery Codes."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Disable 2FA",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/2fa/disable",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "2fa",
+            "disable"
+          ]
+        },
+        "description": "Disables 2FA security on authenticated account."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get Authenticated Profile",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        },
+        "description": "Fetches current logged in profile data, including isTwoFactorEnabled status and role flags."
+      },
+      "response": []
+    },
+    {
+      "name": "8. Create SubAdmin (SuperAdmin Only)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Jane Smith (SubAdmin)\",\n  \"email\": \"subadmin@brandflow.com\",\n  \"password\": \"SubAdminPass123!\",\n  \"allowedTabs\": [\n    \"users\",\n    \"analytics\",\n    \"templates\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/subadmin",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "subadmin"
+          ]
+        },
+        "description": "Creates a new SubAdmin account with assigned allowedTabs permissions. Restricted exclusively to SuperAdmin access tokens."
+      },
+      "response": []
+    },
+    {
+      "name": "9. List SubAdmins (SuperAdmin Only)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/subadmins",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "subadmins"
+          ]
+        },
+        "description": "Fetches list of all created SubAdmins and their assigned tab permissions. Requires SuperAdmin access token."
+      },
+      "response": []
+    },
+    {
+      "name": "10. Delete SubAdmin (SuperAdmin Only)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/subadmin/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "subadmin",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "subadmin-user-uuid-here",
+              "description": "The UUID of the SubAdmin to revoke/delete"
+            }
+          ]
+        },
+        "description": "Revokes and deletes a SubAdmin account by ID. Requires SuperAdmin access token."
+      },
+      "response": []
+    },
+    {
+      "name": "11. Get All Master Categories",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/categories",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories"
+          ]
+        },
+        "description": "Fetches list of all master business categories (e.g. Restaurant, Gym & Fitness, Real Estate, etc.)."
+      },
+      "response": []
+    },
+    {
+      "name": "12. Create Business Category (SuperAdmin Only)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Real Estate\",\n  \"description\": \"Property and real estate marketing templates\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/categories",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories"
+          ]
+        },
+        "description": "Creates a new master business category. Restricted exclusively to SuperAdmin access tokens."
+      },
+      "response": []
+    },
+    {
+      "name": "13. Delete Business Category (SuperAdmin Only)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/categories/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "category-uuid-here",
+              "description": "The UUID of the business category to delete"
+            }
+          ]
+        },
+        "description": "Deletes a master business category by ID. Requires SuperAdmin access token."
+      },
+      "response": []
+    },
+    {
+      "name": "14. Refresh Access Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/auth/refresh",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "refresh"
+          ]
+        },
+        "description": "Rotates refresh token and returns new Access Token. Uses HTTP-Only cookie automatically."
+      },
+      "response": []
+    },
+    {
+      "name": "15. Logout Session",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/logout",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "logout"
+          ]
+        },
+        "description": "Revokes refresh token in database and clears HTTP-Only refresh cookie."
+      },
+      "response": []
+    }
+  ]
+}

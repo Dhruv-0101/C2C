@@ -1,0 +1,8 @@
+-- AlterEnum
+ALTER TYPE "Role" ADD VALUE 'SUB_ADMIN';
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "allowedTabs" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN     "isAdmin" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isSubAdmin" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isSuperAdmin" BOOLEAN NOT NULL DEFAULT false;

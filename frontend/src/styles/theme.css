@@ -1,0 +1,61 @@
+@layer base {
+  :root {
+    --color-marigold: 38 92% 50%; /* #F59E0B */
+    --color-teal: 174 72% 40%;    /* #14B8A6 */
+    --color-indigo: 239 84% 67%;  /* #6366F1 */
+
+    --bg-primary: 222 47% 7%;     /* #0B0F17 */
+    --bg-secondary: 217 33% 12%;  /* #131B2A */
+    --bg-card: 217 33% 15%;       /* #1A2335 */
+    --border-color: 215 25% 23%;  /* #2C384E */
+  }
+}
+
+/* Custom Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(19, 27, 42, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-input {
+  background-color: #0f172a !important;
+  background: #0f172a !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff !important;
+  caret-color: #f59e0b !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.glass-input:focus {
+  border-color: rgba(245, 158, 11, 0.8) !important;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3) !important;
+  background-color: #131b2a !important;
+  background: #131b2a !important;
+}
+
+/* Force dark background and white text for Chrome, Edge & Safari Browser Autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+.glass-input:-webkit-autofill,
+.glass-input:-webkit-autofill:hover,
+.glass-input:-webkit-autofill:focus,
+.glass-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+  box-shadow: 0 0 0px 1000px #0f172a inset !important;
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  caret-color: #f59e0b !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #F59E0B 0%, #14B8A6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
