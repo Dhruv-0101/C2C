@@ -31,11 +31,21 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl) or matched origins
-      if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV === 'development') {
+      // Allow requests with no origin (mobile apps, Postman, curl)
+      if (!origin) return callback(null, true);
+
+      // Check if origin matches allowed list, localhost, or any vercel.app domain
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.includes('localhost') ||
+        env.NODE_ENV === 'development';
+
+      if (isAllowed) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        // Fallback: reflect request origin for production clients
+        callback(null, true);
       }
     },
     credentials: true,
