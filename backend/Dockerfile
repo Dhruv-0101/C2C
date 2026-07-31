@@ -5,7 +5,7 @@
 # ==========================================
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN apk add --no-linux-headers --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat python3 make g++ linux-headers
 
 COPY package*.json ./
 COPY prisma ./prisma/
