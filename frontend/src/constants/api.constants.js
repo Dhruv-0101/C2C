@@ -1,7 +1,22 @@
 /**
- * API Endpoints & Configuration Constants
+ * Dynamic API Base URL resolver based on Vite environment mode (Development vs Production)
  */
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const getApiBaseUrl = () => {
+  // 1. Explicit override in .env
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+
+  // 2. Production mode build selection
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_BASE_URL_PROD || 'https://brandflow-backend.onrender.com/api/v1';
+  }
+
+  // 3. Development mode fallback
+  return import.meta.env.VITE_API_BASE_URL_DEV || 'http://localhost:5000/api/v1';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export const API_ENDPOINTS = {
   AUTH: {
