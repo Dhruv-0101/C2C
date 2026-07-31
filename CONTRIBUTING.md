@@ -1,73 +1,150 @@
-# 🤝 BrandFlow Contribution Guidelines
+# 🚀 Welcome to BrandFlow (C2C) - Beginner Setup & Developer Guide
 
-Welcome to the **BrandFlow** development team! To ensure seamless collaboration, high code quality, and fast release cycles, all developers are required to follow these guidelines.
-
----
-
-## 🌿 1. Branching Strategy
-
-We follow the **Feature Branch Workflow**:
-
-- **`main`**: Production-ready code only. **Direct pushes to `main` are strictly forbidden.**
-- **`develop`**: Integration branch for upcoming releases.
-- **`feature/<feature-name>`**: New features (e.g., `feature/ai-caption-generator`, `feature/auth-jwt`).
-- **`bugfix/<bug-name>`**: Bug fixes (e.g., `bugfix/token-refresh-loop`).
-- **`hotfix/<fix-name>`**: Critical production fixes directly branched from `main`.
+Welcome to the **BrandFlow** team! Follow this complete guide to setup your computer, manage database migrations, and follow our daily developer workflow.
 
 ---
 
-## 🔄 2. Developer Workflow (Step-by-Step)
+## 📌 Prerequisites (What to Install First)
 
-### Step 1: Sync Your Local Repository
-Before starting work on a new feature, always pull the latest updates:
+Before starting, make sure you have these installed on your computer:
+1. 🟩 **Node.js (v20 or higher)**: [Download Node.js](https://nodejs.org/)
+2. 🐙 **Git**: [Download Git](https://git-scm.com/)
+3. 🐳 **Docker Desktop**: [Download Docker Desktop](https://www.docker.com/products/docker-desktop/) _(Make sure Docker Desktop is open and running)_
+
+---
+
+## ⚡ 1. Quick Project Setup (Only 3 Commands!)
+
+Open your Terminal (or VS Code Terminal) and run these 3 commands:
+
+### Command 1: Clone the Project
 ```bash
-git checkout develop
-git pull origin develop
+git clone https://github.com/Dhruv-0101/C2C.git
+cd C2C
 ```
 
-### Step 2: Create a Dedicated Feature Branch
+### Command 2: Create Backend Environment File (`backend/.env`)
 ```bash
-git checkout -b feature/my-new-feature
+cd backend
+cp .env.example .env
+```
+_(On Windows PowerShell, run: `copy .env.example .env`)_
+
+### Command 3: Create Frontend Environment File (`frontend/.env`)
+```bash
+cd ../frontend
+cp .env.example .env
 ```
 
-### Step 3: Write Code & Test Locally
-- Follow the SOLID, DRY, and Clean Architecture principles defined in project documentation.
-- Make sure local build checks pass (`npm run build` in both frontend and backend).
+---
 
-### Step 4: Commit Your Changes
-Use conventional commit messages:
-- `feat: add AI caption generation endpoint`
-- `fix: resolve CORS issue for frontend API requests`
-- `docs: update setup instructions in README`
-- `refactor: extract JWT verification middleware`
+## ☀️ 2. Daily Workflow - Starting Your Day
 
+Before you begin working each day, follow these steps to keep your branch synchronized:
+
+### 1. Get the latest main branch
+- Switch to the `main` branch: `git checkout main`
+- Pull latest changes: `git pull origin main`
+
+### 2. Update your working branch with main
+- Switch to your current working feature branch: `git checkout YourBranchName`
+- Merge `main` into your working branch: `git merge main`
+- Resolve any merge conflicts if they occur in VS Code.
+
+### 3. Run Prisma migrations
+- Navigate to backend and apply all latest database migrations:
+  ```bash
+  cd backend
+  npx prisma migrate deploy
+  ```
+  *(This applies any new database migrations created by other developers directly to your local database).*
+
+### 4. Start your work
+- You're now ready to begin working with the latest code and database schema!
+  ```bash
+  # Start with Docker:
+  docker-compose up
+  ```
+
+> ⚠️ **Important**: Do this at the start of every day to prevent your branch from falling behind and accumulating merge conflicts.
+
+---
+
+## 🌙 3. Daily Workflow - End of Your Day (GitHub PR Instructions)
+
+Before creating a Pull Request (PR), follow these steps to ensure your branch is up-to-date:
+
+### 1. Update the main branch
+- Switch to the `main` branch: `git checkout main`
+- Pull latest updates: `git pull origin main`
+
+### 2. Update your working branch
+- Switch back to your working feature branch: `git checkout YourBranchName`
+- Merge `main` into your branch: `git merge main`
+- Resolve any merge conflicts if they appear.
+
+### 3. Push your changes
+- After merging, push your updated branch to remote GitHub:
+  ```bash
+  git push origin YourBranchName
+  ```
+- This ensures your remote branch has all your local changes plus the latest main branch updates.
+
+### 4. Create the Pull Request
+- Open [https://github.com/Dhruv-0101/C2C](https://github.com/Dhruv-0101/C2C).
+- Click **"Compare & pull request"**.
+- Add a clear title and description (list what you implemented, fixed, or modified).
+- Assign **`@Dhruv-0101`** (Repository Owner) to review.
+
+> ⚠️ **Important**: Always ensure your branch is updated with the latest `main` branch before creating a PR to avoid merge conflicts later.
+
+---
+
+## 🗄️ 4. Working with Prisma Schema & Database Migrations
+
+We use **Prisma Migrations** so every team member gets the exact same database schema changes automatically when pulling code from GitHub.
+
+### Step 4.1: Adding a New Field or Table (`prisma migrate dev`)
+Whenever you add a new field or table to `backend/prisma/schema.prisma`:
+
+1. Open `backend/prisma/schema.prisma` in VS Code and make your schema edits.
+2. Run Prisma migration command in `backend/` terminal:
+   ```bash
+   cd backend
+   npx prisma migrate dev --name add_new_user_field
+   ```
+3. **What this command does**:
+   - Creates a new SQL migration file inside `backend/prisma/migrations/`.
+   - Applies the SQL migration to your local database.
+   - Automatically regenerates the Prisma Client for VS Code autocomplete.
+
+### Step 4.2: Commit the Migration File to Git
+Always commit the generated `prisma/migrations/` folder so other team members get the migration:
 ```bash
 git add .
-git commit -m "feat: add user profile update feature"
+git commit -m "feat: add user schema migration"
+git push origin feature/yourname-taskname
 ```
 
-### Step 5: Push Branch & Open a Pull Request (PR)
+### Step 4.3: How Other Developers Apply Your Migration (`prisma migrate deploy`)
+When other developers pull your PR from `main`, they run `npx prisma migrate deploy` during their **Starting Your Day** workflow, and Prisma applies your SQL migration file automatically to their local database!
+
+### Step 4.4: View Database in Browser (Prisma Studio GUI)
+To view your local database like an Excel sheet:
 ```bash
-git push origin feature/my-new-feature
+cd backend
+npm run prisma:studio
 ```
-1. Go to GitHub and open a **Pull Request** targeting `develop` (or `main`).
-2. Fill out the PR template with a clear description of changes.
-3. Request review from at least 1 teammate.
-4. Ensure all automated GitHub Actions CI/CD checks pass.
+Open [http://localhost:5555](http://localhost:5555) in your browser.
 
 ---
 
-## 🧪 3. Code Quality Standards
+## ❓ Frequently Asked Questions (FAQ)
 
-1. **Keep Controllers & Components Thin**:
-   - Business logic belongs in `*.logic.js` files in backend modules.
-   - API data fetching belongs in TanStack Query custom hooks (`hooks/`) in frontend.
-2. **Environment Variables**:
-   - Never commit API keys, secrets, or `.env` files to Git.
-   - Always update `.env.example` when introducing new environment variables.
-3. **No Direct Database Access in Controllers**:
-   - Database queries must stay inside `*.repository.js` files using Prisma.
+- **Q: Docker command fails with "Docker daemon is not running"?**
+  - **A**: Open the Docker Desktop application on your computer first and wait 10 seconds for it to start.
 
----
+- **Q: Port 5000 or 5173 is already in use?**
+  - **A**: Close any previous terminal running `npm run dev` or `docker-compose`.
 
-Thank you for contributing to BrandFlow! 🚀
+Happy Coding! 🚀
