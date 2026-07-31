@@ -5,7 +5,7 @@
 # ==========================================
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN apk add --no-cache libc6-compat python3 make g++ linux-headers
+RUN apk add --no-cache openssl libc6-compat python3 make g++ linux-headers
 
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -30,7 +30,7 @@ CMD ["npm", "run", "dev"]
 # ==========================================
 FROM base AS production
 ENV NODE_ENV=production
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 COPY . .
 RUN npx prisma generate
 
