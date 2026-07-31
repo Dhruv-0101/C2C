@@ -23,14 +23,41 @@ git clone https://github.com/Dhruv-0101/C2C.git
 cd C2C
 ```
 
-### Command 2: Create Backend Environment File (`backend/.env`)
+### Command 2: Create Your Personal Branch 🌿
+
+> ⚠️ **MANDATORY** — Every developer must create their **own branch** named after their GitHub username immediately after cloning. **Never commit directly to `main`.**
+
+Replace `your-github-username` with your actual GitHub username (e.g., `john-doe`):
+
+```bash
+# Make sure you are inside the project folder
+cd C2C
+
+# Create a new branch using your GitHub username and switch to it immediately
+git checkout -b your-github-username
+```
+
+**Verify you are on your own branch before writing any code:**
+```bash
+git branch
+# The branch with * in front is your active branch
+# Example output:
+# * john-doe
+#   main
+```
+
+> 🔒 **Rule**: All your changes must be made **only on your personal branch**. Never switch back to `main` to write code.
+
+---
+
+### Command 3: Create Backend Environment File (`backend/.env`)
 ```bash
 cd backend
 cp .env.example .env
 ```
 _(On Windows PowerShell, run: `copy .env.example .env`)_
 
-### Command 3: Create Frontend Environment File (`frontend/.env`)
+### Command 4: Create Frontend Environment File (`frontend/.env`)
 ```bash
 cd ../frontend
 cp .env.example .env
