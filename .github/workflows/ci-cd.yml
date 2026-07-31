@@ -21,12 +21,17 @@ jobs:
           node-version: '20'
 
       - name: 📦 Install & Validate Backend
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/brandflow_ci_db?schema=public"
         run: |
           cd backend
           npm install
           npx prisma validate
+          npx prisma generate
 
       - name: 🎨 Install & Validate Frontend
+        env:
+          VITE_API_BASE_URL_PROD: "https://c2c-negk.onrender.com/api/v1"
         run: |
           cd frontend
           npm install
@@ -49,6 +54,7 @@ jobs:
         with:
           context: ./backend
           file: ./backend/Dockerfile
+          target: production
           push: false
           tags: brandflow-backend:test
 
@@ -57,6 +63,7 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
+          target: production
           push: false
           tags: brandflow-frontend:test
 

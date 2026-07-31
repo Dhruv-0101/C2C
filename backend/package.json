@@ -9,7 +9,9 @@
     "dev": "node --watch src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "db:push:dev": "prisma db push",
+    "db:push:prod": "node -e \"process.env.DATABASE_URL=process.env.DATABASE_URL_PROD||'postgresql://neondb_owner:npg_fCQM5z6HJdhE@ep-divine-base-avokpx6v.c-11.us-east-1.aws.neon.tech/neondb?sslmode=require'; const { execSync } = await import('child_process'); execSync('npx prisma db push', { stdio: 'inherit', env: process.env });\""
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
