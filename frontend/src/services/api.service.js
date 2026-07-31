@@ -11,6 +11,7 @@ import { storage } from "../utils/storage.util";
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, // Send HTTP-Only Cookies for refresh token
+  timeout: 60000, // 60s timeout to handle Render free instance cold-starts
   headers: {
     "Content-Type": "application/json",
   },
