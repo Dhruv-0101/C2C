@@ -9,7 +9,7 @@ const getApiBaseUrl = () => {
 
   // 2. Production mode build selection
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_BASE_URL_PROD || 'https://brandflow-backend.onrender.com/api/v1';
+    return import.meta.env.VITE_API_BASE_URL_PROD || 'https://c2c-negk.onrender.com/api/v1';
   }
 
   // 3. Development mode fallback
