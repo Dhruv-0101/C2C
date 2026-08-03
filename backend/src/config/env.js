@@ -18,7 +18,7 @@ if (activeDbUrl) {
 
 // 2. Dynamic Client Application URL (Dev Frontend vs Production Frontend)
 const activeClientUrl = isProd
-  ? process.env.CLIENT_URL_PROD || process.env.CLIENT_URL || 'https://brandflow-ai.vercel.app'
+  ? process.env.CLIENT_URL_PROD || process.env.CLIENT_URL || 'https://c2-c-puce.vercel.app'
   : process.env.CLIENT_URL_DEV || process.env.CLIENT_URL || 'http://localhost:3000';
 
 if (activeClientUrl) {

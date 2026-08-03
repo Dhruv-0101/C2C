@@ -20,6 +20,7 @@ app.use(
 // CORS Configuration
 const allowedOrigins = [
   env.CLIENT_URL,
+  'https://c2-c-puce.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
