@@ -84,7 +84,10 @@ const envSchema = z.object({
   ENABLE_RATE_LIMITER: z.string().optional().default('false'),
 
   // Google OAuth Client ID
-  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_ID: z
+    .string()
+    .optional()
+    .default('723882466133-dktl5rijt0uld6rcsbsui5oovted7jpo.apps.googleusercontent.com'),
 
   // Cloudinary Media Storage
   CLOUDINARY_CLOUD_NAME: z.string().optional(),

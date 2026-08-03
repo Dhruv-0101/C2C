@@ -8,7 +8,7 @@ import { AppRoutes } from '../routes/AppRoutes';
 
 const googleClientId =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  '100000000000-samplegoogleclientid.apps.googleusercontent.com';
+  '723882466133-dktl5rijt0uld6rcsbsui5oovted7jpo.apps.googleusercontent.com';
 
 // Configure TanStack Query Client with enterprise default options
 const queryClient = new QueryClient({
