@@ -1,10 +1,23 @@
 import rateLimit from 'express-rate-limit';
 import { HTTP_STATUS } from '../constants/http-status.js';
+import { env } from '../../config/env.js';
+
+/**
+ * Higher-order middleware to bypass rate limiting when ENABLE_RATE_LIMITER is "false"
+ */
+const skipIfDisabled = (limiterInstance) => {
+  return (req, res, next) => {
+    if (env.ENABLE_RATE_LIMITER === 'false') {
+      return next();
+    }
+    return limiterInstance(req, res, next);
+  };
+};
 
 /**
  * Global Rate Limiter: 100 requests per 15-minute window per IP
  */
-export const globalLimiter = rateLimit({
+const _globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   standardHeaders: true,
@@ -21,7 +34,7 @@ export const globalLimiter = rateLimit({
 /**
  * Strict Auth Rate Limiter: 10 requests per 15-minute window per IP (Brute-force protection)
  */
-export const authLimiter = rateLimit({
+const _authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // Limit each IP to 10 auth requests per windowMs
   standardHeaders: true,
@@ -34,3 +47,6 @@ export const authLimiter = rateLimit({
     });
   },
 });
+
+export const globalLimiter = skipIfDisabled(_globalLimiter);
+export const authLimiter = skipIfDisabled(_authLimiter);

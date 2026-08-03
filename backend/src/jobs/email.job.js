@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { redisConnection } from '../config/redis.js';
 import { EMAIL_QUEUE_NAME, EMAIL_JOB_NAMES } from '../queues/email.queue.js';
-import { sendWelcomeEmail } from '../common/services/email.service.js';
+import { sendWelcomeEmail, sendPasswordResetEmail } from '../common/services/email.service.js';
 
 /**
  * BullMQ Worker: Processes Email Jobs from the Redis Queue
@@ -20,7 +20,11 @@ export const emailWorker = new Worker(
         break;
 
       case EMAIL_JOB_NAMES.PASSWORD_RESET:
-        // Future expansion for Password Reset Email Job
+        await sendPasswordResetEmail({
+          email: job.data.email,
+          fullName: job.data.fullName,
+          resetUrl: job.data.resetUrl,
+        });
         break;
 
       case EMAIL_JOB_NAMES.TWO_FACTOR_CODE:

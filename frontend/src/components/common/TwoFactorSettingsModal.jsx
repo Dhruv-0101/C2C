@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
-import { ShieldCheck, QrCode, Key, Copy, Check, Lock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ShieldCheck, QrCode, Key, Copy, Check, Lock, AlertTriangle, RefreshCw, Download } from 'lucide-react';
 import { authApi } from '../../services/auth.api';
 import { updateUser } from '../../store/slices/authSlice';
 import { useAuth } from '../../hooks/useAuth';
@@ -36,8 +36,7 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
     mutationFn: (code) => authApi.enable2FA({ code }),
     onSuccess: (res) => {
       setBackupCodes(res.data.backupCodes || []);
-      dispatch(updateUser({ isTwoFactorEnabled: true }));
-      setStep(2);
+      setStep(2); // Transition to Backup Codes screen first before updating active status
     },
   });
 
@@ -46,6 +45,10 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
     mutationFn: () => authApi.disable2FA(),
     onSuccess: () => {
       dispatch(updateUser({ isTwoFactorEnabled: false }));
+      setStep(1);
+      setQrCodeUrl('');
+      setVerifyCode('');
+      setBackupCodes([]);
       onClose();
     },
   });
@@ -60,10 +63,45 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
     enableMutation.mutate(verifyCode);
   };
 
+  const handleFinishSetup = () => {
+    dispatch(updateUser({ isTwoFactorEnabled: true }));
+    setStep(1);
+    setQrCodeUrl('');
+    setVerifyCode('');
+    setBackupCodes([]);
+    onClose();
+  };
+
   const handleCopyBackupCodes = () => {
     navigator.clipboard.writeText(backupCodes.join('\n'));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadBackupCodes = () => {
+    const textContent =
+      `==========================================\n` +
+      `BRANDFLOW 2FA EMERGENCY BACKUP CODES\n` +
+      `==========================================\n` +
+      `Generated: ${new Date().toLocaleString()}\n` +
+      `User Email: ${user?.email || 'Account'}\n\n` +
+      `RECOVERY CODES:\n` +
+      backupCodes.map((code, i) => `${i + 1}. ${code}`).join('\n') +
+      `\n\n` +
+      `⚠️ WARNING:\n` +
+      `If you lose your phone, change devices, or lose access to your authenticator app,\n` +
+      `these single-use backup codes are the ONLY way to log into your account.\n` +
+      `Keep this file safe and secure.\n`;
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `brandflow-backup-codes-${user?.email || 'user'}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (!isOpen) return null;
@@ -87,8 +125,57 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Current Status: Enabled */}
-        {user?.isTwoFactorEnabled ? (
+        {/* Step 2: Display Backup Recovery Codes (Takes precedence immediately upon enabling 2FA) */}
+        {step === 2 ? (
+          <div className="space-y-4">
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/40 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+              <div className="space-y-1">
+                <p className="font-bold text-xs text-amber-200">
+                  ⚠️ CRITICAL: Save These Recovery Codes Now!
+                </p>
+                <p className="text-[11px] text-amber-300/90 leading-relaxed">
+                  If you lose your phone, switch devices, or lose access to your authenticator app, these emergency backup codes are the <strong>ONLY WAY</strong> to regain access to your account. Copy or download them immediately and keep them in a safe place.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 text-center select-all">
+              {backupCodes.map((code, idx) => (
+                <div key={idx} className="p-1.5 bg-slate-900/80 rounded border border-slate-800 tracking-wider">
+                  {code}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between gap-2 pt-2">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={copied ? Check : Copy}
+                  onClick={handleCopyBackupCodes}
+                >
+                  {copied ? 'Copied!' : 'Copy All'}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={Download}
+                  onClick={handleDownloadBackupCodes}
+                >
+                  Download .txt
+                </Button>
+              </div>
+
+              <Button variant="primary" size="sm" onClick={handleFinishSetup}>
+                I Have Saved These Codes
+              </Button>
+            </div>
+          </div>
+        ) : user?.isTwoFactorEnabled ? (
+          /* Current Status: Enabled */
           <div className="space-y-4">
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
@@ -120,7 +207,7 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
         ) : (
           /* Current Status: Disabled / Setup Flow */
           <div className="space-y-5">
-            {step === 1 && !qrCodeUrl && (
+            {!qrCodeUrl && (
               <div className="space-y-4 text-center py-2">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
                   <Lock className="w-6 h-6" />
@@ -148,7 +235,7 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
             )}
 
             {/* Step 1: Display QR Code & Secret */}
-            {step === 1 && qrCodeUrl && (
+            {qrCodeUrl && (
               <div className="space-y-4">
                 <p className="text-xs text-slate-300">
                   1. Open Google Authenticator or Authy on your phone and scan the QR code:
@@ -188,44 +275,6 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
                     </Button>
                   </div>
                 </form>
-              </div>
-            )}
-
-            {/* Step 2: Display Backup Recovery Codes */}
-            {step === 2 && (
-              <div className="space-y-4">
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">
-                  <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-xs text-amber-200">Save Your Backup Recovery Codes</p>
-                    <p className="text-[11px] text-amber-300/80">
-                      If you lose access to your phone or authenticator app, these single-use recovery codes are the ONLY way to regain access to your account.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 text-center">
-                  {backupCodes.map((code, idx) => (
-                    <div key={idx} className="p-1.5 bg-slate-900/80 rounded border border-slate-800">
-                      {code}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    icon={copied ? Check : Copy}
-                    onClick={handleCopyBackupCodes}
-                  >
-                    {copied ? 'Copied Codes!' : 'Copy All Codes'}
-                  </Button>
-
-                  <Button variant="primary" size="sm" onClick={onClose}>
-                    Done & Saved
-                  </Button>
-                </div>
               </div>
             )}
           </div>

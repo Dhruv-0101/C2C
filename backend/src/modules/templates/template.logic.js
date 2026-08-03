@@ -1,20 +1,42 @@
 import { templateRepository } from './template.repository.js';
 import { compositeBrandedGraphic } from '../../common/helpers/sharp-compositor.helper.js';
+import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
 
 export const templateLogic = {
+  uploadAdminTemplate: async ({ fileBuffer, base64Image, title, description, festivalId, creatorId }) => {
+    let imageUrl = null;
+
+    if (fileBuffer) {
+      const uploadResult = await uploadToCloudinaryBuffer(fileBuffer, 'brandflow/festival-templates');
+      imageUrl = uploadResult.url;
+    } else if (base64Image) {
+      let cleanBase64 = base64Image;
+      if (cleanBase64.includes(';base64,')) {
+        cleanBase64 = cleanBase64.split(';base64,').pop();
+      }
+      const buffer = Buffer.from(cleanBase64, 'base64');
+      const uploadResult = await uploadToCloudinaryBuffer(buffer, 'brandflow/festival-templates');
+      imageUrl = uploadResult.url;
+    } else {
+      throw new Error('Image file or base64 image data is required.');
+    }
+
+    return templateRepository.create({
+      title: title || 'Festival Base Template',
+      description: description || null,
+      festivalId: festivalId || null,
+      baseImageUrl: imageUrl,
+      isCustomUpload: true,
+      createdBy: creatorId || null,
+    });
+  },
+
   createTemplate: async (data, creatorId) => {
     return templateRepository.create({
       title: data.title,
       description: data.description,
-      categoryId: data.categoryId || null,
       festivalId: data.festivalId || null,
-      styleId: data.styleId || null,
       baseImageUrl: data.baseImageUrl,
-      coordinatesJson: data.coordinatesJson || {
-        logoZone: { x: 50, y: 50, width: 140, height: 140 },
-        headlineZone: { x: 540, y: 220, fontSize: 44, color: '#FFFFFF' },
-        contactBarZone: { x: 0, y: 990, height: 90 },
-      },
       isCustomUpload: true,
       createdBy: creatorId || null,
     });
@@ -22,9 +44,7 @@ export const templateLogic = {
 
   getTemplates: async (query = {}) => {
     const filter = {};
-    if (query.categoryId) filter.categoryId = query.categoryId;
     if (query.festivalId) filter.festivalId = query.festivalId;
-    if (query.styleId) filter.styleId = query.styleId;
 
     return templateRepository.findMany(filter);
   },

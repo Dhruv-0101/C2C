@@ -4,29 +4,8 @@ export const createTemplateSchema = z.object({
   body: z.object({
     title: z.string().min(2, 'Template title must be at least 2 characters'),
     description: z.string().optional(),
-    categoryId: z.string().optional().nullable(),
     festivalId: z.string().optional().nullable(),
-    styleId: z.string().optional().nullable(),
     baseImageUrl: z.string().min(1, 'Base image is required'),
-    coordinatesJson: z.object({
-      logoZone: z.object({
-        x: z.number(),
-        y: z.number(),
-        width: z.number(),
-        height: z.number(),
-      }),
-      headlineZone: z.object({
-        x: z.number(),
-        y: z.number(),
-        fontSize: z.number(),
-        color: z.string(),
-      }),
-      contactBarZone: z.object({
-        x: z.number(),
-        y: z.number(),
-        height: z.number(),
-      }),
-    }).optional(),
   }),
 });
 

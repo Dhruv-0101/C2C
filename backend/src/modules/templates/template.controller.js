@@ -1,6 +1,29 @@
 import { templateLogic } from './template.logic.js';
 
 export const templateController = {
+  uploadAdminTemplate: async (req, res, next) => {
+    try {
+      const template = await templateLogic.uploadAdminTemplate({
+        fileBuffer: req.fileBuffer,
+        base64Image: req.body?.base64Image,
+        title: req.body?.title,
+        description: req.body?.description,
+        festivalId: req.body?.festivalId,
+        categoryId: req.body?.categoryId,
+        styleId: req.body?.styleId,
+        creatorId: req.user?.id,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Base festival template uploaded to Cloudinary successfully.',
+        data: { template },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   createTemplate: async (req, res, next) => {
     try {
       const template = await templateLogic.createTemplate(req.body, req.user?.id);

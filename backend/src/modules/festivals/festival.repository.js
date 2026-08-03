@@ -16,6 +16,12 @@ export async function findAllFestivals(year) {
 
   return await prisma.festival.findMany({
     where,
+    include: {
+      templates: {
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
     orderBy: {
       date: 'asc',
     },

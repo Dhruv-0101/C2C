@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { PostCreatorModal } from '../components/common/PostCreatorModal';
+import { FestivalCalendarView } from '../features/calendar/components/FestivalCalendarView';
 
 export const DashboardPage = () => {
   const { user } = useAuth();
@@ -84,6 +85,9 @@ export const DashboardPage = () => {
           <p className="text-xs text-emerald-400 font-medium">Active & Validated</p>
         </Card>
       </div>
+
+      {/* Festival & Days Content Calendar */}
+      <FestivalCalendarView onSelectTemplate={() => setIsPostModalOpen(true)} />
 
       {/* Quick Action Activity Panel */}
       <Card className="border-slate-800 space-y-4">

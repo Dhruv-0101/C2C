@@ -7,9 +7,7 @@ export const templateRepository = {
     return prisma.template.create({
       data,
       include: {
-        category: true,
         festival: true,
-        style: true,
       },
     });
   },
@@ -18,9 +16,7 @@ export const templateRepository = {
     return prisma.template.findMany({
       where: filter,
       include: {
-        category: true,
         festival: true,
-        style: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -30,9 +26,7 @@ export const templateRepository = {
     return prisma.template.findUnique({
       where: { id },
       include: {
-        category: true,
         festival: true,
-        style: true,
       },
     });
   },

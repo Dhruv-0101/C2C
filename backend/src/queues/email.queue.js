@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { redisConnection } from '../config/redis.js';
-import { sendWelcomeEmail } from '../common/services/email.service.js';
+import { sendWelcomeEmail, sendPasswordResetEmail } from '../common/services/email.service.js';
 
 export const EMAIL_QUEUE_NAME = 'email-queue';
 
@@ -54,6 +54,29 @@ export async function addWelcomeEmailJob({ email, fullName }) {
     // Fallback: Send email directly if Redis queue is offline
     sendWelcomeEmail({ email, fullName }).catch((e) => {
       console.error('Failed direct fallback email send:', e.message);
+    });
+  }
+}
+
+/**
+ * Producer: Add Password Reset Email Job to BullMQ Queue
+ * @param {{ email: string, fullName: string, resetUrl: string }} data
+ */
+export async function addPasswordResetEmailJob({ email, fullName, resetUrl }) {
+  try {
+    const job = await emailQueue.add(EMAIL_JOB_NAMES.PASSWORD_RESET, {
+      email,
+      fullName,
+      resetUrl,
+      createdAt: new Date().toISOString(),
+    });
+    console.log(`🚀 [BullMQ Producer] Password Reset Email Job #${job.id} dispatched for ${email}`);
+    return job;
+  } catch (error) {
+    console.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendPasswordResetEmail for ${email}...`);
+    // Fallback: Send email directly if Redis queue is offline
+    sendPasswordResetEmail({ email, fullName, resetUrl }).catch((e) => {
+      console.error('Failed direct fallback password reset email send:', e.message);
     });
   }
 }

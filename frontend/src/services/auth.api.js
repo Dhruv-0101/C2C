@@ -12,6 +12,24 @@ export const authApi = {
   login: (credentials) => api.post(API_ENDPOINTS.AUTH.LOGIN, credentials),
 
   /**
+   * Authenticate via Google OAuth 2.0 ID Token
+   * @param {{ idToken: string }} payload
+   */
+  googleLogin: (payload) => api.post('/auth/google', payload),
+
+  /**
+   * Request password reset link email
+   * @param {{ email: string }} payload
+   */
+  forgotPassword: (payload) => api.post('/auth/forgot-password', payload),
+
+  /**
+   * Reset user password using reset token
+   * @param {{ token: string, newPassword: string }} payload
+   */
+  resetPassword: (payload) => api.post('/auth/reset-password', payload),
+
+  /**
    * Complete 2FA challenge verification on login
    * @param {{ mfaToken: string, code: string }} payload
    */

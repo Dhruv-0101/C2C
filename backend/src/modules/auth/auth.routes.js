@@ -7,6 +7,9 @@ import * as authController from './auth.controller.js';
 import {
   loginSchema,
   signupSchema,
+  googleAuthSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   refreshTokenSchema,
   createSubAdminSchema,
   verifyLogin2FASchema,
@@ -18,6 +21,9 @@ const router = Router();
 // Public Authentication Endpoints
 router.post('/signup', authLimiter, validate(signupSchema), authController.signup);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/google', authLimiter, validate(googleAuthSchema), authController.googleLogin);
+router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
+router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
 router.post('/2fa/verify-login', authLimiter, validate(verifyLogin2FASchema), authController.verifyLogin2FA);
 router.post('/refresh', authLimiter, validate(refreshTokenSchema), authController.refresh);
 router.post('/logout', authController.logout);

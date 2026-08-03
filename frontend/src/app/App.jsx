@@ -2,8 +2,13 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { store } from '../store/store';
 import { AppRoutes } from '../routes/AppRoutes';
+
+const googleClientId =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  '100000000000-samplegoogleclientid.apps.googleusercontent.com';
 
 // Configure TanStack Query Client with enterprise default options
 const queryClient = new QueryClient({
@@ -21,9 +26,11 @@ export const App = () => {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </GoogleOAuthProvider>
       </QueryClientProvider>
     </Provider>
   );

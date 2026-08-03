@@ -17,8 +17,6 @@ import {
 } from 'lucide-react';
 import { templateApi } from '../../services/template.api';
 import { festivalApi } from '../../services/festival.api';
-import { categoryApi } from '../../services/category.api';
-import { designStyleApi } from '../../services/designStyle.api';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -33,15 +31,8 @@ export const BaseTemplateManager = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    categoryId: '',
     festivalId: '',
-    styleId: '',
     baseImageUrl: '',
-    coordinatesJson: {
-      logoZone: { x: 50, y: 50, width: 140, height: 140 },
-      headlineZone: { x: 540, y: 220, fontSize: 44, color: '#FFFFFF' },
-      contactBarZone: { x: 0, y: 990, height: 90 },
-    },
   });
 
   // Fetch Templates
@@ -56,22 +47,8 @@ export const BaseTemplateManager = () => {
     queryFn: () => festivalApi.getFestivals(),
   });
 
-  // Fetch Categories
-  const { data: categoryResponse } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoryApi.getCategories(),
-  });
-
-  // Fetch Design Styles
-  const { data: styleResponse } = useQuery({
-    queryKey: ['designStyles'],
-    queryFn: () => designStyleApi.getDesignStyles(),
-  });
-
   const templates = templateResponse?.data?.templates || [];
   const festivals = festivalResponse?.data?.festivals || [];
-  const categories = categoryResponse?.data?.categories || [];
-  const designStyles = styleResponse?.data?.designStyles || [];
 
   // Handle local system file upload
   const handleFileChange = (e) => {
@@ -116,15 +93,8 @@ export const BaseTemplateManager = () => {
     setFormData({
       title: '',
       description: '',
-      categoryId: '',
       festivalId: '',
-      styleId: '',
       baseImageUrl: '',
-      coordinatesJson: {
-        logoZone: { x: 50, y: 50, width: 140, height: 140 },
-        headlineZone: { x: 540, y: 220, fontSize: 44, color: '#FFFFFF' },
-        contactBarZone: { x: 0, y: 990, height: 90 },
-      },
     });
     setErrorMsg('');
   };
@@ -187,7 +157,7 @@ export const BaseTemplateManager = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-1 rounded-full bg-amber-500/90 text-slate-950 text-[10px] font-extrabold uppercase tracking-wider">
-                      {tpl.festival?.name || tpl.category?.name || 'General Template'}
+                      {tpl.festival?.name || 'General Template'}
                     </span>
 
                     <button
@@ -205,10 +175,10 @@ export const BaseTemplateManager = () => {
 
               <div className="p-4 border-t border-[#2C384E] bg-[#131B2A] flex items-center justify-between text-xs text-slate-400">
                 <span className="truncate">
-                  {tpl.style?.name ? `Style: ${tpl.style.name}` : 'Default Style'}
+                  {tpl.description || 'Base Image Template'}
                 </span>
                 <span className="font-mono text-[10px] text-amber-400 flex items-center gap-1">
-                  <Zap className="w-3 h-3" /> Sharp Engine Ready
+                  <Zap className="w-3 h-3" /> Cloudinary Ready
                 </span>
               </div>
             </div>
@@ -274,8 +244,8 @@ export const BaseTemplateManager = () => {
                 </div>
               </div>
 
-              {/* Context Selectors (Festival + Category + Design Style) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              {/* Context Selector (Festival / Day Only) */}
+              <div className="pt-2">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-300">Attach to Festival / Day</label>
                   <select
@@ -291,88 +261,19 @@ export const BaseTemplateManager = () => {
                     ))}
                   </select>
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Category</label>
-                  <select
-                    value={formData.categoryId}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="">None (All Categories)</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Design Style</label>
-                  <select
-                    value={formData.styleId}
-                    onChange={(e) => setFormData({ ...formData, styleId: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="">Default Style</option>
-                    {designStyles.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
 
-              {/* Template Image Canvas Preview & Sharp Anchors Overlay */}
+              {/* Template Image Canvas Preview */}
               {formData.baseImageUrl && (
                 <div className="space-y-2 pt-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-teal-400 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Eye className="w-4 h-4" /> Uploaded Template Canvas Preview & Sharp Compositing Anchors
+                    <label className="text-xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
+                      <Eye className="w-4 h-4" /> Uploaded Template Graphic Preview
                     </label>
-                    <span className="text-[11px] font-mono text-amber-400">1080 x 1080 Canvas</span>
                   </div>
 
                   <div className="relative aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-black">
                     <img src={formData.baseImageUrl} alt="Uploaded Custom Template" className="w-full h-full object-cover" />
-
-                    {/* Logo Zone Overlay */}
-                    <div
-                      className="absolute border-2 border-dashed border-amber-400 bg-amber-500/20 text-amber-300 text-[10px] font-bold flex items-center justify-center rounded-lg shadow-lg"
-                      style={{
-                        left: `${(formData.coordinatesJson.logoZone.x / 1080) * 100}%`,
-                        top: `${(formData.coordinatesJson.logoZone.y / 1080) * 100}%`,
-                        width: `${(formData.coordinatesJson.logoZone.width / 1080) * 100}%`,
-                        height: `${(formData.coordinatesJson.logoZone.height / 1080) * 100}%`,
-                      }}
-                    >
-                      Brand Logo Zone
-                    </div>
-
-                    {/* Headline Zone Overlay */}
-                    <div
-                      className="absolute border border-dashed border-cyan-400 bg-cyan-500/20 text-cyan-200 text-[10px] font-bold flex items-center justify-center rounded px-2"
-                      style={{
-                        left: '10%',
-                        width: '80%',
-                        top: `${(formData.coordinatesJson.headlineZone.y / 1080) * 100}%`,
-                      }}
-                    >
-                      Headline Greeting Text Anchor
-                    </div>
-
-                    {/* Contact Bar Zone Overlay */}
-                    <div
-                      className="absolute inset-x-0 bottom-0 bg-teal-500/40 border-t-2 border-dashed border-teal-300 text-white text-[10px] font-bold flex items-center justify-between px-3"
-                      style={{
-                        height: `${(formData.coordinatesJson.contactBarZone.height / 1080) * 100}%`,
-                      }}
-                    >
-                      <span>🏢 Business Name</span>
-                      <span>📞 Phone & Website Bar</span>
-                    </div>
                   </div>
                 </div>
               )}

@@ -19,7 +19,7 @@ if (activeDbUrl) {
 // 2. Dynamic Client Application URL (Dev Frontend vs Production Frontend)
 const activeClientUrl = isProd
   ? process.env.CLIENT_URL_PROD || process.env.CLIENT_URL || 'https://brandflow-ai.vercel.app'
-  : process.env.CLIENT_URL_DEV || process.env.CLIENT_URL || 'http://localhost:5173';
+  : process.env.CLIENT_URL_DEV || process.env.CLIENT_URL || 'http://localhost:3000';
 
 if (activeClientUrl) {
   process.env.CLIENT_URL = activeClientUrl;
@@ -64,7 +64,7 @@ const envSchema = z.object({
   // Client URLs
   CLIENT_URL_DEV: z.string().optional(),
   CLIENT_URL_PROD: z.string().optional(),
-  CLIENT_URL: z.string().default('http://localhost:5173'),
+  CLIENT_URL: z.string().default('http://localhost:3000'),
 
   // SMTP Email
   SMTP_HOST: z.string().optional().default('smtp.gmail.com'),
@@ -79,6 +79,17 @@ const envSchema = z.object({
   REDIS_PASSWORD: z.string().optional(),
   REDIS_URL: z.string().optional(),
   REDIS_TLS: z.string().optional().default('false'),
+
+  // Rate Limiting Config ("true" | "false")
+  ENABLE_RATE_LIMITER: z.string().optional().default('false'),
+
+  // Google OAuth Client ID
+  GOOGLE_CLIENT_ID: z.string().optional(),
+
+  // Cloudinary Media Storage
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
 });
 
 const _env = envSchema.safeParse({

@@ -1,4 +1,7 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
+import { env } from '../../config/env.js';
 import { ConflictError, UnauthorizedError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
 import {
   generateAccessToken,
@@ -14,8 +17,104 @@ import {
   generateBackupCodes,
   verifyBackupCode,
 } from '../../common/helpers/two-factor.helper.js';
-import { addWelcomeEmailJob } from '../../queues/email.queue.js';
+import { addWelcomeEmailJob, addPasswordResetEmailJob } from '../../queues/email.queue.js';
 import * as authRepository from './auth.repository.js';
+
+const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+
+/**
+ * Authenticate or Sign Up via Google OAuth 2.0 ID Token
+ */
+export async function loginWithGoogle({ idToken }) {
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: env.GOOGLE_CLIENT_ID || undefined,
+    });
+    payload = ticket.getPayload();
+  } catch (error) {
+    throw new UnauthorizedError('Invalid or expired Google authentication token.');
+  }
+
+  if (!payload || !payload.email) {
+    throw new UnauthorizedError('Unable to retrieve valid profile data from Google account.');
+  }
+
+  const email = payload.email.toLowerCase();
+  const fullName = payload.name || payload.given_name || 'Google User';
+  const avatarUrl = payload.picture || null;
+  const googleId = payload.sub || null;
+
+  let user = await authRepository.findUserByEmail(email);
+
+  if (!user) {
+    user = await authRepository.createUser({
+      email,
+      passwordHash: null,
+      fullName,
+      avatarUrl,
+      googleId,
+      isGoogleRegistered: true,
+      role: 'END_USER',
+    });
+
+    // Dispatch Welcome Email Job
+    addWelcomeEmailJob({ email: user.email, fullName: user.fullName }).catch(() => {});
+  } else {
+    if (!user.isActive) {
+      throw new UnauthorizedError('Your account has been deactivated. Please contact support.');
+    }
+    // Update profile with Google fields if linking or missing
+    const updates = {};
+    if (!user.avatarUrl && avatarUrl) updates.avatarUrl = avatarUrl;
+    if (!user.googleId && googleId) updates.googleId = googleId;
+    if (!user.isGoogleRegistered) updates.isGoogleRegistered = true;
+
+    if (Object.keys(updates).length > 0) {
+      await authRepository.updateUserProfile(user.id, updates).catch(() => {});
+    }
+  }
+
+  // Check if 2FA is Enabled for user
+  if (user.isTwoFactorEnabled) {
+    const mfaToken = generate2FAToken({ userId: user.id });
+    return {
+      require2FA: true,
+      mfaToken,
+    };
+  }
+
+  // Standard Session Token Issuance
+  const tokenPayload = {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    isAdmin: user.isAdmin,
+    isSuperAdmin: user.isSuperAdmin,
+    isSubAdmin: user.isSubAdmin,
+  };
+  const accessToken = generateAccessToken(tokenPayload);
+  const refreshToken = generateRefreshToken(tokenPayload);
+
+  const tokenHash = hashToken(refreshToken);
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  await authRepository.createRefreshToken({
+    userId: user.id,
+    tokenHash,
+    expiresAt,
+  });
+
+  const { passwordHash: _, twoFactorSecret: __, backupCodes: ___, ...safeUser } = user;
+
+  return {
+    require2FA: false,
+    user: safeUser,
+    accessToken,
+    refreshToken,
+  };
+}
 
 /**
  * Register a new regular user (by default END_USER, non-admin)
@@ -362,4 +461,78 @@ export async function getUserProfile(userId) {
   }
   const { passwordHash: _, twoFactorSecret: __, backupCodes: ___, ...safeUser } = user;
   return safeUser;
+}
+
+/**
+ * Request Password Reset link
+ * Generates a 64-char crypto token, stores tokenHash in DB (1-hour expiry), and dispatches reset email job
+ */
+export async function requestPasswordReset({ email }) {
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await authRepository.findUserByEmail(normalizedEmail);
+
+  // Return generic success message to prevent user enumeration attacks
+  if (!user) {
+    return { message: 'If an account exists with this email, a password reset link has been sent.' };
+  }
+
+  // Generate 64-character random hex token
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  // Token expires in 1 hour
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+  await authRepository.createPasswordResetToken({
+    userId: user.id,
+    tokenHash,
+    expiresAt,
+  });
+
+  const resetUrl = `${env.CLIENT_URL}/reset-password?token=${rawToken}`;
+
+  // Dispatch password reset email job to BullMQ queue
+  await addPasswordResetEmailJob({
+    email: user.email,
+    fullName: user.fullName,
+    resetUrl,
+  });
+
+  return { message: 'If an account exists with this email, a password reset link has been sent.' };
+}
+
+/**
+ * Reset User Password using valid reset token
+ */
+export async function resetPassword({ token, newPassword }) {
+  if (!token) {
+    throw new BadRequestError('Reset token is required.');
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const resetTokenRecord = await authRepository.findPasswordResetToken(tokenHash);
+
+  if (!resetTokenRecord) {
+    throw new BadRequestError('Invalid or expired password reset link.');
+  }
+
+  if (resetTokenRecord.used) {
+    throw new BadRequestError('This password reset link has already been used.');
+  }
+
+  if (new Date() > new Date(resetTokenRecord.expiresAt)) {
+    throw new BadRequestError('Password reset link has expired. Please request a new one.');
+  }
+
+  // Hash new password
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+  // Update user password & mark reset token as used
+  await authRepository.updateUserPassword(resetTokenRecord.userId, passwordHash);
+  await authRepository.markResetTokenUsed(resetTokenRecord.id);
+
+  // Revoke all existing refresh sessions for security
+  await authRepository.revokeAllUserTokens(resetTokenRecord.userId).catch(() => {});
+
+  return { message: 'Password reset successful! You can now log in with your new password.' };
 }

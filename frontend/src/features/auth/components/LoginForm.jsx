@@ -3,8 +3,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { loginSchema } from '../../../validations/auth.validation';
 import { useLogin } from '../hooks/useLogin';
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
@@ -12,6 +14,7 @@ import { Card } from '../../../components/ui/Card';
 
 export const LoginForm = () => {
   const { mutate: login, isPending, error: apiError } = useLogin();
+  const { mutate: googleAuth, isPending: isGooglePending, error: googleError } = useGoogleAuth();
 
   const {
     register,
@@ -29,6 +32,14 @@ export const LoginForm = () => {
     login(data);
   };
 
+  const handleGoogleSuccess = (credentialResponse) => {
+    if (credentialResponse.credential) {
+      googleAuth({ idToken: credentialResponse.credential });
+    }
+  };
+
+  const activeError = apiError || googleError;
+
   return (
     <Card className="w-full">
       <div className="space-y-6">
@@ -44,13 +55,33 @@ export const LoginForm = () => {
         </div>
 
         {/* API Error Alert Banner */}
-        {apiError && (
+        {activeError && (
           <Alert
             variant="error"
             title="Authentication Failed"
-            message={apiError.message || 'Invalid email or password. Please try again.'}
+            message={activeError.message || 'Authentication failed. Please try again.'}
           />
         )}
+
+        {/* Google OAuth Button */}
+        <div className="flex justify-center w-full">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => console.error('Google Sign-In Failed')}
+            theme="filled_black"
+            shape="pill"
+            text="continue_with"
+            width="100%"
+          />
+        </div>
+
+        {/* Or Divider */}
+        <div className="relative flex items-center justify-center my-4">
+          <div className="border-t border-slate-800 w-full"></div>
+          <span className="bg-[#131B2A] px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold absolute">
+            Or continue with email
+          </span>
+        </div>
 
         {/* Form Controls */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -82,16 +113,16 @@ export const LoginForm = () => {
               />
               <span>Remember me</span>
             </label>
-            <a href="#forgot-password" className="text-amber-400 hover:underline font-medium">
+            <Link to="/forgot-password" className="text-amber-400 hover:underline font-medium">
               Forgot Password?
-            </a>
+            </Link>
           </div>
 
           <Button
             type="submit"
             variant="primary"
             size="lg"
-            isLoading={isPending}
+            isLoading={isPending || isGooglePending}
             icon={LogIn}
             className="w-full mt-2"
           >

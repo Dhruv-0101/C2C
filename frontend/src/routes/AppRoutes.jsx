@@ -7,9 +7,12 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { TwoFactorVerifyPage } from '../features/auth/pages/TwoFactorVerifyPage';
+import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
+import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage';
 import { SubAdminDashboardPage } from '../pages/SubAdminDashboardPage';
+import { BrandKitPage } from '../pages/BrandKitPage';
 import { useAuth } from '../hooks/useAuth';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -45,6 +48,8 @@ export const AppRoutes = () => {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-2fa" element={<TwoFactorVerifyPage />} />
         </Route>
       </Route>
@@ -63,16 +68,8 @@ export const AppRoutes = () => {
               />
             }
           />
-          <Route
-            path="/brand-kit"
-            element={
-              <GenericPage
-                title="AI Brand Kit Engine"
-                icon={Palette}
-                description="Configure brand tone, typography, color palettes, and logo guidelines."
-              />
-            }
-          />
+          <Route path="/brand-kit" element={<BrandKitPage />} />
+          <Route path="/brandkit" element={<BrandKitPage />} />
           <Route
             path="/connections"
             element={

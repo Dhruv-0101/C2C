@@ -21,6 +21,8 @@ export async function findUserById(id) {
       isTwoFactorEnabled: true,
       twoFactorSecret: true,
       backupCodes: true,
+      isGoogleRegistered: true,
+      googleId: true,
       avatarUrl: true,
       isActive: true,
       createdAt: true,
@@ -64,12 +66,23 @@ export async function updateBackupCodes(userId, backupCodes) {
   });
 }
 
-export async function createUser({ email, passwordHash, fullName, role = 'END_USER' }) {
+export async function createUser({
+  email,
+  passwordHash = null,
+  fullName,
+  avatarUrl = null,
+  googleId = null,
+  isGoogleRegistered = false,
+  role = 'END_USER',
+}) {
   return prisma.user.create({
     data: {
       email,
       passwordHash,
       fullName,
+      avatarUrl,
+      googleId,
+      isGoogleRegistered,
       role,
       isAdmin: false,
       isSuperAdmin: false,
@@ -80,6 +93,9 @@ export async function createUser({ email, passwordHash, fullName, role = 'END_US
       id: true,
       email: true,
       fullName: true,
+      avatarUrl: true,
+      googleId: true,
+      isGoogleRegistered: true,
       role: true,
       isAdmin: true,
       isSuperAdmin: true,
@@ -87,6 +103,13 @@ export async function createUser({ email, passwordHash, fullName, role = 'END_US
       allowedTabs: true,
       createdAt: true,
     },
+  });
+}
+
+export async function updateUserProfile(userId, data) {
+  return prisma.user.update({
+    where: { id: userId },
+    data,
   });
 }
 
@@ -169,5 +192,36 @@ export async function revokeAllUserTokens(userId) {
   return prisma.refreshToken.updateMany({
     where: { userId },
     data: { revoked: true },
+  });
+}
+
+export async function createPasswordResetToken({ userId, tokenHash, expiresAt }) {
+  return prisma.passwordResetToken.create({
+    data: {
+      userId,
+      tokenHash,
+      expiresAt,
+    },
+  });
+}
+
+export async function findPasswordResetToken(tokenHash) {
+  return prisma.passwordResetToken.findUnique({
+    where: { tokenHash },
+    include: { user: true },
+  });
+}
+
+export async function markResetTokenUsed(id) {
+  return prisma.passwordResetToken.update({
+    where: { id },
+    data: { used: true },
+  });
+}
+
+export async function updateUserPassword(userId, passwordHash) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash },
   });
 }

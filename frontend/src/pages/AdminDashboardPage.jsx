@@ -26,14 +26,16 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Alert } from '../components/ui/Alert';
-import { FestivalCalendarView } from '../components/admin/FestivalCalendarView';
+import { FestivalCalendarView } from '../features/calendar/components/FestivalCalendarView';
 import { DesignStylesManager } from '../components/admin/DesignStylesManager';
 import { BaseTemplateManager } from '../components/admin/BaseTemplateManager';
+import { AdminTemplateUploadModal } from '../components/admin/AdminTemplateUploadModal';
 
 export const AdminDashboardPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('categories');
   const [newCategory, setNewCategory] = useState('');
   const [categoryError, setCategoryError] = useState('');
@@ -153,9 +155,14 @@ export const AdminDashboardPage = () => {
           </p>
         </div>
 
-        <Button variant="primary" icon={UserPlus} onClick={() => setIsModalOpen(true)}>
-          Add SubAdmin
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" icon={Sparkles} onClick={() => setIsUploadModalOpen(true)}>
+            Upload Base Template (Cloudinary)
+          </Button>
+          <Button variant="primary" icon={UserPlus} onClick={() => setIsModalOpen(true)}>
+            Add SubAdmin
+          </Button>
+        </div>
       </div>
 
       {/* 4 Top Metric Cards (Matching Screenshot) */}
@@ -447,6 +454,16 @@ export const AdminDashboardPage = () => {
           </div>
         </div>
       )}
+
+      {/* Admin Cloudinary Template Upload Modal */}
+      <AdminTemplateUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={() => {
+          queryClient.invalidateQueries(['festivals']);
+          queryClient.invalidateQueries(['templates']);
+        }}
+      />
     </div>
   );
 };

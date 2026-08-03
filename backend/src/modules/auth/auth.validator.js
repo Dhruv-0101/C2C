@@ -42,3 +42,22 @@ export const createSubAdminSchema = z.object({
     allowedTabs: z.array(z.string()).optional().default([]),
   }),
 });
+
+export const googleAuthSchema = z.object({
+  body: z.object({
+    idToken: z.string().min(1, 'Google ID Token is required'),
+  }),
+});
+
+export const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email('Please enter a valid email address'),
+  }),
+});
+
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    token: z.string().min(1, 'Reset token is required'),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters').max(100),
+  }),
+});

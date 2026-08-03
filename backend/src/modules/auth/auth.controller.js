@@ -53,6 +53,37 @@ export async function login(req, res, next) {
   }
 }
 
+export async function googleLogin(req, res, next) {
+  try {
+    const result = await authLogic.loginWithGoogle(req.body);
+
+    if (result.require2FA) {
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
+        message: 'Two-factor authentication required. Please enter 6-digit code.',
+        data: {
+          require2FA: true,
+          mfaToken: result.mfaToken,
+        },
+      });
+    }
+
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, COOKIE_OPTIONS);
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'Authenticated with Google successfully.',
+      data: {
+        require2FA: false,
+        user: result.user,
+        accessToken: result.accessToken,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function verifyLogin2FA(req, res, next) {
   try {
     const result = await authLogic.verifyLogin2FA(req.body);
@@ -201,6 +232,33 @@ export async function getProfile(req, res, next) {
       statusCode: HTTP_STATUS.OK,
       message: 'User profile retrieved successfully.',
       data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function forgotPassword(req, res, next) {
+  try {
+    const result = await authLogic.requestPasswordReset({ email: req.body.email });
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function resetPassword(req, res, next) {
+  try {
+    const result = await authLogic.resetPassword({
+      token: req.body.token,
+      newPassword: req.body.newPassword,
+    });
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.message,
     });
   } catch (error) {
     next(error);

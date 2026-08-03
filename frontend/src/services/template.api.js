@@ -9,6 +9,10 @@ export const templateApi = {
     return api.post('/templates', data);
   },
 
+  uploadAdminTemplate: async (data) => {
+    return api.post('/templates/upload', data);
+  },
+
   compositePost: async ({ templateId, brandKit, customText }) => {
     return api.post('/templates/composite-post', {
       templateId,

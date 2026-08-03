@@ -4,6 +4,7 @@ import categoryRoutes from '../modules/categories/category.routes.js';
 import festivalRoutes from '../modules/festivals/festival.routes.js';
 import designStyleRoutes from '../modules/design-styles/design-style.routes.js';
 import templateRoutes from '../modules/templates/template.routes.js';
+import brandKitRoutes from '../modules/brandkit/brandkit.routes.js';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/categories', categoryRoutes);
 router.use('/festivals', festivalRoutes);
 router.use('/design-styles', designStyleRoutes);
 router.use('/templates', templateRoutes);
+router.use('/brandkit', brandKitRoutes);
 
 export default router;

@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { env } from '../../config/env.js';
 import { renderWelcomeEmail } from '../templates/welcome-email.template.js';
+import { renderPasswordResetEmail } from '../templates/password-reset-email.template.js';
 
 // Create Nodemailer Transporter
 let transporter = null;
@@ -41,5 +42,31 @@ export async function sendWelcomeEmail({ email, fullName }) {
     }
   } catch (error) {
     console.error(`⚠️ Failed to send welcome email to ${email}:`, error.message);
+  }
+}
+
+/**
+ * Send Password Reset Email asynchronously with secure reset URL
+ * @param {{ email: string, fullName: string, resetUrl: string }} params
+ */
+export async function sendPasswordResetEmail({ email, fullName, resetUrl }) {
+  const htmlContent = renderPasswordResetEmail({ fullName, resetUrl });
+
+  const mailOptions = {
+    from: `"BrandFlow Security" <${env.FROM_EMAIL}>`,
+    to: email,
+    subject: 'Reset Your BrandFlow Password 🔑',
+    html: htmlContent,
+  };
+
+  try {
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✉️ Password reset email successfully sent to ${email} (MessageId: ${info.messageId})`);
+    } else {
+      console.log(`✉️ [SMTP Simulation] Password reset email generated for ${email}. Link: ${resetUrl}`);
+    }
+  } catch (error) {
+    console.error(`⚠️ Failed to send password reset email to ${email}:`, error.message);
   }
 }
