@@ -15,26 +15,29 @@ import {
   ChevronUp,
   Plus,
 } from 'lucide-react';
-import { brandKitApi } from '../../services/brandkit.api';
-import { frameApi } from '../../services/frame.api';
-import { templateApi } from '../../services/template.api';
-import { postApi } from '../../services/post.api';
-import { useCanvasCompositor } from '../../hooks/useCanvasCompositor';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import { brandKitApi } from '../../../services/brandkit.api';
+import { frameApi } from '../../../services/frame.api';
+import { templateApi } from '../../../services/template.api';
+import { postApi } from '../../../services/post.api';
+import { useCanvasCompositor } from '../../../hooks/useCanvasCompositor';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
 
-/**
- * Interactive Enterprise Post Studio & Creator Modal for End-Users
- * Features Real-time 1080x1080 Canvas Compositing with PNG Frames & Editable Details
- */
-export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) => {
+export const PostStudioModal = ({ isOpen, onClose, template }) => {
   const queryClient = useQueryClient();
   const canvasRef = useRef(null);
   const [selectedFrame, setSelectedFrame] = useState(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplate?.id || '');
+  const [selectedTemplateId, setSelectedTemplateId] = useState(template?.id || '');
   const [customBaseImage, setCustomBaseImage] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState('');
   const [isEditingDetails, setIsEditingDetails] = useState(true);
+
+  // Fetch Graphic Templates from DB
+  const { data: templatesResponse } = useQuery({
+    queryKey: ['templates'],
+    queryFn: () => templateApi.getTemplates(),
+    enabled: isOpen,
+  });
 
   // Fetch User's BrandKit from DB
   const { data: brandKitResponse } = useQuery({
@@ -43,23 +46,15 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     enabled: isOpen,
   });
 
-  // Fetch Available Transparent PNG Frames from DB
+  // Fetch Available Frames from DB
   const { data: framesResponse } = useQuery({
     queryKey: ['frames'],
     queryFn: () => frameApi.getFrames(),
     enabled: isOpen,
   });
 
-  // Fetch Available Graphic Templates from DB
-  const { data: templatesResponse } = useQuery({
-    queryKey: ['templates'],
-    queryFn: () => templateApi.getTemplates(),
-    enabled: isOpen,
-  });
-
   const brandKit = brandKitResponse?.data?.brandKit;
   const frames = framesResponse?.data?.frames || [];
-  const templates = templatesResponse?.data?.templates || [];
 
   // Live Overrides for Business Details
   const [customDetails, setCustomDetails] = useState({
@@ -72,6 +67,13 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     showPhone: true,
     showAddress: true,
   });
+
+  // Default select first frame when frames load
+  useEffect(() => {
+    if (frames.length > 0 && !selectedFrame) {
+      setSelectedFrame(frames[0]);
+    }
+  }, [frames, selectedFrame]);
 
   // Populate customDetails whenever brandKit or selectedFrame loads
   useEffect(() => {
@@ -117,23 +119,9 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     }));
   }, [brandKit, selectedFrame]);
 
-  const currentTemplate = templates.find((t) => t.id === selectedTemplateId) || initialTemplate || templates[0];
-
-  // Default select first template & first frame when data loads
-  useEffect(() => {
-    if (currentTemplate && !selectedTemplateId) {
-      setSelectedTemplateId(currentTemplate.id);
-    }
-  }, [currentTemplate, selectedTemplateId]);
-
-  useEffect(() => {
-    if (frames.length > 0 && !selectedFrame) {
-      setSelectedFrame(frames[0]);
-    }
-  }, [frames, selectedFrame]);
-
-  // Base Graphic Image URL
-  const baseImageUrl = customBaseImage || currentTemplate?.baseImageUrl || currentTemplate?.imageUrl || currentTemplate?.fileUrl;
+  const templates = templatesResponse?.data?.templates || [];
+  const currentTemplate = templates.find((t) => t.id === selectedTemplateId) || template || templates[0];
+  const baseImageUrl = customBaseImage || currentTemplate?.imageUrl || currentTemplate?.fileUrl || currentTemplate?.bannerUrl;
 
   // HTML5 Canvas Compositor Engine Hook
   const { isRendering, dataUrl } = useCanvasCompositor(
@@ -154,14 +142,14 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     },
   });
 
-  if (!isOpen) return null;
+  if (!isOpen || !template) return null;
 
   // Handle Save Post to DB
   const handleSaveToDb = () => {
     if (!dataUrl) return;
     savePostMutation.mutate({
-      templateId: currentTemplate?.id || null,
-      festivalId: currentTemplate?.festivalId || null,
+      templateId: template.id || null,
+      festivalId: template.festivalId || null,
       frameId: selectedFrame?.id || null,
       base64Graphic: dataUrl,
       userConfigJson: customDetails,
@@ -173,7 +161,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
   const handleDownloadHD = () => {
     if (!dataUrl) return;
     const link = document.createElement('a');
-    link.download = `${currentTemplate?.title || 'BrandFlow-Post'}-1080x1080.png`;
+    link.download = `${template.title || 'BrandFlow-Post'}-1080x1080.png`;
     link.href = dataUrl;
     link.click();
   };
@@ -199,16 +187,16 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
           </p>
         </div>
 
-        {/* Right Column: Template, Frame Chooser & Custom Details */}
+        {/* Right Column: Frame Switcher & Custom Business Details */}
         <div className="md:w-1/2 p-6 flex flex-col justify-between space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
               <div className="space-y-0.5">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold">
-                  <Sparkles className="w-3 h-3" /> Post Studio Customizer
+                  <Sparkles className="w-3 h-3" /> AI Post Compositor
                 </div>
                 <h3 className="font-heading font-extrabold text-lg text-white">
-                  {currentTemplate?.title || 'Create New Post'}
+                  {template.title || 'Festival Post'}
                 </h3>
               </div>
               <button
@@ -266,41 +254,73 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
                   </div>
                 )}
 
-                {/* DB Graphic Templates */}
-                {templates.map((t) => {
-                  const isSelected = !customBaseImage && (selectedTemplateId === t.id || currentTemplate?.id === t.id);
-                  const imgUrl = t.baseImageUrl || t.imageUrl || t.fileUrl;
+                {/* Default Festival/Current Template Option */}
+                {template && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedTemplateId(template.id);
+                      setCustomBaseImage(null);
+                    }}
+                    className={`p-1.5 rounded-xl border text-center transition flex flex-col items-center justify-between relative aspect-square overflow-hidden group ${
+                      !customBaseImage && (selectedTemplateId === template.id || !selectedTemplateId)
+                        ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/50'
+                        : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-600'
+                    }`}
+                  >
+                    {!customBaseImage && (selectedTemplateId === template.id || !selectedTemplateId) && (
+                      <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
+                    )}
+                    {template.imageUrl || template.fileUrl || template.bannerUrl ? (
+                      <img src={template.imageUrl || template.fileUrl || template.bannerUrl} alt={template.title} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition" />
+                    ) : (
+                      <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-[10px] text-slate-400">
+                        {template.title}
+                      </div>
+                    )}
+                    <span className="absolute bottom-1 left-1 right-1 text-[9px] font-semibold bg-black/75 text-white py-0.5 px-1 rounded truncate">
+                      {template.title || 'Festival Graphic'}
+                    </span>
+                  </button>
+                )}
 
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedTemplateId(t.id);
-                        setCustomBaseImage(null);
-                      }}
-                      className={`p-1.5 rounded-xl border text-center transition flex flex-col items-center justify-between relative aspect-square overflow-hidden group ${
-                        isSelected
-                          ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/50'
-                          : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-600'
-                      }`}
-                    >
-                      {isSelected && (
-                        <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
-                      )}
-                      {imgUrl ? (
-                        <img src={imgUrl} alt={t.title} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition" />
-                      ) : (
-                        <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-[10px] text-slate-400">
+                {/* Additional DB Graphic Templates */}
+                {templates
+                  .filter((t) => t.id !== template?.id)
+                  .map((t) => {
+                    const isSelected = !customBaseImage && selectedTemplateId === t.id;
+                    const imgUrl = t.imageUrl || t.fileUrl || t.bannerUrl;
+
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTemplateId(t.id);
+                          setCustomBaseImage(null);
+                        }}
+                        className={`p-1.5 rounded-xl border text-center transition flex flex-col items-center justify-between relative aspect-square overflow-hidden group ${
+                          isSelected
+                            ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/50'
+                            : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-600'
+                        }`}
+                      >
+                        {isSelected && (
+                          <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
+                        )}
+                        {imgUrl ? (
+                          <img src={imgUrl} alt={t.title} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition" />
+                        ) : (
+                          <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-[10px] text-slate-400">
+                            {t.title}
+                          </div>
+                        )}
+                        <span className="absolute bottom-1 left-1 right-1 text-[9px] font-semibold bg-black/75 text-white py-0.5 px-1 rounded truncate">
                           {t.title}
-                        </div>
-                      )}
-                      <span className="absolute bottom-1 left-1 right-1 text-[9px] font-semibold bg-black/75 text-white py-0.5 px-1 rounded truncate">
-                        {t.title}
-                      </span>
-                    </button>
-                  );
-                })}
+                        </span>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
 
@@ -309,10 +329,10 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Choose Frame Overlay ({frames.length})</span>
+                  <span>Choose Frame Overlay</span>
                 </label>
-                <span className="text-[10px] text-amber-400 font-mono truncate max-w-[140px]">
-                  {selectedFrame ? selectedFrame.title : 'No Frame'}
+                <span className="text-[10px] text-amber-400 font-mono truncate max-w-[150px]">
+                  {selectedFrame ? selectedFrame.title : 'No Frame Selected'}
                 </span>
               </div>
 
@@ -587,4 +607,4 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
   );
 };
 
-export default PostCreatorModal;
+export default PostStudioModal;

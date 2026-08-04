@@ -157,6 +157,7 @@ model BrandKit {
   categoryId      String?
   category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   logoUrl         String?
+  avatarUrl       String?
   phone           String?
   whatsapp        String?
   email           String?
@@ -172,6 +173,18 @@ model BrandKit {
   updatedAt       DateTime  @updatedAt
 
   @@index([categoryId])
+}
+
+model Frame {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  overlayPngUrl String   // Cloudinary PNG URL of transparent frame overlay / preview
+  configJson    Json?    // Vector shapes, slots, fonts, and positions JSON config
+  isSystem      Boolean  @default(true)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model BrandAsset {
@@ -276,6 +289,7 @@ model Post {
   offerText       String?
   customImageUrl  String? // Local system upload URL / swapped image URL
   finalGraphicUrl String? // Sharp server-side composited render URL
+  userConfigJson  Json?   // Per-user post instance vector JSON config
   status          PostStatus   @default(DRAFT)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt

@@ -1,0 +1,444 @@
+{
+  "info": {
+    "_postman_id": "bf-master-api-v5",
+    "name": "BrandFlow Enterprise Platform — Complete API Suite (v5)",
+    "description": "Comprehensive production API collection for BrandFlow AI Social Media Platform. Contains complete test suites for Auth, RBAC, 2FA, Categories, BrandKit, Transparent PNG Frame Blueprints (configJson), Base Graphic Templates, User Composited Posts (userConfigJson), and Content Calendar Festivals.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. System Health & Environment",
+      "item": [
+        {
+          "name": "API Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Checks server health, uptime, and database connectivity."
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Authentication & RBAC Module",
+      "item": [
+        {
+          "name": "Signup Regular User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.environment.set('access_token', jsonData.data.accessToken);",
+                  "    console.log('✅ Access Token saved to environment');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dhruv Sharma\",\n  \"email\": \"user@brandflow.ai\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.environment.set('access_token', jsonData.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@brandflow.ai\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Current Profile (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. AI BrandKit Profile Module",
+      "item": [
+        {
+          "name": "Get BrandKit Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/brandkit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brandkit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update BrandKit Profile & Logos",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"Sunrise Real Estate Ltd.\",\n  \"tagline\": \"Premium Housing Solutions\",\n  \"phone\": \"+91 98765 43210\",\n  \"address\": \"MG Road, Mumbai\",\n  \"city\": \"Mumbai\",\n  \"primaryColor\": \"#EAB308\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/brandkit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "brandkit"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Transparent PNG Overlay Frames & Config Engine",
+      "item": [
+        {
+          "name": "Get All Active Frames",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/frames",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "frames"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Canva Frame with configJson",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Gold Festival Overlay Frame\",\n  \"description\": \"Enterprise Canva frame with dynamic text & photo slots.\",\n  \"base64Overlay\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"configJson\": {\n    \"elements\": [\n      {\n        \"id\": \"shape_1\",\n        \"type\": \"CAPSULE\",\n        \"slotCategory\": \"STATIC_SHAPE\",\n        \"x\": 200,\n        \"y\": 900,\n        \"width\": 680,\n        \"height\": 120,\n        \"fillColor\": \"#EAB308\"\n      },\n      {\n        \"id\": \"circle_1\",\n        \"type\": \"CIRCLE\",\n        \"slotCategory\": \"IMAGE_SLOT\",\n        \"dynamicSlot\": \"AVATAR_CIRCLE\",\n        \"customLabel\": \"Profile Headshot\",\n        \"x\": 215,\n        \"y\": 910,\n        \"width\": 100,\n        \"height\": 100\n      },\n      {\n        \"id\": \"text_1\",\n        \"type\": \"TEXT\",\n        \"slotCategory\": \"TEXT_INPUT\",\n        \"dynamicSlot\": \"PHONE\",\n        \"customLabel\": \"Phone Number\",\n        \"fieldKey\": \"phone\",\n        \"iconPrefix\": \"📞\",\n        \"text\": \"+91 8320369230\",\n        \"x\": 340,\n        \"y\": 945,\n        \"width\": 500,\n        \"height\": 50,\n        \"fontSize\": 28\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/frames",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "frames"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Frame",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/frames/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "frames",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "frame_id"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Graphic Base Templates Module",
+      "item": [
+        {
+          "name": "Get Graphic Base Templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Cloudinary Admin Base Graphic",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Diwali Lights Master Graphic 1080x1080\",\n  \"description\": \"Festival background graphic\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/templates/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates",
+                "upload"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. User Composited Posts & Instances",
+      "item": [
+        {
+          "name": "Get User Composited Posts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Save Composited Post with userConfigJson",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"templateId\": \"template_id\",\n  \"frameId\": \"frame_id\",\n  \"customText\": \"Diwali Special Offer\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Festivals & Content Calendar",
+      "item": [
+        {
+          "name": "Get Festival Events Calendar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/festivals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "festivals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Festival Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Diwali 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"region\": \"India\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/festivals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "festivals"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

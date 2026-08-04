@@ -25,6 +25,8 @@ export const BrandKitPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [logoPreview, setLogoPreview] = useState(null);
   const [base64Logo, setBase64Logo] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [base64Avatar, setBase64Avatar] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -42,6 +44,7 @@ export const BrandKitPage = () => {
     state: '',
     country: 'India',
     logoUrl: '',
+    avatarUrl: '',
   });
 
   // Fetch Existing BrandKit
@@ -77,9 +80,13 @@ export const BrandKitPage = () => {
         state: bk.state || '',
         country: bk.country || 'India',
         logoUrl: bk.logoUrl || '',
+        avatarUrl: bk.avatarUrl || '',
       });
       if (bk.logoUrl) {
         setLogoPreview(bk.logoUrl);
+      }
+      if (bk.avatarUrl) {
+        setAvatarPreview(bk.avatarUrl);
       }
     }
   }, [brandKitResponse]);
@@ -99,6 +106,25 @@ export const BrandKitPage = () => {
     reader.onloadend = () => {
       setLogoPreview(reader.result);
       setBase64Logo(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle Profile / Doctor Avatar Upload
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMsg('Please select a valid image file for your doctor/profile photo.');
+      return;
+    }
+
+    setErrorMsg('');
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result);
+      setBase64Avatar(reader.result);
     };
     reader.readAsDataURL(file);
   };
@@ -128,6 +154,7 @@ export const BrandKitPage = () => {
     saveBrandKitMutation.mutate({
       ...formData,
       base64Logo: base64Logo || undefined,
+      base64Avatar: base64Avatar || undefined,
     });
   };
 
@@ -207,6 +234,47 @@ export const BrandKitPage = () => {
                   </label>
                   <p className="text-xs text-slate-400">
                     Supports transparent PNG, WebP, or high-res JPG. This logo will be automatically composited on your posts.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Photo / Business Owner Headshot Upload Zone */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
+                Business Owner / Founder / Agent Photo (Circular Avatar)
+              </label>
+              <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-[#0B0F17] border border-dashed border-[#2C384E] hover:border-amber-500/50 transition">
+                {avatarPreview ? (
+                  <div className="relative w-24 h-24 rounded-full border-2 border-amber-500/80 overflow-hidden flex items-center justify-center p-1 group shrink-0">
+                    <img src={avatarPreview} alt="Owner Avatar" className="w-full h-full object-cover rounded-full" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarPreview(null);
+                        setBase64Avatar(null);
+                        setFormData((prev) => ({ ...prev, avatarUrl: '' }));
+                      }}
+                      className="absolute top-0 right-0 p-1 rounded-full bg-black/80 hover:bg-rose-600 text-white transition"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-full border border-dashed border-slate-700 bg-slate-900 flex flex-col items-center justify-center text-slate-500 shrink-0">
+                    <ImageIcon className="w-6 h-6 mb-1" />
+                    <span className="text-[9px]">No Photo</span>
+                  </div>
+                )}
+
+                <div className="space-y-2 flex-1 text-center sm:text-left">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 font-semibold text-xs hover:bg-teal-500/20 transition">
+                    <Upload className="w-4 h-4" />
+                    <span>{avatarPreview ? 'Change Profile Photo' : 'Upload Profile Photo (Cloudinary)'}</span>
+                    <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                  </label>
+                  <p className="text-xs text-slate-400">
+                    Owner, founder, agent, or professional headshot. This photo will be rendered in circular badges on post frames.
                   </p>
                 </div>
               </div>

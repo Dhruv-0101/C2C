@@ -1,0 +1,95 @@
+{
+  "info": {
+    "_postman_id": "bf-frames-module-v1",
+    "name": "BrandFlow — Transparent PNG Overlay Frames & Dynamic Config Engine",
+    "description": "API endpoints for creating, fetching, and managing Canva-style transparent PNG overlay frames with vector element configuration JSON schemas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get All Active Frames (Public / Authenticated)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/frames",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "frames"
+          ]
+        },
+        "description": "Fetches all transparent PNG overlay frames along with their configJson vector slot schemas."
+      }
+    },
+    {
+      "name": "2. Create / Publish Canva Frame (Admin / SubAdmin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Diwali Enterprise Gold Frame Overlay\",\n  \"description\": \"Custom Canva-style frame with circular headshot ring and custom text input fields.\",\n  \"base64Overlay\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"configJson\": {\n    \"elements\": [\n      {\n        \"id\": \"shape_1785820430253\",\n        \"type\": \"CAPSULE\",\n        \"slotCategory\": \"STATIC_SHAPE\",\n        \"x\": 200,\n        \"y\": 900,\n        \"width\": 680,\n        \"height\": 120,\n        \"fillColor\": \"#EAB308\",\n        \"borderColor\": \"#FFFFFF\",\n        \"borderWidth\": 3\n      },\n      {\n        \"id\": \"circle_1785820438159\",\n        \"type\": \"CIRCLE\",\n        \"slotCategory\": \"IMAGE_SLOT\",\n        \"dynamicSlot\": \"AVATAR_CIRCLE\",\n        \"customLabel\": \"Profile Headshot Photo\",\n        \"x\": 215,\n        \"y\": 910,\n        \"width\": 100,\n        \"height\": 100,\n        \"borderColor\": \"#EAB308\",\n        \"borderWidth\": 4\n      },\n      {\n        \"id\": \"text_1785820446387\",\n        \"type\": \"TEXT\",\n        \"slotCategory\": \"TEXT_INPUT\",\n        \"dynamicSlot\": \"PHONE\",\n        \"customLabel\": \"Phone Number\",\n        \"fieldKey\": \"phone\",\n        \"iconPrefix\": \"📞\",\n        \"text\": \"+91 8320369230\",\n        \"x\": 340,\n        \"y\": 945,\n        \"width\": 500,\n        \"height\": 50,\n        \"fontSize\": 28,\n        \"fontFamily\": \"Space Grotesk\",\n        \"fontWeight\": \"bold\",\n        \"fontColor\": \"#FFFFFF\",\n        \"textAlign\": \"left\"\n      }\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/frames",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "frames"
+          ]
+        },
+        "description": "Publishes a new transparent PNG frame overlay along with its configJson vector element schema."
+      }
+    },
+    {
+      "name": "3. Delete Frame (Admin / SubAdmin)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/frames/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "frames",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "frame_id_here"
+            }
+          ]
+        },
+        "description": "Deletes a transparent PNG overlay frame by ID."
+      }
+    }
+  ]
+}

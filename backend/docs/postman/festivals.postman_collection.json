@@ -1,0 +1,95 @@
+{
+  "info": {
+    "_postman_id": "bf-festivals-module-v1",
+    "name": "BrandFlow — Festivals & Content Calendar Events API",
+    "description": "API endpoints for managing national/cultural festival calendar events, dates, and region mappings.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get All Festivals (Public / Authenticated)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/festivals",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "festivals"
+          ]
+        },
+        "description": "Fetches all upcoming national and regional festival calendar events."
+      }
+    },
+    {
+      "name": "2. Add Festival Event (SuperAdmin / SubAdmin / User)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Diwali — Festival of Lights 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"description\": \"Grand celebration of light, prosperity, and wisdom.\",\n  \"region\": \"India / Global\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/festivals",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "festivals"
+          ]
+        },
+        "description": "Adds a new festival calendar event."
+      }
+    },
+    {
+      "name": "3. Delete Festival Event (Admin / SubAdmin)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/festivals/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "festivals",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "festival_id_here"
+            }
+          ]
+        },
+        "description": "Deletes a festival calendar event."
+      }
+    }
+  ]
+}

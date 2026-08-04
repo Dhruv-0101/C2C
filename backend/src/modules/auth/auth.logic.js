@@ -28,13 +28,15 @@ const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 export async function loginWithGoogle({ idToken }) {
   let payload;
   try {
+    const clientId = env.GOOGLE_CLIENT_ID || '723882466133-dktl5rijt0uld6rcsbsui5oovted7jpo.apps.googleusercontent.com';
     const ticket = await googleClient.verifyIdToken({
       idToken,
-      audience: env.GOOGLE_CLIENT_ID || undefined,
+      audience: clientId,
     });
     payload = ticket.getPayload();
   } catch (error) {
-    throw new UnauthorizedError('Invalid or expired Google authentication token.');
+    console.error('❌ Google verifyIdToken error:', error?.message || error);
+    throw new UnauthorizedError(`Google auth error: ${error?.message || 'Invalid token'}`);
   }
 
   if (!payload || !payload.email) {

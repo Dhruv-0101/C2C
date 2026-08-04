@@ -30,6 +30,7 @@ import { FestivalCalendarView } from '../features/calendar/components/FestivalCa
 import { DesignStylesManager } from '../components/admin/DesignStylesManager';
 import { BaseTemplateManager } from '../components/admin/BaseTemplateManager';
 import { AdminTemplateUploadModal } from '../components/admin/AdminTemplateUploadModal';
+import { FrameManager } from '../components/admin/FrameManager';
 
 export const AdminDashboardPage = () => {
   const { user } = useAuth();
@@ -195,9 +196,10 @@ export const AdminDashboardPage = () => {
       {/* Navigation Sub-Tabs Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#2C384E]">
         {[
-          { id: 'categories', label: `Categories (${categories.length})` },
-          { id: 'festivals', label: 'Festivals & Days' },
+          { id: 'categories', label: 'Master Categories' },
+          { id: 'festivals', label: 'Festivals Calendar' },
           { id: 'templates', label: 'Base Templates' },
+          { id: 'frames', label: 'Frames & Presets' },
           { id: 'styles', label: 'Design Styles' },
           { id: 'subadmins', label: subAdmins.length > 0 ? `SubAdmins (${subAdmins.length})` : 'SubAdmins' },
           { id: 'users', label: 'Users' },
@@ -276,6 +278,9 @@ export const AdminDashboardPage = () => {
 
       {/* Base Templates & AI Studio Manager */}
       {activeTab === 'templates' && <BaseTemplateManager />}
+
+      {/* Frame Studio & Presets Manager */}
+      {activeTab === 'frames' && <FrameManager />}
 
       {/* Master Design Styles & Color Palettes */}
       {activeTab === 'styles' && <DesignStylesManager />}

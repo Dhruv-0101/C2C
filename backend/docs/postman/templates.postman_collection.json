@@ -1,0 +1,129 @@
+{
+  "info": {
+    "_postman_id": "bf-templates-module-v1",
+    "name": "BrandFlow — Graphic Base Templates & Sharp Server Compositing API",
+    "description": "API endpoints for fetching festival/marketing graphic base templates, uploading Cloudinary master templates, and server-side Sharp fallback compositing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get All Graphic Templates (Public / Authenticated)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/templates",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates"
+          ]
+        },
+        "description": "Fetches all festival and marketing graphic base templates."
+      }
+    },
+    {
+      "name": "2. Upload Cloudinary Admin Template (Admin / SubAdmin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Diwali Golden Lights Master Graphic\",\n  \"description\": \"Base 1080x1080 graphic background for Diwali 2026 festival.\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/templates/upload",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "upload"
+          ]
+        },
+        "description": "Uploads a base festival/marketing graphic background to Cloudinary and saves to database."
+      }
+    },
+    {
+      "name": "3. Server-Side Sharp Compositing Fallback (Public / Authenticated)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"customText\": \"Wishing you a prosperous & bright Diwali!\",\n  \"brandKit\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 98765 43210\",\n    \"address\": \"MG Road, Mumbai\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/templates/composite-post",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "composite-post"
+          ]
+        },
+        "description": "Fall-back server-side image compositing via Sharp Node.js worker."
+      }
+    },
+    {
+      "name": "4. Delete Template (Admin / SubAdmin)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/templates/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "template_id_here"
+            }
+          ]
+        },
+        "description": "Deletes a graphic base template by ID."
+      }
+    }
+  ]
+}

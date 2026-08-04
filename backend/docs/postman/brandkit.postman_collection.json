@@ -1,0 +1,65 @@
+{
+  "info": {
+    "_postman_id": "bf-brandkit-module-v1",
+    "name": "BrandFlow — AI BrandKit Profile API",
+    "description": "API endpoints for managing user business profiles, branding details, logo uploads, headshot avatar images, and primary colors.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get User BrandKit Profile (Authenticated)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/brandkit",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "brandkit"
+          ]
+        },
+        "description": "Fetches the authenticated user's active BrandKit profile."
+      }
+    },
+    {
+      "name": "2. Update BrandKit Profile (Authenticated)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"businessName\": \"Sunrise Real Estate Ltd.\",\n  \"tagline\": \"Premium & Commercial Property Leaders\",\n  \"phone\": \"+91 98765 43210\",\n  \"whatsapp\": \"+91 98765 43210\",\n  \"email\": \"contact@sunriserealestate.com\",\n  \"website\": \"https://sunriserealestate.com\",\n  \"address\": \"Suite 402, MG Road\",\n  \"city\": \"Mumbai\",\n  \"primaryColor\": \"#EAB308\",\n  \"secondaryColor\": \"#0F172A\",\n  \"base64Logo\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Avatar\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/brandkit",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "brandkit"
+          ]
+        },
+        "description": "Updates user BrandKit profile and uploads logo/avatar to Cloudinary."
+      }
+    }
+  ]
+}

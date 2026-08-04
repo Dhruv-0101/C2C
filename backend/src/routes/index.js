@@ -5,6 +5,8 @@ import festivalRoutes from '../modules/festivals/festival.routes.js';
 import designStyleRoutes from '../modules/design-styles/design-style.routes.js';
 import templateRoutes from '../modules/templates/template.routes.js';
 import brandKitRoutes from '../modules/brandkit/brandkit.routes.js';
+import frameRoutes from '../modules/frames/frame.routes.js';
+import postRoutes from '../modules/posts/post.routes.js';
 
 const router = Router();
 
@@ -24,5 +26,7 @@ router.use('/festivals', festivalRoutes);
 router.use('/design-styles', designStyleRoutes);
 router.use('/templates', templateRoutes);
 router.use('/brandkit', brandKitRoutes);
+router.use('/frames', frameRoutes);
+router.use('/posts', postRoutes);
 
 export default router;

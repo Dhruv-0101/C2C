@@ -16,6 +16,7 @@ import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Alert } from '../../../components/ui/Alert';
+import { PostStudioModal } from './PostStudioModal';
 
 export const FestivalCalendarView = ({ onSelectTemplate }) => {
   const { isAdmin } = useAuth();
@@ -23,6 +24,10 @@ export const FestivalCalendarView = ({ onSelectTemplate }) => {
   const [festivals, setFestivals] = useState([]);
   const [selectedDayFestivals, setSelectedDayFestivals] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Post Studio Modal State
+  const [studioTemplate, setStudioTemplate] = useState(null);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
 
   // Add Festival Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -472,12 +477,14 @@ export const FestivalCalendarView = ({ onSelectTemplate }) => {
                                 variant="primary"
                                 className="w-full justify-center text-xs"
                                 onClick={() => {
-                                  if (onSelectTemplate) onSelectTemplate(tpl);
+                                  setStudioTemplate(tpl);
+                                  setIsStudioOpen(true);
                                   setSelectedDayFestivals(null);
+                                  if (onSelectTemplate) onSelectTemplate(tpl);
                                 }}
                               >
                                 <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                                Generate Post with Template
+                                Generate Branded Post
                               </Button>
                             </div>
                           </div>
@@ -501,6 +508,13 @@ export const FestivalCalendarView = ({ onSelectTemplate }) => {
           </div>
         </div>
       )}
+
+      {/* Post Studio Compositor Modal */}
+      <PostStudioModal
+        isOpen={isStudioOpen}
+        onClose={() => setIsStudioOpen(false)}
+        template={studioTemplate}
+      />
     </div>
   );
 };

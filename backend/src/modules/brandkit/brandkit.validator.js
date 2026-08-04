@@ -6,6 +6,8 @@ export const updateBrandKitSchema = z.object({
     categoryId: z.string().optional().nullable(),
     logoUrl: z.string().optional().nullable(),
     base64Logo: z.string().optional().nullable(),
+    avatarUrl: z.string().optional().nullable(),
+    base64Avatar: z.string().optional().nullable(),
     phone: z.string().optional().nullable(),
     whatsapp: z.string().optional().nullable(),
     email: z.string().optional().nullable(),
