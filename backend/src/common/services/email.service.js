@@ -9,13 +9,26 @@ let transporter = null;
 
 if (env.SMTP_USER && env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: Number(env.SMTP_PORT),
-    secure: Number(env.SMTP_PORT) === 465, // true for 465, false for 587
+    host: env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(env.SMTP_PORT) || 587,
+    secure: Number(env.SMTP_PORT) === 465,
+    requireTLS: true,
     auth: {
       user: env.SMTP_USER,
       pass: env.SMTP_PASS,
     },
+    tls: {
+      rejectUnauthorized: false, // Prevents cloud SSL certificate handshake rejection
+    },
+  });
+
+  // Verify SMTP Connection readiness on startup
+  transporter.verify((error) => {
+    if (error) {
+      logger.error('❌ SMTP Email Transporter connection failed:', error.message);
+    } else {
+      logger.success(`✅ SMTP Email Transporter connected & ready to send real emails via ${env.SMTP_USER}!`);
+    }
   });
 }
 
