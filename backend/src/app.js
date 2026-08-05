@@ -45,8 +45,7 @@ app.use(
       if (isAllowed) {
         callback(null, true);
       } else {
-        // Fallback: reflect request origin for production clients
-        callback(null, true);
+        callback(new Error(`CORS Policy Error: Origin ${origin} not allowed.`));
       }
     },
     credentials: true,

@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { env } from '../../config/env.js';
+import { logger } from '../../config/logger.js';
 import { renderWelcomeEmail } from '../templates/welcome-email.template.js';
 import { renderPasswordResetEmail } from '../templates/password-reset-email.template.js';
 
@@ -36,12 +37,12 @@ export async function sendWelcomeEmail({ email, fullName }) {
   try {
     if (transporter) {
       const info = await transporter.sendMail(mailOptions);
-      console.log(`✉️ Welcome email successfully sent to ${email} (MessageId: ${info.messageId})`);
+      logger.success(`✉️ Welcome email successfully sent to ${email} (MessageId: ${info.messageId})`);
     } else {
-      console.log(`✉️ [SMTP Simulation] Welcome email generated for ${email}. (Set SMTP_USER & SMTP_PASS in .env to send real emails)`);
+      logger.info(`✉️ [SMTP Simulation] Welcome email generated for ${email}. (Set SMTP_USER & SMTP_PASS in .env to send real emails)`);
     }
   } catch (error) {
-    console.error(`⚠️ Failed to send welcome email to ${email}:`, error.message);
+    logger.error(`❌ Failed to send welcome email to ${email}:`, error.message);
   }
 }
 
@@ -62,11 +63,11 @@ export async function sendPasswordResetEmail({ email, fullName, resetUrl }) {
   try {
     if (transporter) {
       const info = await transporter.sendMail(mailOptions);
-      console.log(`✉️ Password reset email successfully sent to ${email} (MessageId: ${info.messageId})`);
+      logger.success(`✉️ Password reset email successfully sent to ${email} (MessageId: ${info.messageId})`);
     } else {
-      console.log(`✉️ [SMTP Simulation] Password reset email generated for ${email}. Link: ${resetUrl}`);
+      logger.info(`✉️ [SMTP Simulation] Password reset email generated for ${email}. Link: ${resetUrl}`);
     }
   } catch (error) {
-    console.error(`⚠️ Failed to send password reset email to ${email}:`, error.message);
+    logger.error(`❌ Failed to send password reset email to ${email}:`, error.message);
   }
 }

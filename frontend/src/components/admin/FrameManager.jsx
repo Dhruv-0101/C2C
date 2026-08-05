@@ -37,6 +37,7 @@ import { Alert } from "../ui/Alert";
 import { FeedbackModal } from "../common/FeedbackModal";
 import Pagination from "../common/Pagination";
 import { useFeedbackModal } from "../../hooks/useFeedbackModal";
+import { QUERY_KEYS } from "../../constants/queryKeys";
 
 /**
  * Canva-Style Interactive Vector Frame Studio with Plain White Canvas Stage
@@ -210,7 +211,7 @@ export const FrameManager = () => {
   const createFrameMutation = useMutation({
     mutationFn: (data) => frameApi.createFrame(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["frames"]);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FRAMES.ALL });
       setSuccessMsg(
         "🎉 Canva Frame converted to transparent PNG and saved to Cloud & DB!",
       );
@@ -239,7 +240,7 @@ export const FrameManager = () => {
   const deleteFrameMutation = useMutation({
     mutationFn: (id) => frameApi.deleteFrame(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(["frames"]);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FRAMES.ALL });
       showSuccess(
         "Frame Removed 🗑️",
         "Canva Frame template deleted from database.",

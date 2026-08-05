@@ -1,6 +1,7 @@
 import { Queue } from 'bullmq';
 import { redisConnection } from '../config/redis.js';
 import { sendWelcomeEmail, sendPasswordResetEmail } from '../common/services/email.service.js';
+import { logger } from '../config/logger.js';
 
 export const EMAIL_QUEUE_NAME = 'email-queue';
 
@@ -31,7 +32,7 @@ export const emailQueue = new Queue(EMAIL_QUEUE_NAME, {
 let hasLoggedQueueWarning = false;
 emailQueue.on('error', (err) => {
   if (!hasLoggedQueueWarning) {
-    console.warn(`ℹ️ [BullMQ Queue Info] Local Redis is offline (${err.message}). Fallback to direct execution mode.`);
+    logger.warn(`ℹ️ [BullMQ Queue Info] Local Redis is offline (${err.message}). Fallback to direct execution mode.`);
     hasLoggedQueueWarning = true;
   }
 });
@@ -47,13 +48,13 @@ export async function addWelcomeEmailJob({ email, fullName }) {
       fullName,
       createdAt: new Date().toISOString(),
     });
-    console.log(`🚀 [BullMQ Producer] Welcome Email Job #${job.id} dispatched for ${email}`);
+    logger.info(`🚀 [BullMQ Producer] Welcome Email Job #${job.id} dispatched for ${email}`);
     return job;
   } catch (error) {
-    console.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendWelcomeEmail for ${email}...`);
+    logger.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendWelcomeEmail for ${email}...`);
     // Fallback: Send email directly if Redis queue is offline
     sendWelcomeEmail({ email, fullName }).catch((e) => {
-      console.error('Failed direct fallback email send:', e.message);
+      logger.error('Failed direct fallback email send:', e.message);
     });
   }
 }
@@ -70,13 +71,13 @@ export async function addPasswordResetEmailJob({ email, fullName, resetUrl }) {
       resetUrl,
       createdAt: new Date().toISOString(),
     });
-    console.log(`🚀 [BullMQ Producer] Password Reset Email Job #${job.id} dispatched for ${email}`);
+    logger.info(`🚀 [BullMQ Producer] Password Reset Email Job #${job.id} dispatched for ${email}`);
     return job;
   } catch (error) {
-    console.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendPasswordResetEmail for ${email}...`);
+    logger.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendPasswordResetEmail for ${email}...`);
     // Fallback: Send email directly if Redis queue is offline
     sendPasswordResetEmail({ email, fullName, resetUrl }).catch((e) => {
-      console.error('Failed direct fallback password reset email send:', e.message);
+      logger.error('Failed direct fallback password reset email send:', e.message);
     });
   }
 }

@@ -25,6 +25,7 @@ import { useTemplates } from '../hooks/useTemplates';
 import { useFrames } from '../hooks/useFrames';
 import Pagination from '../components/common/Pagination';
 import { useCanvasCompositor } from '../hooks/useCanvasCompositor';
+import { QUERY_KEYS } from '../constants/queryKeys';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
@@ -172,7 +173,7 @@ export const CreatePostPage = () => {
   const savePostMutation = useMutation({
     mutationFn: (postData) => postApi.createPost(postData),
     onSuccess: () => {
-      queryClient.invalidateQueries(['posts']);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
       setSaveSuccess('🎉 Final composited post saved to your database!');
       setTimeout(() => setSaveSuccess(''), 4000);
     },

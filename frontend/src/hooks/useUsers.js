@@ -1,5 +1,6 @@
 import { usePaginatedQuery } from './usePaginatedQuery.js';
 import { authApi } from '../services/auth.api';
+import { QUERY_KEYS } from '../constants/queryKeys';
 
 /**
  * Modular Feature Hook for fetching registered end-users directory with central pagination.
@@ -10,7 +11,7 @@ import { authApi } from '../services/auth.api';
  */
 export function useUsers(params = {}, queryOptions = {}) {
   const result = usePaginatedQuery({
-    queryKey: ['users'],
+    queryKey: QUERY_KEYS.USERS.ALL,
     queryFn: (queryParams) => authApi.getUsers(queryParams),
     params,
     queryOptions,

@@ -1,5 +1,6 @@
 import { usePaginatedQuery } from './usePaginatedQuery.js';
 import { authApi } from '../services/auth.api';
+import { QUERY_KEYS } from '../constants/queryKeys';
 
 /**
  * Modular Feature Hook for fetching SubAdmins directory with central pagination.
@@ -10,7 +11,7 @@ import { authApi } from '../services/auth.api';
  */
 export function useSubAdmins(params = {}, queryOptions = {}) {
   const result = usePaginatedQuery({
-    queryKey: ['subAdmins'],
+    queryKey: QUERY_KEYS.SUB_ADMINS.ALL,
     queryFn: (queryParams) => authApi.getSubAdmins(queryParams),
     params,
     queryOptions,

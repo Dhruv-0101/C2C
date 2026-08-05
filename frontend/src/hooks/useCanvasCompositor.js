@@ -10,6 +10,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
 
   // In-memory HTMLImageElement Cache to eliminate network requests during frame switching
   const imageCacheRef = useRef(new Map());
+  const MAX_CACHE_SIZE = 50;
 
   const loadImageCached = useCallback((src) => {
     if (!src) return Promise.resolve(null);
@@ -20,6 +21,11 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
       const img = new Image();
       img.crossOrigin = 'Anonymous';
       img.onload = () => {
+        // Enforce MAX_CACHE_SIZE cap (50 items) to prevent browser memory leaks
+        if (imageCacheRef.current.size >= MAX_CACHE_SIZE) {
+          const firstKey = imageCacheRef.current.keys().next().value;
+          if (firstKey) imageCacheRef.current.delete(firstKey);
+        }
         imageCacheRef.current.set(src, img);
         resolve(img);
       };

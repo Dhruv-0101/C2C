@@ -21,6 +21,7 @@ import { frameApi } from '../../../services/frame.api';
 import { templateApi } from '../../../services/template.api';
 import { postApi } from '../../../services/post.api';
 import { useCanvasCompositor } from '../../../hooks/useCanvasCompositor';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 
@@ -157,7 +158,7 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
   const savePostMutation = useMutation({
     mutationFn: (postData) => postApi.createPost(postData),
     onSuccess: () => {
-      queryClient.invalidateQueries(['posts']);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
       setSaveSuccess('🎉 Final composited post saved to your database!');
       setTimeout(() => setSaveSuccess(''), 4000);
     },

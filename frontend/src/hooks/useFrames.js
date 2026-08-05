@@ -1,5 +1,6 @@
 import { usePaginatedQuery } from './usePaginatedQuery';
 import { frameApi } from '../services/frame.api';
+import { QUERY_KEYS } from '../constants/queryKeys';
 
 /**
  * Modular Feature Hook for fetching transparent Canva PNG frames with central pagination.
@@ -10,7 +11,7 @@ import { frameApi } from '../services/frame.api';
  */
 export function useFrames(params = {}, queryOptions = {}) {
   const result = usePaginatedQuery({
-    queryKey: ['frames'],
+    queryKey: QUERY_KEYS.FRAMES.ALL,
     queryFn: (queryParams) => frameApi.getFrames(queryParams),
     params,
     queryOptions,

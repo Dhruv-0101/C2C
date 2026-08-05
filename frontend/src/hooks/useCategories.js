@@ -1,5 +1,6 @@
 import { usePaginatedQuery } from './usePaginatedQuery';
 import { categoryApi } from '../services/category.api';
+import { QUERY_KEYS } from '../constants/queryKeys';
 
 /**
  * Modular Feature Hook for fetching business categories with pagination.
@@ -10,7 +11,7 @@ import { categoryApi } from '../services/category.api';
  */
 export function useCategories(params = {}, queryOptions = {}) {
   const result = usePaginatedQuery({
-    queryKey: ['categories'],
+    queryKey: QUERY_KEYS.CATEGORIES.ALL,
     queryFn: (queryParams) => categoryApi.getCategories(queryParams),
     params,
     queryOptions,

@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../../config/env.js';
+import { logger } from '../../config/logger.js';
 import { ConflictError, UnauthorizedError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import {
@@ -21,7 +22,7 @@ import {
 import { addWelcomeEmailJob, addPasswordResetEmailJob } from '../../queues/email.queue.js';
 import * as authRepository from './auth.repository.js';
 
-const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client();
 
 /**
  * Authenticate or Sign Up via Google OAuth 2.0 ID Token
@@ -29,14 +30,14 @@ const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 export async function loginWithGoogle({ idToken }) {
   let payload;
   try {
-    const clientId = env.GOOGLE_CLIENT_ID || '723882466133-dktl5rijt0uld6rcsbsui5oovted7jpo.apps.googleusercontent.com';
+    const clientId = env.GOOGLE_CLIENT_ID;
     const ticket = await googleClient.verifyIdToken({
       idToken,
-      audience: clientId,
+      ...(clientId ? { audience: clientId } : {}),
     });
     payload = ticket.getPayload();
   } catch (error) {
-    console.error('❌ Google verifyIdToken error:', error?.message || error);
+    logger.error('❌ Google verifyIdToken error:', error?.message || error);
     throw new UnauthorizedError(`Google auth error: ${error?.message || 'Invalid token'}`);
   }
 
