@@ -2,16 +2,26 @@
  * Dynamic API Base URL resolver based on Vite environment mode (Development vs Production)
  */
 const getApiBaseUrl = () => {
-  // 1. Explicit override if set
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+  let url = import.meta.env.VITE_API_BASE_URL;
+
+  // Sanitize: If VITE_API_BASE_URL is not a valid HTTP URL, discard invalid env string
+  if (url && (url.includes('VITE_') || (!url.startsWith('http://') && !url.startsWith('https://')))) {
+    url = null;
   }
 
-  // 2. Resolve environment mode (from VITE_APP_ENV or Vite PROD build mode)
+  if (url) {
+    return url;
+  }
+
+  // Resolve environment mode (from VITE_APP_ENV or Vite PROD build mode)
   const appEnv = import.meta.env.VITE_APP_ENV || (import.meta.env.PROD ? 'production' : 'development');
 
   if (appEnv === 'production') {
-    return import.meta.env.VITE_API_BASE_URL_PROD || 'https://c2c-negk.onrender.com/api/v1';
+    let prodUrl = import.meta.env.VITE_API_BASE_URL_PROD;
+    if (!prodUrl || (!prodUrl.startsWith('http://') && !prodUrl.startsWith('https://'))) {
+      prodUrl = 'https://c2c-negk.onrender.com/api/v1';
+    }
+    return prodUrl;
   }
 
   return import.meta.env.VITE_API_BASE_URL_DEV || 'http://localhost:5000/api/v1';
