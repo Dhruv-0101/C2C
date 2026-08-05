@@ -1,22 +1,31 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthLayout } from '../layouts/AuthLayout';
-import { MainLayout } from '../layouts/MainLayout';
-import { PublicRoute } from './PublicRoute';
-import { ProtectedRoute } from './ProtectedRoute';
-import { LoginPage } from '../features/auth/pages/LoginPage';
-import { RegisterPage } from '../features/auth/pages/RegisterPage';
-import { TwoFactorVerifyPage } from '../features/auth/pages/TwoFactorVerifyPage';
-import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
-import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
-import { DashboardPage } from '../pages/DashboardPage';
-import { AdminDashboardPage } from '../pages/AdminDashboardPage';
-import { SubAdminDashboardPage } from '../pages/SubAdminDashboardPage';
-import { BrandKitPage } from '../pages/BrandKitPage';
-import { useAuth } from '../hooks/useAuth';
-import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Sparkles, Palette, Share2, FolderKanban, BarChart3, Settings } from 'lucide-react';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthLayout } from "../layouts/AuthLayout";
+import { MainLayout } from "../layouts/MainLayout";
+import { PublicRoute } from "./PublicRoute";
+import { ProtectedRoute } from "./ProtectedRoute";
+import { LoginPage } from "../features/auth/pages/LoginPage";
+import { RegisterPage } from "../features/auth/pages/RegisterPage";
+import { TwoFactorVerifyPage } from "../features/auth/pages/TwoFactorVerifyPage";
+import { ForgotPasswordPage } from "../features/auth/pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "../features/auth/pages/ResetPasswordPage";
+import { DashboardPage } from "../pages/DashboardPage";
+import { CreatePostPage } from "../pages/CreatePostPage";
+import { AdminDashboardPage } from "../pages/AdminDashboardPage";
+import { SubAdminDashboardPage } from "../pages/SubAdminDashboardPage";
+import { BrandKitPage } from "../pages/BrandKitPage";
+import { WelcomeSplashPage } from "../pages/WelcomeSplashPage";
+import { useAuth } from "../hooks/useAuth";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import {
+  Sparkles,
+  Palette,
+  Share2,
+  FolderKanban,
+  BarChart3,
+  Settings,
+} from "lucide-react";
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -32,16 +41,19 @@ export const AppRoutes = () => {
   const { isAuthenticated, isSuperAdmin, isSubAdmin } = useAuth();
 
   const getHomeRedirect = () => {
-    if (!isAuthenticated) return '/login';
-    if (isSuperAdmin) return '/admin/dashboard';
-    if (isSubAdmin) return '/subadmin/dashboard';
-    return '/dashboard';
+    if (!isAuthenticated) return "/welcome";
+    if (isSuperAdmin) return "/admin/dashboard";
+    if (isSubAdmin) return "/subadmin/dashboard";
+    return "/dashboard";
   };
 
   return (
     <Routes>
       {/* Root Route Redirect */}
       <Route path="/" element={<Navigate to={getHomeRedirect()} replace />} />
+
+      {/* Public Welcome Splash Experience */}
+      <Route path="/welcome" element={<WelcomeSplashPage />} />
 
       {/* Public Guest Auth Routes & 2FA Challenge */}
       <Route element={<PublicRoute />}>
@@ -58,16 +70,7 @@ export const AppRoutes = () => {
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route
-            path="/create-post"
-            element={
-              <GenericPage
-                title="AI Post Generator"
-                icon={Sparkles}
-                description="Generate viral social media posts, AI graphics, and campaign copy instantly."
-              />
-            }
-          />
+          <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/brand-kit" element={<BrandKitPage />} />
           <Route path="/brandkit" element={<BrandKitPage />} />
           <Route
@@ -123,7 +126,10 @@ export const AppRoutes = () => {
       {/* Protected SubAdmin Routes */}
       <Route element={<ProtectedRoute requireSubAdmin />}>
         <Route element={<MainLayout />}>
-          <Route path="/subadmin/dashboard" element={<SubAdminDashboardPage />} />
+          <Route
+            path="/subadmin/dashboard"
+            element={<SubAdminDashboardPage />}
+          />
         </Route>
       </Route>
 
@@ -133,10 +139,18 @@ export const AppRoutes = () => {
         element={
           <div className="min-h-screen flex items-center justify-center p-4 bg-[#0B0F17] text-white">
             <Card className="max-w-md w-full text-center space-y-4">
-              <h1 className="font-heading font-extrabold text-6xl text-amber-500">404</h1>
+              <h1 className="font-heading font-extrabold text-6xl text-amber-500">
+                404
+              </h1>
               <h2 className="font-heading font-bold text-xl">Page Not Found</h2>
-              <p className="text-sm text-slate-400">The requested page does not exist or has been relocated.</p>
-              <Button variant="primary" onClick={() => (window.location.href = '/')} className="w-full">
+              <p className="text-sm text-slate-400">
+                The requested page does not exist or has been relocated.
+              </p>
+              <Button
+                variant="primary"
+                onClick={() => (window.location.href = "/")}
+                className="w-full"
+              >
                 Return to Home
               </Button>
             </Card>

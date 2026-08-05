@@ -1,4 +1,5 @@
 import { templateRepository } from './template.repository.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { compositeBrandedGraphic } from '../../common/helpers/sharp-compositor.helper.js';
 import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
 
@@ -42,11 +43,28 @@ export const templateLogic = {
     });
   },
 
-  getTemplates: async (query = {}) => {
-    const filter = {};
-    if (query.festivalId) filter.festivalId = query.festivalId;
+  getTemplates: async (queryParams = {}) => {
+    const pagination = parsePaginationParams(queryParams);
+    const { festivalId } = queryParams;
 
-    return templateRepository.findMany(filter);
+    const { templates, totalCount } = await templateRepository.findPaginated({
+      ...pagination,
+      festivalId: festivalId || undefined,
+    });
+
+    const paginatedResponse = buildPaginatedResponse({
+      items: templates,
+      totalCount,
+      page: pagination.page,
+      limit: pagination.limit,
+    });
+
+    return {
+      data: {
+        templates: paginatedResponse.data,
+      },
+      meta: paginatedResponse.meta,
+    };
   },
 
   getTemplateById: async (id) => {

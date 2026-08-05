@@ -74,9 +74,16 @@ export const authApi = {
   createSubAdmin: (data) => api.post('/auth/subadmin', data),
 
   /**
-   * SuperAdmin: Get list of SubAdmins
+   * SuperAdmin: Get list of SubAdmins with pagination
+   * @param {{ page?: number, limit?: number, search?: string }} [params]
    */
-  getSubAdmins: () => api.get('/auth/subadmins'),
+  getSubAdmins: (params = {}) => api.get('/auth/subadmins', { params }),
+
+  /**
+   * Admin & SubAdmin: Get list of registered end-users with pagination
+   * @param {{ page?: number, limit?: number, search?: string }} [params]
+   */
+  getUsers: (params = {}) => api.get('/auth/users', { params }),
 
   /**
    * SuperAdmin: Delete SubAdmin account

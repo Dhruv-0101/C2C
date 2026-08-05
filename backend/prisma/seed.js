@@ -23,7 +23,7 @@ async function main() {
   await seedDesignStyles(prisma);
 
   // 5. Seed Master Preset Frames
-  await seedFrames();
+  await seedFrames(prisma);
 
   console.log('✅ Seeding completed successfully!');
 }

@@ -1,14 +1,15 @@
-import { api } from './api.service';
+import { api } from './api.service.js';
 
 /**
  * Category API Layer
  */
 export const categoryApi = {
   /**
-   * Fetch all business categories
+   * Fetch business categories with pagination parameters
+   * @param {{ page?: number, limit?: number, search?: string, sortBy?: string, sortOrder?: string }} [params]
    */
-  getCategories: async () => {
-    return await api.get('/categories');
+  getCategories: async (params = {}) => {
+    return await api.get('/categories', { params });
   },
 
   /**

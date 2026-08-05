@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../../config/env.js';
 import { ConflictError, UnauthorizedError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -373,10 +374,47 @@ export async function createSubAdmin({ email, password, fullName, allowedTabs = 
 }
 
 /**
- * List all SubAdmin accounts
+ * List SubAdmin accounts with pagination
  */
-export async function getSubAdmins() {
-  return authRepository.findAllSubAdmins();
+export async function getSubAdmins(queryParams = {}) {
+  const pagination = parsePaginationParams(queryParams);
+  const { subAdmins, totalCount } = await authRepository.findPaginatedSubAdmins(pagination);
+
+  const paginatedResponse = buildPaginatedResponse({
+    items: subAdmins,
+    totalCount,
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+
+  return {
+    data: {
+      subAdmins: paginatedResponse.data,
+    },
+    meta: paginatedResponse.meta,
+  };
+}
+
+/**
+ * List registered end-users with pagination
+ */
+export async function getUsers(queryParams = {}) {
+  const pagination = parsePaginationParams(queryParams);
+  const { users, totalCount } = await authRepository.findPaginatedUsers(pagination);
+
+  const paginatedResponse = buildPaginatedResponse({
+    items: users,
+    totalCount,
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+
+  return {
+    data: {
+      users: paginatedResponse.data,
+    },
+    meta: paginatedResponse.meta,
+  };
 }
 
 /**

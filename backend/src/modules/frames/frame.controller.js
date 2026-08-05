@@ -1,4 +1,5 @@
 import { frameLogic } from './frame.logic.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 
 export const frameController = {
   /**
@@ -6,11 +7,11 @@ export const frameController = {
    */
   getFrames: async (req, res, next) => {
     try {
-      const frames = await frameLogic.getAllFrames();
-      return res.status(200).json({
-        success: true,
+      const result = await frameLogic.getFrames(req.query);
+      return sendSuccessResponse(res, {
         message: 'Frames retrieved successfully',
-        data: { frames },
+        data: result.data,
+        meta: result.meta,
       });
     } catch (error) {
       next(error);

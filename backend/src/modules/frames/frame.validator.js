@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import { paginationQuerySchema } from '../../common/helpers/pagination.helper.js';
+
+export const getFramesQuerySchema = z.object({
+  query: paginationQuerySchema,
+});
 
 export const createFrameSchema = z.object({
   body: z.object({

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Upload, X, Check, Image as ImageIcon, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { templateApi } from '../../services/template.api';
 import { festivalApi } from '../../services/festival.api';
@@ -52,18 +53,17 @@ export const AdminTemplateUploadModal = ({ isOpen, onClose, onSuccess }) => {
     if (!selectedFile) return;
 
     if (!selectedFile.type.startsWith('image/')) {
-      setError('Please select a valid image file (JPEG, PNG, WebP).');
+      setError('Please select a valid image file (PNG, JPG, WEBP).');
       return;
     }
 
     setFile(selectedFile);
-    setError('');
+    setPreviewUrl(URL.createObjectURL(selectedFile));
 
-    // Generate local preview URL
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPreviewUrl(reader.result);
       setBase64Image(reader.result);
+      setError('');
     };
     reader.readAsDataURL(selectedFile);
   };
@@ -75,25 +75,31 @@ export const AdminTemplateUploadModal = ({ isOpen, onClose, onSuccess }) => {
       return;
     }
 
-    setIsUploading(true);
-    setError('');
-    setSuccessMessage('');
+    if (!title.trim()) {
+      setError('Please provide a title for this template.');
+      return;
+    }
 
     try {
-      await templateApi.uploadAdminTemplate({
-        base64Image,
-        title: title || 'Festival Base Template',
-        description,
-        festivalId: festivalId || null,
+      setIsUploading(true);
+      setError('');
+      setSuccessMessage('');
+
+      await templateApi.createTemplate({
+        title: title.trim(),
+        description: description.trim(),
+        festivalId: festivalId || undefined,
+        baseImageUrl: base64Image,
       });
 
-      setSuccessMessage('🎉 Base template uploaded to Cloudinary & linked successfully!');
+      setSuccessMessage('🎉 Template uploaded successfully to Cloudinary!');
       setTimeout(() => {
         if (onSuccess) onSuccess();
         onClose();
       }, 1200);
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || 'Failed to upload image to Cloudinary.');
+      console.error('Upload Error:', err);
+      setError(err.message || 'Failed to upload template. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -101,8 +107,8 @@ export const AdminTemplateUploadModal = ({ isOpen, onClose, onSuccess }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+  const modalContent = (
+    <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn overflow-y-auto">
       <div className="relative w-full max-w-xl bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl overflow-hidden text-slate-100">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#0B0F17]/50">
@@ -140,12 +146,8 @@ export const AdminTemplateUploadModal = ({ isOpen, onClose, onSuccess }) => {
             </label>
 
             {previewUrl ? (
-              <div className="relative rounded-xl border border-slate-700 bg-slate-900 overflow-hidden group">
-                <img
-                  src={previewUrl}
-                  alt="Template Preview"
-                  className="w-full h-56 object-cover rounded-xl"
-                />
+              <div className="relative aspect-square w-full max-w-xs mx-auto rounded-xl bg-[#0B0F17] border border-[#2C384E] overflow-hidden group">
+                <img src={previewUrl} alt="Upload Preview" className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={() => {
@@ -153,74 +155,65 @@ export const AdminTemplateUploadModal = ({ isOpen, onClose, onSuccess }) => {
                     setPreviewUrl(null);
                     setBase64Image(null);
                   }}
-                  className="absolute top-3 right-3 p-1.5 rounded-full bg-black/70 hover:bg-red-600 text-white transition-colors"
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-rose-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remove Image"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-xl bg-slate-900/60 cursor-pointer hover:bg-slate-900 transition-all text-center p-4">
-                <ImageIcon className="w-10 h-10 text-amber-400 mb-2" />
-                <span className="text-sm font-semibold text-white">Click or drag image file here</span>
-                <span className="text-xs text-slate-400 mt-1">Supports PNG, JPG, WebP high quality templates</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
+              <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#2C384E] rounded-xl bg-[#0B0F17]/40 hover:bg-[#0B0F17] hover:border-amber-500/50 cursor-pointer transition">
+                <ImageIcon className="w-10 h-10 text-slate-500 mb-2" />
+                <p className="text-sm font-bold text-slate-200">Click to select image file</p>
+                <p className="text-xs text-slate-400 mt-1">PNG, JPG, WEBP up to 10MB</p>
+                <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
               </label>
             )}
           </div>
 
-          {/* Festival Selection */}
+          <Input
+            label="Template Title"
+            placeholder="e.g. Happy Independence Day Graphic Base"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              Link to Festival / Special Day
+              Target Festival (Optional)
             </label>
             <select
               value={festivalId}
               onChange={(e) => setFestivalId(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-sm focus:outline-none focus:border-amber-500"
             >
-              <option value="">-- General / No Specific Festival --</option>
-              {festivals.map((fest) => (
-                <option key={fest.id} value={fest.id}>
-                  {fest.name} ({new Date(fest.date).toLocaleDateString()})
+              <option value="">General (No specific festival)</option>
+              {festivals.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name} ({new Date(f.date).toLocaleDateString()})
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Title */}
-          <Input
-            label="Template Title"
-            id="template-title"
-            placeholder="e.g. Diwali Grand Lights Banner #1"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-
-          {/* Description */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              Description (Optional)
+              Description / Notes
             </label>
             <textarea
               rows={2}
-              placeholder="e.g. Deepawali festive greeting base background image."
+              placeholder="e.g. Modern gold background graphic for SMB celebration posts..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-sm focus:outline-none focus:border-amber-500"
             />
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
-            <Button variant="outline" type="button" onClick={onClose} disabled={isUploading}>
+          <div className="pt-2 flex items-center justify-end gap-3">
+            <Button type="button" variant="outline" onClick={onClose} isDisabled={isUploading}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit" isLoading={isUploading} icon={Upload}>
+            <Button type="submit" variant="primary" icon={Sparkles} isLoading={isUploading}>
               Upload to Cloudinary
             </Button>
           </div>
@@ -228,6 +221,6 @@ export const AdminTemplateUploadModal = ({ isOpen, onClose, onSuccess }) => {
       </div>
     </div>
   );
-};
 
-export default AdminTemplateUploadModal;
+  return createPortal(modalContent, document.body);
+};

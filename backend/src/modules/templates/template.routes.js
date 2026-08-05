@@ -5,14 +5,15 @@ import { validateImageUpload } from '../../common/middleware/upload.middleware.j
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { authorize } from '../../common/middleware/role.middleware.js';
 import {
+  getTemplatesQuerySchema,
   createTemplateSchema,
   compositePostSchema,
 } from './template.validator.js';
 
 const router = Router();
 
-// Public / User Endpoints
-router.get('/', templateController.getTemplates);
+// Public / User Endpoints with pagination validation
+router.get('/', validate(getTemplatesQuerySchema), templateController.getTemplates);
 router.post('/composite-post', validate(compositePostSchema), templateController.compositePost);
 
 // Admin & SubAdmin Cloudinary Base Template Upload Endpoint

@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, User, UserPlus, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, UserPlus, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { registerSchema } from '../../../validations/auth.validation';
 import { useRegister } from '../hooks/useRegister';
@@ -13,8 +13,10 @@ import { Alert } from '../../../components/ui/Alert';
 import { Card } from '../../../components/ui/Card';
 
 export const RegisterForm = () => {
-  const { mutate: registerUser, isPending, error: apiError } = useRegister();
-  const { mutate: googleAuth, isPending: isGooglePending, error: googleError } = useGoogleAuth();
+  const { mutate: registerUser, isPending, error: apiError, successMessage: regSuccess } = useRegister();
+  const { mutate: googleAuth, isPending: isGooglePending, error: googleError, successMessage: googleSuccess } = useGoogleAuth();
+
+  const successMessage = regSuccess || googleSuccess;
 
   const {
     register,
@@ -41,56 +43,47 @@ export const RegisterForm = () => {
   };
 
   const activeError = apiError || googleError;
+  const isCreating = isPending || isGooglePending;
 
   return (
-    <Card className="w-full">
-      <div className="space-y-6">
-        {/* Header Title */}
-        <div className="space-y-2 text-center sm:text-left">
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-white">
-            Create Your Account
+    <Card className="w-full max-w-md mx-auto p-5 sm:p-6 border-[#2C384E] bg-[#131B2A]/90 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-3.5">
+        {/* Form Header */}
+        <div className="space-y-1 text-center sm:text-left">
+          <h2 className="font-heading text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+            Create Free Account ✨
           </h2>
-          <p className="text-sm text-slate-400">
-            Join BrandFlow to automate your social brand workflow.
+          <p className="text-xs text-slate-400">
+            Join BrandFlow to customize frames & auto-fill your BrandKit.
           </p>
         </div>
 
-        {/* API Error Alert Banner */}
+        {/* Success Alert */}
+        {successMessage && (
+          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in duration-300">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        {/* API Error Alert */}
         {activeError && (
           <Alert
             variant="error"
             title="Registration Failed"
-            message={activeError.message || 'Could not complete account creation. Please check your inputs.'}
+            message={activeError.message || 'Could not complete registration. Please check your inputs.'}
           />
         )}
 
-        {/* Google OAuth Signup Button */}
-        <div className="flex justify-center w-full">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => console.error('Google Sign-In Failed')}
-            theme="filled_black"
-            shape="pill"
-            text="signup_with"
-            width="100%"
-          />
-        </div>
-
-        {/* Or Divider */}
-        <div className="relative flex items-center justify-center my-4">
-          <div className="border-t border-slate-800 w-full"></div>
-          <span className="bg-[#131B2A] px-3 text-[11px] text-slate-500 uppercase tracking-wider font-semibold absolute">
-            Or register with email
-          </span>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        {/* Form Controls (Inputs First) */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5" noValidate>
           <Input
             label="Full Name"
             id="register-fullname"
             type="text"
             placeholder="John Doe"
             icon={User}
+            disabled={isCreating || !!successMessage}
             error={errors.fullName?.message}
             {...register('fullName')}
           />
@@ -101,6 +94,7 @@ export const RegisterForm = () => {
             type="email"
             placeholder="name@company.com"
             icon={Mail}
+            disabled={isCreating || !!successMessage}
             error={errors.email?.message}
             {...register('email')}
           />
@@ -111,6 +105,7 @@ export const RegisterForm = () => {
             type="password"
             placeholder="At least 6 characters"
             icon={Lock}
+            disabled={isCreating || !!successMessage}
             error={errors.password?.message}
             {...register('password')}
           />
@@ -121,6 +116,7 @@ export const RegisterForm = () => {
             type="password"
             placeholder="Re-enter password"
             icon={Lock}
+            disabled={isCreating || !!successMessage}
             error={errors.confirmPassword?.message}
             {...register('confirmPassword')}
           />
@@ -129,21 +125,46 @@ export const RegisterForm = () => {
             type="submit"
             variant="primary"
             size="lg"
-            isLoading={isPending || isGooglePending}
+            isLoading={isCreating}
+            disabled={isCreating || !!successMessage}
             icon={UserPlus}
-            className="w-full mt-2"
+            className="w-full shadow-lg shadow-amber-500/20 mt-1"
           >
-            Create Account
+            {isCreating
+              ? 'Creating Account...'
+              : successMessage
+              ? 'Redirecting...'
+              : 'Create Account'}
           </Button>
         </form>
 
-        {/* Footer Navigation Switch */}
+        {/* Divider */}
+        <div className="relative flex items-center justify-center my-2">
+          <div className="border-t border-slate-800 w-full"></div>
+          <span className="bg-[#131B2A] px-3 text-[10px] text-slate-400 uppercase tracking-wider font-bold absolute">
+            Or register with
+          </span>
+        </div>
+
+        {/* Google OAuth Signup Button (Positioned BELOW Email & Password) */}
+        <div className="flex justify-center w-full pt-0.5">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => console.error('Google Sign-In Failed')}
+            theme="filled_black"
+            shape="pill"
+            text="signup_with"
+            width="100%"
+          />
+        </div>
+
+        {/* Footer Link */}
         <div className="text-center pt-2 border-t border-slate-800/80">
           <p className="text-xs text-slate-400">
             Already have an account?{' '}
             <Link
               to="/login"
-              className="font-semibold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1 hover:underline transition-colors"
+              className="font-semibold text-amber-400 hover:text-amber-300 inline-flex items-center gap-1 hover:underline transition-colors ml-1"
             >
               <span>Sign In</span>
               <ArrowRight className="w-3 h-3" />

@@ -72,9 +72,19 @@ export const compositeBrandedGraphic = async ({
     }
 
     // 2. Render SVG Text Overlay for Headline & Contact Bar
-    const textHeadline = customText || brandKit.businessName || '';
-    const phone = brandKit.phone || brandKit.whatsapp || '';
-    const website = brandKit.websiteUrl || '';
+    // Helper to safely escape special XML characters inside SVG text
+    const escapeXml = (str = '') =>
+      String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+
+    const textHeadline = escapeXml(customText || brandKit.businessName || '');
+    const businessName = escapeXml(brandKit.businessName || '');
+    const phone = escapeXml(brandKit.phone || brandKit.whatsapp || '');
+    const website = escapeXml(brandKit.websiteUrl || '');
     const primaryColor = brandKit.primaryColor || '#F59E0B';
     const secondaryColor = brandKit.secondaryColor || '#0D9488';
 
@@ -113,7 +123,7 @@ export const compositeBrandedGraphic = async ({
         <rect x="0" y="${contactBarZone.y || canvasHeight - 90}" width="${canvasWidth}" height="${contactBarZone.height || 90}" class="contact-bg" />
         
         <text x="60" y="${(contactBarZone.y || canvasHeight - 90) + 45}" class="contact-text">
-          ${brandKit.businessName ? `🏢 ${brandKit.businessName}` : ''}
+          ${businessName ? `🏢 ${businessName}` : ''}
         </text>
 
         <text x="${canvasWidth - 60}" y="${(contactBarZone.y || canvasHeight - 90) + 45}" class="contact-text" text-anchor="end">

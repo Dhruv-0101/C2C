@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
-export async function seedFrames() {
+/**
+ * Seed Master Preset Frames
+ * @param {import('@prisma/client').PrismaClient} prisma
+ */
+export async function seedFrames(prisma) {
   console.log('🖼️ Seeding Master PNG Frames with configJson Vector Blueprints...');
 
   const masterFrames = [

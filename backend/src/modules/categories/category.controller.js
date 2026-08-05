@@ -1,17 +1,16 @@
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import * as categoryLogic from './category.logic.js';
 
 /**
- * GET /api/v1/categories - Get all business categories
+ * GET /api/v1/categories - Get business categories with pagination
  */
 export async function getCategories(req, res, next) {
   try {
-    const categories = await categoryLogic.getCategories();
-    res.status(200).json({
-      success: true,
+    const result = await categoryLogic.getCategories(req.query);
+    return sendSuccessResponse(res, {
       message: 'Business categories retrieved successfully',
-      data: {
-        categories,
-      },
+      data: result.data,
+      meta: result.meta,
     });
   } catch (error) {
     next(error);

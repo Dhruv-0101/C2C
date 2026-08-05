@@ -1,10 +1,30 @@
 import { frameRepository } from './frame.repository.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
 
 export const frameLogic = {
   /**
-   * Get all active transparent PNG frames
+   * Get active transparent PNG frames with pagination
    */
+  getFrames: async (queryParams = {}) => {
+    const pagination = parsePaginationParams(queryParams);
+    const { frames, totalCount } = await frameRepository.findPaginated(pagination);
+
+    const paginatedResponse = buildPaginatedResponse({
+      items: frames,
+      totalCount,
+      page: pagination.page,
+      limit: pagination.limit,
+    });
+
+    return {
+      data: {
+        frames: paginatedResponse.data,
+      },
+      meta: paginatedResponse.meta,
+    };
+  },
+
   getAllFrames: async () => {
     return frameRepository.findAllActive();
   },

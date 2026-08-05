@@ -1,4 +1,13 @@
 import { z } from 'zod';
+import { paginationQuerySchema } from '../../common/helpers/pagination.helper.js';
+
+export const getSubAdminsQuerySchema = z.object({
+  query: paginationQuerySchema,
+});
+
+export const getUsersQuerySchema = z.object({
+  query: paginationQuerySchema,
+});
 
 export const signupSchema = z.object({
   body: z.object({

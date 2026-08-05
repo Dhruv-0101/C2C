@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
@@ -31,6 +32,13 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
   const [customBaseImage, setCustomBaseImage] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState('');
   const [isEditingDetails, setIsEditingDetails] = useState(true);
+
+  // Sync selectedTemplateId whenever modal opens or template prop changes
+  useEffect(() => {
+    if (isOpen && template?.id) {
+      setSelectedTemplateId(template.id);
+    }
+  }, [isOpen, template]);
 
   // Fetch Graphic Templates from DB
   const { data: templatesResponse } = useQuery({
@@ -79,10 +87,18 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
   useEffect(() => {
     const newDetails = {};
 
-    // 1. First map standard keys from BrandKit
+    // 1. First map all fields from user's BrandKit
     if (brandKit?.businessName) newDetails.businessName = brandKit.businessName;
     if (brandKit?.phone || brandKit?.whatsapp) newDetails.phone = brandKit.phone || brandKit.whatsapp;
-    if (brandKit?.address) newDetails.address = `${brandKit.address}${brandKit.city ? `, ${brandKit.city}` : ''}`;
+    if (brandKit?.whatsapp) newDetails.whatsapp = brandKit.whatsapp;
+    if (brandKit?.email) newDetails.email = brandKit.email;
+    if (brandKit?.instagramHandle) newDetails.instagramHandle = brandKit.instagramHandle;
+    if (brandKit?.facebookHandle) newDetails.facebookHandle = brandKit.facebookHandle;
+    if (brandKit?.address) newDetails.address = brandKit.address;
+    if (brandKit?.city) newDetails.city = brandKit.city;
+    if (brandKit?.state) newDetails.state = brandKit.state;
+    if (brandKit?.country) newDetails.country = brandKit.country;
+    if (brandKit?.websiteUrl) newDetails.websiteUrl = brandKit.websiteUrl;
     if (brandKit?.tagline) newDetails.tagline = brandKit.tagline;
 
     // 2. Map sample text from selectedFrame.configJson.elements if field is still empty
@@ -91,16 +107,21 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
         .filter((el) => el.type === 'TEXT')
         .forEach((el) => {
           const key = el.fieldKey || el.dynamicSlot || el.id;
-          const valKey =
-            el.dynamicSlot === 'BUSINESS_NAME'
-              ? 'businessName'
-              : el.dynamicSlot === 'PHONE'
-              ? 'phone'
-              : el.dynamicSlot === 'ADDRESS'
-              ? 'address'
-              : el.dynamicSlot === 'TAGLINE'
-              ? 'tagline'
-              : key;
+          const slotMap = {
+            BUSINESS_NAME: 'businessName',
+            PHONE: 'phone',
+            WHATSAPP: 'whatsapp',
+            EMAIL: 'email',
+            INSTAGRAM: 'instagramHandle',
+            FACEBOOK: 'facebookHandle',
+            ADDRESS: 'address',
+            CITY: 'city',
+            STATE: 'state',
+            COUNTRY: 'country',
+            WEBSITE: 'websiteUrl',
+            TAGLINE: 'tagline',
+          };
+          const valKey = slotMap[el.dynamicSlot] || key;
 
           const sampleVal = el.text || el.customLabel || '';
 
@@ -166,11 +187,13 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     link.click();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-8">
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 w-screen h-screen z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]">
         {/* Left Column: Live Canvas Preview */}
-        <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E]">
+        <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">
           <div className="relative aspect-square w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center">
             {isRendering && (
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
@@ -188,7 +211,7 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
         </div>
 
         {/* Right Column: Frame Switcher & Custom Business Details */}
-        <div className="md:w-1/2 p-6 flex flex-col justify-between space-y-6">
+        <div className="md:w-1/2 p-6 flex flex-col justify-between space-y-6 overflow-y-auto max-h-[85vh]">
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
               <div className="space-y-0.5">
@@ -424,9 +447,13 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
                           (el) => el.slotCategory === 'IMAGE_SLOT' || el.dynamicSlot === 'LOGO_BOX' || el.dynamicSlot === 'AVATAR_CIRCLE'
                         )
                         .map((el) => {
+                          const slotKey = el.id || el.fieldKey || el.dynamicSlot;
                           const isAvatar = el.dynamicSlot === 'AVATAR_CIRCLE' || el.type === 'CIRCLE';
                           const label = el.customLabel || el.name || (isAvatar ? 'Profile Headshot Photo' : 'Business Logo Box');
-                          const activeUrl = isAvatar ? customDetails.avatarUrl || brandKit?.avatarUrl : customDetails.logoUrl || brandKit?.logoUrl;
+
+                          const activeUrl =
+                            customDetails[slotKey] ||
+                            (isAvatar ? customDetails.avatarUrl || brandKit?.avatarUrl : customDetails.logoUrl || brandKit?.logoUrl);
 
                           return (
                             <div key={el.id} className="p-3 rounded-xl bg-[#131B2A] border border-[#2C384E] space-y-2 text-xs">
@@ -459,11 +486,12 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
                                       if (!file) return;
                                       const reader = new FileReader();
                                       reader.onloadend = () => {
-                                        if (isAvatar) {
-                                          setCustomDetails((prev) => ({ ...prev, avatarUrl: reader.result }));
-                                        } else {
-                                          setCustomDetails((prev) => ({ ...prev, logoUrl: reader.result }));
-                                        }
+                                        setCustomDetails((prev) => ({
+                                          ...prev,
+                                          [slotKey]: reader.result,
+                                          ...(el.dynamicSlot === 'AVATAR_CIRCLE' ? { avatarUrl: reader.result } : {}),
+                                          ...(el.dynamicSlot === 'LOGO_BOX' ? { logoUrl: reader.result } : {}),
+                                        }));
                                       };
                                       reader.readAsDataURL(file);
                                     }}
@@ -603,7 +631,8 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

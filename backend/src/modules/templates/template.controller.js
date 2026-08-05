@@ -1,4 +1,5 @@
 import { templateLogic } from './template.logic.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 
 export const templateController = {
   uploadAdminTemplate: async (req, res, next) => {
@@ -39,10 +40,11 @@ export const templateController = {
 
   getTemplates: async (req, res, next) => {
     try {
-      const templates = await templateLogic.getTemplates(req.query);
-      return res.status(200).json({
-        success: true,
-        data: { templates },
+      const result = await templateLogic.getTemplates(req.query);
+      return sendSuccessResponse(res, {
+        message: 'Templates retrieved successfully',
+        data: result.data,
+        meta: result.meta,
       });
     } catch (error) {
       next(error);

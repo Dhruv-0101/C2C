@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { brandKitApi } from '../services/brandkit.api';
 import { categoryApi } from '../services/category.api';
+import { useCategories } from '../hooks/useCategories';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -53,13 +54,8 @@ export const BrandKitPage = () => {
     queryFn: () => brandKitApi.getBrandKit(),
   });
 
-  // Fetch Business Categories
-  const { data: categoriesResponse } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoryApi.getCategories(),
-  });
-
-  const categories = categoriesResponse?.data?.categories || [];
+  // Fetch Business Categories using central modular hook (requesting limit 10 items)
+  const { categories } = useCategories({ page: 1, limit: 10 });
 
   // Populate form when data is loaded
   useEffect(() => {
@@ -165,10 +161,10 @@ export const BrandKitPage = () => {
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>AI Brand Identity Engine</span>
+            <span>Master Brand Identity Engine</span>
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
-            Configure Your <span className="text-gradient">AI BrandKit</span>
+            Configure Your <span className="text-gradient">Master BrandKit</span>
           </h1>
           <p className="text-sm text-slate-400 max-w-2xl">
             Save your business details, phone, logo, website, and social handles once. BrandFlow will automatically embed them into all generated social graphics!
@@ -179,7 +175,7 @@ export const BrandKitPage = () => {
       {isLoadingBrandKit ? (
         <div className="p-16 text-center text-slate-400">
           <div className="inline-block animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full mb-3" />
-          <p className="text-sm">Loading your AI BrandKit profile...</p>
+          <p className="text-sm">Loading your Master BrandKit profile...</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="max-w-4xl space-y-6">

@@ -4,15 +4,15 @@ import { validate } from '../../common/middleware/validate.middleware.js';
 import { validateImageUpload } from '../../common/middleware/upload.middleware.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { authorize } from '../../common/middleware/role.middleware.js';
-import { createFrameSchema } from './frame.validator.js';
+import { createFrameSchema, getFramesQuerySchema } from './frame.validator.js';
 
 const router = Router();
 
 // All frame routes require authentication
 router.use(authenticate);
 
-// GET /api/frames (Accessible by all users for post compositing)
-router.get('/', frameController.getFrames);
+// GET /api/frames (Accessible by all users with pagination)
+router.get('/', validate(getFramesQuerySchema), frameController.getFrames);
 
 // Admin-only endpoints for creating dynamic frame presets or uploading PNG frames
 router.post(

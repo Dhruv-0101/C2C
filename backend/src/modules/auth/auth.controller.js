@@ -3,6 +3,10 @@ import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import { COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_NAME } from './auth.constants.js';
 import * as authLogic from './auth.logic.js';
 
+/**
+ * Register a new regular user (by default END_USER, non-admin)
+ * Issues JWT Access Token & sets HTTP-Only Refresh Cookie
+ */
 export async function signup(req, res, next) {
   try {
     const result = await authLogic.signupUser(req.body);
@@ -22,6 +26,10 @@ export async function signup(req, res, next) {
   }
 }
 
+/**
+ * Authenticate existing user with email & password
+ * Returns 2FA challenge requirement if 2FA TOTP is enabled on user account
+ */
 export async function login(req, res, next) {
   try {
     const result = await authLogic.loginUser(req.body);
@@ -53,6 +61,10 @@ export async function login(req, res, next) {
   }
 }
 
+/**
+ * Authenticate or auto-register user via Google OAuth2 ID Token
+ * Supports 2FA challenge flow for Google-authenticated users
+ */
 export async function googleLogin(req, res, next) {
   try {
     const result = await authLogic.loginWithGoogle(req.body);
@@ -84,6 +96,10 @@ export async function googleLogin(req, res, next) {
   }
 }
 
+/**
+ * Verify 2FA TOTP authenticator code or single-use recovery code during login
+ * Issues final Access Token and sets HTTP-Only Refresh Cookie upon verification
+ */
 export async function verifyLogin2FA(req, res, next) {
   try {
     const result = await authLogic.verifyLogin2FA(req.body);
@@ -103,6 +119,10 @@ export async function verifyLogin2FA(req, res, next) {
   }
 }
 
+/**
+ * Initiate 2FA TOTP Setup
+ * Generates OTP secret key and QR code URL for Google Authenticator / Authy
+ */
 export async function setup2FA(req, res, next) {
   try {
     const data = await authLogic.setup2FA(req.user.id);
@@ -117,6 +137,10 @@ export async function setup2FA(req, res, next) {
   }
 }
 
+/**
+ * Confirm and enable 2FA TOTP authentication
+ * Issues 8 single-use SHA-256 hashed recovery backup codes
+ */
 export async function enable2FA(req, res, next) {
   try {
     const data = await authLogic.enable2FA(req.user.id, req.body.code);
@@ -131,6 +155,9 @@ export async function enable2FA(req, res, next) {
   }
 }
 
+/**
+ * Disable 2FA TOTP authentication for user account
+ */
 export async function disable2FA(req, res, next) {
   try {
     const data = await authLogic.disable2FA(req.user.id);
@@ -145,6 +172,9 @@ export async function disable2FA(req, res, next) {
   }
 }
 
+/**
+ * Create a new SubAdmin account with delegated permissions (SuperAdmin only)
+ */
 export async function createSubAdmin(req, res, next) {
   try {
     const subAdmin = await authLogic.createSubAdmin(req.body);
@@ -159,20 +189,45 @@ export async function createSubAdmin(req, res, next) {
   }
 }
 
+/**
+ * Retrieve list of delegated SubAdmin accounts with pagination (SuperAdmin only)
+ */
 export async function getSubAdmins(req, res, next) {
   try {
-    const subAdmins = await authLogic.getSubAdmins();
+    const result = await authLogic.getSubAdmins(req.query);
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: 'SubAdmin list retrieved successfully.',
-      data: { subAdmins },
+      data: result.data,
+      meta: result.meta,
     });
   } catch (error) {
     next(error);
   }
 }
 
+/**
+ * Retrieve list of registered end-users with pagination (Admin & SubAdmin)
+ */
+export async function getUsers(req, res, next) {
+  try {
+    const result = await authLogic.getUsers(req.query);
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'Users list retrieved successfully.',
+      data: result.data,
+      meta: result.meta,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Delete a SubAdmin account by ID (SuperAdmin only)
+ */
 export async function deleteSubAdmin(req, res, next) {
   try {
     await authLogic.removeSubAdmin(req.params.id);
@@ -186,6 +241,10 @@ export async function deleteSubAdmin(req, res, next) {
   }
 }
 
+/**
+ * Refresh expired JWT Access Token using HTTP-Only Refresh Cookie
+ * Implements Refresh Token Rotation for enhanced security
+ */
 export async function refresh(req, res, next) {
   try {
     const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME] || req.body?.refreshToken;
@@ -207,6 +266,9 @@ export async function refresh(req, res, next) {
   }
 }
 
+/**
+ * Invalidate Refresh Token session in database and clear HTTP-Only Cookie
+ */
 export async function logout(req, res, next) {
   try {
     const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME] || req.body?.refreshToken;
@@ -224,6 +286,9 @@ export async function logout(req, res, next) {
   }
 }
 
+/**
+ * Fetch authenticated user profile & BrandKit details (/auth/me)
+ */
 export async function getProfile(req, res, next) {
   try {
     const user = await authLogic.getUserProfile(req.user.id);
@@ -238,6 +303,9 @@ export async function getProfile(req, res, next) {
   }
 }
 
+/**
+ * Request password reset link / token via email
+ */
 export async function forgotPassword(req, res, next) {
   try {
     const result = await authLogic.requestPasswordReset({ email: req.body.email });
@@ -250,6 +318,9 @@ export async function forgotPassword(req, res, next) {
   }
 }
 
+/**
+ * Reset user password using verification token
+ */
 export async function resetPassword(req, res, next) {
   try {
     const result = await authLogic.resetPassword({

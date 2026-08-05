@@ -158,6 +158,91 @@ export async function findAllSubAdmins() {
   });
 }
 
+export async function findPaginatedSubAdmins({ skip, take, search, sortBy = 'createdAt', sortOrder = 'desc' }) {
+  const where = { isSubAdmin: true };
+
+  if (search) {
+    where.OR = [
+      { fullName: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  const allowedSortFields = ['createdAt', 'fullName', 'email'];
+  const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
+  const select = {
+    id: true,
+    email: true,
+    fullName: true,
+    role: true,
+    isAdmin: true,
+    isSuperAdmin: true,
+    isSubAdmin: true,
+    allowedTabs: true,
+    isActive: true,
+    createdAt: true,
+  };
+
+  const [subAdmins, totalCount] = await prisma.$transaction([
+    prisma.user.findMany({
+      where,
+      skip,
+      take,
+      select,
+      orderBy: { [validSortBy]: sortOrder },
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return { subAdmins, totalCount };
+}
+
+export async function findPaginatedUsers({ skip, take, search, sortBy = 'createdAt', sortOrder = 'desc' }) {
+  const where = { role: 'END_USER' };
+
+  if (search) {
+    where.OR = [
+      { fullName: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  const allowedSortFields = ['createdAt', 'fullName', 'email'];
+  const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
+  const select = {
+    id: true,
+    email: true,
+    fullName: true,
+    role: true,
+    avatarUrl: true,
+    isActive: true,
+    createdAt: true,
+    brandKit: {
+      select: {
+        businessName: true,
+        phone: true,
+        city: true,
+        country: true,
+      },
+    },
+  };
+
+  const [users, totalCount] = await prisma.$transaction([
+    prisma.user.findMany({
+      where,
+      skip,
+      take,
+      select,
+      orderBy: { [validSortBy]: sortOrder },
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return { users, totalCount };
+}
+
 export async function deleteSubAdminUser(id) {
   return prisma.user.delete({
     where: { id },

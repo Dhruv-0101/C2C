@@ -84,48 +84,101 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         ctx.drawImage(frameOverlayImg, 0, 0, 1080, 1080);
       }
 
-      // 3. LAYER 3: User Logo Rendering
-      if (logoImg && showLogo) {
-        // If Admin configured a specific LOGO_BOX slot in configJson, use its coordinates
-        const logoSlot = frameConfigElements?.find((el) => el.dynamicSlot === 'LOGO_BOX');
-        const lx = logoSlot ? logoSlot.x : 35;
-        const ly = logoSlot ? logoSlot.y : 35;
-        const logoSize = logoSlot ? logoSlot.width : 110;
+      // 3. LAYER 3: Render All Configured Image Slots (Logos, Avatars, Image Slot 1, Image Slot 2...)
+      const imageSlots = frameConfigElements?.filter(
+        (el) => el.slotCategory === 'IMAGE_SLOT' || el.dynamicSlot === 'LOGO_BOX' || el.dynamicSlot === 'AVATAR_CIRCLE'
+      ) || [];
 
-        // Draw White Box background for contrast
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.roundRect(lx - 8, ly - 8, logoSize + 16, logoSize + 16, 12);
-        ctx.fill();
-        ctx.strokeStyle = '#E2E8F0';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+      if (imageSlots.length > 0) {
+        for (const slot of imageSlots) {
+          const slotKey = slot.id || slot.fieldKey || slot.dynamicSlot;
+          const slotUrl =
+            customDetails[slotKey] ||
+            (slot.dynamicSlot === 'AVATAR_CIRCLE'
+              ? (showAvatar ? activeAvatarUrl : null)
+              : slot.dynamicSlot === 'LOGO_BOX'
+              ? (showLogo ? activeLogoUrl : null)
+              : customDetails[slot.fieldKey]);
 
-        ctx.drawImage(logoImg, lx, ly, logoSize, logoSize);
-      }
+          if (slotUrl) {
+            const slotImg = await loadImageCached(slotUrl);
+            if (slotImg) {
+              const rotation = slot.rotation || 0;
+              if (rotation) {
+                const cx = slot.x + slot.width / 2;
+                const cy = slot.y + (slot.height || slot.width) / 2;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate((rotation * Math.PI) / 180);
+                ctx.translate(-cx, -cy);
+              }
 
-      // 4. LAYER 4: Owner Profile Avatar Circle
-      const avatarSlot = frameConfigElements?.find((el) => el.dynamicSlot === 'AVATAR_CIRCLE');
-      const avatarSize = avatarSlot ? avatarSlot.width : 120;
-      const radius = avatarSize / 2;
-      const ax = avatarSlot ? avatarSlot.x + radius : radius + 35;
-      const ay = avatarSlot ? avatarSlot.y + radius : 1080 - radius - 35;
+              const isCircle = slot.type === 'CIRCLE' || slot.dynamicSlot === 'AVATAR_CIRCLE';
+              if (isCircle) {
+                const radius = slot.width / 2;
+                const cx = slot.x + radius;
+                const cy = slot.y + radius;
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
+                ctx.closePath();
+                ctx.clip();
+                ctx.drawImage(slotImg, slot.x, slot.y, slot.width, slot.height || slot.width);
+                ctx.restore();
 
-      if (avatarImg && showAvatar) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(ax, ay, radius, 0, Math.PI * 2, true);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(avatarImg, ax - radius, ay - radius, avatarSize, avatarSize);
-        ctx.restore();
+                if (slot.borderWidth > 0 || slot.borderColor) {
+                  ctx.beginPath();
+                  ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
+                  ctx.lineWidth = slot.borderWidth || 4;
+                  ctx.strokeStyle = slot.borderColor || '#EAB308';
+                  ctx.stroke();
+                }
+              } else {
+                ctx.drawImage(slotImg, slot.x, slot.y, slot.width, slot.height || slot.width);
+                if (slot.borderWidth > 0) {
+                  ctx.strokeStyle = slot.borderColor || '#FFFFFF';
+                  ctx.lineWidth = slot.borderWidth;
+                  ctx.strokeRect(slot.x, slot.y, slot.width, slot.height || slot.width);
+                }
+              }
 
-        // Avatar Outer Ring Border
-        ctx.beginPath();
-        ctx.arc(ax, ay, radius, 0, Math.PI * 2, true);
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = avatarSlot?.borderColor || '#EAB308';
-        ctx.stroke();
+              if (rotation) ctx.restore();
+            }
+          }
+        }
+      } else if (!selectedFrame) {
+        // Fallback Default Logo & Avatar rendering ONLY when no frame is selected
+        if (logoImg && showLogo) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.roundRect(35 - 8, 35 - 8, 110 + 16, 110 + 16, 12);
+          ctx.fill();
+          ctx.strokeStyle = '#E2E8F0';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.drawImage(logoImg, 35, 35, 110, 110);
+        }
+
+        if (avatarImg && showAvatar) {
+          const avatarSize = 120;
+          const radius = avatarSize / 2;
+          const ax = radius + 35;
+          const ay = 1080 - radius - 35;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(ax, ay, radius, 0, Math.PI * 2, true);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(avatarImg, ax - radius, ay - radius, avatarSize, avatarSize);
+          ctx.restore();
+
+          ctx.beginPath();
+          ctx.arc(ax, ay, radius, 0, Math.PI * 2, true);
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = '#EAB308';
+          ctx.stroke();
+        }
       }
 
       // 5. LAYER 5: Dynamic Text Details Overlay
@@ -150,22 +203,49 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
               const icon = textSlot.iconPrefix ? `${textSlot.iconPrefix} ` : '';
 
               if (textSlot.dynamicSlot === 'BUSINESS_NAME') {
-                textVal = customDetails.businessName !== undefined && customDetails.businessName !== '' ? customDetails.businessName : activeBusinessName;
+                textVal = customDetails.businessName || brandKit?.businessName || '';
               } else if (textSlot.dynamicSlot === 'PHONE' && showPhone) {
-                textVal = customDetails.phone ? `📞 ${customDetails.phone}` : (activePhone ? `📞 ${activePhone}` : '');
+                textVal = customDetails.phone || brandKit?.phone || brandKit?.whatsapp || '';
+              } else if (textSlot.dynamicSlot === 'WHATSAPP') {
+                textVal = customDetails.whatsapp || brandKit?.whatsapp || brandKit?.phone || '';
+              } else if (textSlot.dynamicSlot === 'EMAIL') {
+                textVal = customDetails.email || brandKit?.email || '';
+              } else if (textSlot.dynamicSlot === 'INSTAGRAM') {
+                textVal = customDetails.instagramHandle || brandKit?.instagramHandle || '';
+              } else if (textSlot.dynamicSlot === 'FACEBOOK') {
+                textVal = customDetails.facebookHandle || brandKit?.facebookHandle || '';
               } else if (textSlot.dynamicSlot === 'ADDRESS' && showAddress) {
-                textVal = customDetails.address ? `📍 ${customDetails.address}` : (activeAddress ? `📍 ${activeAddress}` : '');
+                textVal = customDetails.address || brandKit?.address || '';
+              } else if (textSlot.dynamicSlot === 'CITY') {
+                textVal = customDetails.city || brandKit?.city || '';
+              } else if (textSlot.dynamicSlot === 'STATE') {
+                textVal = customDetails.state || brandKit?.state || '';
+              } else if (textSlot.dynamicSlot === 'COUNTRY') {
+                textVal = customDetails.country || brandKit?.country || '';
+              } else if (textSlot.dynamicSlot === 'WEBSITE') {
+                textVal = customDetails.websiteUrl || brandKit?.websiteUrl || '';
               } else if (textSlot.dynamicSlot === 'TAGLINE') {
-                textVal = customDetails.tagline !== undefined && customDetails.tagline !== '' ? customDetails.tagline : activeTagline;
+                textVal = customDetails.tagline || brandKit?.tagline || '';
               } else {
                 // Unlimited Custom Field resolution from customDetails
-                const customVal = customDetails[fieldKey] !== undefined ? customDetails[fieldKey] : (customDetails[textSlot.customLabel] !== undefined ? customDetails[textSlot.customLabel] : (textSlot.text || ''));
+                const customVal = customDetails[fieldKey] !== undefined ? customDetails[fieldKey] : (customDetails[textSlot.customLabel] !== undefined ? customDetails[textSlot.customLabel] : '');
                 if (customVal) {
                   textVal = `${icon}${customVal}`;
                 }
               }
 
               if (textVal) {
+                const rotation = textSlot.rotation || 0;
+                if (rotation) {
+                  const elH = (textSlot.fontSize || 24) + 6;
+                  const cx = textSlot.x + textSlot.width / 2;
+                  const cy = textSlot.y + elH / 2;
+                  ctx.save();
+                  ctx.translate(cx, cy);
+                  ctx.rotate((rotation * Math.PI) / 180);
+                  ctx.translate(-cx, -cy);
+                }
+
                 const fontFamily = textSlot.fontFamily || 'Space Grotesk';
                 const fontWeight = textSlot.fontWeight || 'bold';
                 const fontSize = textSlot.fontSize || 24;
@@ -182,23 +262,25 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
                     : textSlot.x;
 
                 ctx.fillText(textVal, tx, textSlot.y);
+
+                if (rotation) ctx.restore();
               }
             });
-        } else {
-          // Default Position Fallback
+        } else if (!selectedFrame) {
+          // Default Position Fallback ONLY when no frame overlay is selected
           const textX = hasAvatar ? 175 : 40;
           const textY = 1005;
 
           if (activeBusinessName) {
             ctx.textAlign = 'left';
-            ctx.fillStyle = selectedFrame ? '#0B0F17' : '#FFFFFF';
+            ctx.fillStyle = '#FFFFFF';
             ctx.font = 'bold 24px "Space Grotesk", sans-serif';
             ctx.fillText(activeBusinessName, textX, textY);
           }
 
           if (activeTagline) {
             ctx.textAlign = 'left';
-            ctx.fillStyle = selectedFrame ? '#475569' : '#94A3B8';
+            ctx.fillStyle = '#94A3B8';
             ctx.font = '14px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(activeTagline, textX, textY + 24);
           }
@@ -206,13 +288,13 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
           ctx.textAlign = 'right';
 
           if (showPhone && activePhone) {
-            ctx.fillStyle = selectedFrame ? '#0B0F17' : '#EAB308';
+            ctx.fillStyle = '#EAB308';
             ctx.font = 'bold 18px "Space Grotesk", sans-serif';
             ctx.fillText(`📞 ${activePhone}`, 1040, textY);
           }
 
           if (showAddress && activeAddress) {
-            ctx.fillStyle = selectedFrame ? '#475569' : '#CBD5E1';
+            ctx.fillStyle = '#CBD5E1';
             ctx.font = '14px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(`📍 ${activeAddress}`, 1040, textY + 24);
           }

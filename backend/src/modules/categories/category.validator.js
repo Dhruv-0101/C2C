@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import { paginationQuerySchema } from '../../common/helpers/pagination.helper.js';
+
+export const getCategoriesQuerySchema = z.object({
+  query: paginationQuerySchema,
+});
 
 export const createCategorySchema = z.object({
   body: z.object({
@@ -10,3 +15,4 @@ export const createCategorySchema = z.object({
     icon: z.string().optional(),
   }),
 });
+

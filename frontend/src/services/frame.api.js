@@ -5,10 +5,11 @@ import { api } from './api.service';
  */
 export const frameApi = {
   /**
-   * Fetch all active frames (Dynamic & PNG Overlays)
+   * Fetch active frames with pagination parameters
+   * @param {{ page?: number, limit?: number, search?: string, sortBy?: string, sortOrder?: string }} [params]
    */
-  getFrames: async () => {
-    return api.get('/frames');
+  getFrames: async (params = {}) => {
+    return api.get('/frames', { params });
   },
 
   /**

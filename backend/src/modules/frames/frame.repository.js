@@ -13,6 +13,34 @@ export const frameRepository = {
     });
   },
 
+  findPaginated: async ({ skip, take, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
+    const where = { isActive: true };
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const allowedSortFields = ['createdAt', 'title', 'updatedAt'];
+    const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
+    const [frames, totalCount] = await prisma.$transaction([
+      prisma.frame.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          [validSortBy]: sortOrder,
+        },
+      }),
+      prisma.frame.count({ where }),
+    ]);
+
+    return { frames, totalCount };
+  },
+
   /**
    * Find frame by ID
    */

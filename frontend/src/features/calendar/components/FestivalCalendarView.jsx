@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -9,9 +11,12 @@ import {
   X,
   Plus,
   Trash2,
+  Search,
 } from 'lucide-react';
 import { festivalApi } from '../../../services/festival.api';
 import { useAuth } from '../../../hooks/useAuth';
+import { useTemplates } from '../../../hooks/useTemplates.js';
+import Pagination from '../../../components/common/Pagination';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
@@ -19,11 +24,33 @@ import { Alert } from '../../../components/ui/Alert';
 import { PostStudioModal } from './PostStudioModal';
 
 export const FestivalCalendarView = ({ onSelectTemplate }) => {
+  const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [festivals, setFestivals] = useState([]);
   const [selectedDayFestivals, setSelectedDayFestivals] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Selected Festival Day Template Search & Central Pagination State
+  const [festivalTemplatePage, setFestivalTemplatePage] = useState(1);
+  const [festivalTemplateLimit, setFestivalTemplateLimit] = useState(6);
+  const [festivalTemplateSearch, setFestivalTemplateSearch] = useState('');
+
+  const activeFestivalId = selectedDayFestivals?.festivals?.[0]?.id;
+
+  const {
+    templates: paginatedFestivalTemplates,
+    meta: festivalTemplatesMeta,
+    isLoading: isLoadingFestivalTemplates,
+  } = useTemplates(
+    {
+      page: festivalTemplatePage,
+      limit: festivalTemplateLimit,
+      search: festivalTemplateSearch,
+      festivalId: activeFestivalId,
+    },
+    { enabled: !!activeFestivalId && !!selectedDayFestivals }
+  );
 
   // Post Studio Modal State
   const [studioTemplate, setStudioTemplate] = useState(null);
@@ -327,187 +354,238 @@ export const FestivalCalendarView = ({ onSelectTemplate }) => {
       </Card>
 
       {/* Add Festival / Special Day Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl overflow-hidden text-slate-100">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#0B0F17]/50">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
-                  <Plus className="w-5 h-5" />
+      {isAddModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn overflow-y-auto">
+            <div className="relative w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl overflow-hidden text-slate-100">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#0B0F17]/50">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-bold text-lg text-white">Add Festival / Special Day</h3>
+                    <p className="text-xs text-slate-400">Mark a new event on the interactive calendar</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-heading font-bold text-lg text-white">Add Festival / Special Day</h3>
-                  <p className="text-xs text-slate-400">Mark a new event on the interactive calendar</p>
-                </div>
+                <button
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <form onSubmit={handleAddFestivalSubmit} className="p-6 space-y-4">
-              {addFestError && <Alert variant="error" message={addFestError} />}
+              <form onSubmit={handleAddFestivalSubmit} className="p-6 space-y-4">
+                {addFestError && <Alert variant="error" message={addFestError} />}
 
-              <Input
-                label="Festival / Day Name"
-                placeholder="e.g. Diwali, Holi, Republic Day"
-                value={newFestName}
-                onChange={(e) => setNewFestName(e.target.value)}
-                required
-              />
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={newFestDate}
-                  onChange={(e) => setNewFestDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-mono"
+                <Input
+                  label="Festival / Day Name"
+                  placeholder="e.g. Diwali, Holi, Republic Day"
+                  value={newFestName}
+                  onChange={(e) => setNewFestName(e.target.value)}
                   required
                 />
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Description (Optional)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Festival background or celebration details..."
-                  value={newFestDescription}
-                  onChange={(e) => setNewFestDescription(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newFestDate}
+                    onChange={(e) => setNewFestDate(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-mono"
+                    required
+                  />
+                </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
-                <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" isLoading={isSubmittingFest} icon={Plus}>
-                  Save Festival
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Festival background or celebration details..."
+                    value={newFestDescription}
+                    onChange={(e) => setNewFestDescription(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
+                  <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" type="submit" isLoading={isSubmittingFest} icon={Plus}>
+                    Save Festival
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* Selected Festival Day Drawer / Modal */}
-      {selectedDayFestivals && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-3xl bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl overflow-hidden text-slate-100 max-h-[85vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#0B0F17]/50">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
-                  <Flame className="w-5 h-5" />
+      {selectedDayFestivals &&
+        createPortal(
+          <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn overflow-y-auto">
+            <div className="relative w-full max-w-3xl bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl overflow-hidden text-slate-100 max-h-[85vh] flex flex-col">
+              {/* Modal Header */}
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#0B0F17]/50 gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                    <Flame className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-bold text-lg text-white">
+                      {selectedDayFestivals.festivals.map((f) => f.name).join(', ')}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      {selectedDayFestivals.dateKey} • Admin Base Templates Showcase
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-heading font-bold text-lg text-white">
-                    {selectedDayFestivals.festivals.map((f) => f.name).join(', ')}
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    {selectedDayFestivals.dateKey} • Admin Base Templates Showcase
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedDayFestivals(null)}
-                className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              {selectedDayFestivals.festivals.map((fest) => (
-                <div key={fest.id} className="space-y-4">
-                  <div className="flex items-start justify-between border-b border-slate-800 pb-3">
-                    <div>
-                      <h4 className="font-heading font-extrabold text-xl text-white">
-                        {fest.name}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {fest.description || 'Special celebration day.'}
-                      </p>
-                    </div>
-
-                    {isAdmin && (
-                      <button
-                        onClick={() => handleDeleteFestival(fest.id)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
-                        title="Delete Festival"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                <div className="flex items-center gap-3">
+                  {/* Template Search Bar */}
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search templates..."
+                      value={festivalTemplateSearch}
+                      onChange={(e) => {
+                        setFestivalTemplateSearch(e.target.value);
+                        setFestivalTemplatePage(1);
+                      }}
+                      className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
+                    />
                   </div>
 
-                  {fest.templates && fest.templates.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {fest.templates.map((tpl) => (
-                        <div
-                          key={tpl.id}
-                          className="group relative rounded-xl border border-slate-800 bg-[#0B0F17] overflow-hidden hover:border-amber-500/60 transition-all shadow-md"
-                        >
-                          <img
-                            src={tpl.baseImageUrl}
-                            alt={tpl.title}
-                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
-                            <h5 className="font-semibold text-sm text-white line-clamp-1">
-                              {tpl.title}
-                            </h5>
-                            {tpl.description && (
-                              <p className="text-xs text-slate-300 line-clamp-1 mt-0.5">
-                                {tpl.description}
-                              </p>
-                            )}
-                            <div className="mt-3">
-                              <Button
-                                size="sm"
-                                variant="primary"
-                                className="w-full justify-center text-xs"
-                                onClick={() => {
-                                  setStudioTemplate(tpl);
-                                  setIsStudioOpen(true);
-                                  setSelectedDayFestivals(null);
-                                  if (onSelectTemplate) onSelectTemplate(tpl);
-                                }}
-                              >
-                                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                                Generate Branded Post
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center border border-dashed border-slate-800 rounded-xl bg-slate-900/40">
-                      <ImageIcon className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-slate-300">
-                        No base graphics uploaded yet for {fest.name}.
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        SuperAdmins can upload base graphics from the Admin Console.
-                      </p>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => {
+                      setSelectedDayFestivals(null);
+                      setFestivalTemplateSearch('');
+                      setFestivalTemplatePage(1);
+                    }}
+                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-              ))}
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 overflow-y-auto space-y-6 flex-1">
+                {selectedDayFestivals.festivals.map((fest) => {
+                  const displayTemplates = (activeFestivalId === fest.id && paginatedFestivalTemplates)
+                    ? paginatedFestivalTemplates
+                    : (fest.templates?.filter((t) => t.festivalId === fest.id) || []);
+
+                  return (
+                    <div key={fest.id} className="space-y-4">
+                      <div className="flex items-start justify-between border-b border-slate-800 pb-3">
+                        <div>
+                          <h4 className="font-heading font-extrabold text-xl text-white">
+                            {fest.name}
+                          </h4>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {fest.description || 'Special celebration day.'}
+                          </p>
+                        </div>
+
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDeleteFestival(fest.id)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
+                            title="Delete Festival"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      {isLoadingFestivalTemplates ? (
+                        <div className="p-8 text-center text-slate-400 text-sm">Loading festival templates...</div>
+                      ) : displayTemplates.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {displayTemplates.map((tpl) => (
+                              <div
+                                key={tpl.id}
+                                className="group relative rounded-xl border border-slate-800 bg-[#0B0F17] overflow-hidden hover:border-amber-500/60 transition-all shadow-md"
+                              >
+                                <img
+                                  src={tpl.baseImageUrl}
+                                  alt={tpl.title}
+                                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+                                  <h5 className="font-semibold text-sm text-white line-clamp-1">
+                                    {tpl.title}
+                                  </h5>
+                                  {tpl.description && (
+                                    <p className="text-xs text-slate-300 line-clamp-1 mt-0.5">
+                                      {tpl.description}
+                                    </p>
+                                  )}
+                                  <div className="mt-3">
+                                    <Button
+                                      size="sm"
+                                      variant="primary"
+                                      className="w-full justify-center text-xs"
+                                      onClick={() => {
+                                        setSelectedDayFestivals(null);
+                                        if (onSelectTemplate) {
+                                          onSelectTemplate(tpl);
+                                        } else {
+                                          navigate(`/create-post?templateId=${tpl.id}`, { state: { template: tpl } });
+                                        }
+                                      }}
+                                    >
+                                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                                      Generate Branded Post
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Central Modular Pagination */}
+                          {activeFestivalId === fest.id && festivalTemplatesMeta && (
+                            <Pagination
+                              meta={festivalTemplatesMeta}
+                              onPageChange={(newPage) => setFestivalTemplatePage(newPage)}
+                              onLimitChange={(newLimit) => {
+                                setFestivalTemplateLimit(newLimit);
+                                setFestivalTemplatePage(1);
+                              }}
+                              pageSizeOptions={[6, 12, 24]}
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="p-6 text-center border border-dashed border-slate-800 rounded-xl bg-slate-900/40">
+                          <ImageIcon className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                          <p className="text-sm font-semibold text-slate-300">
+                            No base graphics uploaded yet for {fest.name}.
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            SuperAdmins can upload base graphics from the Admin Console.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Post Studio Compositor Modal */}
       <PostStudioModal

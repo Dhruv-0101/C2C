@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import { paginationQuerySchema } from '../../common/helpers/pagination.helper.js';
+
+export const getTemplatesQuerySchema = z.object({
+  query: paginationQuerySchema.extend({
+    festivalId: z.string().optional(),
+  }),
+});
 
 export const createTemplateSchema = z.object({
   body: z.object({

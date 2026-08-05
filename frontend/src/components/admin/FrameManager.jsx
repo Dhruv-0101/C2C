@@ -25,12 +25,18 @@ import {
   Copy,
   Layout,
   RefreshCw,
+  RotateCw,
+  Search,
 } from 'lucide-react';
 import { frameApi } from '../../services/frame.api';
+import { useFrames } from '../../hooks/useFrames';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
+import { FeedbackModal } from '../common/FeedbackModal';
+import Pagination from '../common/Pagination';
+import { useFeedbackModal } from '../../hooks/useFeedbackModal';
 
 /**
  * Canva-Style Interactive Vector Frame Studio with Plain White Canvas Stage
@@ -39,6 +45,7 @@ import { Alert } from '../ui/Alert';
 export const FrameManager = () => {
   const queryClient = useQueryClient();
   const canvasRef = useRef(null);
+  const { modalProps, showSuccess, showError } = useFeedbackModal();
   const [activeTab, setActiveTab] = useState('canva'); // 'canva' | 'upload' | 'manage'
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -181,13 +188,21 @@ export const FrameManager = () => {
     initialHeight: 0,
   });
 
-  // Fetch Existing Frames from DB
-  const { data: framesResponse, isLoading: isLoadingFrames } = useQuery({
-    queryKey: ['frames'],
-    queryFn: () => frameApi.getFrames(),
-  });
+  // Pagination & Search State for Active Frames
+  const [framePage, setFramePage] = useState(1);
+  const [frameLimit, setFrameLimit] = useState(8);
+  const [frameSearch, setFrameSearch] = useState('');
 
-  const frames = framesResponse?.data?.frames || [];
+  // Fetch Existing Frames from DB using central modular hook
+  const {
+    frames,
+    meta: framesPaginationMeta,
+    isLoading: isLoadingFrames,
+  } = useFrames({
+    page: framePage,
+    limit: frameLimit,
+    search: frameSearch,
+  });
 
   // Create Frame Mutation
   const createFrameMutation = useMutation({
@@ -197,11 +212,14 @@ export const FrameManager = () => {
       setSuccessMsg('🎉 Canva Frame converted to transparent PNG and saved to Cloud & DB!');
       setErrorMsg('');
       setUploadData({ title: '', description: '', base64Overlay: '', overlayPreview: '' });
-      setTimeout(() => setSuccessMsg(''), 4000);
+      showSuccess(
+        'Frame Published! 🖼️',
+        'Canva Frame overlay and vector blueprints saved to database successfully.'
+      );
     },
     onError: (err) => {
       setErrorMsg(err.message || 'Failed to publish Canva frame.');
-      setSuccessMsg('');
+      showError('Frame Creation Failed ⚠️', err.message || 'Failed to publish Canva frame.');
     },
   });
 
@@ -210,8 +228,10 @@ export const FrameManager = () => {
     mutationFn: (id) => frameApi.deleteFrame(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['frames']);
-      setSuccessMsg('Frame deleted successfully.');
-      setTimeout(() => setSuccessMsg(''), 3000);
+      showSuccess('Frame Removed 🗑️', 'Canva Frame template deleted from database.');
+    },
+    onError: (err) => {
+      showError('Delete Failed ⚠️', err.message || 'Failed to delete frame.');
     },
   });
 
@@ -248,6 +268,15 @@ export const FrameManager = () => {
     // Render Each Element Layer in order
     elements.forEach((el) => {
       ctx.save();
+      const elH = el.type === 'TEXT' ? (el.fontSize || 24) + 6 : el.height;
+      const rotation = el.rotation || 0;
+      if (rotation) {
+        const cx = el.x + el.width / 2;
+        const cy = el.y + elH / 2;
+        ctx.translate(cx, cy);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.translate(-cx, -cy);
+      }
 
       if (el.type === 'RECTANGLE' || el.type === 'CAPSULE') {
         ctx.fillStyle = el.fillColor || '#000000';
@@ -498,6 +527,11 @@ export const FrameManager = () => {
       newEl.fontColor = '#0B0F17';
       newEl.textAlign = 'left';
       newEl.text = 'Custom Text Label';
+      newEl.name = 'Custom Text Label';
+      newEl.customLabel = 'Custom Text Label';
+      newEl.fieldKey = 'custom_text_label';
+      newEl.slotCategory = 'TEXT_INPUT';
+      newEl.dynamicSlot = 'CUSTOM_FIELD';
     } else if (type === 'CAPSULE') {
       newEl.width = 350;
       newEl.height = 60;
@@ -511,7 +545,30 @@ export const FrameManager = () => {
   // UPDATE SELECTED ELEMENT PROPERTIES
   const updateSelectedElement = (props) => {
     setElements((prev) =>
-      prev.map((el) => (el.id === selectedId ? { ...el, ...props } : el))
+      prev.map((el) => {
+        if (el.id === selectedId) {
+          const updated = { ...el, ...props };
+
+          // Synchronize Element Layer Name (name) and Input Field Name (customLabel)
+          if (props.name !== undefined || props.customLabel !== undefined) {
+            const val = props.name !== undefined ? props.name : props.customLabel;
+            updated.name = val;
+            updated.customLabel = val;
+            updated.fieldKey = val.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          }
+
+          // Compulsory Dynamic Text Input category for Text elements
+          if (updated.type === 'TEXT') {
+            updated.slotCategory = 'TEXT_INPUT';
+            if (!updated.dynamicSlot || updated.dynamicSlot === 'NONE') {
+              updated.dynamicSlot = 'CUSTOM_FIELD';
+            }
+          }
+
+          return updated;
+        }
+        return el;
+      })
     );
   };
 
@@ -579,6 +636,16 @@ export const FrameManager = () => {
       // Render ONLY shapes and dynamic slots (transparent background!)
       elements.forEach((el) => {
         ctx.save();
+        const elH = el.type === 'TEXT' ? (el.fontSize || 24) + 6 : el.height;
+        const rotation = el.rotation || 0;
+        if (rotation) {
+          const cx = el.x + el.width / 2;
+          const cy = el.y + elH / 2;
+          ctx.translate(cx, cy);
+          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.translate(-cx, -cy);
+        }
+
         if (el.type === 'RECTANGLE' || el.type === 'CAPSULE') {
           ctx.fillStyle = el.fillColor || '#000000';
           ctx.beginPath();
@@ -590,14 +657,6 @@ export const FrameManager = () => {
             ctx.strokeStyle = el.borderColor || '#FFFFFF';
             ctx.lineWidth = el.borderWidth;
             ctx.stroke();
-          }
-
-          if (el.dynamicSlot === 'LOGO_BOX' || (el.slotCategory === 'IMAGE_SLOT' && el.type !== 'CIRCLE')) {
-            ctx.fillStyle = el.fillColor === '#FFFFFF' || !el.fillColor ? '#0B0F17' : '#FFFFFF';
-            ctx.font = 'bold 20px "Space Grotesk", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🏢 LOGO', el.x + el.width / 2, el.y + el.height / 2);
           }
         } else if (el.type === 'CIRCLE') {
           const radius = el.width / 2;
@@ -614,15 +673,9 @@ export const FrameManager = () => {
             ctx.lineWidth = el.borderWidth;
             ctx.stroke();
           }
-
-          if (el.dynamicSlot === 'AVATAR_CIRCLE' || (el.slotCategory === 'IMAGE_SLOT' && el.type === 'CIRCLE')) {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 16px "Space Grotesk", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('👤 PHOTO', cx, cy);
-          }
         }
+        // NOTE: Dynamic TEXT elements and logo/avatar placeholders are NOT drawn onto static PNG overlay.
+        // They are rendered dynamically at 60 FPS in useCanvasCompositor from user's BrandKit & custom inputs.
         ctx.restore();
       });
 
@@ -694,18 +747,6 @@ export const FrameManager = () => {
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Canva Vector Builder</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('upload')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-              activeTab === 'upload'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Upload Pre-made PNG</span>
           </button>
 
           <button
@@ -832,25 +873,29 @@ export const FrameManager = () => {
 
                 <Input
                   label="Element Layer Name"
-                  value={selectedElement.name}
-                  onChange={(e) => updateSelectedElement({ name: e.target.value })}
+                  placeholder="e.g. Phone Number, Instagram Handle, Branch 2 Address"
+                  value={selectedElement.name || selectedElement.customLabel || ''}
+                  onChange={(e) => updateSelectedElement({ name: e.target.value, customLabel: e.target.value })}
                 />
 
                 {/* 100% Free-form Dynamic Field Configuration */}
                 <div className="space-y-3 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
-                      Element Slot Category
+                      Element Slot Category {selectedElement.type === 'TEXT' ? '(Compulsory Text Input)' : ''}
                     </label>
                     <select
                       value={
-                        selectedElement.slotCategory ||
-                        (selectedElement.dynamicSlot === 'LOGO_BOX' || selectedElement.dynamicSlot === 'AVATAR_CIRCLE'
-                          ? 'IMAGE_SLOT'
-                          : selectedElement.dynamicSlot !== 'NONE'
+                        selectedElement.type === 'TEXT'
                           ? 'TEXT_INPUT'
-                          : 'STATIC')
+                          : selectedElement.slotCategory ||
+                            (selectedElement.dynamicSlot === 'LOGO_BOX' || selectedElement.dynamicSlot === 'AVATAR_CIRCLE'
+                              ? 'IMAGE_SLOT'
+                              : selectedElement.dynamicSlot !== 'NONE'
+                              ? 'TEXT_INPUT'
+                              : 'STATIC')
                       }
+                      disabled={selectedElement.type === 'TEXT'}
                       onChange={(e) => {
                         const cat = e.target.value;
                         if (cat === 'STATIC') {
@@ -861,6 +906,7 @@ export const FrameManager = () => {
                             type: 'TEXT',
                             dynamicSlot: selectedElement.dynamicSlot !== 'NONE' ? selectedElement.dynamicSlot : 'CUSTOM_FIELD',
                             customLabel: selectedElement.customLabel || selectedElement.name || 'Text Field',
+                            name: selectedElement.customLabel || selectedElement.name || 'Text Field',
                             fieldKey: selectedElement.fieldKey || `field_${Date.now()}`,
                           });
                         } else if (cat === 'IMAGE_SLOT') {
@@ -869,56 +915,58 @@ export const FrameManager = () => {
                             type: selectedElement.type === 'CIRCLE' ? 'CIRCLE' : 'RECTANGLE',
                             dynamicSlot: selectedElement.dynamicSlot === 'AVATAR_CIRCLE' ? 'AVATAR_CIRCLE' : 'LOGO_BOX',
                             customLabel: selectedElement.customLabel || selectedElement.name || 'Image Slot',
+                            name: selectedElement.customLabel || selectedElement.name || 'Image Slot',
                             fieldKey: selectedElement.fieldKey || `img_${Date.now()}`,
                           });
                         }
                       }}
-                      className="w-full px-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold focus:outline-none focus:border-amber-500"
+                      className={`w-full px-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold focus:outline-none focus:border-amber-500 ${
+                        selectedElement.type === 'TEXT' ? 'opacity-80 cursor-not-allowed border-amber-500/50' : ''
+                      }`}
                     >
-                      <option value="STATIC">🎨 Static Shape (Decorative Background / Bar)</option>
-                      <option value="TEXT_INPUT">✍️ Dynamic Text Input (User types text e.g. Phone, Name, Handle)</option>
-                      <option value="IMAGE_SLOT">🖼️ Dynamic PNG Image Slot (User uploads Logo, Headshot, QR Code)</option>
+                      {selectedElement.type === 'TEXT' ? (
+                        <option value="TEXT_INPUT">✍️ Dynamic Text Input (Compulsory for Text)</option>
+                      ) : (
+                        <>
+                          <option value="STATIC">🎨 Static Shape (Decorative Background / Bar)</option>
+                          <option value="TEXT_INPUT">✍️ Dynamic Text Input (User types text e.g. Phone, Name, Handle)</option>
+                          <option value="IMAGE_SLOT">🖼️ Dynamic PNG Image Slot (User uploads Logo, Headshot, QR Code)</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
                   {/* IF TEXT INPUT SLOT */}
-                  {(selectedElement.slotCategory === 'TEXT_INPUT' || (selectedElement.type === 'TEXT' && selectedElement.dynamicSlot !== 'NONE')) && (
+                  {(selectedElement.slotCategory === 'TEXT_INPUT' || selectedElement.type === 'TEXT' || selectedElement.dynamicSlot !== 'NONE') && (
                     <div className="space-y-2 pt-2 border-t border-[#2C384E]">
                       <Input
                         label="Input Field Name (What user sees)"
                         placeholder="e.g. Phone Number, Instagram Handle, Branch 2 Address"
                         value={selectedElement.customLabel || selectedElement.name || ''}
-                        onChange={(e) =>
-                          updateSelectedElement({
-                            customLabel: e.target.value,
-                            name: e.target.value,
-                            fieldKey: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-                          })
-                        }
+                        onChange={(e) => updateSelectedElement({ customLabel: e.target.value, name: e.target.value })}
                       />
 
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          label="Icon / Symbol Prefix"
-                          placeholder="e.g. 📞, 📍, 📷, 🌐, ✉️, 🏷️"
-                          value={selectedElement.iconPrefix || ''}
-                          onChange={(e) => updateSelectedElement({ iconPrefix: e.target.value })}
-                        />
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] text-slate-300 font-semibold block">BrandKit Auto-Fill</label>
-                          <select
-                            value={selectedElement.dynamicSlot || 'CUSTOM_FIELD'}
-                            onChange={(e) => updateSelectedElement({ dynamicSlot: e.target.value })}
-                            className="w-full px-2 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs"
-                          >
-                            <option value="CUSTOM_FIELD">Custom Input Field</option>
-                            <option value="BUSINESS_NAME">Business Name</option>
-                            <option value="PHONE">Phone Number</option>
-                            <option value="ADDRESS">Address / City</option>
-                            <option value="TAGLINE">Tagline / Designation</option>
-                          </select>
-                        </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-300 font-semibold block">BrandKit Auto-Fill</label>
+                        <select
+                          value={selectedElement.dynamicSlot || 'CUSTOM_FIELD'}
+                          onChange={(e) => updateSelectedElement({ dynamicSlot: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
+                        >
+                          <option value="CUSTOM_FIELD">Custom Input Field (Manual User Entry)</option>
+                          <option value="BUSINESS_NAME">Business Name</option>
+                          <option value="PHONE">Phone Number</option>
+                          <option value="WHATSAPP">WhatsApp Number</option>
+                          <option value="EMAIL">Email Address</option>
+                          <option value="INSTAGRAM">Instagram Handle (@username)</option>
+                          <option value="FACEBOOK">Facebook Handle / Page</option>
+                          <option value="ADDRESS">Address / Street</option>
+                          <option value="CITY">City</option>
+                          <option value="STATE">State</option>
+                          <option value="COUNTRY">Country</option>
+                          <option value="WEBSITE">Website URL (www.site.com)</option>
+                          <option value="TAGLINE">Tagline / Designation / Slogan</option>
+                        </select>
                       </div>
                     </div>
                   )}
@@ -1021,6 +1069,71 @@ export const FrameManager = () => {
                   </div>
                 </div>
 
+                {/* Element Rotation Angle Configuration */}
+                <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                      <RotateCw className="w-3.5 h-3.5" />
+                      <span>Element Rotation Angle</span>
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => updateSelectedElement({ rotation: (Number(selectedElement.rotation || 0) - 15 + 360) % 360 })}
+                        className="px-1.5 py-0.5 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white font-bold text-[10px] transition"
+                        title="-15 degrees"
+                      >
+                        -15°
+                      </button>
+                      <input
+                        type="number"
+                        min="-360"
+                        max="360"
+                        value={selectedElement.rotation || 0}
+                        onChange={(e) => updateSelectedElement({ rotation: Number(e.target.value) })}
+                        className="w-14 px-1 py-0.5 rounded bg-[#131B2A] border border-[#2C384E] text-amber-400 text-xs font-mono text-center font-extrabold focus:outline-none focus:border-amber-500"
+                      />
+                      <span className="text-amber-400 font-bold text-xs">°</span>
+                      <button
+                        type="button"
+                        onClick={() => updateSelectedElement({ rotation: (Number(selectedElement.rotation || 0) + 15) % 360 })}
+                        className="px-1.5 py-0.5 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white font-bold text-[10px] transition"
+                        title="+15 degrees"
+                      >
+                        +15°
+                      </button>
+                    </div>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="-180"
+                    max="180"
+                    step="5"
+                    value={selectedElement.rotation || 0}
+                    onChange={(e) => updateSelectedElement({ rotation: Number(e.target.value) })}
+                    className="w-full accent-amber-500 cursor-pointer"
+                  />
+
+                  {/* Quick Angle Presets */}
+                  <div className="flex flex-wrap gap-1">
+                    {[0, 15, 30, 45, 90, 180, 270, 315, -15, -45].map((ang) => (
+                      <button
+                        key={ang}
+                        type="button"
+                        onClick={() => updateSelectedElement({ rotation: ang })}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold font-mono transition border ${
+                          (selectedElement.rotation || 0) === ang
+                            ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow'
+                            : 'bg-[#131B2A] text-slate-400 border-[#2C384E] hover:text-white hover:border-slate-600'
+                        }`}
+                      >
+                        {ang}°
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Fill & Border Colors */}
                 {selectedElement.type !== 'TEXT' && (
                   <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
@@ -1097,29 +1210,84 @@ export const FrameManager = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-300 uppercase block">Font Size ({selectedElement.fontSize || 24}px)</label>
-                        <input
-                          type="range"
-                          min="10"
-                          max="80"
-                          value={selectedElement.fontSize || 24}
-                          onChange={(e) => updateSelectedElement({ fontSize: Number(e.target.value) })}
-                          className="w-full accent-amber-500"
-                        />
+                    {/* Font Size & Text Color Controls */}
+                    <div className="space-y-3 pt-2 border-t border-[#2C384E]">
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Interactive Font Size Picker */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase block">Font Size</label>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => updateSelectedElement({ fontSize: Math.max(8, (selectedElement.fontSize || 24) - 2) })}
+                                className="w-5 h-5 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center transition"
+                                title="Decrease Font Size"
+                              >
+                                -
+                              </button>
+                              <input
+                                type="number"
+                                min="8"
+                                max="200"
+                                value={selectedElement.fontSize || 24}
+                                onChange={(e) => updateSelectedElement({ fontSize: Math.min(200, Math.max(8, Number(e.target.value))) })}
+                                className="w-12 px-1 py-0.5 rounded bg-[#131B2A] border border-[#2C384E] text-amber-400 text-xs font-mono text-center font-extrabold focus:outline-none focus:border-amber-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => updateSelectedElement({ fontSize: Math.min(200, (selectedElement.fontSize || 24) + 2) })}
+                                className="w-5 h-5 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center transition"
+                                title="Increase Font Size"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <input
+                            type="range"
+                            min="8"
+                            max="140"
+                            value={selectedElement.fontSize || 24}
+                            onChange={(e) => updateSelectedElement({ fontSize: Number(e.target.value) })}
+                            className="w-full accent-amber-500 cursor-pointer"
+                          />
+                        </div>
+
+                        {/* Text Color Picker */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase block">Text Color</label>
+                          <div className="flex items-center gap-2 p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E]">
+                            <input
+                              type="color"
+                              value={selectedElement.fontColor || '#0B0F17'}
+                              onChange={(e) => updateSelectedElement({ fontColor: e.target.value })}
+                              className="w-6 h-6 rounded cursor-pointer bg-transparent border-0"
+                            />
+                            <span className="font-mono text-xs text-white uppercase font-bold">{selectedElement.fontColor || '#0B0F17'}</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-300 uppercase block">Text Color</label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={selectedElement.fontColor || '#0B0F17'}
-                            onChange={(e) => updateSelectedElement({ fontColor: e.target.value })}
-                            className="w-8 h-8 rounded cursor-pointer bg-transparent border-0"
-                          />
-                          <span className="font-mono text-xs text-white uppercase">{selectedElement.fontColor || '#0B0F17'}</span>
+                      {/* Quick Font Size Presets */}
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Quick Font Sizes</span>
+                        <div className="flex flex-wrap gap-1">
+                          {[14, 18, 24, 32, 40, 48, 64, 80, 96, 120].map((sz) => (
+                            <button
+                              key={sz}
+                              type="button"
+                              onClick={() => updateSelectedElement({ fontSize: sz })}
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold font-mono transition border ${
+                                (selectedElement.fontSize || 24) === sz
+                                  ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow'
+                                  : 'bg-[#131B2A] text-slate-400 border-[#2C384E] hover:text-white hover:border-slate-600'
+                              }`}
+                            >
+                              {sz}px
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -1227,111 +1395,89 @@ export const FrameManager = () => {
         </div>
       )}
 
-      {/* TAB 2: Upload Pre-made PNG */}
-      {activeTab === 'upload' && (
-        <form onSubmit={handleSaveUploadFrame} className="max-w-2xl mx-auto space-y-6">
-          <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
-            <h3 className="font-heading font-bold text-lg text-white border-b border-[#2C384E] pb-3 flex items-center gap-2">
-              <Upload className="w-5 h-5 text-amber-400" />
-              <span>Upload Custom Transparent PNG Frame Overlay</span>
+      {/* Active Frames Grid & Management */}
+      {activeTab === 'manage' && (
+        <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-5">
+          {/* Header and Search Bar */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
+              <Eye className="w-5 h-5 text-amber-400" />
+              <span>Active Transparent PNG Frames</span>
             </h3>
 
-            <Input
-              label="Frame Title"
-              placeholder="e.g. Photoshop Luxury Floral Frame"
-              value={uploadData.title}
-              onChange={(e) => setUploadData({ ...uploadData, title: e.target.value })}
-              required
-            />
-
-            <Input
-              label="Description"
-              placeholder="e.g. Transparent PNG overlay designed in Photoshop or Canva"
-              value={uploadData.description}
-              onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
-            />
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
-                Transparent PNG File (1080x1080)
-              </label>
-              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#2C384E] rounded-xl bg-[#0B0F17] hover:border-amber-500/50 transition">
-                {uploadData.overlayPreview ? (
-                  <div className="relative w-32 h-32 rounded-lg border border-slate-700 bg-slate-900 overflow-hidden flex items-center justify-center p-1">
-                    <img src={uploadData.overlayPreview} alt="Overlay" className="w-full h-full object-contain" />
-                  </div>
-                ) : (
-                  <div className="text-center space-y-2">
-                    <ImageIcon className="w-10 h-10 text-slate-500 mx-auto" />
-                    <span className="text-xs text-slate-400 block">Drag & drop transparent PNG frame or click to browse</span>
-                  </div>
-                )}
-                <label className="mt-4 cursor-pointer px-4 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold text-xs rounded-xl hover:bg-amber-500/20 transition">
-                  Browse PNG File
-                  <input type="file" accept="image/png" onChange={handleOverlayFileChange} className="hidden" />
-                </label>
-              </div>
+            {/* Frame Search Input */}
+            <div className="relative flex-1 max-w-sm">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search frames by title..."
+                value={frameSearch}
+                onChange={(e) => {
+                  setFrameSearch(e.target.value);
+                  setFramePage(1);
+                }}
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-sm focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
+              />
             </div>
-
-            <div className="flex justify-end pt-3 border-t border-[#2C384E]">
-              <Button
-                type="submit"
-                variant="primary"
-                icon={Upload}
-                isLoading={createFrameMutation.isPending}
-              >
-                Upload PNG Frame to Database
-              </Button>
-            </div>
-          </Card>
-        </form>
-      )}
-
-      {/* TAB 3: Active Frames Grid */}
-      {activeTab === 'manage' && (
-        <div className="space-y-4">
-          <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-            <Eye className="w-5 h-5 text-amber-400" />
-            <span>Active Transparent PNG Frames ({frames.length})</span>
-          </h3>
+          </div>
 
           {isLoadingFrames ? (
             <div className="p-12 text-center text-slate-400">Loading frames...</div>
           ) : frames.length === 0 ? (
-            <Card className="p-8 text-center text-slate-400">
-              No frames created yet. Use the Canva Vector Builder or Upload form to add your first frame!
-            </Card>
+            <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3">
+              <ImageIcon className="w-10 h-10 text-slate-600 mx-auto" />
+              <p className="text-slate-300 font-semibold text-sm">No frames found.</p>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Use the Canva Vector Builder to design and publish your first frame overlay!
+              </p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {frames.map((f) => (
-                <Card key={f.id} className="border-[#2C384E] bg-[#131B2A] p-4 space-y-3 relative group">
-                  <div className="aspect-square rounded-lg bg-slate-950 border border-slate-800 p-2 flex items-center justify-center overflow-hidden relative">
-                    {f.overlayPngUrl ? (
-                      <img src={f.overlayPngUrl} alt={f.title} className="w-full h-full object-contain" />
-                    ) : (
-                      <span className="text-xs text-slate-500">No PNG Image</span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="truncate pr-2">
-                      <h4 className="text-xs font-bold text-white truncate">{f.title}</h4>
-                      {f.description && <p className="text-[10px] text-slate-400 truncate">{f.description}</p>}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {frames.map((f) => (
+                  <Card key={f.id} className="border-[#2C384E] bg-[#0B0F17] p-4 space-y-3 relative group hover:border-amber-500/50 transition">
+                    <div className="aspect-square rounded-lg bg-slate-950 border border-slate-800 p-2 flex items-center justify-center overflow-hidden relative">
+                      {f.overlayPngUrl ? (
+                        <img src={f.overlayPngUrl} alt={f.title} className="w-full h-full object-contain" />
+                      ) : (
+                        <span className="text-xs text-slate-500">No PNG Image</span>
+                      )}
                     </div>
-                    <button
-                      onClick={() => deleteFrameMutation.mutate(f.id)}
-                      className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition shrink-0"
-                      title="Delete Frame"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </Card>
-              ))}
+
+                    <div className="flex items-center justify-between">
+                      <div className="truncate pr-2">
+                        <h4 className="text-xs font-bold text-white truncate">{f.title}</h4>
+                        {f.description && <p className="text-[10px] text-slate-400 truncate">{f.description}</p>}
+                      </div>
+                      <button
+                        onClick={() => deleteFrameMutation.mutate(f.id)}
+                        className="p-1.5 rounded bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition shrink-0"
+                        title="Delete Frame"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Central Modular Pagination */}
+              <Pagination
+                meta={framesPaginationMeta}
+                onPageChange={(newPage) => setFramePage(newPage)}
+                onLimitChange={(newLimit) => {
+                  setFrameLimit(newLimit);
+                  setFramePage(1);
+                }}
+                pageSizeOptions={[4, 8, 12, 24]}
+              />
             </div>
           )}
-        </div>
+        </Card>
       )}
+
+      {/* Reusable Feedback Modal */}
+      <FeedbackModal {...modalProps} />
     </div>
   );
 };

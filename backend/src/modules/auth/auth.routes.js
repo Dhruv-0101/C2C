@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireSuperAdmin } from '../../common/middleware/role.middleware.js';
+import { requireSuperAdmin, requireAdmin } from '../../common/middleware/role.middleware.js';
 import { authLimiter } from '../../common/middleware/rate-limiter.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import * as authController from './auth.controller.js';
@@ -14,6 +14,8 @@ import {
   createSubAdminSchema,
   verifyLogin2FASchema,
   enable2FASchema,
+  getSubAdminsQuerySchema,
+  getUsersQuerySchema,
 } from './auth.validator.js';
 
 const router = Router();
@@ -34,9 +36,10 @@ router.post('/2fa/setup', authenticate, authController.setup2FA);
 router.post('/2fa/enable', authenticate, validate(enable2FASchema), authController.enable2FA);
 router.post('/2fa/disable', authenticate, authController.disable2FA);
 
-// SuperAdmin SubAdmin Management Endpoints
+// Admin Directory Endpoints
 router.post('/subadmin', authenticate, requireSuperAdmin, validate(createSubAdminSchema), authController.createSubAdmin);
-router.get('/subadmins', authenticate, requireSuperAdmin, authController.getSubAdmins);
+router.get('/subadmins', authenticate, requireSuperAdmin, validate(getSubAdminsQuerySchema), authController.getSubAdmins);
 router.delete('/subadmin/:id', authenticate, requireSuperAdmin, authController.deleteSubAdmin);
+router.get('/users', authenticate, requireAdmin, validate(getUsersQuerySchema), authController.getUsers);
 
 export default router;

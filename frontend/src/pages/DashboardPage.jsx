@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sparkles, Calendar, Share2, TrendingUp, Plus, CheckCircle, Zap } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { PostCreatorModal } from '../components/common/PostCreatorModal';
 import { FestivalCalendarView } from '../features/calendar/components/FestivalCalendarView';
 
 export const DashboardPage = () => {
   const { user } = useAuth();
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleOpenNewPost = (template = null) => {
+    if (template?.id) {
+      navigate(`/create-post?templateId=${template.id}`, { state: { template } });
+    } else {
+      navigate('/create-post');
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -23,16 +31,16 @@ export const DashboardPage = () => {
             Welcome back, <span className="text-gradient">{user?.fullName || 'Creator'}</span>!
           </h1>
           <p className="text-sm text-slate-400 max-w-xl">
-            Your AI Brand Engine is active. Ready to generate your next multi-platform viral post?
+            Your BrandKit & Canva Frame Compositor engine is active. Ready to create your next multi-platform post?
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <Button variant="primary" icon={Plus} onClick={() => setIsPostModalOpen(true)}>
+          <Button variant="primary" icon={Plus} onClick={() => handleOpenNewPost(null)}>
             New Post
           </Button>
-          <Button variant="outline" icon={Zap}>
-            AI Brand Kit
+          <Button variant="outline" icon={Zap} onClick={() => (window.location.href = '/brand-kit')}>
+            Master BrandKit
           </Button>
         </div>
       </div>
@@ -87,13 +95,13 @@ export const DashboardPage = () => {
       </div>
 
       {/* Festival & Days Content Calendar */}
-      <FestivalCalendarView onSelectTemplate={() => setIsPostModalOpen(true)} />
+      <FestivalCalendarView onSelectTemplate={(tpl) => handleOpenNewPost(tpl)} />
 
       {/* Quick Action Activity Panel */}
       <Card className="border-slate-800 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-heading font-bold text-lg text-white">Recent AI Campaigns</h3>
-          <Button variant="primary" icon={Plus} className="text-xs" onClick={() => setIsPostModalOpen(true)}>
+          <Button variant="primary" icon={Plus} className="text-xs" onClick={() => handleOpenNewPost(null)}>
             Create New Campaign
           </Button>
         </div>
@@ -117,11 +125,6 @@ export const DashboardPage = () => {
         </div>
       </Card>
 
-      {/* Interactive Post Creator Studio Modal */}
-      <PostCreatorModal
-        isOpen={isPostModalOpen}
-        onClose={() => setIsPostModalOpen(false)}
-      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { ConflictError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import * as categoryRepository from './category.repository.js';
 
 /**
@@ -15,10 +16,25 @@ function slugify(text) {
 }
 
 /**
- * Get all active business categories
+ * Get business categories with pagination, searching, and sorting
  */
-export async function getCategories() {
-  return await categoryRepository.findAllCategories();
+export async function getCategories(queryParams = {}) {
+  const pagination = parsePaginationParams(queryParams);
+  const { categories, totalCount } = await categoryRepository.findPaginatedCategories(pagination);
+
+  const paginatedResponse = buildPaginatedResponse({
+    items: categories,
+    totalCount,
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+
+  return {
+    data: {
+      categories: paginatedResponse.data,
+    },
+    meta: paginatedResponse.meta,
+  };
 }
 
 /**

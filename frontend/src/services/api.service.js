@@ -6,7 +6,7 @@ import { storage } from "../utils/storage.util";
 /**
  * Enterprise Axios Instance
  * Handles baseURL, credentials (cookies), request interceptors (Bearer token),
- * and response interceptors (silent refresh rotation & error normalization).
+ * silent network error retries, and response interceptors.
  */
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -29,7 +29,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response Interceptor: Silent Refresh on 401 Unauthorized
+// Response Interceptor: Silent Network Retry & Silent Refresh on 401 Unauthorized
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -49,22 +49,38 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Normalize error message
+    // 1. Automatic 1-Shot Retry for Transient Network Hiccups / Cold Starts
+    if (
+      originalRequest &&
+      !originalRequest._networkRetry &&
+      (!error.response || error.code === "ERR_NETWORK" || error.message === "Network Error")
+    ) {
+      originalRequest._networkRetry = true;
+      console.warn("⚠️ Transient network error detected. Retrying request automatically...");
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      return api(originalRequest);
+    }
+
+    // 2. User-Friendly Error Formatting
+    const rawMsg = error.response?.data?.message || error.message;
+    const formattedMessage =
+      !error.response || error.code === "ERR_NETWORK" || rawMsg === "Network Error"
+        ? "Unable to connect to server. Please check your network connection or try again."
+        : rawMsg || "An unexpected error occurred";
+
     const formattedError = {
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred",
+      message: formattedMessage,
       errors: error.response?.data?.errors || [],
       status: error.response?.status || 500,
     };
 
-    // If 401 Unauthorized and not already retrying
+    // 3. Silent Refresh on 401 Unauthorized
     if (
       error.response?.status === 401 &&
+      originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url.includes(API_ENDPOINTS.AUTH.LOGIN) &&
-      !originalRequest.url.includes(API_ENDPOINTS.AUTH.REFRESH)
+      !originalRequest.url?.includes(API_ENDPOINTS.AUTH.LOGIN) &&
+      !originalRequest.url?.includes(API_ENDPOINTS.AUTH.REFRESH)
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
