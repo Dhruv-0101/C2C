@@ -189,13 +189,18 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     });
   };
 
-  // Handle Download HD PNG
+  // Handle Download HD PNG & Save to Cloud/DB
   const handleDownloadHD = () => {
     if (!dataUrl) return;
+
+    // 1. Trigger client browser file download
     const link = document.createElement('a');
     link.download = `${currentTemplate?.title || 'BrandFlow-Post'}-1080x1080.png`;
     link.href = dataUrl;
     link.click();
+
+    // 2. Save pre-rendered PNG to Cloudinary CDN & Database for future scheduling
+    handleSaveToDb();
   };
 
   if (!isOpen) return null;

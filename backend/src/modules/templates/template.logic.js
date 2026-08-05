@@ -1,6 +1,5 @@
 import { templateRepository } from './template.repository.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
-import { compositeBrandedGraphic } from '../../common/helpers/sharp-compositor.helper.js';
 import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
 
 export const templateLogic = {
@@ -75,22 +74,34 @@ export const templateLogic = {
     return template;
   },
 
-  compositePost: async ({ templateId, brandKit, customText }) => {
-    const template = await templateRepository.findById(templateId);
-    if (!template) {
-      throw new Error('System template not found for compositing.');
+  compositePost: async ({ templateId, brandKit, customText, base64Graphic, base64Image }) => {
+    let rawBase64 = base64Graphic || base64Image;
+
+    // If frontend sent pre-rendered canvas graphic, upload directly to Cloudinary (0 CPU server load)
+    if (rawBase64) {
+      if (rawBase64.includes(';base64,')) {
+        rawBase64 = rawBase64.split(';base64,').pop();
+      }
+      const buffer = Buffer.from(rawBase64, 'base64');
+      const uploadResult = await uploadToCloudinaryBuffer(buffer, 'brandflow/posts');
+      return {
+        templateId: templateId || null,
+        finalGraphicUrl: uploadResult.url,
+      };
     }
 
-    const finalGraphicUrl = await compositeBrandedGraphic({
-      baseImageUrl: template.baseImageUrl,
-      coordinatesJson: template.coordinatesJson,
-      brandKit: brandKit || {},
-      customText: customText || '',
-    });
+    if (!templateId) {
+      throw new Error('Template ID or pre-rendered graphic is required.');
+    }
+
+    const template = await templateRepository.findById(templateId);
+    if (!template) {
+      throw new Error('System template not found.');
+    }
 
     return {
       templateId,
-      finalGraphicUrl,
+      finalGraphicUrl: template.baseImageUrl,
     };
   },
 

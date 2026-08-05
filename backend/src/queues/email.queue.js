@@ -7,7 +7,7 @@ export const EMAIL_QUEUE_NAME = 'email-queue';
 export const EMAIL_JOB_NAMES = {
   WELCOME_EMAIL: 'SEND_WELCOME_EMAIL',
   PASSWORD_RESET: 'SEND_PASSWORD_RESET',
-  TWO_FACTOR_CODE: 'SEND_2FA_CODE',
+  // TWO_FACTOR_CODE: 'SEND_2FA_CODE',
 };
 
 // Initialize Email BullMQ Queue
