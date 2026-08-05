@@ -1,4 +1,5 @@
 import { api } from './api.service';
+import { API_ENDPOINTS } from '../constants/api.constants';
 
 /**
  * Festival & Special Days API Service
@@ -9,7 +10,7 @@ export const festivalApi = {
    * @param {number|string} [year]
    */
   getFestivals: async (year) => {
-    const url = year ? `/festivals?year=${year}` : '/festivals';
+    const url = year ? `${API_ENDPOINTS.FESTIVALS.BASE}?year=${year}` : API_ENDPOINTS.FESTIVALS.BASE;
     return await api.get(url);
   },
 
@@ -18,7 +19,7 @@ export const festivalApi = {
    * @param {{ name: string, date: string, description?: string, targetRegion?: string, bannerUrl?: string, isActive?: boolean }} data
    */
   createFestival: async (data) => {
-    return await api.post('/festivals', data);
+    return await api.post(API_ENDPOINTS.FESTIVALS.BASE, data);
   },
 
   /**
@@ -26,6 +27,6 @@ export const festivalApi = {
    * @param {string} id
    */
   deleteFestival: async (id) => {
-    return await api.delete(`/festivals/${id}`);
+    return await api.delete(API_ENDPOINTS.FESTIVALS.BY_ID(id));
   },
 };

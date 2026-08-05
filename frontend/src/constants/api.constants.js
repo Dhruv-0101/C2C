@@ -26,6 +26,45 @@ export const API_ENDPOINTS = {
     REFRESH: '/auth/refresh',
     LOGOUT: '/auth/logout',
     ME: '/auth/me',
+    GOOGLE: '/auth/google',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_2FA: '/auth/2fa/verify-login',
+    SETUP_2FA: '/auth/2fa/setup',
+    ENABLE_2FA: '/auth/2fa/enable',
+    DISABLE_2FA: '/auth/2fa/disable',
+    SUBADMIN: '/auth/subadmin',
+    SUBADMINS: '/auth/subadmins',
+    USERS: '/auth/users',
+  },
+  BRANDKIT: {
+    BASE: '/brandkit',
+  },
+  CATEGORIES: {
+    BASE: '/categories',
+    BY_ID: (id) => `/categories/${id}`,
+  },
+  DESIGN_STYLES: {
+    BASE: '/design-styles',
+    BY_ID: (id) => `/design-styles/${id}`,
+  },
+  FESTIVALS: {
+    BASE: '/festivals',
+    BY_ID: (id) => `/festivals/${id}`,
+  },
+  FRAMES: {
+    BASE: '/frames',
+    BY_ID: (id) => `/frames/${id}`,
+  },
+  POSTS: {
+    BASE: '/posts',
+    BY_ID: (id) => `/posts/${id}`,
+  },
+  TEMPLATES: {
+    BASE: '/templates',
+    UPLOAD: '/templates/upload',
+    COMPOSITE_POST: '/templates/composite-post',
+    BY_ID: (id) => `/templates/${id}`,
   },
 };
 

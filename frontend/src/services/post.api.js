@@ -1,11 +1,12 @@
 import api from './api.service';
+import { API_ENDPOINTS } from '../constants/api.constants';
 
 export const postApi = {
   /**
    * Get all user posts
    */
   getUserPosts: async () => {
-    const response = await api.get('/posts');
+    const response = await api.get(API_ENDPOINTS.POSTS.BASE);
     return response.data;
   },
 
@@ -13,7 +14,7 @@ export const postApi = {
    * Create & save composited post
    */
   createPost: async (postData) => {
-    const response = await api.post('/posts', postData);
+    const response = await api.post(API_ENDPOINTS.POSTS.BASE, postData);
     return response.data;
   },
 
@@ -21,7 +22,7 @@ export const postApi = {
    * Delete post
    */
   deletePost: async (id) => {
-    const response = await api.delete(`/posts/${id}`);
+    const response = await api.delete(API_ENDPOINTS.POSTS.BY_ID(id));
     return response.data;
   },
 };
