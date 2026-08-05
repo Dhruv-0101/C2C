@@ -18,6 +18,36 @@ export const postRepository = {
   },
 
   /**
+   * Create post record and automatically store in Vault atomically
+   */
+  createWithVault: async (postData, vaultMetaData = {}) => {
+    return prisma.$transaction(async (tx) => {
+      const newPost = await tx.post.create({
+        data: postData,
+        include: {
+          template: true,
+          festival: true,
+          category: true,
+        },
+      });
+
+      if (postData.finalGraphicUrl) {
+        await tx.vaultItem.create({
+          data: {
+            userId: postData.userId,
+            postId: newPost.id,
+            graphicUrl: postData.finalGraphicUrl,
+            occasionName: vaultMetaData.occasionName || newPost.festival?.name || 'Social Graphic',
+            categoryName: vaultMetaData.categoryName || newPost.category?.name || 'General',
+          },
+        });
+      }
+
+      return newPost;
+    });
+  },
+
+  /**
    * Find all posts belonging to a user
    */
   findByUserId: async (userId) => {

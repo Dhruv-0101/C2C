@@ -1,6 +1,7 @@
 import rateLimit from 'express-rate-limit';
 import { HTTP_STATUS } from '../constants/http-status.js';
 import { env } from '../../config/env.js';
+import { logger } from '../../config/logger.js';
 
 /**
  * Higher-order middleware to bypass rate limiting when ENABLE_RATE_LIMITER is "false"
@@ -23,6 +24,7 @@ const _globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
+    logger.warn(`⚠️ Rate limit exceeded for IP: ${req.ip}`);
     res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json({
       success: false,
       message: 'Too many requests from this IP address. Please try again after 15 minutes.',
@@ -40,6 +42,7 @@ const _authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
+    logger.warn(`⚠️ Auth rate limit exceeded for IP: ${req.ip}`);
     res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json({
       success: false,
       message: 'Too many login or signup attempts from this IP address. Please try again after 15 minutes.',

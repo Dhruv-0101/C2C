@@ -40,7 +40,10 @@ export const postLogic = {
       status: payload.status || 'DRAFT',
     };
 
-    return postRepository.create(postData);
+    return postRepository.createWithVault(postData, {
+      occasionName: payload.occasionName,
+      categoryName: payload.categoryName,
+    });
   },
 
   /**

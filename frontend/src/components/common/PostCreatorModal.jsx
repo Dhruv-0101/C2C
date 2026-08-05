@@ -170,7 +170,8 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     mutationFn: (postData) => postApi.createPost(postData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
-      setSaveSuccess('🎉 Final composited post saved to your database!');
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
+      setSaveSuccess('🎉 Final composited post saved to Cloudinary, DB & Vault!');
       setTimeout(() => setSaveSuccess(''), 4000);
     },
   });

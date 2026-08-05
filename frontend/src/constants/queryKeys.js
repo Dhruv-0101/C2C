@@ -40,4 +40,9 @@ export const QUERY_KEYS = {
   BRANDKIT: {
     MINE: ['brandKit'],
   },
+  VAULT: {
+    ALL: ['vault'],
+    LIST: (params = {}) => ['vault', 'list', params],
+    BY_ID: (id) => ['vault', id],
+  },
 };

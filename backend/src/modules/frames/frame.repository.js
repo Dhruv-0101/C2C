@@ -7,10 +7,17 @@ export const frameRepository = {
    * Find all active frames
    */
   findAllActive: async () => {
-    return prisma.frame.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: 'asc' },
-    });
+    try {
+      return await prisma.frame.findMany({
+        where: { isActive: true, deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+      });
+    } catch (err) {
+      return await prisma.frame.findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: 'asc' },
+      });
+    }
   },
 
   findPaginated: async ({ skip, take, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
@@ -26,28 +33,50 @@ export const frameRepository = {
     const allowedSortFields = ['createdAt', 'title', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    const [frames, totalCount] = await prisma.$transaction([
-      prisma.frame.findMany({
-        where,
-        skip,
-        take,
-        orderBy: {
-          [validSortBy]: sortOrder,
-        },
-      }),
-      prisma.frame.count({ where }),
-    ]);
+    try {
+      const [frames, totalCount] = await prisma.$transaction([
+        prisma.frame.findMany({
+          where: { deletedAt: null, ...where },
+          skip,
+          take,
+          orderBy: {
+            [validSortBy]: sortOrder,
+          },
+        }),
+        prisma.frame.count({ where: { deletedAt: null, ...where } }),
+      ]);
 
-    return { frames, totalCount };
+      return { frames, totalCount };
+    } catch (err) {
+      const [frames, totalCount] = await prisma.$transaction([
+        prisma.frame.findMany({
+          where,
+          skip,
+          take,
+          orderBy: {
+            [validSortBy]: sortOrder,
+          },
+        }),
+        prisma.frame.count({ where }),
+      ]);
+
+      return { frames, totalCount };
+    }
   },
 
   /**
    * Find frame by ID
    */
   findById: async (id) => {
-    return prisma.frame.findUnique({
-      where: { id },
-    });
+    try {
+      return await prisma.frame.findFirst({
+        where: { id, deletedAt: null },
+      });
+    } catch (err) {
+      return await prisma.frame.findUnique({
+        where: { id },
+      });
+    }
   },
 
   /**
@@ -60,12 +89,24 @@ export const frameRepository = {
   },
 
   /**
-   * Delete or deactivate frame
+   * Soft delete or deactivate frame with fail-safe fallback
    */
   delete: async (id) => {
-    return prisma.frame.update({
-      where: { id },
-      data: { isActive: false },
-    });
+    try {
+      return await prisma.frame.update({
+        where: { id },
+        data: {
+          isActive: false,
+          deletedAt: new Date(),
+        },
+      });
+    } catch (err) {
+      return await prisma.frame.update({
+        where: { id },
+        data: {
+          isActive: false,
+        },
+      });
+    }
   },
 };

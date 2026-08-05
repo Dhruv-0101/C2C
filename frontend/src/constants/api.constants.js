@@ -66,6 +66,10 @@ export const API_ENDPOINTS = {
     COMPOSITE_POST: '/templates/composite-post',
     BY_ID: (id) => `/templates/${id}`,
   },
+  VAULT: {
+    BASE: '/vault',
+    BY_ID: (id) => `/vault/${id}`,
+  },
 };
 
 export const HTTP_STATUS = {

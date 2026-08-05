@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Palette,
@@ -380,9 +381,10 @@ export const DesignStylesManager = () => {
       )}
 
       {/* Create Design Style Modal with Real-Time Live Preview & Mix Blend Engine */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-          <div className="w-full max-w-2xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-6 shadow-2xl my-8">
+      {isModalOpen &&
+        createPortal(
+          <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="w-full max-w-2xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-6 shadow-2xl my-auto">
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">
               <h3 className="font-heading font-bold text-lg text-white flex items-center gap-2">
                 <Pipette className="w-5 h-5 text-amber-400" />
@@ -695,7 +697,8 @@ export const DesignStylesManager = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </Card>
   );

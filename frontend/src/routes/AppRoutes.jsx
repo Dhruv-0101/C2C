@@ -14,6 +14,7 @@ import { CreatePostPage } from "../pages/CreatePostPage";
 import { AdminDashboardPage } from "../pages/AdminDashboardPage";
 import { SubAdminDashboardPage } from "../pages/SubAdminDashboardPage";
 import { BrandKitPage } from "../pages/BrandKitPage";
+import { VaultPage } from "../pages/VaultPage";
 import { WelcomeSplashPage } from "../pages/WelcomeSplashPage";
 import { useAuth } from "../hooks/useAuth";
 import { Card } from "../components/ui/Card";
@@ -85,13 +86,7 @@ export const AppRoutes = () => {
           />
           <Route
             path="/vault"
-            element={
-              <GenericPage
-                title="Content Vault & Media Assets"
-                icon={FolderKanban}
-                description="Organize created graphics, offer templates, and saved post drafts."
-              />
-            }
+            element={<VaultPage />}
           />
           <Route
             path="/analytics"

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Layers,
@@ -27,6 +28,7 @@ import {
   RefreshCw,
   RotateCw,
   Search,
+  X,
 } from "lucide-react";
 import { frameApi } from "../../services/frame.api";
 import { useFrames } from "../../hooks/useFrames";
@@ -38,6 +40,10 @@ import { FeedbackModal } from "../common/FeedbackModal";
 import Pagination from "../common/Pagination";
 import { useFeedbackModal } from "../../hooks/useFeedbackModal";
 import { QUERY_KEYS } from "../../constants/queryKeys";
+import { FrameStudioHeader } from "./frame-studio/FrameStudioHeader";
+import { FramePresetsDrawer } from "./frame-studio/FramePresetsDrawer";
+import { FrameLayerInspector } from "./frame-studio/FrameLayerInspector";
+import { FrameCanvasStage } from "./frame-studio/FrameCanvasStage";
 
 /**
  * Canva-Style Interactive Vector Frame Studio with Plain White Canvas Stage
@@ -48,6 +54,7 @@ export const FrameManager = () => {
   const canvasRef = useRef(null);
   const { modalProps, showSuccess, showError } = useFeedbackModal();
   const [activeTab, setActiveTab] = useState("canva"); // 'canva' | 'upload' | 'manage'
+  const [fullscreenFrame, setFullscreenFrame] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -1895,13 +1902,27 @@ export const FrameManager = () => {
                     key={f.id}
                     className="border-[#2C384E] bg-[#0B0F17] p-4 space-y-3 relative group hover:border-amber-500/50 transition"
                   >
-                    <div className="aspect-square rounded-lg bg-slate-950 border border-slate-800 p-2 flex items-center justify-center overflow-hidden relative">
+                    <div
+                      onClick={() => f.overlayPngUrl && setFullscreenFrame(f)}
+                      className="aspect-square rounded-lg bg-[radial-gradient(#2C384E_1px,transparent_1px)] [background-size:12px_12px] bg-slate-950 border border-slate-800 p-2 flex items-center justify-center overflow-hidden relative cursor-pointer group/img"
+                      title="Click for Full Screen Big View"
+                    >
                       {f.overlayPngUrl ? (
-                        <img
-                          src={f.overlayPngUrl}
-                          alt={f.title}
-                          className="w-full h-full object-contain"
-                        />
+                        <>
+                          <img
+                            src={f.overlayPngUrl}
+                            alt={f.title}
+                            className="w-full h-full object-contain group-hover/img:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 backdrop-blur-[2px]">
+                            <div className="w-9 h-9 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/30 transform scale-90 group-hover/img:scale-100 transition-transform">
+                              <Maximize2 className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-bold text-white bg-slate-950/80 px-2 py-0.5 rounded-full border border-slate-700">
+                              Full Screen Big View
+                            </span>
+                          </div>
+                        </>
                       ) : (
                         <span className="text-xs text-slate-500">
                           No PNG Image
@@ -1949,6 +1970,60 @@ export const FrameManager = () => {
 
       {/* Reusable Feedback Modal */}
       <FeedbackModal {...modalProps} />
+
+      {/* Full Screen High-Res Frame Lightbox Modal */}
+      {fullscreenFrame &&
+        createPortal(
+          <div
+            onClick={() => setFullscreenFrame(null)}
+            className="fixed inset-0 w-screen h-screen z-[99999] flex flex-col items-center justify-center p-4 sm:p-8 bg-black/95 backdrop-blur-lg animate-in fade-in duration-200 select-none cursor-zoom-out"
+          >
+            {/* Top Bar */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-4 left-4 right-4 max-w-5xl mx-auto flex items-center justify-between z-10 bg-[#131B2A]/90 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-[#2C384E] shadow-2xl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <Maximize2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-extrabold text-base text-white truncate max-w-md">
+                    {fullscreenFrame.title}
+                  </h3>
+                  <p className="text-xs text-slate-400 truncate">
+                    {fullscreenFrame.description || 'Transparent PNG Frame Overlay'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setFullscreenFrame(null)}
+                className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
+                title="Close Full Screen View"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Checkerboard Background Image Container for Transparent PNGs */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-3xl max-h-[80vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-[#2C384E] bg-[radial-gradient(#2C384E_1px,transparent_1px)] [background-size:16px_16px] bg-[#0B0F17] flex items-center justify-center my-auto p-6 cursor-default"
+            >
+              <img
+                src={fullscreenFrame.overlayPngUrl}
+                alt={fullscreenFrame.title}
+                className="w-full h-full object-contain filter drop-shadow-2xl"
+              />
+            </div>
+
+            <p className="text-xs text-slate-400 mt-3 font-mono">
+              Click anywhere outside or press X to exit full screen view
+            </p>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

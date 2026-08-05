@@ -13,13 +13,29 @@ export const templateRepository = {
   },
 
   findMany: async (filter = {}) => {
-    return prisma.template.findMany({
-      where: filter,
-      include: {
-        festival: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    try {
+      return await prisma.template.findMany({
+        where: {
+          deletedAt: null,
+          ...filter,
+        },
+        include: {
+          festival: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (err) {
+      return await prisma.template.findMany({
+        where: {
+          isActive: true,
+          ...filter,
+        },
+        include: {
+          festival: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
   },
 
   findPaginated: async ({ skip, take, festivalId, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
@@ -37,36 +53,80 @@ export const templateRepository = {
     const allowedSortFields = ['createdAt', 'title', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    const [templates, totalCount] = await prisma.$transaction([
-      prisma.template.findMany({
-        where,
-        skip,
-        take,
-        include: {
-          festival: true,
-        },
-        orderBy: {
-          [validSortBy]: sortOrder,
-        },
-      }),
-      prisma.template.count({ where }),
-    ]);
+    try {
+      const [templates, totalCount] = await prisma.$transaction([
+        prisma.template.findMany({
+          where: { deletedAt: null, ...where },
+          skip,
+          take,
+          include: {
+            festival: true,
+          },
+          orderBy: {
+            [validSortBy]: sortOrder,
+          },
+        }),
+        prisma.template.count({ where: { deletedAt: null, ...where } }),
+      ]);
 
-    return { templates, totalCount };
+      return { templates, totalCount };
+    } catch (err) {
+      const [templates, totalCount] = await prisma.$transaction([
+        prisma.template.findMany({
+          where: { isActive: true, ...where },
+          skip,
+          take,
+          include: {
+            festival: true,
+          },
+          orderBy: {
+            [validSortBy]: sortOrder,
+          },
+        }),
+        prisma.template.count({ where: { isActive: true, ...where } }),
+      ]);
+
+      return { templates, totalCount };
+    }
   },
 
   findById: async (id) => {
-    return prisma.template.findUnique({
-      where: { id },
-      include: {
-        festival: true,
-      },
-    });
+    try {
+      return await prisma.template.findFirst({
+        where: { id, deletedAt: null },
+        include: {
+          festival: true,
+        },
+      });
+    } catch (err) {
+      return await prisma.template.findUnique({
+        where: { id },
+        include: {
+          festival: true,
+        },
+      });
+    }
   },
 
+  /**
+   * Soft delete master template with fail-safe fallback
+   */
   delete: async (id) => {
-    return prisma.template.delete({
-      where: { id },
-    });
+    try {
+      return await prisma.template.update({
+        where: { id },
+        data: {
+          deletedAt: new Date(),
+          isActive: false,
+        },
+      });
+    } catch (err) {
+      return await prisma.template.update({
+        where: { id },
+        data: {
+          isActive: false,
+        },
+      });
+    }
   },
 };
