@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
+  Share2,
 } from 'lucide-react';
 import { brandKitApi } from '../../../services/brandkit.api';
 import { frameApi } from '../../../services/frame.api';
@@ -24,71 +25,84 @@ import { useCanvasCompositor } from '../../../hooks/useCanvasCompositor';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
+import { SocialPublisherModal } from '../../post-studio/components/SocialPublisherModal';
 
 export const PostStudioModal = ({ isOpen, onClose, template }) => {
   const queryClient = useQueryClient();
   const canvasRef = useRef(null);
+
   const [selectedFrame, setSelectedFrame] = useState(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(template?.id || '');
-  const [customBaseImage, setCustomBaseImage] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(template || null);
   const [saveSuccess, setSaveSuccess] = useState('');
-  const [isEditingDetails, setIsEditingDetails] = useState(true);
+  const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'frames' | 'details'
+  const [isPublisherOpen, setIsPublisherOpen] = useState(false);
 
-  // Sync selectedTemplateId whenever modal opens or template prop changes
+  // Sync prop changes
   useEffect(() => {
-    if (isOpen && template?.id) {
-      setSelectedTemplateId(template.id);
-    }
-  }, [isOpen, template]);
+    if (template) setSelectedTemplate(template);
+  }, [template]);
 
-  // Fetch Graphic Templates from DB
-  const { data: templatesResponse } = useQuery({
-    queryKey: ['templates'],
-    queryFn: () => templateApi.getTemplates(),
-    enabled: isOpen,
-  });
-
-  // Fetch User's BrandKit from DB
-  const { data: brandKitResponse } = useQuery({
+  // Fetch BrandKit from API
+  const { data: brandKitResponse, isLoading: isLoadingBrandKit } = useQuery({
     queryKey: ['brandKit'],
     queryFn: () => brandKitApi.getBrandKit(),
     enabled: isOpen,
   });
 
-  // Fetch Available Frames from DB
-  const { data: framesResponse } = useQuery({
+  // Fetch Templates from API
+  const { data: templatesResponse, isLoading: isLoadingTemplates } = useQuery({
+    queryKey: ['templates'],
+    queryFn: () => templateApi.getTemplates(),
+    enabled: isOpen,
+  });
+
+  // Fetch Canva Vector Frames from API
+  const { data: framesResponse, isLoading: isLoadingFrames } = useQuery({
     queryKey: ['frames'],
     queryFn: () => frameApi.getFrames(),
     enabled: isOpen,
   });
 
   const brandKit = brandKitResponse?.data?.brandKit;
+  const templates = templatesResponse?.data?.templates || [];
   const frames = framesResponse?.data?.frames || [];
 
-  // Live Overrides for Business Details
+  // Default select first template & frame if none selected
+  useEffect(() => {
+    if (!selectedTemplate && templates.length > 0) {
+      setSelectedTemplate(templates[0]);
+    }
+  }, [templates, selectedTemplate]);
+
+  useEffect(() => {
+    if (!selectedFrame && frames.length > 0) {
+      setSelectedFrame(frames[0]);
+    }
+  }, [frames, selectedFrame]);
+
+  // Editable Brand Details State
   const [customDetails, setCustomDetails] = useState({
     businessName: '',
     phone: '',
     address: '',
     tagline: '',
+    whatsapp: '',
+    email: '',
+    instagramHandle: '',
+    facebookHandle: '',
+    city: '',
+    state: '',
+    country: '',
+    websiteUrl: '',
     showLogo: true,
     showAvatar: true,
     showPhone: true,
     showAddress: true,
   });
 
-  // Default select first frame when frames load
-  useEffect(() => {
-    if (frames.length > 0 && !selectedFrame) {
-      setSelectedFrame(frames[0]);
-    }
-  }, [frames, selectedFrame]);
-
-  // Populate customDetails whenever brandKit or selectedFrame loads
+  // Sync customDetails when brandKit or selectedFrame updates
   useEffect(() => {
     const newDetails = {};
-
-    // 1. First map all fields from user's BrandKit
     if (brandKit?.businessName) newDetails.businessName = brandKit.businessName;
     if (brandKit?.phone || brandKit?.whatsapp) newDetails.phone = brandKit.phone || brandKit.whatsapp;
     if (brandKit?.whatsapp) newDetails.whatsapp = brandKit.whatsapp;
@@ -102,48 +116,10 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     if (brandKit?.websiteUrl) newDetails.websiteUrl = brandKit.websiteUrl;
     if (brandKit?.tagline) newDetails.tagline = brandKit.tagline;
 
-    // 2. Map sample text from selectedFrame.configJson.elements if field is still empty
-    if (selectedFrame?.configJson?.elements) {
-      selectedFrame.configJson.elements
-        .filter((el) => el.type === 'TEXT')
-        .forEach((el) => {
-          const key = el.fieldKey || el.dynamicSlot || el.id;
-          const slotMap = {
-            BUSINESS_NAME: 'businessName',
-            PHONE: 'phone',
-            WHATSAPP: 'whatsapp',
-            EMAIL: 'email',
-            INSTAGRAM: 'instagramHandle',
-            FACEBOOK: 'facebookHandle',
-            ADDRESS: 'address',
-            CITY: 'city',
-            STATE: 'state',
-            COUNTRY: 'country',
-            WEBSITE: 'websiteUrl',
-            TAGLINE: 'tagline',
-          };
-          const valKey = slotMap[el.dynamicSlot] || key;
-
-          const sampleVal = el.text || el.customLabel || '';
-
-          if (!newDetails[valKey] && sampleVal) {
-            newDetails[valKey] = sampleVal;
-          }
-          if (key !== valKey && !newDetails[key] && sampleVal) {
-            newDetails[key] = sampleVal;
-          }
-        });
-    }
-
-    setCustomDetails((prev) => ({
-      ...prev,
-      ...newDetails,
-    }));
+    setCustomDetails((prev) => ({ ...prev, ...newDetails }));
   }, [brandKit, selectedFrame]);
 
-  const templates = templatesResponse?.data?.templates || [];
-  const currentTemplate = templates.find((t) => t.id === selectedTemplateId) || template || templates[0];
-  const baseImageUrl = customBaseImage || currentTemplate?.imageUrl || currentTemplate?.fileUrl || currentTemplate?.bannerUrl;
+  const baseImageUrl = selectedTemplate?.baseImageUrl || selectedTemplate?.imageUrl || selectedTemplate?.bannerUrl;
 
   // HTML5 Canvas Compositor Engine Hook
   const { isRendering, dataUrl } = useCanvasCompositor(
@@ -160,19 +136,18 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
-      setSaveSuccess('🎉 Final composited post saved to Cloudinary, DB & Vault!');
+      setSaveSuccess('🎉 Final post saved to Cloudinary, DB & Vault!');
       setTimeout(() => setSaveSuccess(''), 4000);
     },
   });
 
-  if (!isOpen || !template) return null;
+  if (!isOpen) return null;
 
-  // Handle Save Post to DB
   const handleSaveToDb = () => {
     if (!dataUrl) return;
     savePostMutation.mutate({
-      templateId: template.id || null,
-      festivalId: template.festivalId || null,
+      templateId: selectedTemplate?.id || null,
+      festivalId: selectedTemplate?.festivalId || null,
       frameId: selectedFrame?.id || null,
       base64Graphic: dataUrl,
       userConfigJson: customDetails,
@@ -180,464 +155,297 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     });
   };
 
-  // Handle Download HD PNG & Save to Cloud/DB
   const handleDownloadHD = () => {
     if (!dataUrl) return;
-
-    // 1. Trigger client browser file download
     const link = document.createElement('a');
-    link.download = `${template.title || 'BrandFlow-Post'}-1080x1080.png`;
+    link.download = `${selectedTemplate?.title || 'BrandFlow-Post'}-1080x1080.png`;
     link.href = dataUrl;
     link.click();
-
-    // 2. Save pre-rendered PNG to Cloudinary CDN & Database for future scheduling
     handleSaveToDb();
   };
 
-  if (!isOpen) return null;
+  const publisherPayload = {
+    templateId: selectedTemplate?.id || null,
+    festivalId: selectedTemplate?.festivalId || null,
+    base64Graphic: dataUrl,
+    occasionName: selectedTemplate?.title || 'Branded Social Graphic',
+    customText: customDetails?.tagline || customDetails?.businessName,
+    userConfigJson: customDetails,
+  };
 
   return createPortal(
-    <div className="fixed inset-0 w-screen h-screen z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]">
-        {/* Left Column: Live Canvas Preview */}
-        <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">
-          <div className="relative aspect-square w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center">
-            {isRendering && (
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
-                <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full" />
-                <span>Compositing HD Canvas...</span>
-              </div>
-            )}
-
-            {/* 60 FPS Ultra-Fast Direct HTML5 1080x1080 Canvas */}
-            <canvas ref={canvasRef} className="w-full h-full object-contain" />
+    <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in overflow-y-auto font-sans">
+      <div className="w-full max-w-5xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-6 shadow-2xl my-auto text-slate-100 max-h-[92vh] flex flex-col">
+        {/* Header Bar */}
+        <div className="flex items-center justify-between border-b border-[#2C384E] pb-4 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-heading font-extrabold text-lg text-white">
+                BrandFlow Studio — Master Graphic Compositor
+              </h3>
+              <p className="text-xs text-slate-400">
+                1080x1080 HD Canva Frame Engine with AI BrandKit & Overlay Slots
+              </p>
+            </div>
           </div>
-          <p className="text-[11px] text-slate-400 mt-3 text-center">
-            High-Resolution 1080x1080 Square Post (Instagram & Facebook Ready)
-          </p>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Right Column: Frame Switcher & Custom Business Details */}
-        <div className="md:w-1/2 p-6 flex flex-col justify-between space-y-6 overflow-y-auto max-h-[85vh]">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
-              <div className="space-y-0.5">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold">
-                  <Sparkles className="w-3 h-3" /> AI Post Compositor
+        {saveSuccess && <Alert variant="success" message={saveSuccess} />}
+
+        {/* Content Body Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-y-auto flex-1 pr-1">
+          {/* LEFT: Live Preview Stage (7 Cols) */}
+          <div className="lg:col-span-7 flex flex-col items-center justify-center bg-[#0B0F17] border border-[#2C384E] p-4 rounded-xl relative shadow-2xl min-h-[380px]">
+            <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 text-[11px] font-extrabold shadow-lg">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Live 1080x1080 Compositor Engine</span>
+            </div>
+
+            <div className="relative aspect-square w-full max-w-md rounded-xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center mt-6">
+              {isRendering && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
+                  <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full" />
+                  <span>Compositing 1080x1080 HD Canvas...</span>
                 </div>
-                <h3 className="font-heading font-extrabold text-lg text-white">
-                  {template.title || 'Festival Post'}
-                </h3>
-              </div>
+              )}
+
+              <canvas ref={canvasRef} className="w-full h-full object-contain" />
+            </div>
+
+            <p className="text-[11px] text-slate-400 mt-3 text-center flex items-center gap-1 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              HD 1080x1080 Square Post (Instagram & Facebook Ready)
+            </p>
+          </div>
+
+          {/* RIGHT: Control Tabs & Options (5 Cols) */}
+          <div className="lg:col-span-5 flex flex-col space-y-4">
+            {/* Tab Controls */}
+            <div className="grid grid-cols-3 gap-1 p-1 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs font-bold shrink-0">
               <button
-                onClick={onClose}
-                className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition"
+                onClick={() => setActiveTab('templates')}
+                className={`py-2 rounded-lg transition flex items-center justify-center gap-1 ${
+                  activeTab === 'templates'
+                    ? 'bg-amber-500 text-slate-950 shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
               >
-                <X className="w-5 h-5" />
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Graphic</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('frames')}
+                className={`py-2 rounded-lg transition flex items-center justify-center gap-1 ${
+                  activeTab === 'frames'
+                    ? 'bg-amber-500 text-slate-950 shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Frame</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('details')}
+                className={`py-2 rounded-lg transition flex items-center justify-center gap-1 ${
+                  activeTab === 'details'
+                    ? 'bg-amber-500 text-slate-950 shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Details</span>
               </button>
             </div>
 
-            {saveSuccess && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{saveSuccess}</span>
+            {/* Tab 1: Select Master Graphic Template */}
+            {activeTab === 'templates' && (
+              <div className="space-y-3 overflow-y-auto max-h-[340px] pr-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Select Base Graphic Background
+                  </h4>
+                  <span className="text-[11px] text-amber-400 font-mono font-bold">
+                    {templates.length} Available
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {isLoadingTemplates ? (
+                    <div className="col-span-2 p-8 text-center text-slate-400 text-xs">
+                      Loading templates...
+                    </div>
+                  ) : templates.length === 0 ? (
+                    <div className="col-span-2 p-6 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
+                      No templates found.
+                    </div>
+                  ) : (
+                    templates.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setSelectedTemplate(t)}
+                        className={`relative aspect-square rounded-xl border p-1 overflow-hidden transition group ${
+                          selectedTemplate?.id === t.id
+                            ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/40'
+                            : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-500'
+                        }`}
+                      >
+                        <img
+                          src={t.baseImageUrl || t.imageUrl}
+                          alt={t.title}
+                          className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-black/80 p-1 truncate rounded-b-lg">
+                          <p className="text-[10px] font-bold text-white truncate">{t.title}</p>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Visual Base Graphic Template & Custom Image Upload Selector */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Choose Base Graphic Template</span>
-                </label>
-                <label className="cursor-pointer text-[11px] text-amber-400 font-semibold hover:underline bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
-                  <Plus className="w-3 h-3" />
-                  <span>Custom Image</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setCustomBaseImage(reader.result);
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
-                </label>
-              </div>
+            {/* Tab 2: Select Canva Vector Frame */}
+            {activeTab === 'frames' && (
+              <div className="space-y-3 overflow-y-auto max-h-[340px] pr-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Select Canva Vector Overlay Frame
+                  </h4>
+                  <span className="text-[11px] text-amber-400 font-mono font-bold">
+                    {frames.length} Active Frames
+                  </span>
+                </div>
 
-              {/* Grid of Graphic Base Templates */}
-              <div className="grid grid-cols-3 gap-2.5 max-h-44 overflow-y-auto pr-1">
-                {/* Active Custom Upload Preview if selected */}
-                {customBaseImage && (
-                  <div className="p-1 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-center relative aspect-square">
-                    <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
-                    <img src={customBaseImage} alt="Custom Background" className="w-full h-full object-cover rounded-lg" />
-                    <span className="absolute bottom-1 left-1 right-1 text-[9px] font-bold bg-black/80 text-amber-400 py-0.5 rounded text-center truncate">
-                      Custom Upload
-                    </span>
-                  </div>
-                )}
-
-                {/* Default Festival/Current Template Option */}
-                {template && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedTemplateId(template.id);
-                      setCustomBaseImage(null);
-                    }}
-                    className={`p-1.5 rounded-xl border text-center transition flex flex-col items-center justify-between relative aspect-square overflow-hidden group ${
-                      !customBaseImage && (selectedTemplateId === template.id || !selectedTemplateId)
-                        ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/50'
-                        : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-600'
-                    }`}
-                  >
-                    {!customBaseImage && (selectedTemplateId === template.id || !selectedTemplateId) && (
-                      <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
-                    )}
-                    {template.imageUrl || template.fileUrl || template.bannerUrl ? (
-                      <img src={template.imageUrl || template.fileUrl || template.bannerUrl} alt={template.title} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition" />
-                    ) : (
-                      <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-[10px] text-slate-400">
-                        {template.title}
-                      </div>
-                    )}
-                    <span className="absolute bottom-1 left-1 right-1 text-[9px] font-semibold bg-black/75 text-white py-0.5 px-1 rounded truncate">
-                      {template.title || 'Festival Graphic'}
-                    </span>
-                  </button>
-                )}
-
-                {/* Additional DB Graphic Templates */}
-                {templates
-                  .filter((t) => t.id !== template?.id)
-                  .map((t) => {
-                    const isSelected = !customBaseImage && selectedTemplateId === t.id;
-                    const imgUrl = t.imageUrl || t.fileUrl || t.bannerUrl;
-
-                    return (
+                <div className="grid grid-cols-2 gap-2.5">
+                  {isLoadingFrames ? (
+                    <div className="col-span-2 p-8 text-center text-slate-400 text-xs">
+                      Loading Canva frames...
+                    </div>
+                  ) : frames.length === 0 ? (
+                    <div className="col-span-2 p-6 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
+                      No Canva vector frames created yet.
+                    </div>
+                  ) : (
+                    frames.map((frame) => (
                       <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedTemplateId(t.id);
-                          setCustomBaseImage(null);
-                        }}
-                        className={`p-1.5 rounded-xl border text-center transition flex flex-col items-center justify-between relative aspect-square overflow-hidden group ${
-                          isSelected
-                            ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/50'
-                            : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-600'
+                        key={frame.id}
+                        onClick={() => setSelectedFrame(frame)}
+                        className={`relative aspect-square rounded-xl border p-2 overflow-hidden transition group ${
+                          selectedFrame?.id === frame.id
+                            ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/40'
+                            : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-500'
                         }`}
                       >
-                        {isSelected && (
-                          <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
-                        )}
-                        {imgUrl ? (
-                          <img src={imgUrl} alt={t.title} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition" />
-                        ) : (
-                          <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-[10px] text-slate-400">
-                            {t.title}
-                          </div>
-                        )}
-                        <span className="absolute bottom-1 left-1 right-1 text-[9px] font-semibold bg-black/75 text-white py-0.5 px-1 rounded truncate">
-                          {t.title}
-                        </span>
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
-
-            {/* Visual Transparent PNG Frame Overlay Selector */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Choose Frame Overlay</span>
-                </label>
-                <span className="text-[10px] text-amber-400 font-mono truncate max-w-[150px]">
-                  {selectedFrame ? selectedFrame.title : 'No Frame Selected'}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2.5 max-h-44 overflow-y-auto pr-1">
-                {/* Option 1: No Frame */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedFrame(null)}
-                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center relative aspect-square ${
-                    selectedFrame === null
-                      ? 'border-amber-500 bg-amber-500/10 text-white font-bold ring-2 ring-amber-500/50'
-                      : 'border-[#2C384E] bg-[#0B0F17] text-slate-400 hover:border-slate-600'
-                  }`}
-                >
-                  {selectedFrame === null && (
-                    <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5" />
-                  )}
-                  <X className="w-6 h-6 text-slate-500 mb-1" />
-                  <span className="text-[11px] leading-tight font-semibold">No Frame</span>
-                </button>
-
-                {/* Database PNG Frames */}
-                {frames.map((f) => {
-                  const isSelected = selectedFrame?.id === f.id;
-                  return (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => setSelectedFrame(f)}
-                      className={`p-2 rounded-xl border text-left transition flex flex-col justify-between relative aspect-square group overflow-hidden ${
-                        isSelected
-                          ? 'border-amber-500 bg-amber-500/10 text-white font-bold ring-2 ring-amber-500/50'
-                          : 'border-[#2C384E] bg-[#0B0F17] text-slate-400 hover:border-slate-600'
-                      }`}
-                    >
-                      {isSelected && (
-                        <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
-                      )}
-
-                      {/* PNG Frame Thumbnail Image */}
-                      <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-950/80 border border-slate-800 p-1">
-                        {f.overlayPngUrl ? (
-                          <img src={f.overlayPngUrl} alt={f.title} className="w-full h-full object-contain" />
-                        ) : (
-                          <span className="text-[10px] text-slate-500">PNG</span>
-                        )}
-                      </div>
-
-                      <span className="text-[10px] font-semibold text-white truncate w-full mt-1.5 text-center block">
-                        {f.title}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Editable Business Details Section */}
-            <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 text-xs">
-              <div className="flex items-center justify-between">
-                <p className="font-bold text-amber-400 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Business Frame Details</span>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingDetails(!isEditingDetails)}
-                  className="text-xs text-amber-400 hover:underline flex items-center gap-1 font-semibold"
-                >
-                  <Edit3 className="w-3 h-3" />
-                  <span>{isEditingDetails ? 'Done' : 'Customize Details'}</span>
-                  {isEditingDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                </button>
-              </div>
-
-              {isEditingDetails ? (
-                <div className="space-y-3 pt-2 border-t border-[#2C384E]">
-                  {/* Dynamic Image Upload Slots defined by Admin */}
-                  {selectedFrame?.configJson?.elements?.some(
-                    (el) => el.slotCategory === 'IMAGE_SLOT' || el.dynamicSlot === 'LOGO_BOX' || el.dynamicSlot === 'AVATAR_CIRCLE'
-                  ) && (
-                    <div className="space-y-3 pt-2 border-t border-[#2C384E]">
-                      <p className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        <span>Required Frame Photo & Logo Slots:</span>
-                      </p>
-                      {selectedFrame.configJson.elements
-                        .filter(
-                          (el) => el.slotCategory === 'IMAGE_SLOT' || el.dynamicSlot === 'LOGO_BOX' || el.dynamicSlot === 'AVATAR_CIRCLE'
-                        )
-                        .map((el) => {
-                          const slotKey = el.id || el.fieldKey || el.dynamicSlot;
-                          const isAvatar = el.dynamicSlot === 'AVATAR_CIRCLE' || el.type === 'CIRCLE';
-                          const label = el.customLabel || el.name || (isAvatar ? 'Profile Headshot Photo' : 'Business Logo Box');
-
-                          const activeUrl =
-                            customDetails[slotKey] ||
-                            (isAvatar ? customDetails.avatarUrl || brandKit?.avatarUrl : customDetails.logoUrl || brandKit?.logoUrl);
-
-                          return (
-                            <div key={el.id} className="p-3 rounded-xl bg-[#131B2A] border border-[#2C384E] space-y-2 text-xs">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-white flex items-center gap-1.5">
-                                  {isAvatar ? '👤' : '🏢'} {label}
-                                </span>
-                                <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                                  {isAvatar ? 'Circle Ring' : 'Logo Box'}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-3">
-                                {activeUrl ? (
-                                  <img src={activeUrl} alt={label} className="w-10 h-10 rounded-lg object-contain bg-slate-900 border border-slate-700" />
-                                ) : (
-                                  <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] text-slate-400">
-                                    No Image
-                                  </div>
-                                )}
-
-                                <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition">
-                                  Upload {label}
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (!file) return;
-                                      const reader = new FileReader();
-                                      reader.onloadend = () => {
-                                        setCustomDetails((prev) => ({
-                                          ...prev,
-                                          [slotKey]: reader.result,
-                                          ...(el.dynamicSlot === 'AVATAR_CIRCLE' ? { avatarUrl: reader.result } : {}),
-                                          ...(el.dynamicSlot === 'LOGO_BOX' ? { logoUrl: reader.result } : {}),
-                                        }));
-                                      };
-                                      reader.readAsDataURL(file);
-                                    }}
-                                  />
-                                </label>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  )}
-
-                  {/* Render EXACT Dynamic Text Input Fields Configured by Admin */}
-                  {selectedFrame?.configJson?.elements
-                    ?.filter((el) => (el.slotCategory === 'TEXT_INPUT' || el.type === 'TEXT') && el.dynamicSlot !== 'NONE')
-                    .map((el) => {
-                      let key = el.fieldKey || el.dynamicSlot;
-                      let label = el.customLabel || el.name || 'Text Field';
-                      let valKey = key;
-
-                      if (el.dynamicSlot === 'BUSINESS_NAME') { label = 'Business Name'; valKey = 'businessName'; }
-                      else if (el.dynamicSlot === 'PHONE') { label = 'Phone / WhatsApp'; valKey = 'phone'; }
-                      else if (el.dynamicSlot === 'ADDRESS') { label = 'Address / Location'; valKey = 'address'; }
-                      else if (el.dynamicSlot === 'TAGLINE') { label = 'Tagline / Designation'; valKey = 'tagline'; }
-
-                      return (
-                        <Input
-                          key={el.id}
-                          label={label}
-                          placeholder={`Enter ${label}...`}
-                          value={customDetails[valKey] !== undefined ? customDetails[valKey] : (customDetails[key] || '')}
-                          onChange={(e) => setCustomDetails({ ...customDetails, [valKey]: e.target.value, [key]: e.target.value })}
+                        <img
+                          src={frame.overlayPngUrl}
+                          alt={frame.title}
+                          className="w-full h-full object-contain group-hover:scale-105 transition"
                         />
-                      );
-                    })}
-
-                  {/* Fallback to standard fields if selectedFrame has no JSON config */}
-                  {(!selectedFrame?.configJson?.elements || selectedFrame.configJson.elements.length === 0) && (
-                    <>
-                      <Input
-                        label="Business Name"
-                        value={customDetails.businessName}
-                        onChange={(e) => setCustomDetails({ ...customDetails, businessName: e.target.value })}
-                      />
-                      <Input
-                        label="Phone / WhatsApp"
-                        value={customDetails.phone}
-                        onChange={(e) => setCustomDetails({ ...customDetails, phone: e.target.value })}
-                      />
-                      <Input
-                        label="Address / Location"
-                        value={customDetails.address}
-                        onChange={(e) => setCustomDetails({ ...customDetails, address: e.target.value })}
-                      />
-                      <Input
-                        label="Tagline / Designation"
-                        value={customDetails.tagline}
-                        onChange={(e) => setCustomDetails({ ...customDetails, tagline: e.target.value })}
-                      />
-                    </>
+                        <div className="absolute inset-x-0 bottom-0 bg-black/80 p-1 truncate rounded-b-lg">
+                          <p className="text-[10px] font-bold text-white truncate">{frame.title}</p>
+                        </div>
+                      </button>
+                    ))
                   )}
-
-                  {/* Element Toggles */}
-                  <div className="flex flex-wrap gap-4 pt-1 text-[11px] text-slate-300">
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={customDetails.showLogo}
-                        onChange={(e) => setCustomDetails({ ...customDetails, showLogo: e.target.checked })}
-                        className="accent-amber-500 rounded"
-                      />
-                      <span>Show Logo</span>
-                    </label>
-
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={customDetails.showAvatar}
-                        onChange={(e) => setCustomDetails({ ...customDetails, showAvatar: e.target.checked })}
-                        className="accent-amber-500 rounded"
-                      />
-                      <span>Show Headshot</span>
-                    </label>
-
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={customDetails.showPhone}
-                        onChange={(e) => setCustomDetails({ ...customDetails, showPhone: e.target.checked })}
-                        className="accent-amber-500 rounded"
-                      />
-                      <span>Show Phone</span>
-                    </label>
-                  </div>
-
-                  <div className="pt-2 border-t border-[#2C384E] text-right">
-                    <Link to="/brand-kit" className="text-[11px] text-amber-400 hover:underline">
-                      Update Master BrandKit in DB ➔
-                    </Link>
-                  </div>
                 </div>
-              ) : (
-                <div className="text-slate-300 space-y-0.5">
-                  <p className="font-bold text-white text-xs">{customDetails.businessName || brandKit?.businessName || 'Your Business Name'}</p>
-                  <p className="text-[11px] text-slate-400 truncate">
-                    📞 {customDetails.phone || 'No phone'} | 📍 {customDetails.address || 'No location'}
-                  </p>
-                </div>
-              )}
+              </div>
+            )}
+
+            {/* Tab 3: Custom BrandKit Details */}
+            {activeTab === 'details' && (
+              <div className="space-y-3 overflow-y-auto max-h-[340px] pr-1 text-xs">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  BrandKit Detail Overrides
+                </h4>
+
+                <Input
+                  label="Business Name"
+                  value={customDetails.businessName}
+                  onChange={(e) => setCustomDetails({ ...customDetails, businessName: e.target.value })}
+                />
+
+                <Input
+                  label="Phone / WhatsApp"
+                  value={customDetails.phone}
+                  onChange={(e) => setCustomDetails({ ...customDetails, phone: e.target.value })}
+                />
+
+                <Input
+                  label="Address / Location"
+                  value={customDetails.address}
+                  onChange={(e) => setCustomDetails({ ...customDetails, address: e.target.value })}
+                />
+
+                <Input
+                  label="Tagline / Offer Text"
+                  value={customDetails.tagline}
+                  onChange={(e) => setCustomDetails({ ...customDetails, tagline: e.target.value })}
+                />
+              </div>
+            )}
+
+            {/* Action Bar */}
+            <div className="space-y-2 pt-3 border-t border-[#2C384E] mt-auto">
+              <Button
+                variant="primary"
+                size="lg"
+                icon={Share2}
+                onClick={() => setIsPublisherOpen(true)}
+                disabled={!dataUrl || isRendering}
+                className="w-full justify-center text-xs font-extrabold bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950 border-0 shadow-lg"
+              >
+                🚀 Share / Publish to Social Media
+              </Button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={BookmarkCheck}
+                  onClick={handleSaveToDb}
+                  isLoading={savePostMutation.isPending}
+                  disabled={!dataUrl || isRendering}
+                  className="w-full text-[11px]"
+                >
+                  Save Draft
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={Download}
+                  onClick={handleDownloadHD}
+                  disabled={!dataUrl || isRendering}
+                  className="w-full text-[11px]"
+                >
+                  Download PNG
+                </Button>
+              </div>
             </div>
-          </div>
-
-          {/* Bottom Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-[#2C384E]">
-            <Button
-              variant="outline"
-              size="lg"
-              icon={BookmarkCheck}
-              onClick={handleSaveToDb}
-              isLoading={savePostMutation.isPending}
-              disabled={!dataUrl || isRendering}
-              className="w-full sm:w-auto text-xs"
-            >
-              Save Post to DB
-            </Button>
-
-            <Button
-              variant="primary"
-              size="lg"
-              icon={Download}
-              onClick={handleDownloadHD}
-              disabled={!dataUrl || isRendering}
-              className="w-full sm:flex-1 text-xs"
-            >
-              Download HD Post (PNG)
-            </Button>
           </div>
         </div>
       </div>
+
+      <SocialPublisherModal
+        isOpen={isPublisherOpen}
+        onClose={() => setIsPublisherOpen(false)}
+        postData={publisherPayload}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
+        }}
+      />
     </div>,
     document.body
   );

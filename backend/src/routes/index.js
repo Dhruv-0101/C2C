@@ -8,6 +8,7 @@ import brandKitRoutes from '../modules/brandkit/brandkit.routes.js';
 import frameRoutes from '../modules/frames/frame.routes.js';
 import postRoutes from '../modules/posts/post.routes.js';
 import vaultRoutes from '../modules/vault/vault.routes.js';
+import socialRoutes from '../modules/social/social.routes.js';
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use('/brandkit', brandKitRoutes);
 router.use('/frames', frameRoutes);
 router.use('/posts', postRoutes);
 router.use('/vault', vaultRoutes);
+router.use('/social', socialRoutes);
 
 export default router;

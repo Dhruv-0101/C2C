@@ -8,25 +8,31 @@ export default {
     extend: {
       colors: {
         brand: {
-          marigold: 'hsl(var(--color-marigold) / <alpha-value>)',
-          teal: 'hsl(var(--color-teal) / <alpha-value>)',
-          indigo: 'hsl(var(--color-indigo) / <alpha-value>)',
+          primary: '#6366F1',
+          secondary: '#4F46E5',
           bg: {
-            primary: 'hsl(var(--bg-primary) / <alpha-value>)',
-            secondary: 'hsl(var(--bg-secondary) / <alpha-value>)',
-            card: 'hsl(var(--bg-card) / <alpha-value>)',
+            primary: 'var(--bg-primary)',
+            secondary: 'var(--bg-secondary)',
+            card: 'var(--bg-card)',
           },
-          border: 'hsl(var(--border-color) / <alpha-value>)',
+          border: 'var(--border-color)',
+        },
+        social: {
+          instagram: '#E1306C',
+          facebook: '#1877F2',
+          linkedin: '#0A66C2',
+          twitter: '#1DA1F2',
+          whatsapp: '#25D366',
+          pinterest: '#E60023',
         },
       },
       fontFamily: {
-        heading: ['Space Grotesk', 'sans-serif'],
+        heading: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
         body: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
       },
       boxShadow: {
-        glass: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-        glow: '0 0 20px rgba(245, 158, 11, 0.35)',
-        'glow-teal': '0 0 20px rgba(20, 184, 166, 0.35)',
+        card: '0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1)',
+        panel: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
       },
     },
   },

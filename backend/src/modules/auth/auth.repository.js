@@ -139,6 +139,24 @@ export async function createSubAdminUser({ email, passwordHash, fullName, allowe
   });
 }
 
+export async function updateSubAdminUser(id, data) {
+  return prisma.user.update({
+    where: { id },
+    data,
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      role: true,
+      isAdmin: true,
+      isSuperAdmin: false,
+      isSubAdmin: true,
+      allowedTabs: true,
+      createdAt: true,
+    },
+  });
+}
+
 export async function findAllSubAdmins() {
   return prisma.user.findMany({
     where: { isSubAdmin: true },

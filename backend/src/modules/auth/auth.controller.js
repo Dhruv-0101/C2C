@@ -242,6 +242,23 @@ export async function deleteSubAdmin(req, res, next) {
 }
 
 /**
+ * Update SubAdmin allowedTabs permissions (SuperAdmin only)
+ */
+export async function updateSubAdmin(req, res, next) {
+  try {
+    const updatedSubAdmin = await authLogic.updateSubAdmin(req.params.id, req.body);
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'SubAdmin permissions updated successfully.',
+      data: { subAdmin: updatedSubAdmin },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Refresh expired JWT Access Token using HTTP-Only Refresh Cookie
  * Implements Refresh Token Rotation for enhanced security
  */

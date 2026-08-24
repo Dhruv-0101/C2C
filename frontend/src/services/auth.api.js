@@ -90,4 +90,11 @@ export const authApi = {
    * @param {string} id
    */
   deleteSubAdmin: (id) => api.delete(`${API_ENDPOINTS.AUTH.SUBADMIN}/${id}`),
+
+  /**
+   * SuperAdmin: Update SubAdmin account permissions
+   * @param {string} id
+   * @param {{ fullName?: string, email?: string, allowedTabs?: string[] }} data
+   */
+  updateSubAdmin: (id, data) => api.put(`${API_ENDPOINTS.AUTH.SUBADMIN}/${id}`, data),
 };

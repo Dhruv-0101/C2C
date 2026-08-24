@@ -12,6 +12,18 @@ router.use(authenticate);
 // GET /api/v1/posts
 router.get('/', postController.getUserPosts);
 
+// GET /api/v1/posts/scheduled (Scheduled Queue)
+router.get('/scheduled', postController.getScheduledPosts);
+
+// POST /api/v1/posts/publish-now (Instant Mock Publishing)
+router.post('/publish-now', postController.publishNow);
+
+// POST /api/v1/posts/schedule (Schedule for Future Date/Time)
+router.post('/schedule', postController.schedulePost);
+
+// POST /api/v1/posts/trigger-scheduled-jobs (Manual Test Trigger)
+router.post('/trigger-scheduled-jobs', postController.triggerScheduledJobs);
+
 // POST /api/v1/posts (Save generated post)
 router.post('/', validate(createPostSchema), postController.createPost);
 

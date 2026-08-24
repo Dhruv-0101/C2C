@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useLogout } from '../../features/auth/hooks/useLogout';
 import { Button } from '../ui/Button';
 import { TwoFactorSettingsModal } from './TwoFactorSettingsModal';
+import { ThemeToggle } from './ThemeToggle';
 
 export const Header = () => {
   const { isAuthenticated, user, isSuperAdmin, isSubAdmin } = useAuth();
@@ -50,19 +51,17 @@ export const Header = () => {
       <header className="sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3.5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-teal-500 p-0.5 shadow-glow group-hover:scale-105 transition-transform duration-200">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-amber-400" />
-              </div>
-            </div>
-            <span className="font-heading font-bold text-xl tracking-tight text-white">
+          <Link to="/" className="flex items-center gap-2 group">
+            <span className="font-heading font-extrabold text-xl tracking-tight text-white">
               Brand<span className="text-amber-400">Flow</span>
             </span>
           </Link>
 
           {/* Right Nav Actions */}
           <div className="flex items-center gap-3">
+            {/* Global Theme Switcher Toggle */}
+            <ThemeToggle />
+
             {isAuthenticated ? (
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* 2FA Security Modal Trigger */}

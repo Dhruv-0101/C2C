@@ -1,5 +1,7 @@
 import { postRepository } from './post.repository.js';
 import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
+import { processPostJob } from '../../jobs/postWorker.js';
+import { triggerScheduledPostsNow } from '../../jobs/cronDispatcher.js';
 
 export const postLogic = {
   /**
@@ -7,6 +9,63 @@ export const postLogic = {
    */
   getUserPosts: async (userId) => {
     return postRepository.findByUserId(userId);
+  },
+
+  /**
+   * Get user's scheduled queue
+   */
+  getScheduledPosts: async (userId) => {
+    return postRepository.findScheduledPostsByUserId(userId);
+  },
+
+  /**
+   * Instant Mock Social Media Publishing
+   */
+  publishNow: async (userId, payload) => {
+    const post = await postLogic.createPost(userId, { ...payload, status: 'PUBLISHING' });
+
+    const jobPayload = {
+      postId: post.id,
+      userId,
+      targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'],
+      postContent: payload.customText || payload.occasionName || 'Branded Graphic Post',
+      graphicUrl: post.finalGraphicUrl,
+    };
+
+    const publishResult = await processPostJob(jobPayload);
+
+    return {
+      post,
+      publishResult,
+    };
+  },
+
+  /**
+   * Schedule Post for Future Date & Time
+   */
+  schedulePost: async (userId, payload) => {
+    const post = await postLogic.createPost(userId, { ...payload, status: 'SCHEDULED' });
+
+    const scheduledDate = new Date(payload.scheduledAt);
+
+    const scheduledPost = await postRepository.createScheduledPost({
+      postId: post.id,
+      scheduledAt: scheduledDate,
+      targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'],
+      status: 'PENDING',
+    });
+
+    return {
+      post,
+      scheduledPost,
+    };
+  },
+
+  /**
+   * Manual Test Trigger for Cron Worker
+   */
+  triggerScheduledJobs: async () => {
+    return await triggerScheduledPostsNow();
   },
 
   /**

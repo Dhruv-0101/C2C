@@ -80,6 +80,11 @@ export const API_ENDPOINTS = {
     BASE: '/vault',
     BY_ID: (id) => `/vault/${id}`,
   },
+  SOCIAL: {
+    ACCOUNTS: '/social/accounts',
+    AUTH_URL_INSTAGRAM: '/social/auth-url/instagram',
+    DISCONNECT: (platform) => `/social/accounts/${platform}`,
+  },
 };
 
 export const HTTP_STATUS = {

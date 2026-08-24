@@ -11,6 +11,38 @@ export const postApi = {
   },
 
   /**
+   * Get user scheduled posts queue
+   */
+  getScheduledPosts: async () => {
+    const response = await api.get(`${API_ENDPOINTS.POSTS.BASE}/scheduled`);
+    return response.data;
+  },
+
+  /**
+   * Instant mock social media publishing
+   */
+  publishNow: async (payload) => {
+    const response = await api.post(`${API_ENDPOINTS.POSTS.BASE}/publish-now`, payload);
+    return response.data;
+  },
+
+  /**
+   * Schedule post for future date/time
+   */
+  schedulePost: async (payload) => {
+    const response = await api.post(`${API_ENDPOINTS.POSTS.BASE}/schedule`, payload);
+    return response.data;
+  },
+
+  /**
+   * Manual test trigger to force-process due scheduled posts immediately
+   */
+  triggerScheduledJobs: async () => {
+    const response = await api.post(`${API_ENDPOINTS.POSTS.BASE}/trigger-scheduled-jobs`);
+    return response.data;
+  },
+
+  /**
    * Create & save composited post
    */
   createPost: async (postData) => {

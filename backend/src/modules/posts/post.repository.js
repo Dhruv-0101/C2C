@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../config/database.js';
 
 export const postRepository = {
   /**
@@ -44,6 +42,67 @@ export const postRepository = {
       }
 
       return newPost;
+    });
+  },
+
+  /**
+   * Create a scheduled post entry safely
+   */
+  createScheduledPost: async (data) => {
+    const { postId, scheduledAt, status, targetPlatforms, platformResults } = data;
+    const payload = {
+      postId,
+      scheduledAt,
+      status: status || 'PENDING',
+      targetPlatforms: targetPlatforms || [],
+    };
+    if (platformResults) {
+      payload.platformResults = platformResults;
+    }
+
+    return prisma.scheduledPost.create({
+      data: payload,
+      include: {
+        post: {
+          include: {
+            template: true,
+            festival: true,
+          },
+        },
+      },
+    });
+  },
+
+  /**
+   * Find scheduled posts for a user
+   */
+  findScheduledPostsByUserId: async (userId) => {
+    return prisma.scheduledPost.findMany({
+      where: {
+        post: { userId },
+      },
+      include: {
+        post: true,
+      },
+      orderBy: { scheduledAt: 'asc' },
+    });
+  },
+
+  /**
+   * Find due scheduled posts for cron dispatcher
+   */
+  findDueScheduledPosts: async (limit = 1000) => {
+    return prisma.scheduledPost.findMany({
+      where: {
+        status: 'PENDING',
+        scheduledAt: {
+          lte: new Date(),
+        },
+      },
+      include: {
+        post: true,
+      },
+      take: limit,
     });
   },
 

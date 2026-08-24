@@ -52,6 +52,17 @@ export const createSubAdminSchema = z.object({
   }),
 });
 
+export const updateSubAdminSchema = z.object({
+  params: z.object({
+    id: z.string().uuid('Invalid SubAdmin ID'),
+  }),
+  body: z.object({
+    fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100).optional(),
+    email: z.string().email('Please enter a valid email address').optional(),
+    allowedTabs: z.array(z.string()).optional(),
+  }),
+});
+
 export const googleAuthSchema = z.object({
   body: z.object({
     idToken: z.string().min(1, 'Google ID Token is required'),

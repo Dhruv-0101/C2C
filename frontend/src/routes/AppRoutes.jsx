@@ -11,6 +11,10 @@ import { ForgotPasswordPage } from "../features/auth/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "../features/auth/pages/ResetPasswordPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { CreatePostPage } from "../pages/CreatePostPage";
+import { YourPostsPage } from "../pages/YourPostsPage";
+import { CalendarPage } from "../pages/CalendarPage";
+import { FramesPage } from "../pages/FramesPage";
+import { DesignStylesPage } from "../pages/DesignStylesPage";
 import { AdminDashboardPage } from "../pages/AdminDashboardPage";
 import { SubAdminDashboardPage } from "../pages/SubAdminDashboardPage";
 import { BrandKitPage } from "../pages/BrandKitPage";
@@ -27,6 +31,7 @@ import {
   BarChart3,
   Settings,
 } from "lucide-react";
+import { SocialAccountsManager } from "../features/social/components/SocialAccountsManager";
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -43,8 +48,7 @@ export const AppRoutes = () => {
 
   const getHomeRedirect = () => {
     if (!isAuthenticated) return "/welcome";
-    if (isSuperAdmin) return "/admin/dashboard";
-    if (isSubAdmin) return "/subadmin/dashboard";
+    if (isSuperAdmin || isSubAdmin) return "/admin?tab=templates";
     return "/dashboard";
   };
 
@@ -72,18 +76,14 @@ export const AppRoutes = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
+          <Route path="/posts" element={<YourPostsPage />} />
+          <Route path="/your-posts" element={<YourPostsPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/frames" element={<FramesPage />} />
+          <Route path="/design-styles" element={<DesignStylesPage />} />
           <Route path="/brand-kit" element={<BrandKitPage />} />
           <Route path="/brandkit" element={<BrandKitPage />} />
-          <Route
-            path="/connections"
-            element={
-              <GenericPage
-                title="Social Media Connections"
-                icon={Share2}
-                description="Connect Instagram, LinkedIn, X, and Facebook accounts for automated publishing."
-              />
-            }
-          />
+          <Route path="/connections" element={<SocialAccountsManager />} />
           <Route
             path="/vault"
             element={<VaultPage />}
@@ -111,20 +111,12 @@ export const AppRoutes = () => {
         </Route>
       </Route>
 
-      {/* Protected SuperAdmin Routes */}
-      <Route element={<ProtectedRoute requireSuperAdmin />}>
+      {/* Protected Admin Routes (SuperAdmin & SubAdmin Allowed) */}
+      <Route element={<ProtectedRoute requireAdmin />}>
         <Route element={<MainLayout />}>
+          <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        </Route>
-      </Route>
-
-      {/* Protected SubAdmin Routes */}
-      <Route element={<ProtectedRoute requireSubAdmin />}>
-        <Route element={<MainLayout />}>
-          <Route
-            path="/subadmin/dashboard"
-            element={<SubAdminDashboardPage />}
-          />
+          <Route path="/subadmin/dashboard" element={<AdminDashboardPage />} />
         </Route>
       </Route>
 

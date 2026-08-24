@@ -430,6 +430,23 @@ export async function removeSubAdmin(id) {
 }
 
 /**
+ * Update SubAdmin permissions & profile (SuperAdmin Privilege only)
+ */
+export async function updateSubAdmin(id, { fullName, email, allowedTabs }) {
+  const user = await authRepository.findUserById(id);
+  if (!user || !user.isSubAdmin) {
+    throw new NotFoundError('SubAdmin account not found.');
+  }
+
+  const updateData = {};
+  if (fullName !== undefined) updateData.fullName = fullName;
+  if (email !== undefined) updateData.email = email.toLowerCase();
+  if (allowedTabs !== undefined) updateData.allowedTabs = allowedTabs;
+
+  return authRepository.updateSubAdminUser(id, updateData);
+}
+
+/**
  * Rotate Refresh Token & Issue new Access Token
  */
 export async function refreshSession(refreshToken) {

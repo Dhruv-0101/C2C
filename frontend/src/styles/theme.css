@@ -1,61 +1,209 @@
 @layer base {
   :root {
-    --color-marigold: 38 92% 50%; /* #F59E0B */
-    --color-teal: 174 72% 40%;    /* #14B8A6 */
-    --color-indigo: 239 84% 67%;  /* #6366F1 */
+    --color-primary: 239 84% 67%;
+    --color-accent: 217 91% 60%;
 
-    --bg-primary: 222 47% 7%;     /* #0B0F17 */
-    --bg-secondary: 217 33% 12%;  /* #131B2A */
-    --bg-card: 217 33% 15%;       /* #1A2335 */
-    --border-color: 215 25% 23%;  /* #2C384E */
+    /* Rich Midnight Dark Theme */
+    --bg-primary: #0F172A;     /* Slate 900 */
+    --bg-secondary: #1E293B;   /* Slate 800 */
+    --bg-card: #1E293B;
+    --border-color: #334155;   /* Slate 700 */
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+  }
+
+  /* Rich Cool Slate Light Theme (Not washed-out white!) */
+  html.light {
+    --bg-primary: #E2E8F0;     /* Rich Slate 200 */
+    --bg-secondary: #FFFFFF;   /* Elevated Pure White Cards */
+    --bg-card: #FFFFFF;
+    --border-color: #CBD5E1;   /* Slate 300 Border */
+    --text-main: #0F172A;
+    --text-muted: #475569;
   }
 }
 
-/* Custom Glassmorphism Utilities */
+/* Base Body Transition for Smooth Theme Switching */
+body {
+  transition: background-color 0.25s ease, color 0.25s ease;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Dark Theme Base */
+html.dark body {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+/* Rich Cool Slate Light Theme Base */
+html.light body {
+  background-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* Clean Typography Hierarchy in Light Mode */
+html.light p,
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6,
+html.light label,
+html.light td,
+html.light th {
+  color: #0F172A;
+}
+
+/* Slate Text Utility Class Overrides for Light Mode */
+html.light .text-white,
+html.light .text-slate-100,
+html.light .text-slate-200,
+html.light .text-slate-300 {
+  color: #0F172A !important;
+}
+
+html.light .text-slate-400,
+html.light .text-slate-500 {
+  color: #475569 !important;
+}
+
+html.light .text-slate-600,
+html.light .text-slate-700,
+html.light .text-slate-800,
+html.light .text-slate-900,
+html.light .text-slate-950 {
+  color: #0F172A !important;
+}
+
+/* Darker Gold & Amber Font Typography in Light Mode for Maximum Contrast */
+html.light .text-amber-300,
+html.light .text-amber-400,
+html.light .text-amber-500,
+html.light .text-yellow-300,
+html.light .text-yellow-400,
+html.light .text-yellow-500 {
+  color: #B45309 !important; /* Dark Rich Gold (Amber 700) for sharp readability */
+}
+
+html.light .text-amber-600,
+html.light .text-amber-700 {
+  color: #92400E !important; /* Deep Dark Amber 800 */
+}
+
+/* Background Card Overrides for Light Mode */
+html.light [class*="bg-[#0B0F17]"],
+html.light [class*="bg-slate-950"],
+html.light [class*="bg-slate-900"] {
+  background-color: #F1F5F9 !important;
+}
+
+html.light [class*="bg-[#131B2A]"],
+html.light [class*="bg-[#1A2335]"],
+html.light [class*="bg-slate-900/80"],
+html.light [class*="bg-slate-900/50"] {
+  background-color: #FFFFFF !important;
+}
+
+html.light [class*="border-[#2C384E]"],
+html.light [class*="border-slate-800"] {
+  border-color: #CBD5E1 !important;
+}
+
+/* Dark Mode Custom Hex Overrides for Rich Slate Look */
+html.dark [class*="bg-[#0B0F17]"] {
+  background-color: #0F172A !important;
+}
+
+html.dark [class*="bg-[#131B2A]"],
+html.dark [class*="bg-[#1A2335]"] {
+  background-color: #1E293B !important;
+}
+
+html.dark [class*="border-[#2C384E]"] {
+  border-color: #334155 !important;
+}
+
+/* Social Media Platform Specific Color Badges & Accents */
+.badge-instagram {
+  background-color: rgba(225, 48, 108, 0.12);
+  color: #E1306C;
+  border: 1px solid rgba(225, 48, 108, 0.3);
+}
+
+.badge-facebook {
+  background-color: rgba(24, 119, 242, 0.12);
+  color: #1877F2;
+  border: 1px solid rgba(24, 119, 242, 0.3);
+}
+
+.badge-linkedin {
+  background-color: rgba(10, 102, 194, 0.12);
+  color: #0A66C2;
+  border: 1px solid rgba(10, 102, 194, 0.3);
+}
+
+.badge-twitter {
+  background-color: rgba(29, 161, 242, 0.12);
+  color: #1DA1F2;
+  border: 1px solid rgba(29, 161, 242, 0.3);
+}
+
+/* Form Input Controls */
+input,
+select,
+textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html.light input,
+html.light select,
+html.light textarea {
+  color: #0F172A !important;
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus {
+  border-color: #1877F2 !important;
+  box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15) !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  color: #F8FAFC !important;
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #38BDF8 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+}
+
+/* Glassmorphism Panels */
 .glass-panel {
-  background: rgba(19, 27, 42, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(30, 41, 59, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid #334155;
 }
 
-.glass-input {
-  background-color: #0f172a !important;
-  background: #0f172a !important;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff !important;
-  caret-color: #f59e0b !important;
-  transition: all 0.2s ease-in-out;
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid #CBD5E1;
 }
 
-.glass-input:focus {
-  border-color: rgba(245, 158, 11, 0.8) !important;
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3) !important;
-  background-color: #131b2a !important;
-  background: #131b2a !important;
-}
-
-/* Force dark background and white text for Chrome, Edge & Safari Browser Autofill */
+/* Browser Autofill Support */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
-input:-webkit-autofill:active,
-.glass-input:-webkit-autofill,
-.glass-input:-webkit-autofill:hover,
-.glass-input:-webkit-autofill:focus,
-.glass-input:-webkit-autofill:active {
-  -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
-  box-shadow: 0 0 0px 1000px #0f172a inset !important;
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-  caret-color: #f59e0b !important;
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: inherit !important;
   transition: background-color 5000s ease-in-out 0s !important;
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, #F59E0B 0%, #14B8A6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }

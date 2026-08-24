@@ -1,182 +1,202 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ShieldAlert,
   LayoutDashboard,
+  Calendar,
   Sparkles,
+  Layers,
   Palette,
-  Share2,
   FolderKanban,
-  BarChart3,
-  Users,
-  FileCode2,
-  Send,
-  CreditCard,
-  Settings,
+  Building2,
+  ShieldAlert,
+  ChevronLeft,
+  ChevronRight,
   LogOut,
   Shield,
   CheckCircle2,
+  Lock,
+  ChevronDown,
   Menu,
   X,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Calendar,
-  Layers,
+  PlusCircle,
+  FileCode,
+  Users,
+  Share2,
 } from 'lucide-react';
-import { useDispatch } from 'react-redux';
 import { useAuth } from '../../hooks/useAuth';
-import { logoutState } from '../../store/slices/authSlice';
+import { useLogout } from '../../features/auth/hooks/useLogout';
 import { TwoFactorSettingsModal } from './TwoFactorSettingsModal';
+import { ThemeToggle } from './ThemeToggle';
 
-export const Sidebar = ({ isCollapsed = false, onToggle }) => {
-  const { user } = useAuth();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
+export const Sidebar = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
-
-  // State to control Admin Console sub-menu open/close state
   const [isAdminConsoleExpanded, setIsAdminConsoleExpanded] = useState(true);
 
+  const { user, isSuperAdmin, isSubAdmin } = useAuth();
+  const { mutate: logout } = useLogout();
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    dispatch(logoutState());
-    navigate('/login', { replace: true });
+    logout(undefined, {
+      onSuccess: () => navigate('/login'),
+    });
   };
 
-  // Sub-items list for Admin Console
-  const adminConsoleSubItems = [
-    { label: 'Master Categories', path: '/admin/dashboard?tab=categories', icon: FolderKanban },
-    { label: 'Festivals Calendar', path: '/admin/dashboard?tab=festivals', icon: Calendar },
-    { label: 'Base Templates', path: '/admin/dashboard?tab=templates', icon: FileCode2 },
-    { label: 'Canva Frames', path: '/admin/dashboard?tab=frames', icon: Layers },
-    { label: 'Design Styles', path: '/admin/dashboard?tab=styles', icon: Palette },
-    { label: 'SubAdmins Directory', path: '/admin/dashboard?tab=subadmins', icon: Shield },
-    { label: 'Users Directory', path: '/admin/dashboard?tab=users', icon: Users },
+  const navItems = [
+    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'AI BrandKit Manager', path: '/brandkit', icon: Building2 },
+    { label: 'Post Creator Studio', path: '/create-post', icon: Sparkles },
+    { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
+    { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
+    { label: 'Canva Vector Frames', path: '/frames', icon: Layers },
+    { label: 'Design Styles Engine', path: '/design-styles', icon: Palette },
+    { label: 'Graphic Vault', path: '/vault', icon: FolderKanban },
   ];
 
-  // Determine Navigation Links based on User Role & SubAdmin allowedTabs
-  const getNavItems = () => {
-    if (user?.isSuperAdmin) {
-      return [
-        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-        { label: 'Analytics', path: '/admin/dashboard?tab=analytics', icon: BarChart3 },
-        { label: 'Settings', path: '/settings', icon: Settings },
-      ];
+  const adminConsoleAllSubItems = [
+    { id: 'templates', label: 'AI Base Templates', path: '/admin?tab=templates', icon: PlusCircle },
+    { id: 'festivals', label: 'Festival Calendar', path: '/admin?tab=festivals', icon: Calendar },
+    { id: 'frames', label: 'Canva Vector Frames', path: '/admin?tab=frames', icon: Layers },
+    { id: 'styles', label: 'Design System & Palettes', path: '/admin?tab=styles', icon: Palette },
+    { id: 'categories', label: 'Business Categories', path: '/admin?tab=categories', icon: FolderKanban },
+    { id: 'subadmins', label: 'SubAdmin Directory', path: '/admin?tab=subadmins', icon: ShieldAlert, superAdminOnly: true },
+    { id: 'users', label: 'SMB User Directory', path: '/admin?tab=users', icon: Users },
+  ];
+
+  // RBAC Permission Filter for SubAdmins vs SuperAdmins
+  const adminConsoleSubItems = isSuperAdmin
+    ? adminConsoleAllSubItems
+    : adminConsoleAllSubItems.filter((item) =>
+        !item.superAdminOnly && Array.isArray(user?.allowedTabs) && user.allowedTabs.includes(item.id)
+      );
+
+  const isPathActive = (path) => {
+    if (path.includes('?tab=')) {
+      const [basePath, search] = path.split('?');
+      const tabParam = new URLSearchParams(search).get('tab');
+      const currentTab = new URLSearchParams(location.search).get('tab') || 'templates';
+      return location.pathname === basePath && currentTab === tabParam;
     }
-
-    if (user?.isSubAdmin) {
-      const allowed = user?.allowedTabs || [];
-      const subAdminItems = [
-        { label: 'SubAdmin Console', path: '/subadmin/dashboard', icon: Shield },
-      ];
-
-      if (allowed.includes('users')) {
-        subAdminItems.push({ label: 'Users Management', path: '/subadmin/dashboard?tab=users', icon: Users });
-      }
-      if (allowed.includes('templates')) {
-        subAdminItems.push({ label: 'Base Templates', path: '/subadmin/dashboard?tab=templates', icon: FileCode2 });
-      }
-      if (allowed.includes('posts')) {
-        subAdminItems.push({ label: 'Posts & Queue', path: '/subadmin/dashboard?tab=posts', icon: Send });
-      }
-      if (allowed.includes('analytics')) {
-        subAdminItems.push({ label: 'Analytics', path: '/subadmin/dashboard?tab=analytics', icon: BarChart3 });
-      }
-      if (allowed.includes('billing')) {
-        subAdminItems.push({ label: 'Subscriptions', path: '/subadmin/dashboard?tab=billing', icon: CreditCard });
-      }
-
-      subAdminItems.push({ label: 'Settings', path: '/settings', icon: Settings });
-      return subAdminItems;
-    }
-
-    // Default Regular SMB User Menu
-    return [
-      { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-      { label: 'Create Post', path: '/create-post', icon: Sparkles },
-      { label: 'Brand Kit', path: '/brand-kit', icon: Palette },
-      { label: 'Connections', path: '/connections', icon: Share2 },
-      { label: 'Content Vault', path: '/vault', icon: FolderKanban },
-      { label: 'Analytics', path: '/analytics', icon: BarChart3 },
-      { label: 'Settings', path: '/settings', icon: Settings },
-    ];
+    return location.pathname === path;
   };
 
-  const navItems = getNavItems();
-
-  const isPathActive = (itemPath) => {
-    if (itemPath.includes('?tab=')) {
-      return location.pathname + location.search === itemPath;
-    }
-    return location.pathname === itemPath;
-  };
-
-  const isAdminConsolePathActive = location.pathname.startsWith('/admin/dashboard');
+  const isAdminConsolePathActive = location.pathname.startsWith('/admin');
 
   return (
     <>
       {/* Mobile Header Bar Toggle */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-[#131B2A] border-b border-[#2C384E] w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-teal-400 flex items-center justify-center font-heading font-extrabold text-slate-950 text-lg shadow-md">
-            B
-          </div>
-          <span className="font-heading font-bold text-lg text-white tracking-tight">BrandFlow</span>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#131B2A] border-b border-[#2C384E] px-4 py-3 flex items-center justify-between shadow-lg">
+        <div className="flex items-center gap-2">
+          <span className="font-heading font-extrabold text-lg text-white">
+            Brand<span className="text-amber-400">Flow</span>
+          </span>
         </div>
-        <button
-          onClick={() => setIsMobileOpen((prev) => !prev)}
-          className="p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
-        >
-          {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
+          >
+            {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
-      {/* Sidebar Desktop & Mobile Overlay Container */}
+      {/* Mobile Backdrop Overlay */}
+      {isMobileOpen && (
+        <div
+          onClick={() => setIsMobileOpen(false)}
+          className="lg:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm animate-in fade-in"
+        />
+      )}
+
+      {/* Sidebar Container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 bg-[#131B2A] border-r border-[#2C384E] flex flex-col justify-between transition-all duration-300 ease-in-out md:translate-x-0 ${
-          isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full'
-        } ${isCollapsed ? 'md:w-20' : 'md:w-64'}`}
+        className={`fixed top-0 left-0 z-50 h-screen bg-[#131B2A] border-r border-[#2C384E] transition-all duration-300 ease-in-out flex flex-col ${
+          isCollapsed ? 'w-20' : 'w-64'
+        } ${
+          isMobileOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
+        }`}
       >
-        {/* Top Logo & Collapse Toggle */}
-        <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-140px)]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-teal-400 flex items-center justify-center font-heading font-extrabold text-slate-950 text-xl shadow-lg shadow-amber-500/20 shrink-0">
-                B
+        {/* Sidebar Header Banner */}
+        <div className="p-4 border-b border-[#2C384E] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 overflow-hidden">
+            {(!isCollapsed || isMobileOpen) ? (
+              <div className="flex flex-col">
+                <span className="font-heading font-extrabold text-lg tracking-tight text-white leading-none">
+                  Brand<span className="text-amber-400">Flow</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium tracking-wider uppercase mt-1">
+                  AI Social Manager
+                </span>
               </div>
+            ) : (
+              <span className="font-heading font-extrabold text-base tracking-tight text-white">
+                B<span className="text-amber-400">F</span>
+              </span>
+            )}
+          </div>
+
+          {/* Desktop Collapse Toggle */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {/* Navigation Links List */}
+        <div className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = isPathActive(item.path);
+
+            return (
+              <NavLink
+                key={item.label}
+                to={item.path}
+                onClick={() => setIsMobileOpen(false)}
+                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                  active
+                    ? 'bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                } ${isCollapsed && !isMobileOpen ? 'justify-center px-0' : ''}`}
+                title={isCollapsed && !isMobileOpen ? item.label : undefined}
+              >
+                <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-slate-950' : 'text-slate-400'}`} />
+                {(!isCollapsed || isMobileOpen) && (
+                  <span className="truncate">{item.label}</span>
+                )}
+              </NavLink>
+            );
+          })}
+
+          {/* SuperAdmin & SubAdmin Console Dropdown Root */}
+          {(isSuperAdmin || isSubAdmin) && (
+            <div className="pt-3 border-t border-[#2C384E]">
               {(!isCollapsed || isMobileOpen) && (
-                <div className="animate-in fade-in duration-200">
-                  <h1 className="font-heading font-extrabold text-xl text-white tracking-tight leading-none">
-                    Brand<span className="text-amber-400">Flow</span>
-                  </h1>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block mt-1">
-                    {user?.isSuperAdmin ? 'SuperAdmin Console' : user?.isSubAdmin ? 'SubAdmin Panel' : 'SMB Workspace'}
+                <div className="px-3.5 pb-2">
+                  <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                    Administration
                   </span>
                 </div>
               )}
-            </div>
 
-            {/* Desktop Collapse / Expand Toggle Button */}
-            <button
-              onClick={onToggle}
-              className="hidden md:flex p-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 hover:text-white hover:border-amber-500/40 transition shrink-0"
-              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            >
-              {isCollapsed ? <ChevronRight className="w-4 h-4 text-amber-400" /> : <ChevronLeft className="w-4 h-4" />}
-            </button>
-          </div>
-
-          {/* Navigation Links List */}
-          <nav className="space-y-1.5 pt-2">
-            {/* SuperAdmin Exclusive: Collapsible Admin Console Sub-menu */}
-            {user?.isSuperAdmin && (
               <div className="space-y-1">
-                {/* Admin Console Root Header Toggle */}
                 <button
-                  onClick={() => setIsAdminConsoleExpanded((prev) => !prev)}
-                  title={isCollapsed && !isMobileOpen ? 'Admin Console' : undefined}
+                  onClick={() => {
+                    if (isCollapsed && !isMobileOpen) {
+                      navigate('/admin');
+                    } else {
+                      setIsAdminConsoleExpanded(!isAdminConsoleExpanded);
+                    }
+                  }}
                   className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
                     isCollapsed && !isMobileOpen ? 'justify-center px-0' : ''
                   } ${
@@ -188,7 +208,7 @@ export const Sidebar = ({ isCollapsed = false, onToggle }) => {
                   <div className="flex items-center gap-3.5 overflow-hidden">
                     <ShieldAlert className={`w-5 h-5 shrink-0 ${isAdminConsolePathActive ? 'text-slate-950' : 'text-amber-400'}`} />
                     {(!isCollapsed || isMobileOpen) && (
-                      <span className="truncate animate-in fade-in duration-200">Admin Console</span>
+                      <span className="truncate">Admin Console</span>
                     )}
                   </div>
                   {(!isCollapsed || isMobileOpen) && (
@@ -200,9 +220,9 @@ export const Sidebar = ({ isCollapsed = false, onToggle }) => {
                   )}
                 </button>
 
-                {/* Sub-menu Dropdown List */}
+                {/* Sub-menu Dropdown List (RBAC Filtered) */}
                 {isAdminConsoleExpanded && (!isCollapsed || isMobileOpen) && (
-                  <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-slate-800/80 ml-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-slate-800/80 ml-4">
                     {adminConsoleSubItems.map((subItem) => {
                       const SubIcon = subItem.icon;
                       const isSubActive = isPathActive(subItem.path);
@@ -218,7 +238,7 @@ export const Sidebar = ({ isCollapsed = false, onToggle }) => {
                               : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                           }`}
                         >
-                          <SubIcon className={`w-4 h-4 shrink-0 ${isSubActive ? 'text-amber-400' : 'text-slate-500'}`} />
+                          <SubIcon className={`w-4 h-4 ${isSubActive ? 'text-amber-400' : 'text-slate-500'}`} />
                           <span className="truncate">{subItem.label}</span>
                         </NavLink>
                       );
@@ -226,46 +246,35 @@ export const Sidebar = ({ isCollapsed = false, onToggle }) => {
                   </div>
                 )}
               </div>
-            )}
-
-            {/* Other Top-Level Nav Items */}
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = isPathActive(item.path);
-
-              return (
-                <NavLink
-                  key={item.label}
-                  to={item.path}
-                  title={isCollapsed && !isMobileOpen ? item.label : undefined}
-                  onClick={() => setIsMobileOpen(false)}
-                  className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
-                    isCollapsed && !isMobileOpen ? 'justify-center px-0' : ''
-                  } ${
-                    active
-                      ? 'bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-slate-950' : 'text-slate-400'}`} />
-                  {(!isCollapsed || isMobileOpen) && (
-                    <span className="truncate animate-in fade-in duration-200">{item.label}</span>
-                  )}
-                </NavLink>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Bottom User Info & Footer Actions */}
-        <div className="p-3 border-t border-[#2C384E] bg-[#0E1523] space-y-3">
-          {/* User Details */}
-          {(!isCollapsed || isMobileOpen) && (
-            <div className="px-2 space-y-0.5 animate-in fade-in duration-200">
-              <p className="text-xs font-bold text-white truncate">{user?.fullName || 'BrandFlow User'}</p>
-              <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
             </div>
           )}
+        </div>
+
+        {/* Sidebar Footer User Info & Actions */}
+        <div className="p-3 border-t border-[#2C384E] space-y-2 shrink-0 bg-[#0B0F17]">
+          {/* User Profile Summary */}
+          {(!isCollapsed || isMobileOpen) && (
+            <div className="p-2.5 rounded-xl bg-[#131B2A] border border-[#2C384E] flex items-center justify-between">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-xs shrink-0">
+                  {user?.fullName?.charAt(0) || 'U'}
+                </div>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-xs font-bold text-slate-100 truncate">
+                    {user?.fullName || 'Business Account'}
+                  </span>
+                  <span className="text-[10px] text-slate-400 truncate">
+                    {user?.email}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Theme Toggle Button */}
+          <div className="pt-1">
+            <ThemeToggle className="w-full justify-center" />
+          </div>
 
           {/* 2FA Status Trigger */}
           <button

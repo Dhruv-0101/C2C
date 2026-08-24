@@ -93,6 +93,15 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+
+  // Meta / Instagram Graph API Credentials
+  META_APP_ID: z.string().optional().default(''),
+  META_APP_SECRET: z.string().optional().default(''),
+  META_REDIRECT_URI: z.string().optional().default('http://localhost:5000/api/v1/social/meta/callback'),
+
+  // Social Encryption & Publisher Mode ('LIVE' | 'MOCK')
+  SOCIAL_TOKEN_ENCRYPTION_KEY: z.string().optional().default('brandflow_social_encryption_secret_key_32b'),
+  SOCIAL_PUBLISHER_MODE: z.enum(['LIVE', 'MOCK']).optional().default('MOCK'),
 });
 
 const _env = envSchema.safeParse({

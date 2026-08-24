@@ -4,47 +4,70 @@ import { PAGE_SIZE_OPTIONS } from '../../utils/pagination.util';
 
 /**
  * Reusable Central Pagination Component
- *
- * @param {Object} props
- * @param {Object} props.meta - Pagination metadata from backend API ({ page, limit, totalItems, totalPages, hasNextPage, hasPrevPage })
- * @param {Function} props.onPageChange - Handler called when user selects/changes page
- * @param {Function} [props.onLimitChange] - Optional handler called when user changes items per page limit
- * @param {Array<number>} [props.pageSizeOptions] - Custom array of page size choices
+ * Follows BrandFlow SaaS theme system with numeric page buttons and per-page limits.
  */
 export default function Pagination({
   meta,
+  currentPage,
+  totalPages,
   onPageChange,
   onLimitChange,
   pageSizeOptions = PAGE_SIZE_OPTIONS,
 }) {
-  if (!meta || meta.totalItems === 0) return null;
+  const page = meta?.page || currentPage || 1;
+  const limit = meta?.limit || 10;
+  const total = meta?.totalItems ?? (meta ? 0 : (totalPages ? totalPages * limit : 0));
+  const pages = meta?.totalPages || totalPages || 1;
+  const hasNext = meta ? meta.hasNextPage : page < pages;
+  const hasPrev = meta ? meta.hasPrevPage : page > 1;
 
-  const { page = 1, limit = 10, totalItems = 0, totalPages = 1, hasNextPage, hasPrevPage } = meta;
+  if (total === 0 && pages <= 1 && (!meta || meta.totalItems === 0)) {
+    return null;
+  }
 
-  const startItem = Math.min((page - 1) * limit + 1, totalItems);
-  const endItem = Math.min(page * limit, totalItems);
+  const startItem = Math.min((page - 1) * limit + 1, Math.max(total, 1));
+  const endItem = Math.min(page * limit, Math.max(total, 1));
+
+  // Generate numeric page buttons list (max 5 page buttons at once)
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxButtons = 5;
+    let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
+    let endPage = Math.min(pages, startPage + maxButtons - 1);
+
+    if (endPage - startPage + 1 < maxButtons) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+    return pageNumbers;
+  };
+
+  const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300">
-      {/* Items count summary */}
-      <div className="flex items-center gap-2">
-        <span>
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3.5 px-4 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-slate-300 shadow-sm mt-4">
+      {/* Items count summary & Per Page Selector */}
+      <div className="flex items-center gap-3">
+        <span className="text-slate-400">
           Showing <span className="font-semibold text-white">{startItem}</span> to{' '}
           <span className="font-semibold text-white">{endItem}</span> of{' '}
-          <span className="font-semibold text-white">{totalItems}</span> results
+          <span className="font-bold text-amber-400">{total}</span> results
         </span>
 
         {/* Page size limit selector */}
         {onLimitChange && (
-          <div className="ml-4 flex items-center gap-1.5">
-            <label htmlFor="page-limit-select" className="text-xs text-gray-400">
+          <div className="flex items-center gap-1.5 border-l border-[#2C384E] pl-3">
+            <label htmlFor="page-limit-select" className="text-slate-400 font-medium">
               Per page:
             </label>
             <select
               id="page-limit-select"
               value={limit}
               onChange={(e) => onLimitChange(Number(e.target.value))}
-              className="bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-indigo-500"
+              className="bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold rounded-lg px-2 py-1 focus:outline-none focus:border-amber-500 cursor-pointer"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -56,25 +79,38 @@ export default function Pagination({
         )}
       </div>
 
-      {/* Pagination control buttons */}
+      {/* Pagination numeric buttons */}
       <div className="flex items-center gap-1.5">
         <button
-          onClick={() => onPageChange(page - 1)}
-          disabled={!hasPrevPage && page <= 1}
-          className="flex items-center justify-center p-1.5 rounded-md border border-gray-700 bg-gray-800/80 hover:bg-gray-700 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          onClick={() => onPageChange && onPageChange(page - 1)}
+          disabled={!hasPrev}
+          className="flex items-center justify-center px-2.5 py-1.5 rounded-lg border border-[#2C384E] bg-[#131B2A] hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           title="Previous Page"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        <span className="px-3 py-1 text-xs font-medium bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 rounded-md">
-          Page {page} of {totalPages}
-        </span>
+        {pageNumbers.map((pNum) => {
+          const isActive = pNum === page;
+          return (
+            <button
+              key={pNum}
+              onClick={() => onPageChange && onPageChange(pNum)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all ${
+                isActive
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold scale-105'
+                  : 'bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              {pNum}
+            </button>
+          );
+        })}
 
         <button
-          onClick={() => onPageChange(page + 1)}
-          disabled={!hasNextPage && page >= totalPages}
-          className="flex items-center justify-center p-1.5 rounded-md border border-gray-700 bg-gray-800/80 hover:bg-gray-700 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          onClick={() => onPageChange && onPageChange(page + 1)}
+          disabled={!hasNext}
+          className="flex items-center justify-center px-2.5 py-1.5 rounded-lg border border-[#2C384E] bg-[#131B2A] hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           title="Next Page"
         >
           <ChevronRight className="w-4 h-4" />

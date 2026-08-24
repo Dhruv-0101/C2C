@@ -3,6 +3,7 @@ import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
 import { renderWelcomeEmail } from '../templates/welcome-email.template.js';
 import { renderPasswordResetEmail } from '../templates/password-reset-email.template.js';
+import { renderPostPublishedEmail } from '../templates/post-published-email.template.js';
 
 // Create Nodemailer Transporter
 let transporter = null;
@@ -82,5 +83,37 @@ export async function sendPasswordResetEmail({ email, fullName, resetUrl }) {
     }
   } catch (error) {
     logger.error(`❌ Failed to send password reset email to ${email}:`, error.message);
+  }
+}
+
+/**
+ * Send Post Published Email Notification
+ * @param {{ email: string, fullName: string, postTitle: string, targetPlatforms: string[], platformResults: Object, publishedAt: string }} params
+ */
+export async function sendPostPublishedEmail({ email, fullName, postTitle, targetPlatforms, platformResults, publishedAt }) {
+  const htmlContent = renderPostPublishedEmail({
+    fullName,
+    postTitle,
+    targetPlatforms,
+    platformResults,
+    publishedAt,
+  });
+
+  const mailOptions = {
+    from: `"BrandFlow Alerts" <${env.FROM_EMAIL}>`,
+    to: email,
+    subject: `🎉 Your Post "${postTitle || 'Social Graphic'}" was Published Successfully!`,
+    html: htmlContent,
+  };
+
+  try {
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      logger.success(`✉️ Post Published email notification sent to ${email} (MessageId: ${info.messageId})`);
+    } else {
+      logger.info(`✉️ [SMTP Simulation] Post Published email alert generated for ${email}.`);
+    }
+  } catch (error) {
+    logger.error(`❌ Failed to send post published email notification to ${email}:`, error.message);
   }
 }

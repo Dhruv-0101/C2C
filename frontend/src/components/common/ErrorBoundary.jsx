@@ -1,6 +1,7 @@
-import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '../ui/Button';
+import React from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { Button } from "../ui/Button";
+import { logger } from "../../utils/logger.util";
 
 /**
  * Enterprise Production React Error Boundary
@@ -17,11 +18,15 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('💥 [React ErrorBoundary] Render Exception Caught:', error, errorInfo);
+    logger.error("[React ErrorBoundary] Unhandled Exception Caught in Render Tree", error, errorInfo);
   }
 
   handleReload = () => {
     window.location.reload();
+  };
+
+  handleGoHome = () => {
+    window.location.href = "/dashboard";
   };
 
   render() {
@@ -36,7 +41,7 @@ export class ErrorBoundary extends React.Component {
             <div className="space-y-2">
               <h2 className="text-xl font-extrabold font-heading text-white">Something Went Wrong</h2>
               <p className="text-xs text-slate-400 leading-relaxed">
-                An unexpected application error occurred while rendering this component. You can reload the page to restore your session.
+                An unexpected application error occurred while rendering this component. You can reload the page or return to your Dashboard to restore your session.
               </p>
             </div>
 
@@ -48,14 +53,24 @@ export class ErrorBoundary extends React.Component {
               </div>
             )}
 
-            <Button
-              variant="primary"
-              icon={RefreshCw}
-              onClick={this.handleReload}
-              className="w-full justify-center text-sm py-2.5 font-bold"
-            >
-              Reload Page & Restore Session
-            </Button>
+            <div className="space-y-3">
+              <Button
+                variant="primary"
+                icon={RefreshCw}
+                onClick={this.handleReload}
+                className="w-full justify-center text-sm py-2.5 font-bold"
+              >
+                Reload Page & Restore Session
+              </Button>
+              <Button
+                variant="outline"
+                icon={Home}
+                onClick={this.handleGoHome}
+                className="w-full justify-center text-sm py-2 text-slate-300"
+              >
+                Return to Dashboard
+              </Button>
+            </div>
           </div>
         </div>
       );

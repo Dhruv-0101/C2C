@@ -7,6 +7,7 @@ export const QUERY_KEYS = {
     ALL: ['posts'],
     LIST: (params = {}) => ['posts', 'list', params],
     BY_ID: (id) => ['posts', id],
+    SCHEDULED: ['scheduledPosts'],
   },
   FRAMES: {
     ALL: ['frames'],

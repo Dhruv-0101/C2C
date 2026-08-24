@@ -1,3 +1,5 @@
+import { logger } from "./logger.util";
+
 /**
  * Utility functions for local storage operations with safe error handling
  */
@@ -7,7 +9,7 @@ export const storage = {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : null;
     } catch (error) {
-      console.error(`Error reading key "${key}" from localStorage:`, error);
+      logger.error(`Error reading key "${key}" from localStorage`, error);
       return null;
     }
   },
@@ -16,7 +18,7 @@ export const storage = {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(`Error setting key "${key}" in localStorage:`, error);
+      logger.error(`Error setting key "${key}" in localStorage`, error);
     }
   },
 
@@ -24,7 +26,7 @@ export const storage = {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      console.error(`Error removing key "${key}" from localStorage:`, error);
+      logger.error(`Error removing key "${key}" from localStorage`, error);
     }
   },
 
@@ -32,7 +34,7 @@ export const storage = {
     try {
       localStorage.clear();
     } catch (error) {
-      console.error('Error clearing localStorage:', error);
+      logger.error("Error clearing localStorage", error);
     }
   },
 };
