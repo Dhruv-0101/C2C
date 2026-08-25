@@ -29,9 +29,10 @@ export const liveSocialPublisherService = {
       const platformUpper = platform.toUpperCase();
 
       if (platformUpper === "INSTAGRAM") {
+        let igAccount = null;
         try {
           // Check if user has a connected Instagram account in database
-          const igAccount = userId
+          igAccount = userId
             ? await socialRepository.findByUserAndPlatform(userId, "INSTAGRAM")
             : null;
 
@@ -95,8 +96,9 @@ export const liveSocialPublisherService = {
           };
         }
       } else if (platformUpper === "FACEBOOK") {
+        let fbAccount = null;
         try {
-          const fbAccount = userId
+          fbAccount = userId
             ? await socialRepository.findByUserAndPlatform(userId, "FACEBOOK")
             : null;
 
