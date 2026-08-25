@@ -186,12 +186,23 @@ export const socialLogic = {
    */
   connectManualHandle: async (userId, handle, platform = 'INSTAGRAM') => {
     if (!handle || typeof handle !== 'string') {
-      throw new Error('Valid Instagram handle is required.');
+      throw new Error('Valid handle or URL is required.');
     }
 
-    const cleanHandle = handle.trim().replace(/^@/, '');
+    let cleanHandle = handle.trim();
+    if (cleanHandle.includes('linkedin.com/in/')) {
+      cleanHandle = cleanHandle.split('linkedin.com/in/')[1].split('/')[0].split('?')[0];
+    } else if (cleanHandle.includes('linkedin.com/company/')) {
+      cleanHandle = cleanHandle.split('linkedin.com/company/')[1].split('/')[0].split('?')[0];
+    } else if (cleanHandle.includes('instagram.com/')) {
+      cleanHandle = cleanHandle.split('instagram.com/')[1].split('/')[0].split('?')[0];
+    } else if (cleanHandle.includes('facebook.com/')) {
+      cleanHandle = cleanHandle.split('facebook.com/')[1].split('/')[0].split('?')[0];
+    }
+    cleanHandle = cleanHandle.replace(/^@/, '').trim();
+
     if (!cleanHandle) {
-      throw new Error('Please enter a valid Instagram handle.');
+      throw new Error('Please enter a valid handle or profile URL.');
     }
 
     const formattedHandle = `@${cleanHandle}`;

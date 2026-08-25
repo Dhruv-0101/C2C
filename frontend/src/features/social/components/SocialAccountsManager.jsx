@@ -388,7 +388,13 @@ export const SocialAccountsManager = () => {
             {linkedinAccount?.isConnected ? (
               <div className="space-y-0.5 text-xs text-slate-300">
                 <a
-                  href={`https://linkedin.com/in/${linkedinAccount.accountName.replace(/^@/, '')}`}
+                  href={(() => {
+                    const clean = linkedinAccount.accountName.replace(/^@/, '').trim();
+                    if (clean.startsWith('in/') || clean.startsWith('company/')) {
+                      return `https://linkedin.com/${clean}`;
+                    }
+                    return `https://linkedin.com/in/${clean}`;
+                  })()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group"
