@@ -106,14 +106,13 @@ export const linkedinPublisherService = {
             shareCommentary: {
               text: caption || 'Created with BrandFlow 🚀',
             },
-            shareMediaCategory: graphicUrl ? 'IMAGE' : 'NONE',
+            shareMediaCategory: graphicUrl ? 'ARTICLE' : 'NONE',
             media: graphicUrl
               ? [
                   {
                     status: 'READY',
-                    description: { text: caption || 'BrandFlow Graphic' },
                     originalUrl: graphicUrl,
-                    title: { text: 'BrandFlow Social Post' },
+                    title: { text: caption ? caption.slice(0, 100) : 'BrandFlow Post' },
                   },
                 ]
               : [],
@@ -147,8 +146,50 @@ export const linkedinPublisherService = {
       };
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message;
-      logger.error(`❌ [LinkedinPublisher] LinkedIn posting error: ${errorMsg}`);
-      throw new Error(`LinkedIn API error: ${errorMsg}`);
+      logger.warn(`⚠️ [LinkedinPublisher] Article share failed (${errorMsg}). Retrying text-only post...`);
+
+      try {
+        const textPayload = {
+          author: personUrn,
+          lifecycleState: 'PUBLISHED',
+          specificContent: {
+            'com.linkedin.ugc.ShareContent': {
+              shareCommentary: {
+                text: `${caption || 'Created with BrandFlow 🚀'}\n\n${graphicUrl || ''}`.trim(),
+              },
+              shareMediaCategory: 'NONE',
+            },
+          },
+          visibility: {
+            'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+          },
+        };
+
+        const textResponse = await axios.post(`${LINKEDIN_API_URL}/ugcPosts`, textPayload, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const postId = textResponse.data?.id;
+        const postUrl = postId ? `https://www.linkedin.com/feed/update/${postId}` : 'https://www.linkedin.com/feed';
+
+        logger.info(`🎉 [LinkedinPublisher] Successfully published text post to LinkedIn! Post ID: ${postId}`);
+
+        return {
+          status: 'SUCCESS',
+          platform: 'LINKEDIN',
+          postId,
+          postUrl,
+          publishedAt: new Date().toISOString(),
+        };
+      } catch (fallbackErr) {
+        const finalMsg = fallbackErr.response?.data?.message || fallbackErr.message;
+        logger.error(`❌ [LinkedinPublisher] LinkedIn posting error: ${finalMsg}`);
+        throw new Error(`LinkedIn API error: ${finalMsg}`);
+      }
     }
   },
 };
