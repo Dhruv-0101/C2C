@@ -95,40 +95,40 @@ export const instagramPublisherService = {
 
     let debugDetails = [];
 
-    // 1. Check Facebook Pages managed by user and their linked instagram_business_account
+    // 1. Check Facebook Pages managed by user and their linked Instagram accounts
     try {
       const pagesRes = await axios.get(`${META_GRAPH_URL}/me/accounts`, {
         params: {
-          fields: 'id,name,access_token,instagram_business_account{id,username,name,profile_picture_url}',
+          fields: 'id,name,access_token,instagram_business_account{id,username,name,profile_picture_url},connected_instagram_account{id,username,name,profile_picture_url}',
           access_token: accessToken,
         },
       });
 
       const pages = pagesRes.data?.data || [];
       if (pages.length === 0) {
-        debugDetails.push('No Facebook Pages were returned for this account.');
+        debugDetails.push('No Facebook Pages found under this Facebook account.');
       }
 
       for (const page of pages) {
-        let igAccount = page.instagram_business_account;
+        let igAccount = page.instagram_business_account || page.connected_instagram_account;
 
-        // Try direct page lookup if inline field was omitted by Graph API
+        // Try direct page node lookup if inline field was omitted by Meta Graph API
         if (!igAccount && page.id) {
           try {
             const pageDetailRes = await axios.get(`${META_GRAPH_URL}/${page.id}`, {
               params: {
-                fields: 'id,name,instagram_business_account{id,username,name,profile_picture_url}',
+                fields: 'id,name,instagram_business_account{id,username,name,profile_picture_url},connected_instagram_account{id,username,name,profile_picture_url}',
                 access_token: page.access_token || accessToken,
               },
             });
-            igAccount = pageDetailRes.data?.instagram_business_account;
+            igAccount = pageDetailRes.data?.instagram_business_account || pageDetailRes.data?.connected_instagram_account;
           } catch (e) {
             // ignore
           }
         }
 
         if (igAccount && igAccount.id) {
-          logger.info(`✅ Found Instagram Business Account (@${igAccount.username || page.name}) linked to Facebook Page '${page.name}'`);
+          logger.info(`✅ Found Instagram Account (@${igAccount.username || page.name}) linked to Facebook Page '${page.name}'`);
           return {
             facebookPageId: page.id,
             facebookPageName: page.name,
@@ -146,26 +146,41 @@ export const instagramPublisherService = {
       logger.warn('ℹ️ [InstagramPublisher] /me/accounts check warning:', err.response?.data || err.message);
     }
 
-    // 2. Direct user query fallback for instagram_business_account
+    // 2. Check Meta Business Portfolios / Business Manager linked Instagram accounts
     try {
-      const userRes = await axios.get(`${META_GRAPH_URL}/me`, {
+      const bizRes = await axios.get(`${META_GRAPH_URL}/me/businesses`, {
         params: {
-          fields: 'id,name',
+          fields: 'id,name,instagram_accounts{id,username,name,profile_picture_url}',
           access_token: accessToken,
         },
       });
 
-      if (userRes.data?.id) {
-        logger.info(`ℹ️ [InstagramPublisher] Meta user authenticated (${userRes.data.name} [ID: ${userRes.data.id}]) but no Instagram Business account is linked.`);
+      const businesses = bizRes.data?.data || [];
+      for (const biz of businesses) {
+        const igAccounts = biz.instagram_accounts?.data || [];
+        for (const ig of igAccounts) {
+          if (ig.id && ig.username) {
+            logger.info(`✅ Found Instagram Account (@${ig.username}) under Meta Business Portfolio '${biz.name}'`);
+            return {
+              facebookPageId: biz.id,
+              facebookPageName: biz.name,
+              pageAccessToken: accessToken,
+              igUserId: ig.id,
+              igUsername: ig.username,
+              igName: ig.name || ig.username,
+              igProfilePictureUrl: ig.profile_picture_url || null,
+            };
+          }
+        }
       }
     } catch (err) {
-      logger.warn('ℹ️ [InstagramPublisher] /me direct query warning:', err.response?.data || err.message);
+      logger.warn('ℹ️ [InstagramPublisher] /me/businesses check warning:', err.response?.data || err.message);
     }
 
     const detailText = debugDetails.length > 0 ? ` (${debugDetails.join(' ')})` : '';
 
     throw new Error(
-      `No Instagram Business Account linked to your Facebook Page${detailText}. Please open your Facebook Page Settings -> Linked Accounts -> Instagram, and connect your Instagram Business profile.`
+      `No linked Instagram Business Account found${detailText}. To complete OAuth connection: 1) Create a Facebook Page (facebook.com/pages). 2) Go to Page Settings -> Linked Accounts -> Instagram, and connect your Instagram account.`
     );
   },
 
