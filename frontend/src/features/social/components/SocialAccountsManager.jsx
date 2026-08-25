@@ -194,25 +194,25 @@ export const SocialAccountsManager = () => {
                 onClick={() => setShowManualInput(!showManualInput)}
                 className="text-xs text-amber-400 hover:underline px-2 py-1 font-semibold"
               >
-                {showManualInput ? 'Cancel' : 'Or Enter Handle Manually'}
+                {showManualInput ? 'Cancel' : 'Or Enter Username Manually'}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Manual Handle Input Box */}
+      {/* Manual Username Input Box */}
       {!instagramAccount?.isConnected && showManualInput && (
         <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
           <label className="text-xs font-semibold text-slate-300 block">
-            Enter your exact Instagram Handle:
+            Enter your exact Instagram Username:
           </label>
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
               <input
                 type="text"
-                placeholder="your_real_handle"
+                placeholder="your_instagram_username"
                 value={manualHandle}
                 onChange={(e) => setManualHandle(e.target.value)}
                 className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-amber-500"
@@ -225,7 +225,7 @@ export const SocialAccountsManager = () => {
               onClick={() => manualConnectMutation.mutate(manualHandle)}
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
             >
-              Connect Handle
+              Connect Username
             </Button>
           </div>
         </div>
