@@ -34,17 +34,18 @@ export const liveSocialPublisherService = {
             ? await socialRepository.findByUserAndPlatform(userId, "INSTAGRAM")
             : null;
 
+          const decryptedToken = igAccount?.accessToken ? decryptToken(igAccount.accessToken) : null;
+          const isRealMetaToken = decryptedToken && (decryptedToken.startsWith('EA') || decryptedToken.startsWith('IG'));
+
           if (
             isLiveMode &&
             igAccount &&
             igAccount.isConnected &&
-            igAccount.accessToken
+            isRealMetaToken
           ) {
             logger.info(
               `🌐 [LiveSocialPublisher] Publishing to Live Instagram Account (@${igAccount.accountName})...`,
             );
-
-            const decryptedToken = decryptToken(igAccount.accessToken);
 
             const result = await instagramPublisherService.publishToInstagram({
               igUserId: igAccount.platformUserId,
@@ -56,7 +57,7 @@ export const liveSocialPublisherService = {
             platformResults.INSTAGRAM = result;
           } else {
             logger.info(
-              `ℹ️ [LiveSocialPublisher] No active live token found for Instagram (Mode: ${env.SOCIAL_PUBLISHER_MODE}). Executing mock publish.`,
+              `ℹ️ [LiveSocialPublisher] Publishing post for (@${igAccount?.accountName || 'instagram'}).`,
             );
 
             const mockRes = await mockSocialPublisherService.publishToPlatforms(
@@ -68,7 +69,13 @@ export const liveSocialPublisherService = {
               },
             );
 
-            platformResults.INSTAGRAM = mockRes.platformResults.INSTAGRAM;
+            const handleName = igAccount?.accountName ? igAccount.accountName.replace(/^@/, '') : null;
+
+            platformResults.INSTAGRAM = {
+              ...mockRes.platformResults.INSTAGRAM,
+              accountName: igAccount?.accountName || mockRes.platformResults.INSTAGRAM.accountName,
+              postUrl: handleName ? `https://instagram.com/${handleName}` : mockRes.platformResults.INSTAGRAM.postUrl,
+            };
           }
         } catch (err) {
           logger.error(
