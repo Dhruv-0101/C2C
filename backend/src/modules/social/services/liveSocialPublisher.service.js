@@ -126,17 +126,38 @@ export const liveSocialPublisherService = {
               targetPlatforms: ["FACEBOOK"],
             });
 
-            const handleName = fbAccount?.accountName ? fbAccount.accountName.replace(/^@/, '') : null;
+            const rawHandle = fbAccount?.accountName ? fbAccount.accountName.replace(/^@/, '') : '';
+            let fbPostUrl = mockRes.platformResults.FACEBOOK.postUrl;
+            if (rawHandle) {
+              if (rawHandle.startsWith('profile.php')) {
+                fbPostUrl = `https://facebook.com/${rawHandle}`;
+              } else if (/^\d+$/.test(rawHandle)) {
+                fbPostUrl = `https://facebook.com/profile.php?id=${rawHandle}`;
+              } else {
+                fbPostUrl = `https://facebook.com/${rawHandle}`;
+              }
+            }
 
             platformResults.FACEBOOK = {
               ...mockRes.platformResults.FACEBOOK,
               accountName: fbAccount?.accountName || mockRes.platformResults.FACEBOOK.accountName,
-              postUrl: handleName ? `https://facebook.com/${handleName}` : mockRes.platformResults.FACEBOOK.postUrl,
+              postUrl: fbPostUrl,
             };
           }
         } catch (err) {
           logger.warn("ℹ️ [LiveSocialPublisher] Live Facebook publishing warning (Meta App Review permission required):", err.message);
-          const handleName = fbAccount?.accountName ? fbAccount.accountName.replace(/^@/, '') : null;
+          const rawHandle = fbAccount?.accountName ? fbAccount.accountName.replace(/^@/, '') : '';
+          let fbPostUrl = 'https://facebook.com';
+          if (rawHandle) {
+            if (rawHandle.startsWith('profile.php')) {
+              fbPostUrl = `https://facebook.com/${rawHandle}`;
+            } else if (/^\d+$/.test(rawHandle)) {
+              fbPostUrl = `https://facebook.com/profile.php?id=${rawHandle}`;
+            } else {
+              fbPostUrl = `https://facebook.com/${rawHandle}`;
+            }
+          }
+
           const mockRes = await mockSocialPublisherService.publishToPlatforms({
             postId,
             postContent,
@@ -147,7 +168,7 @@ export const liveSocialPublisherService = {
             ...mockRes.platformResults.FACEBOOK,
             status: "SUCCESS",
             accountName: fbAccount?.accountName || mockRes.platformResults.FACEBOOK.accountName,
-            postUrl: handleName ? `https://facebook.com/${handleName}` : mockRes.platformResults.FACEBOOK.postUrl,
+            postUrl: fbPostUrl,
           };
         }
       } else {
