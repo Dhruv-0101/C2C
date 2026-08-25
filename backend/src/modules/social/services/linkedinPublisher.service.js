@@ -88,6 +88,65 @@ export const linkedinPublisherService = {
   },
 
   /**
+   * Register and Upload Binary Image Asset to LinkedIn Digital Media Storage
+   */
+  uploadImageAsset: async ({ personUrn, accessToken, graphicUrl }) => {
+    logger.info('📸 [LinkedinPublisher] Registering digital media image asset on LinkedIn...');
+
+    // 1. Register Upload Request with LinkedIn Assets API
+    const registerResponse = await axios.post(
+      `${LINKEDIN_API_URL}/assets?action=registerUpload`,
+      {
+        registerUploadRequest: {
+          recipes: ['urn:li:digitalmediaRecipe:feedshare-image'],
+          owner: personUrn,
+          serviceRelationships: [
+            {
+              relationshipType: 'OWNER',
+              identifier: 'urn:li:userGeneratedContent',
+            },
+          ],
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'X-Restli-Protocol-Version': '2.0.0',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const uploadUrl = registerResponse.data?.value?.uploadMechanism?.['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']?.uploadUrl;
+    const assetUrn = registerResponse.data?.value?.asset;
+
+    if (!uploadUrl || !assetUrn) {
+      throw new Error('Failed to obtain LinkedIn digital media asset upload URL.');
+    }
+
+    logger.info(`🌐 [LinkedinPublisher] Downloading image binary from Cloudinary and uploading to LinkedIn asset URN: ${assetUrn}...`);
+
+    // 2. Fetch image binary buffer from Cloudinary URL
+    const imageBufferRes = await axios.get(graphicUrl, {
+      responseType: 'arraybuffer',
+    });
+
+    const contentType = imageBufferRes.headers['content-type'] || 'image/jpeg';
+
+    // 3. Upload binary buffer to LinkedIn uploadUrl
+    await axios.post(uploadUrl, imageBufferRes.data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': contentType,
+      },
+    });
+
+    logger.info(`✅ [LinkedinPublisher] Successfully uploaded image binary to LinkedIn digital media asset: ${assetUrn}`);
+
+    return assetUrn;
+  },
+
+  /**
    * Publish Photo & Post Caption to LinkedIn via Posts API / UGC Posts API
    */
   publishToLinkedin: async ({ personUrn, accessToken, graphicUrl, caption }) => {
@@ -97,7 +156,40 @@ export const linkedinPublisherService = {
       throw new Error('Valid LinkedIn person URN (urn:li:person:xxx) is required for posting.');
     }
 
+    // Try 1: Upload native image asset if graphicUrl is provided
+    let assetUrn = null;
+    if (graphicUrl) {
+      try {
+        assetUrn = await linkedinPublisherService.uploadImageAsset({ personUrn, accessToken, graphicUrl });
+      } catch (err) {
+        logger.warn(`⚠️ [LinkedinPublisher] Image asset upload warning (${err.message}). Falling back to article/link share...`);
+      }
+    }
+
     try {
+      let mediaArray = [];
+      let shareMediaCategory = 'NONE';
+
+      if (assetUrn) {
+        shareMediaCategory = 'IMAGE';
+        mediaArray = [
+          {
+            status: 'READY',
+            media: assetUrn,
+            title: { text: caption ? caption.slice(0, 100) : 'BrandFlow Graphic' },
+          },
+        ];
+      } else if (graphicUrl) {
+        shareMediaCategory = 'ARTICLE';
+        mediaArray = [
+          {
+            status: 'READY',
+            originalUrl: graphicUrl,
+            title: { text: caption ? caption.slice(0, 100) : 'BrandFlow Post' },
+          },
+        ];
+      }
+
       const payload = {
         author: personUrn,
         lifecycleState: 'PUBLISHED',
@@ -106,16 +198,8 @@ export const linkedinPublisherService = {
             shareCommentary: {
               text: caption || 'Created with BrandFlow 🚀',
             },
-            shareMediaCategory: graphicUrl ? 'ARTICLE' : 'NONE',
-            media: graphicUrl
-              ? [
-                  {
-                    status: 'READY',
-                    originalUrl: graphicUrl,
-                    title: { text: caption ? caption.slice(0, 100) : 'BrandFlow Post' },
-                  },
-                ]
-              : [],
+            shareMediaCategory,
+            media: mediaArray,
           },
         },
         visibility: {
