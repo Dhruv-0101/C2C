@@ -188,13 +188,26 @@ export const SocialPublisherModal = ({
                           {platformKey}
                         </span>
                         <a
-                          href={res.postUrl}
+                          href={(() => {
+                            const url = res.postUrl || '';
+                            if (url.includes("facebook.com/")) {
+                              const path = url.split("facebook.com/")[1] || "";
+                              if (path.startsWith("profile.php") || path.startsWith("permalink.php") || path.includes("/posts/")) {
+                                return url;
+                              }
+                              const clean = path.replace(/^@/, "").trim();
+                              if (/^\d+$/.test(clean)) {
+                                return `https://facebook.com/profile.php?id=${clean}`;
+                              }
+                            }
+                            return url;
+                          })()}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-amber-400 hover:underline font-mono font-semibold"
+                          className="inline-flex items-center gap-1 text-amber-400 hover:underline font-mono font-semibold truncate max-w-[280px]"
                         >
                           <span>{res.postUrl}</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
+                          <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                         </a>
                       </div>
                     ),

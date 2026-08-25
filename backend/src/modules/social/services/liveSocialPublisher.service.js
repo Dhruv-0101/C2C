@@ -105,6 +105,8 @@ export const liveSocialPublisherService = {
           const decryptedToken = fbAccount?.accessToken ? decryptToken(fbAccount.accessToken) : null;
           const isRealMetaToken = decryptedToken && (decryptedToken.startsWith('EA') || decryptedToken.startsWith('IG'));
 
+          logger.info(`🔍 [LiveSocialPublisher] FB Account: ${fbAccount?.accountName} | TokenPrefix: ${decryptedToken ? decryptedToken.substring(0, 4) : 'null'} | isRealMetaToken: ${isRealMetaToken}`);
+
           if (isLiveMode && fbAccount && fbAccount.isConnected && isRealMetaToken) {
             logger.info(`🌐 [LiveSocialPublisher] Publishing to Live Facebook Page (@${fbAccount.accountName})...`);
 
