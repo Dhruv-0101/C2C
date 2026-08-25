@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { instagramPublisherService } from './services/instagramPublisher.service.js';
+import { linkedinPublisherService } from './services/linkedinPublisher.service.js';
 import { socialRepository } from './social.repository.js';
 import { encryptToken } from '../../common/helpers/encryption.helper.js';
 import { env } from '../../config/env.js';
@@ -24,6 +25,62 @@ export const socialLogic = {
     return {
       configured: true,
       authUrl,
+    };
+  },
+
+  /**
+   * Get LinkedIn OAuth Authorization URL
+   */
+  getLinkedinAuthUrl: async (userId) => {
+    if (!env.LINKEDIN_CLIENT_ID) {
+      return {
+        configured: false,
+        message: 'LinkedIn Client ID is not configured in backend environment variables (.env).',
+        authUrl: null,
+      };
+    }
+
+    const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString('base64');
+    const authUrl = linkedinPublisherService.getOAuthUrl(state);
+
+    return {
+      configured: true,
+      authUrl,
+    };
+  },
+
+  /**
+   * Handle LinkedIn OAuth Callback
+   */
+  handleLinkedinCallback: async (code, userId) => {
+    // 1. Exchange code for access token
+    const { accessToken, tokenExpiresAt } = await linkedinPublisherService.exchangeCodeForToken(code);
+
+    // 2. Fetch LinkedIn user profile
+    const profile = await linkedinPublisherService.getLinkedinProfile(accessToken);
+
+    // 3. Encrypt access token before storing
+    const encryptedToken = encryptToken(accessToken);
+
+    // 4. Save to SocialAccount table
+    const socialAccount = await socialRepository.upsertAccount({
+      userId,
+      platform: 'LINKEDIN',
+      platformUserId: profile.personUrn,
+      accountName: `@${profile.name.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`,
+      accessToken: encryptedToken,
+      tokenExpiresAt,
+    });
+
+    return {
+      success: true,
+      account: {
+        id: socialAccount.id,
+        platform: socialAccount.platform,
+        accountName: socialAccount.accountName,
+        isConnected: socialAccount.isConnected,
+        profile,
+      },
     };
   },
 

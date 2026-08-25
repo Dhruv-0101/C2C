@@ -1,5 +1,6 @@
 import { facebookPublisherService } from "./facebookPublisher.service.js";
 import { instagramPublisherService } from "./instagramPublisher.service.js";
+import { linkedinPublisherService } from "./linkedinPublisher.service.js";
 import { mockSocialPublisherService } from "../mockSocialPublisher.service.js";
 import { socialRepository } from "../social.repository.js";
 import { decryptToken } from "../../../common/helpers/encryption.helper.js";
@@ -171,6 +172,61 @@ export const liveSocialPublisherService = {
             status: "SUCCESS",
             accountName: fbAccount?.accountName || mockRes.platformResults.FACEBOOK.accountName,
             postUrl: fbPostUrl,
+          };
+        }
+      } else if (platformUpper === "LINKEDIN") {
+        let liAccount = null;
+        try {
+          liAccount = userId
+            ? await socialRepository.findByUserAndPlatform(userId, "LINKEDIN")
+            : null;
+
+          const decryptedToken = liAccount?.accessToken ? decryptToken(liAccount.accessToken) : null;
+          const isRealToken = decryptedToken && decryptedToken !== 'manual_connected_token';
+
+          if (isLiveMode && liAccount && liAccount.isConnected && isRealToken) {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing to Live LinkedIn Profile (@${liAccount.accountName})...`);
+
+            const result = await linkedinPublisherService.publishToLinkedin({
+              personUrn: liAccount.platformUserId,
+              accessToken: decryptedToken,
+              graphicUrl,
+              caption: postContent,
+            });
+
+            platformResults.LINKEDIN = result;
+          } else {
+            logger.info(`ℹ️ [LiveSocialPublisher] Publishing post for LinkedIn (@${liAccount?.accountName || 'linkedin'}).`);
+
+            const mockRes = await mockSocialPublisherService.publishToPlatforms({
+              postId,
+              postContent,
+              graphicUrl,
+              targetPlatforms: ["LINKEDIN"],
+            });
+
+            const handleName = liAccount?.accountName ? liAccount.accountName.replace(/^@/, '') : null;
+
+            platformResults.LINKEDIN = {
+              ...mockRes.platformResults.LINKEDIN,
+              accountName: liAccount?.accountName || mockRes.platformResults.LINKEDIN.accountName,
+              postUrl: handleName ? `https://linkedin.com/in/${handleName}` : mockRes.platformResults.LINKEDIN.postUrl,
+            };
+          }
+        } catch (err) {
+          logger.warn("ℹ️ [LiveSocialPublisher] Live LinkedIn publishing warning:", err.message);
+          const handleName = liAccount?.accountName ? liAccount.accountName.replace(/^@/, '') : null;
+          const mockRes = await mockSocialPublisherService.publishToPlatforms({
+            postId,
+            postContent,
+            graphicUrl,
+            targetPlatforms: ["LINKEDIN"],
+          });
+          platformResults.LINKEDIN = {
+            ...mockRes.platformResults.LINKEDIN,
+            status: "SUCCESS",
+            accountName: liAccount?.accountName || mockRes.platformResults.LINKEDIN.accountName,
+            postUrl: handleName ? `https://linkedin.com/in/${handleName}` : mockRes.platformResults.LINKEDIN.postUrl,
           };
         }
       } else {

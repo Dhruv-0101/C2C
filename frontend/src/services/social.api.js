@@ -17,6 +17,13 @@ export const socialApi = {
   },
 
   /**
+   * Get LinkedIn OAuth Authorization URL
+   */
+  getLinkedinAuthUrl: async () => {
+    return api.get('/social/auth-url/linkedin');
+  },
+
+  /**
    * Connect social account manually by handle
    */
   connectManualHandle: async (handle, platform = 'INSTAGRAM') => {

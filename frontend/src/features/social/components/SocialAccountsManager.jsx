@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Instagram, Facebook, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
 import { socialApi } from '../../../services/social.api';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
@@ -37,6 +37,7 @@ export const SocialAccountsManager = () => {
   const accounts = accountsResponse?.data?.accounts || [];
   const instagramAccount = accounts.find((a) => a.platform === 'INSTAGRAM');
   const facebookAccount = accounts.find((a) => a.platform === 'FACEBOOK');
+  const linkedinAccount = accounts.find((a) => a.platform === 'LINKEDIN');
 
   // Fetch Instagram/Meta Auth URL
   const { data: authUrlResponse, isLoading: isLoadingAuthUrl } = useQuery({
@@ -52,6 +53,10 @@ export const SocialAccountsManager = () => {
 
   const [manualFbHandle, setManualFbHandle] = useState('');
   const [showManualFbInput, setShowManualFbInput] = useState(false);
+
+  const [manualLiHandle, setManualLiHandle] = useState('');
+  const [showManualLiInput, setShowManualLiInput] = useState(false);
+  const [isLoadingLiAuthUrl, setIsLoadingLiAuthUrl] = useState(false);
 
   // Manual Handle Connect Mutation
   const manualConnectMutation = useMutation({
@@ -352,6 +357,135 @@ export const SocialAccountsManager = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
             >
               Connect Facebook Page
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* LinkedIn Integration Card */}
+      <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-start gap-4">
+          <div className="p-3.5 rounded-2xl bg-[#0A66C2] text-white shadow-glow">
+            <Linkedin className="w-7 h-7" />
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-base text-white">LinkedIn Profile & Page Publishing</h4>
+              {linkedinAccount?.isConnected ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  <span>Connected</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Not Connected</span>
+                </span>
+              )}
+            </div>
+
+            {linkedinAccount?.isConnected ? (
+              <div className="space-y-0.5 text-xs text-slate-300">
+                <a
+                  href={`https://linkedin.com/in/${linkedinAccount.accountName.replace(/^@/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group"
+                  title="View Profile on LinkedIn"
+                >
+                  <span>{linkedinAccount.accountName}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
+                </a>
+                <p className="text-[11px] text-slate-400">
+                  Linked via LinkedIn UGC Posts API • Auto-Publish Ready
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400">
+                Publish professional articles, image posts, and updates directly to your LinkedIn feed.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons & Manual Connect Form */}
+        <div className="flex flex-col items-end gap-2">
+          {linkedinAccount?.isConnected ? (
+            <Button
+              variant="outline"
+              className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
+              isLoading={disconnectMutation.isPending}
+              onClick={() => disconnectMutation.mutate('LINKEDIN')}
+              icon={Unlink}
+            >
+              Disconnect LinkedIn
+            </Button>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <Button
+                variant="primary"
+                className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
+                isLoading={isLoadingLiAuthUrl}
+                onClick={async () => {
+                  try {
+                    setIsLoadingLiAuthUrl(true);
+                    setErrorMsg('');
+                    const res = await socialApi.getLinkedinAuthUrl();
+                    const authUrl = res.data?.authUrl || res.authUrl;
+                    if (authUrl) {
+                      window.location.href = authUrl;
+                    } else {
+                      setErrorMsg('LinkedIn App credentials are not configured in backend.');
+                    }
+                  } catch (err) {
+                    setErrorMsg(err.message || 'Failed to start LinkedIn OAuth.');
+                  } finally {
+                    setIsLoadingLiAuthUrl(false);
+                  }
+                }}
+                icon={Link2}
+              >
+                Connect via LinkedIn OAuth
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setShowManualLiInput(!showManualLiInput)}
+                className="text-xs text-blue-400 hover:underline px-2 py-1 font-semibold"
+              >
+                {showManualLiInput ? 'Cancel' : 'Or Enter Username Manually'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Manual Page Handle Input Box - LinkedIn */}
+      {!linkedinAccount?.isConnected && showManualLiInput && (
+        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
+          <label className="text-xs font-semibold text-slate-300 block">
+            Enter your exact LinkedIn Profile or Company Username:
+          </label>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
+              <input
+                type="text"
+                placeholder="your_linkedin_username"
+                value={manualLiHandle}
+                onChange={(e) => setManualLiHandle(e.target.value)}
+                className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={manualConnectMutation.isPending}
+              onClick={() => manualConnectMutation.mutate({ handle: manualLiHandle, platform: 'LINKEDIN' })}
+              className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs"
+            >
+              Connect LinkedIn Account
             </Button>
           </div>
         </div>

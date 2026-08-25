@@ -21,6 +21,61 @@ export const socialController = {
   },
 
   /**
+   * GET /api/v1/social/auth-url/linkedin
+   */
+  getLinkedinAuthUrl: async (req, res, next) => {
+    try {
+      const result = await socialLogic.getLinkedinAuthUrl(req.user.id);
+      return res.status(200).json({
+        success: true,
+        message: result.configured
+          ? 'LinkedIn OAuth URL generated successfully'
+          : 'LinkedIn App configuration status retrieved',
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * GET /api/v1/social/linkedin/callback
+   */
+  handleLinkedinCallback: async (req, res, next) => {
+    try {
+      const { code, state, error, error_description } = req.query;
+
+      if (error) {
+        return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
+      }
+
+      let userId = req.user?.id;
+
+      if (!userId && state) {
+        try {
+          const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+          userId = decoded.userId;
+        } catch (e) {
+          // ignore parse error
+        }
+      }
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized callback execution. Missing user context.',
+        });
+      }
+
+      const result = await socialLogic.handleLinkedinCallback(code, userId);
+
+      return res.redirect(`${env.CLIENT_URL}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
+    } catch (err) {
+      return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect LinkedIn account')}`);
+    }
+  },
+
+  /**
    * GET /api/v1/social/meta/callback
    */
   handleMetaCallback: async (req, res, next) => {
