@@ -29,33 +29,30 @@ export const instagramPublisherService = {
   exchangeCodeForLongLivedToken: async (code) => {
     logger.info('🔑 [InstagramPublisher] Exchanging authorization code for access token...');
 
+    // Clean code if Meta appended `#_`
+    const cleanCode = code ? String(code).replace(/#_$/, '') : code;
+
+    // 1. Exchange Auth Code for Access Token via Meta Graph API
     let shortLivedToken = null;
-
-    // 1. Try Exchange via Instagram API Form Payload
     try {
-      const formData = new URLSearchParams();
-      formData.append('client_id', env.META_APP_ID);
-      formData.append('client_secret', env.META_APP_SECRET);
-      formData.append('grant_type', 'authorization_code');
-      formData.append('redirect_uri', env.META_REDIRECT_URI);
-      formData.append('code', code);
-
-      const igTokenRes = await axios.post('https://api.instagram.com/oauth/access_token', formData, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      });
-
-      shortLivedToken = igTokenRes.data.access_token;
-    } catch (err) {
-      logger.warn('ℹ️ Instagram API token exchange fallback to Meta Graph API...');
       const tokenRes = await axios.get(`${META_GRAPH_URL}/oauth/access_token`, {
         params: {
           client_id: env.META_APP_ID,
           client_secret: env.META_APP_SECRET,
           redirect_uri: env.META_REDIRECT_URI,
-          code,
+          code: cleanCode,
         },
       });
-      shortLivedToken = tokenRes.data.access_token;
+
+      shortLivedToken = tokenRes.data?.access_token;
+    } catch (err) {
+      const metaErrorMsg = err.response?.data?.error?.message || err.message;
+      logger.error(`❌ Meta OAuth code exchange failed: ${metaErrorMsg}`);
+      throw new Error(`Meta authorization failed: ${metaErrorMsg}`);
+    }
+
+    if (!shortLivedToken) {
+      throw new Error('Failed to retrieve access token from Meta OAuth response.');
     }
 
     // 2. Exchange Short-Lived Token for 60-Day Long-Lived Token
@@ -63,20 +60,22 @@ export const instagramPublisherService = {
     let expiresInSeconds = 60 * 24 * 60 * 60; // 60 days default
 
     try {
-      const longLivedRes = await axios.get(`${META_GRAPH_URL}/access_token`, {
+      const longLivedRes = await axios.get(`${META_GRAPH_URL}/oauth/access_token`, {
         params: {
-          grant_type: 'ig_exchange_token',
+          grant_type: 'fb_exchange_token',
+          client_id: env.META_APP_ID,
           client_secret: env.META_APP_SECRET,
-          access_token: shortLivedToken,
+          fb_exchange_token: shortLivedToken,
         },
       });
 
       if (longLivedRes.data?.access_token) {
         longLivedToken = longLivedRes.data.access_token;
         expiresInSeconds = longLivedRes.data.expires_in || expiresInSeconds;
+        logger.info('✅ Successfully upgraded to 60-day Long-Lived Access Token.');
       }
     } catch (err) {
-      logger.info('ℹ️ Using initial Instagram access token.');
+      logger.info('ℹ️ Using short-lived Meta access token.');
     }
 
     const tokenExpiresAt = new Date(Date.now() + expiresInSeconds * 1000);
