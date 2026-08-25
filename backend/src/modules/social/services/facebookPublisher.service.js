@@ -30,6 +30,7 @@ export const facebookPublisherService = {
           params: {
             url: graphicUrl,
             caption: caption || 'Created with BrandFlow 🚀',
+            message: caption || 'Created with BrandFlow 🚀',
             access_token: accessToken,
           },
         }
