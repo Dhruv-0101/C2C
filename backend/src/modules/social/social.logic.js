@@ -67,7 +67,7 @@ export const socialLogic = {
       userId,
       platform: 'LINKEDIN',
       platformUserId: profile.personUrn,
-      accountName: `@${profile.name.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`,
+      accountName: `@${profile.name || 'LinkedIn User'}`,
       accessToken: encryptedToken,
       tokenExpiresAt,
     });

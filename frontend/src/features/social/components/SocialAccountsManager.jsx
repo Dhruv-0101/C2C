@@ -390,6 +390,9 @@ export const SocialAccountsManager = () => {
                 <a
                   href={(() => {
                     const clean = linkedinAccount.accountName.replace(/^@/, '').trim();
+                    if (clean.includes(' ')) {
+                      return 'https://www.linkedin.com/feed';
+                    }
                     if (clean.startsWith('in/') || clean.startsWith('company/')) {
                       return `https://linkedin.com/${clean}`;
                     }
