@@ -14,14 +14,18 @@ export const facebookPublisherService = {
    * @param {string} params.caption - Post message caption & hashtags
    */
   publishToFacebookPage: async ({ pageId, accessToken, graphicUrl, caption }) => {
-    logger.info(`📢 [FacebookPublisher] Publishing photo to Facebook Page ID: ${pageId || 'me'}...`);
+    const rawNode = pageId ? String(pageId).trim().replace(/^@/, '') : 'me';
+    const targetNode = rawNode || 'me';
+
+    logger.info(`📢 [FacebookPublisher] Publishing photo to Facebook Page Node: '${targetNode}'...`);
 
     if (!graphicUrl) {
       throw new Error('Valid public graphic image URL is required for Facebook posting.');
     }
 
-    const targetNode = pageId || 'me';
+    const postMessage = caption || 'Created with BrandFlow 🚀';
 
+    // 1. Primary Attempt: /photos endpoint for direct Page image upload
     try {
       const response = await axios.post(
         `${META_GRAPH_URL}/${targetNode}/photos`,
@@ -29,8 +33,8 @@ export const facebookPublisherService = {
         {
           params: {
             url: graphicUrl,
-            caption: caption || 'Created with BrandFlow 🚀',
-            message: caption || 'Created with BrandFlow 🚀',
+            caption: postMessage,
+            message: postMessage,
             access_token: accessToken,
           },
         }
@@ -38,11 +42,11 @@ export const facebookPublisherService = {
 
       const postId = response.data?.post_id || response.data?.id;
       const cleanPostId = postId ? String(postId).split('_')[1] || postId : null;
-      const postUrl = pageId && cleanPostId
-        ? `https://facebook.com/${pageId}/posts/${cleanPostId}`
+      const postUrl = targetNode !== 'me' && cleanPostId
+        ? `https://facebook.com/${targetNode}/posts/${cleanPostId}`
         : `https://facebook.com/${postId || ''}`;
 
-      logger.info(`🎉 [FacebookPublisher] Successfully published post to Facebook Page! Post ID: ${postId}`);
+      logger.info(`🎉 [FacebookPublisher] Published to Facebook Page via /photos! Post ID: ${postId}`);
 
       return {
         status: 'SUCCESS',
@@ -51,10 +55,43 @@ export const facebookPublisherService = {
         postUrl,
         publishedAt: new Date().toISOString(),
       };
-    } catch (err) {
-      const errorMsg = err.response?.data?.error?.message || err.message;
-      logger.error(`❌ [FacebookPublisher] Facebook publishing error: ${errorMsg}`);
-      throw new Error(`Facebook API error: ${errorMsg}`);
+    } catch (err1) {
+      logger.warn(`ℹ️ [FacebookPublisher] /photos endpoint failed (${err1.message}). Trying /feed fallback...`);
+
+      // 2. Secondary Attempt: /feed endpoint for rich Page feed post with graphic link
+      try {
+        const response = await axios.post(
+          `${META_GRAPH_URL}/${targetNode}/feed`,
+          null,
+          {
+            params: {
+              link: graphicUrl,
+              message: postMessage,
+              access_token: accessToken,
+            },
+          }
+        );
+
+        const postId = response.data?.id;
+        const cleanPostId = postId ? String(postId).split('_')[1] || postId : null;
+        const postUrl = targetNode !== 'me' && cleanPostId
+          ? `https://facebook.com/${targetNode}/posts/${cleanPostId}`
+          : `https://facebook.com/${postId || ''}`;
+
+        logger.info(`🎉 [FacebookPublisher] Published to Facebook Page via /feed! Post ID: ${postId}`);
+
+        return {
+          status: 'SUCCESS',
+          platform: 'FACEBOOK',
+          postId,
+          postUrl,
+          publishedAt: new Date().toISOString(),
+        };
+      } catch (err2) {
+        const errorMsg = err2.response?.data?.error?.message || err1.response?.data?.error?.message || err2.message;
+        logger.error(`❌ [FacebookPublisher] Facebook publishing error: ${errorMsg}`);
+        throw new Error(`Facebook API error: ${errorMsg}`);
+      }
     }
   },
 };
