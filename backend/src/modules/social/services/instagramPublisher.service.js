@@ -15,6 +15,7 @@ export const instagramPublisherService = {
       'instagram_content_publish',
       'pages_show_list',
       'pages_read_engagement',
+      'pages_manage_posts',
       'business_management',
     ].join(',');
 
