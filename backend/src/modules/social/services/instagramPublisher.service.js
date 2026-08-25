@@ -146,7 +146,7 @@ export const instagramPublisherService = {
       logger.warn('ℹ️ [InstagramPublisher] /me/accounts check warning:', err.response?.data || err.message);
     }
 
-    // 2. Direct user query fallback using valid Meta User fields ('id,name')
+    // 2. Direct user query fallback for instagram_business_account
     try {
       const userRes = await axios.get(`${META_GRAPH_URL}/me`, {
         params: {
@@ -156,19 +156,7 @@ export const instagramPublisherService = {
       });
 
       if (userRes.data?.id) {
-        const cleanName = (userRes.data.name || 'meta_user')
-          .toLowerCase()
-          .replace(/[^a-z0-9_]/g, '_')
-          .replace(/_+/g, '_');
-
-        logger.info(`✅ [InstagramPublisher] Linking authenticated Meta identity (@${cleanName}) for user ID: ${userRes.data.id}`);
-        return {
-          igUserId: userRes.data.id,
-          igUsername: cleanName,
-          igName: userRes.data.name || 'Meta User',
-          igProfilePictureUrl: null,
-          isFallback: true,
-        };
+        logger.info(`ℹ️ [InstagramPublisher] Meta user authenticated (${userRes.data.name} [ID: ${userRes.data.id}]) but no Instagram Business account is linked.`);
       }
     } catch (err) {
       logger.warn('ℹ️ [InstagramPublisher] /me direct query warning:', err.response?.data || err.message);
@@ -177,7 +165,7 @@ export const instagramPublisherService = {
     const detailText = debugDetails.length > 0 ? ` (${debugDetails.join(' ')})` : '';
 
     throw new Error(
-      `No Instagram Business or Creator account found${detailText}. Please ensure your Instagram profile is converted to a Business/Creator account and linked to a Facebook Page.`
+      `No Instagram Business Account linked to your Facebook Page${detailText}. Please open your Facebook Page Settings -> Linked Accounts -> Instagram, and connect your Instagram Business profile.`
     );
   },
 

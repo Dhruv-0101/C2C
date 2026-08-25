@@ -46,11 +46,30 @@ export const SocialAccountsManager = () => {
   const authUrlData = authUrlResponse?.data;
   const isMetaConfigured = authUrlData?.configured ?? true;
 
+  const [manualHandle, setManualHandle] = useState('');
+  const [showManualInput, setShowManualInput] = useState(false);
+
+  // Manual Handle Connect Mutation
+  const manualConnectMutation = useMutation({
+    mutationFn: (handle) => socialApi.connectManualHandle(handle, 'INSTAGRAM'),
+    onSuccess: (res) => {
+      const name = res.data?.data?.account?.accountName || 'Instagram Account';
+      setSuccessMsg(`🎉 ${name} connected successfully!`);
+      setShowManualInput(false);
+      setManualHandle('');
+      queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
+    },
+    onError: (err) => {
+      setErrorMsg(err.message || 'Failed to connect Instagram handle.');
+    },
+  });
+
   // Disconnect Account Mutation
   const disconnectMutation = useMutation({
     mutationFn: (platform) => socialApi.disconnectAccount(platform),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
+      setSuccessMsg('');
     },
     onError: (err) => {
       setErrorMsg(err.message || 'Failed to disconnect account.');
@@ -146,8 +165,8 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
 
-        {/* Action Button */}
-        <div>
+        {/* Action Buttons & Manual Connect Form */}
+        <div className="flex flex-col items-end gap-2">
           {instagramAccount?.isConnected ? (
             <Button
               variant="outline"
@@ -159,18 +178,58 @@ export const SocialAccountsManager = () => {
               Disconnect Instagram
             </Button>
           ) : (
-            <Button
-              variant="primary"
-              className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs justify-center shadow-lg"
-              isLoading={isLoadingAuthUrl}
-              onClick={handleConnectInstagram}
-              icon={Link2}
-            >
-              Connect Instagram Account
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <Button
+                variant="primary"
+                className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs justify-center shadow-lg"
+                isLoading={isLoadingAuthUrl}
+                onClick={handleConnectInstagram}
+                icon={Link2}
+              >
+                Connect via Meta OAuth
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setShowManualInput(!showManualInput)}
+                className="text-xs text-amber-400 hover:underline px-2 py-1 font-semibold"
+              >
+                {showManualInput ? 'Cancel' : 'Or Enter Handle Manually'}
+              </button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Manual Handle Input Box */}
+      {!instagramAccount?.isConnected && showManualInput && (
+        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
+          <label className="text-xs font-semibold text-slate-300 block">
+            Enter your exact Instagram Handle:
+          </label>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
+              <input
+                type="text"
+                placeholder="your_real_handle"
+                value={manualHandle}
+                onChange={(e) => setManualHandle(e.target.value)}
+                className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={manualConnectMutation.isPending}
+              onClick={() => manualConnectMutation.mutate(manualHandle)}
+              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
+            >
+              Connect Handle
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Configuration Assistant Box (If Meta Credentials Not Set) */}
       {(!isMetaConfigured || showConfigGuide) && (

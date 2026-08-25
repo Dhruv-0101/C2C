@@ -86,5 +86,39 @@ export const socialLogic = {
     await socialRepository.deleteAccount(userId, platformUpper);
     return { success: true, platform: platformUpper };
   },
+
+  /**
+   * Connect Social Account Manually by Handle (for Instant Setup / Direct Connection)
+   */
+  connectManualHandle: async (userId, handle, platform = 'INSTAGRAM') => {
+    if (!handle || typeof handle !== 'string') {
+      throw new Error('Valid Instagram handle is required.');
+    }
+
+    const cleanHandle = handle.trim().replace(/^@/, '');
+    if (!cleanHandle) {
+      throw new Error('Please enter a valid Instagram handle.');
+    }
+
+    const formattedHandle = `@${cleanHandle}`;
+    const encryptedToken = encryptToken('manual_connected_token');
+
+    const socialAccount = await socialRepository.upsertAccount({
+      userId,
+      platform: (platform || 'INSTAGRAM').toUpperCase(),
+      platformUserId: `manual_${userId}_${cleanHandle}`,
+      accountName: formattedHandle,
+      accessToken: encryptedToken,
+    });
+
+    return {
+      success: true,
+      account: {
+        id: socialAccount.id,
+        platform: socialAccount.platform,
+        accountName: socialAccount.accountName,
+        isConnected: socialAccount.isConnected,
+      },
+    };
+  },
 };
-//builded

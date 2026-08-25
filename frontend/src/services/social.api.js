@@ -17,6 +17,13 @@ export const socialApi = {
   },
 
   /**
+   * Connect social account manually by handle
+   */
+  connectManualHandle: async (handle, platform = 'INSTAGRAM') => {
+    return api.post('/social/connect-manual', { handle, platform });
+  },
+
+  /**
    * Disconnect social account platform
    */
   disconnectAccount: async (platform) => {

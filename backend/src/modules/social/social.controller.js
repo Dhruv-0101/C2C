@@ -90,4 +90,21 @@ export const socialController = {
       next(err);
     }
   },
+
+  /**
+   * POST /api/v1/social/connect-manual
+   */
+  connectManualHandle: async (req, res, next) => {
+    try {
+      const { handle, platform } = req.body;
+      const result = await socialLogic.connectManualHandle(req.user.id, handle, platform);
+      return res.status(200).json({
+        success: true,
+        message: `Connected ${result.account.accountName} successfully!`,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
