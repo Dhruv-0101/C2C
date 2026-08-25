@@ -11,6 +11,10 @@ export const instagramPublisherService = {
   getOAuthUrl: (state) => {
     const scopes = [
       'public_profile',
+      'instagram_basic',
+      'instagram_content_publish',
+      'pages_show_list',
+      'pages_read_engagement',
     ].join(',');
 
     const appId = env.META_APP_ID;
