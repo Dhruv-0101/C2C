@@ -60,17 +60,35 @@ export const postRepository = {
       payload.platformResults = platformResults;
     }
 
-    return prisma.scheduledPost.create({
-      data: payload,
-      include: {
-        post: {
-          include: {
-            template: true,
-            festival: true,
+    try {
+      return await prisma.scheduledPost.create({
+        data: payload,
+        include: {
+          post: {
+            include: {
+              template: true,
+              festival: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (err) {
+      if (err.message && err.message.includes('platformResults')) {
+        delete payload.platformResults;
+        return await prisma.scheduledPost.create({
+          data: payload,
+          include: {
+            post: {
+              include: {
+                template: true,
+                festival: true,
+              },
+            },
+          },
+        });
+      }
+      throw err;
+    }
   },
 
   /**
