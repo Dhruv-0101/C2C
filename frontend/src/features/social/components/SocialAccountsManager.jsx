@@ -8,7 +8,25 @@ import { Alert } from '../../../components/ui/Alert';
 export const SocialAccountsManager = () => {
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [showConfigGuide, setShowConfigGuide] = useState(false);
+
+  // Handle Meta OAuth Redirect Success / Error query parameters
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const socialSuccess = urlParams.get('social_success');
+    const account = urlParams.get('account');
+    const error = urlParams.get('error');
+
+    if (socialSuccess === 'true' && account) {
+      setSuccessMsg(`🎉 Instagram Account ${account} connected successfully! Live post publishing is ready.`);
+      queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (error) {
+      setErrorMsg(`Instagram Connection Error: ${error}`);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [queryClient]);
 
   // Fetch Connected Social Accounts
   const { data: accountsResponse, isLoading, refetch } = useQuery({
@@ -78,6 +96,7 @@ export const SocialAccountsManager = () => {
         </button>
       </div>
 
+      {successMsg && <Alert variant="success" message={successMsg} />}
       {errorMsg && <Alert variant="error" message={errorMsg} />}
 
       {/* Main Instagram Status Card */}
