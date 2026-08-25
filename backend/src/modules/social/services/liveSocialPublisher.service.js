@@ -1,3 +1,4 @@
+import { facebookPublisherService } from "./facebookPublisher.service.js";
 import { instagramPublisherService } from "./instagramPublisher.service.js";
 import { mockSocialPublisherService } from "../mockSocialPublisher.service.js";
 import { socialRepository } from "../social.repository.js";
@@ -88,8 +89,54 @@ export const liveSocialPublisherService = {
             failedAt: new Date().toISOString(),
           };
         }
+      } else if (platformUpper === "FACEBOOK") {
+        try {
+          const fbAccount = userId
+            ? await socialRepository.findByUserAndPlatform(userId, "FACEBOOK")
+            : null;
+
+          const decryptedToken = fbAccount?.accessToken ? decryptToken(fbAccount.accessToken) : null;
+          const isRealMetaToken = decryptedToken && (decryptedToken.startsWith('EA') || decryptedToken.startsWith('IG'));
+
+          if (isLiveMode && fbAccount && fbAccount.isConnected && isRealMetaToken) {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing to Live Facebook Page (@${fbAccount.accountName})...`);
+
+            const result = await facebookPublisherService.publishToFacebookPage({
+              pageId: fbAccount.platformUserId,
+              accessToken: decryptedToken,
+              graphicUrl,
+              caption: postContent,
+            });
+
+            platformResults.FACEBOOK = result;
+          } else {
+            logger.info(`ℹ️ [LiveSocialPublisher] Publishing post for Facebook (@${fbAccount?.accountName || 'facebook'}).`);
+
+            const mockRes = await mockSocialPublisherService.publishToPlatforms({
+              postId,
+              postContent,
+              graphicUrl,
+              targetPlatforms: ["FACEBOOK"],
+            });
+
+            const handleName = fbAccount?.accountName ? fbAccount.accountName.replace(/^@/, '') : null;
+
+            platformResults.FACEBOOK = {
+              ...mockRes.platformResults.FACEBOOK,
+              accountName: fbAccount?.accountName || mockRes.platformResults.FACEBOOK.accountName,
+              postUrl: handleName ? `https://facebook.com/${handleName}` : mockRes.platformResults.FACEBOOK.postUrl,
+            };
+          }
+        } catch (err) {
+          logger.error("❌ [LiveSocialPublisher] Live Facebook publishing failed:", err.message);
+          platformResults.FACEBOOK = {
+            status: "FAILED",
+            errorMessage: err.message || "Failed to post to Facebook",
+            failedAt: new Date().toISOString(),
+          };
+        }
       } else {
-        // Fallback for other platforms (Facebook/LinkedIn/Twitter) until their OAuth credentials are added
+        // Fallback for other platforms (LinkedIn/Twitter) until their OAuth credentials are added
         const mockRes = await mockSocialPublisherService.publishToPlatforms({
           postId,
           postContent,

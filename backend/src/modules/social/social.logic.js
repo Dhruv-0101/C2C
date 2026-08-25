@@ -38,7 +38,7 @@ export const socialLogic = {
     // 3. Encrypt access token before storing in database
     const encryptedAccessToken = encryptToken(accessToken);
 
-    // 4. Save to database in SocialAccount table
+    // 4. Save Instagram Account to database in SocialAccount table
     const socialAccount = await socialRepository.upsertAccount({
       userId,
       platform: 'INSTAGRAM',
@@ -47,6 +47,25 @@ export const socialLogic = {
       accessToken: encryptedAccessToken,
       tokenExpiresAt,
     });
+
+    // 5. Also save Facebook Page Account if managed page is present
+    if (igDetails.facebookPageId && igDetails.facebookPageName) {
+      const pageToken = igDetails.pageAccessToken || accessToken;
+      const encryptedPageToken = encryptToken(pageToken);
+      const cleanFbName = (igDetails.facebookPageName || 'Facebook Page')
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '_')
+        .replace(/_+/g, '_');
+
+      await socialRepository.upsertAccount({
+        userId,
+        platform: 'FACEBOOK',
+        platformUserId: igDetails.facebookPageId,
+        accountName: `@${cleanFbName}`,
+        accessToken: encryptedPageToken,
+        tokenExpiresAt,
+      });
+    }
 
     return {
       success: true,

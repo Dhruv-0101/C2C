@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Instagram, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
+import { Instagram, Facebook, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
 import { socialApi } from '../../../services/social.api';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
@@ -19,11 +19,11 @@ export const SocialAccountsManager = () => {
     const error = urlParams.get('error');
 
     if (socialSuccess === 'true' && account) {
-      setSuccessMsg(`🎉 Instagram Account ${account} connected successfully! Live post publishing is ready.`);
+      setSuccessMsg(`🎉 Social Account ${account} connected successfully! Live post publishing is ready.`);
       queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (error) {
-      setErrorMsg(`Instagram Connection Error: ${error}`);
+      setErrorMsg(`Connection Error: ${error}`);
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [queryClient]);
@@ -36,8 +36,9 @@ export const SocialAccountsManager = () => {
 
   const accounts = accountsResponse?.data?.accounts || [];
   const instagramAccount = accounts.find((a) => a.platform === 'INSTAGRAM');
+  const facebookAccount = accounts.find((a) => a.platform === 'FACEBOOK');
 
-  // Fetch Instagram Auth URL
+  // Fetch Instagram/Meta Auth URL
   const { data: authUrlResponse, isLoading: isLoadingAuthUrl } = useQuery({
     queryKey: ['instagramAuthUrl'],
     queryFn: () => socialApi.getInstagramAuthUrl(),
@@ -49,18 +50,23 @@ export const SocialAccountsManager = () => {
   const [manualHandle, setManualHandle] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
 
+  const [manualFbHandle, setManualFbHandle] = useState('');
+  const [showManualFbInput, setShowManualFbInput] = useState(false);
+
   // Manual Handle Connect Mutation
   const manualConnectMutation = useMutation({
-    mutationFn: (handle) => socialApi.connectManualHandle(handle, 'INSTAGRAM'),
+    mutationFn: ({ handle, platform }) => socialApi.connectManualHandle(handle, platform),
     onSuccess: (res) => {
-      const name = res.data?.data?.account?.accountName || 'Instagram Account';
+      const name = res.data?.data?.account?.accountName || 'Social Account';
       setSuccessMsg(`🎉 ${name} connected successfully!`);
       setShowManualInput(false);
+      setShowManualFbInput(false);
       setManualHandle('');
+      setManualFbHandle('');
       queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
     },
     onError: (err) => {
-      setErrorMsg(err.message || 'Failed to connect Instagram handle.');
+      setErrorMsg(err.message || 'Failed to connect account.');
     },
   });
 
@@ -76,7 +82,7 @@ export const SocialAccountsManager = () => {
     },
   });
 
-  const handleConnectInstagram = () => {
+  const handleConnectMeta = () => {
     if (!isMetaConfigured) {
       setShowConfigGuide(true);
       return;
@@ -93,15 +99,15 @@ export const SocialAccountsManager = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-600/20 border border-pink-500/30 text-pink-400">
-            <Instagram className="w-6 h-6" />
+          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 via-pink-500/20 to-purple-600/20 border border-blue-500/30 text-blue-400">
+            <Facebook className="w-6 h-6" />
           </div>
           <div>
             <h3 className="font-heading font-extrabold text-lg text-white">
-              Instagram Business Account Integration
+              Meta Social Integrations (Instagram & Facebook Page)
             </h3>
             <p className="text-xs text-slate-400">
-              Connect your Instagram Business/Creator account for live automated post publishing.
+              Connect your Instagram Business/Creator account and Facebook Page for live automated publishing.
             </p>
           </div>
         </div>
@@ -183,7 +189,7 @@ export const SocialAccountsManager = () => {
                 variant="primary"
                 className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs justify-center shadow-lg"
                 isLoading={isLoadingAuthUrl}
-                onClick={handleConnectInstagram}
+                onClick={handleConnectMeta}
                 icon={Link2}
               >
                 Connect via Meta OAuth
@@ -201,7 +207,7 @@ export const SocialAccountsManager = () => {
         </div>
       </div>
 
-      {/* Manual Username Input Box */}
+      {/* Manual Username Input Box - Instagram */}
       {!instagramAccount?.isConnected && showManualInput && (
         <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
           <label className="text-xs font-semibold text-slate-300 block">
@@ -222,10 +228,123 @@ export const SocialAccountsManager = () => {
               variant="primary"
               size="sm"
               isLoading={manualConnectMutation.isPending}
-              onClick={() => manualConnectMutation.mutate(manualHandle)}
+              onClick={() => manualConnectMutation.mutate({ handle: manualHandle, platform: 'INSTAGRAM' })}
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
             >
               Connect Username
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Facebook Page Integration Card */}
+      <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-start gap-4">
+          <div className="p-3.5 rounded-2xl bg-blue-600 text-white shadow-glow">
+            <Facebook className="w-7 h-7" />
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-base text-white">Facebook Page Publishing</h4>
+              {facebookAccount?.isConnected ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  <span>Connected</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Not Connected</span>
+                </span>
+              )}
+            </div>
+
+            {facebookAccount?.isConnected ? (
+              <div className="space-y-0.5 text-xs text-slate-300">
+                <a
+                  href={`https://facebook.com/${facebookAccount.accountName.replace(/^@/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group"
+                  title="View Page on Facebook"
+                >
+                  <span>{facebookAccount.accountName}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
+                </a>
+                <p className="text-[11px] text-slate-400">
+                  Linked via Meta Graph API • Auto-Publish Ready
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400">
+                Publish branded graphics directly to your official Facebook Business Page feed.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons & Manual Connect Form */}
+        <div className="flex flex-col items-end gap-2">
+          {facebookAccount?.isConnected ? (
+            <Button
+              variant="outline"
+              className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
+              isLoading={disconnectMutation.isPending}
+              onClick={() => disconnectMutation.mutate('FACEBOOK')}
+              icon={Unlink}
+            >
+              Disconnect Facebook
+            </Button>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <Button
+                variant="primary"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
+                isLoading={isLoadingAuthUrl}
+                onClick={handleConnectMeta}
+                icon={Link2}
+              >
+                Connect via Meta OAuth
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setShowManualFbInput(!showManualFbInput)}
+                className="text-xs text-blue-400 hover:underline px-2 py-1 font-semibold"
+              >
+                {showManualFbInput ? 'Cancel' : 'Or Enter Page Handle Manually'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Manual Page Handle Input Box - Facebook */}
+      {!facebookAccount?.isConnected && showManualFbInput && (
+        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
+          <label className="text-xs font-semibold text-slate-300 block">
+            Enter your exact Facebook Page Name or Handle:
+          </label>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
+              <input
+                type="text"
+                placeholder="your_facebook_page"
+                value={manualFbHandle}
+                onChange={(e) => setManualFbHandle(e.target.value)}
+                className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={manualConnectMutation.isPending}
+              onClick={() => manualConnectMutation.mutate({ handle: manualFbHandle, platform: 'FACEBOOK' })}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+            >
+              Connect Facebook Page
             </Button>
           </div>
         </div>
