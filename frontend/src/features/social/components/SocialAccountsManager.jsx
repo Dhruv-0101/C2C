@@ -263,7 +263,12 @@ export const SocialAccountsManager = () => {
             {facebookAccount?.isConnected ? (
               <div className="space-y-0.5 text-xs text-slate-300">
                 <a
-                  href={`https://facebook.com/${facebookAccount.accountName.replace(/^@/, '')}`}
+                  href={(() => {
+                    const clean = facebookAccount.accountName.replace(/^@/, '').trim();
+                    if (clean.startsWith('profile.php')) return `https://facebook.com/${clean}`;
+                    if (/^\d+$/.test(clean)) return `https://facebook.com/profile.php?id=${clean}`;
+                    return `https://facebook.com/${clean}`;
+                  })()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group"
