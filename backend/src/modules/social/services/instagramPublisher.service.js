@@ -92,6 +92,9 @@ export const instagramPublisherService = {
   getInstagramAccountDetails: async (accessToken) => {
     logger.info('🔍 [InstagramPublisher] Fetching Instagram Business Account details from Meta Graph...');
 
+    let debugDetails = [];
+
+    // 1. Check Facebook Pages managed by user and their linked instagram_business_account
     try {
       const pagesRes = await axios.get(`${META_GRAPH_URL}/me/accounts`, {
         params: {
@@ -101,46 +104,56 @@ export const instagramPublisherService = {
       });
 
       const pages = pagesRes.data?.data || [];
+      if (pages.length === 0) {
+        debugDetails.push('No Facebook Pages were returned for this account.');
+      }
+
       for (const page of pages) {
         if (page.instagram_business_account) {
+          logger.info(`✅ Found Instagram Business Account (@${page.instagram_business_account.username}) linked to Facebook Page '${page.name}'`);
           return {
             facebookPageId: page.id,
             facebookPageName: page.name,
-            pageAccessToken: page.access_token,
+            pageAccessToken: page.access_token || accessToken,
             igUserId: page.instagram_business_account.id,
             igUsername: page.instagram_business_account.username || page.name,
             igName: page.instagram_business_account.name || page.name,
             igProfilePictureUrl: page.instagram_business_account.profile_picture_url || null,
           };
+        } else {
+          debugDetails.push(`Facebook Page '${page.name}' has no Instagram account linked.`);
         }
       }
     } catch (err) {
-      logger.warn('ℹ️ [InstagramPublisher] /me/accounts check deferred, attempting direct /me query...');
+      logger.warn('ℹ️ [InstagramPublisher] /me/accounts check warning:', err.response?.data || err.message);
     }
 
-    // Fallback: Direct IG user lookup
+    // 2. Direct user query fallback for instagram_business_account
     try {
-      const meRes = await axios.get(`${META_GRAPH_URL}/me`, {
+      const userRes = await axios.get(`${META_GRAPH_URL}/me`, {
         params: {
-          fields: 'id,username,name,profile_picture_url',
+          fields: 'id,name,instagram_business_account{id,username,name,profile_picture_url}',
           access_token: accessToken,
         },
       });
 
-      if (meRes.data && meRes.data.id) {
+      if (userRes.data?.instagram_business_account) {
+        const ig = userRes.data.instagram_business_account;
         return {
-          igUserId: meRes.data.id,
-          igUsername: meRes.data.username || meRes.data.name || 'instagram_user',
-          igName: meRes.data.name || meRes.data.username || 'Instagram User',
-          igProfilePictureUrl: meRes.data.profile_picture_url || null,
+          igUserId: ig.id,
+          igUsername: ig.username || userRes.data.name,
+          igName: ig.name || userRes.data.name,
+          igProfilePictureUrl: ig.profile_picture_url || null,
         };
       }
     } catch (err) {
       // ignore
     }
 
+    const detailText = debugDetails.length > 0 ? ` (${debugDetails.join(' ')})` : '';
+
     throw new Error(
-      'No Instagram Business or Creator account found. Please ensure your Instagram profile is linked to a Facebook Page or configured as a Business account.'
+      `No Instagram Business or Creator account found${detailText}. Please ensure your Instagram profile is converted to a Business/Creator account and linked to a Facebook Page.`
     );
   },
 
