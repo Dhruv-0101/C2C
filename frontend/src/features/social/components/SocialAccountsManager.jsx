@@ -124,9 +124,16 @@ export const SocialAccountsManager = () => {
 
             {instagramAccount?.isConnected ? (
               <div className="space-y-0.5 text-xs text-slate-300">
-                <p className="font-mono font-bold text-amber-400 text-sm">
-                  {instagramAccount.accountName}
-                </p>
+                <a
+                  href={`https://instagram.com/${instagramAccount.accountName.replace(/^@/, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-mono font-bold text-amber-400 text-sm hover:text-amber-300 hover:underline transition group"
+                  title="View profile on Instagram"
+                >
+                  <span>{instagramAccount.accountName}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
+                </a>
                 <p className="text-[11px] text-slate-400">
                   Linked via Meta Graph API • Auto-Publish Ready
                 </p>
