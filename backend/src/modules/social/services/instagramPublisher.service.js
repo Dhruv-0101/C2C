@@ -15,12 +15,13 @@ export const instagramPublisherService = {
       'instagram_content_publish',
       'pages_show_list',
       'pages_read_engagement',
+      'business_management',
     ].join(',');
 
     const appId = env.META_APP_ID;
     const redirectUri = encodeURIComponent(env.META_REDIRECT_URI);
 
-    return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scopes}&state=${state}&response_type=code`;
+    return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scopes}&state=${state}&response_type=code&auth_type=rerequest`;
   },
 
   /**
