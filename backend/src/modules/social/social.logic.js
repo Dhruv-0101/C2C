@@ -32,49 +32,70 @@ export const socialLogic = {
     // 1. Exchange code for long-lived 60-day token
     const { accessToken, tokenExpiresAt } = await instagramPublisherService.exchangeCodeForLongLivedToken(code);
 
-    // 2. Fetch connected Instagram account details
-    const igDetails = await instagramPublisherService.getInstagramAccountDetails(accessToken);
+    let savedAccounts = [];
 
-    // 3. Encrypt access token before storing in database
-    const encryptedAccessToken = encryptToken(accessToken);
-
-    // 4. Save Instagram Account to database in SocialAccount table
-    const socialAccount = await socialRepository.upsertAccount({
-      userId,
-      platform: 'INSTAGRAM',
-      platformUserId: igDetails.igUserId,
-      accountName: `@${igDetails.igUsername}`,
-      accessToken: encryptedAccessToken,
-      tokenExpiresAt,
-    });
-
-    // 5. Also save Facebook Page Account if managed page is present
-    if (igDetails.facebookPageId && igDetails.facebookPageName) {
-      const pageToken = igDetails.pageAccessToken || accessToken;
-      const encryptedPageToken = encryptToken(pageToken);
-      const cleanFbName = (igDetails.facebookPageName || 'Facebook Page')
-        .toLowerCase()
-        .replace(/[^a-z0-9_]/g, '_')
-        .replace(/_+/g, '_');
-
-      await socialRepository.upsertAccount({
-        userId,
-        platform: 'FACEBOOK',
-        platformUserId: igDetails.facebookPageId,
-        accountName: `@${cleanFbName}`,
-        accessToken: encryptedPageToken,
-        tokenExpiresAt,
+    // 2. Fetch Facebook Pages managed by Meta User and save Facebook Page connection
+    try {
+      const pagesRes = await axios.get('https://graph.facebook.com/v19.0/me/accounts', {
+        params: {
+          fields: 'id,name,access_token',
+          access_token: accessToken,
+        },
       });
+
+      const pages = pagesRes.data?.data || [];
+      if (pages.length > 0) {
+        const page = pages[0]; // first managed page
+        const pageToken = page.access_token || accessToken;
+
+        const cleanFbName = (page.name || 'facebook_page')
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, '_')
+          .replace(/_+/g, '_');
+
+        const fbAccount = await socialRepository.upsertAccount({
+          userId,
+          platform: 'FACEBOOK',
+          platformUserId: page.id,
+          accountName: `@${cleanFbName}`,
+          accessToken: encryptToken(pageToken),
+          tokenExpiresAt,
+        });
+
+        savedAccounts.push(fbAccount);
+        logger.info(`✅ [SocialLogic] Connected Facebook Page '${page.name}' (ID: ${page.id}) successfully!`);
+      }
+    } catch (err) {
+      logger.warn('ℹ️ [SocialLogic] /me/accounts check warning:', err.response?.data || err.message);
     }
+
+    // 3. Try to fetch connected Instagram Business account details
+    try {
+      const igDetails = await instagramPublisherService.getInstagramAccountDetails(accessToken);
+      if (igDetails && igDetails.igUserId) {
+        const igAccount = await socialRepository.upsertAccount({
+          userId,
+          platform: 'INSTAGRAM',
+          platformUserId: igDetails.igUserId,
+          accountName: `@${igDetails.igUsername}`,
+          accessToken: encryptToken(accessToken),
+          tokenExpiresAt,
+        });
+        savedAccounts.push(igAccount);
+        logger.info(`✅ [SocialLogic] Connected Instagram Account (@${igDetails.igUsername}) successfully!`);
+      }
+    } catch (err) {
+      logger.warn('ℹ️ [SocialLogic] Instagram lookup warning:', err.message);
+    }
+
+    const primaryAccount = savedAccounts[0];
+    const accountName = primaryAccount ? primaryAccount.accountName : '@meta_account';
 
     return {
       success: true,
       account: {
-        id: socialAccount.id,
-        platform: socialAccount.platform,
-        accountName: socialAccount.accountName,
-        isConnected: socialAccount.isConnected,
-        igDetails,
+        accountName,
+        savedCount: savedAccounts.length,
       },
     };
   },
