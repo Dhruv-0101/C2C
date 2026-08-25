@@ -46,6 +46,11 @@ const activeRedisUrl = isProd
   ? process.env.REDIS_URL_PROD || process.env.REDIS_URL
   : process.env.REDIS_URL_DEV || process.env.REDIS_URL;
 
+const activeMetaRedirectUri = isProd
+  ? process.env.META_REDIRECT_URI_PROD || process.env.META_REDIRECT_URI || 'https://c2c-negk.onrender.com/api/v1/social/meta/callback'
+  : process.env.META_REDIRECT_URI_DEV || process.env.META_REDIRECT_URI || 'http://localhost:5000/api/v1/social/meta/callback';
+
+
 const envSchema = z.object({
   PORT: z.string().default('5000'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -113,7 +118,9 @@ const _env = envSchema.safeParse({
   REDIS_PASSWORD: activeRedisPassword,
   REDIS_TLS: activeRedisTls,
   REDIS_URL: activeRedisUrl,
+  META_REDIRECT_URI: activeMetaRedirectUri,
 });
+
 
 if (!_env.success) {
   console.error('❌ Invalid environment variables:', _env.error.format());
