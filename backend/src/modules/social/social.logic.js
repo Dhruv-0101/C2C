@@ -50,16 +50,11 @@ export const socialLogic = {
         const page = pages[0]; // first managed page
         const pageToken = page.access_token || accessToken;
 
-        const cleanFbName = (page.name || 'facebook_page')
-          .toLowerCase()
-          .replace(/[^a-z0-9_]/g, '_')
-          .replace(/_+/g, '_');
-
         const fbAccount = await socialRepository.upsertAccount({
           userId,
           platform: 'FACEBOOK',
           platformUserId: page.id,
-          accountName: `@${cleanFbName}`,
+          accountName: `@${page.name || 'Facebook Page'}`,
           accessToken: encryptToken(pageToken),
           tokenExpiresAt,
         });

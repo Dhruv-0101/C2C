@@ -264,6 +264,8 @@ export const SocialAccountsManager = () => {
               <div className="space-y-0.5 text-xs text-slate-300">
                 <a
                   href={(() => {
+                    const id = facebookAccount.platformUserId;
+                    if (id && /^\d+$/.test(id)) return `https://facebook.com/profile.php?id=${id}`;
                     const clean = facebookAccount.accountName.replace(/^@/, '').trim();
                     if (clean.startsWith('profile.php')) return `https://facebook.com/${clean}`;
                     if (/^\d+$/.test(clean)) return `https://facebook.com/profile.php?id=${clean}`;
