@@ -129,7 +129,7 @@ export const instagramPublisherService = {
       logger.warn('ℹ️ [InstagramPublisher] /me/accounts check warning:', err.response?.data || err.message);
     }
 
-    // 2. Direct user query fallback for instagram_business_account
+    // 2. Direct user query fallback for instagram_business_account or Meta user identity
     try {
       const userRes = await axios.get(`${META_GRAPH_URL}/me`, {
         params: {
@@ -147,8 +147,20 @@ export const instagramPublisherService = {
           igProfilePictureUrl: ig.profile_picture_url || null,
         };
       }
+
+      if (userRes.data?.id) {
+        const cleanName = (userRes.data.name || 'meta_user').toLowerCase().replace(/\s+/g, '_');
+        logger.info(`ℹ️ [InstagramPublisher] Linking authenticated Meta identity (@${cleanName}) for user ID: ${userRes.data.id}`);
+        return {
+          igUserId: userRes.data.id,
+          igUsername: cleanName,
+          igName: userRes.data.name || 'Meta User',
+          igProfilePictureUrl: null,
+          isFallback: true,
+        };
+      }
     } catch (err) {
-      // ignore
+      logger.warn('ℹ️ [InstagramPublisher] /me direct query warning:', err.response?.data || err.message);
     }
 
     const detailText = debugDetails.length > 0 ? ` (${debugDetails.join(' ')})` : '';
