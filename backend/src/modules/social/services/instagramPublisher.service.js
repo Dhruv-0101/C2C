@@ -110,16 +110,33 @@ export const instagramPublisherService = {
       }
 
       for (const page of pages) {
-        if (page.instagram_business_account) {
-          logger.info(`✅ Found Instagram Business Account (@${page.instagram_business_account.username}) linked to Facebook Page '${page.name}'`);
+        let igAccount = page.instagram_business_account;
+
+        // Try direct page lookup if inline field was omitted by Graph API
+        if (!igAccount && page.id) {
+          try {
+            const pageDetailRes = await axios.get(`${META_GRAPH_URL}/${page.id}`, {
+              params: {
+                fields: 'id,name,instagram_business_account{id,username,name,profile_picture_url}',
+                access_token: page.access_token || accessToken,
+              },
+            });
+            igAccount = pageDetailRes.data?.instagram_business_account;
+          } catch (e) {
+            // ignore
+          }
+        }
+
+        if (igAccount && igAccount.id) {
+          logger.info(`✅ Found Instagram Business Account (@${igAccount.username || page.name}) linked to Facebook Page '${page.name}'`);
           return {
             facebookPageId: page.id,
             facebookPageName: page.name,
             pageAccessToken: page.access_token || accessToken,
-            igUserId: page.instagram_business_account.id,
-            igUsername: page.instagram_business_account.username || page.name,
-            igName: page.instagram_business_account.name || page.name,
-            igProfilePictureUrl: page.instagram_business_account.profile_picture_url || null,
+            igUserId: igAccount.id,
+            igUsername: igAccount.username || page.name,
+            igName: igAccount.name || page.name,
+            igProfilePictureUrl: igAccount.profile_picture_url || null,
           };
         } else {
           debugDetails.push(`Facebook Page '${page.name}' has no Instagram account linked.`);
@@ -129,28 +146,22 @@ export const instagramPublisherService = {
       logger.warn('ℹ️ [InstagramPublisher] /me/accounts check warning:', err.response?.data || err.message);
     }
 
-    // 2. Direct user query fallback for instagram_business_account or Meta user identity
+    // 2. Direct user query fallback using valid Meta User fields ('id,name')
     try {
       const userRes = await axios.get(`${META_GRAPH_URL}/me`, {
         params: {
-          fields: 'id,name,instagram_business_account{id,username,name,profile_picture_url}',
+          fields: 'id,name',
           access_token: accessToken,
         },
       });
 
-      if (userRes.data?.instagram_business_account) {
-        const ig = userRes.data.instagram_business_account;
-        return {
-          igUserId: ig.id,
-          igUsername: ig.username || userRes.data.name,
-          igName: ig.name || userRes.data.name,
-          igProfilePictureUrl: ig.profile_picture_url || null,
-        };
-      }
-
       if (userRes.data?.id) {
-        const cleanName = (userRes.data.name || 'meta_user').toLowerCase().replace(/\s+/g, '_');
-        logger.info(`ℹ️ [InstagramPublisher] Linking authenticated Meta identity (@${cleanName}) for user ID: ${userRes.data.id}`);
+        const cleanName = (userRes.data.name || 'meta_user')
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, '_')
+          .replace(/_+/g, '_');
+
+        logger.info(`✅ [InstagramPublisher] Linking authenticated Meta identity (@${cleanName}) for user ID: ${userRes.data.id}`);
         return {
           igUserId: userRes.data.id,
           igUsername: cleanName,
