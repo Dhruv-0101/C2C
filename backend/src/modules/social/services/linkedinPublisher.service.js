@@ -14,7 +14,7 @@ export const linkedinPublisherService = {
     const redirectUri = encodeURIComponent(env.LINKEDIN_REDIRECT_URI);
     const scopes = encodeURIComponent('openid profile email w_member_social');
 
-    return `${LINKEDIN_AUTH_URL}/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scopes}&prompt=login`;
+    return `${LINKEDIN_AUTH_URL}/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scopes}&prompt=consent&max_age=0`;
   },
 
   /**
