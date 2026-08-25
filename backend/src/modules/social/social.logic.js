@@ -1,7 +1,9 @@
+import axios from 'axios';
 import { instagramPublisherService } from './services/instagramPublisher.service.js';
 import { socialRepository } from './social.repository.js';
 import { encryptToken } from '../../common/helpers/encryption.helper.js';
 import { env } from '../../config/env.js';
+import { logger } from '../../config/logger.js';
 
 export const socialLogic = {
   /**
