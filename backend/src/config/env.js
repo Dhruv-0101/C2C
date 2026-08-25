@@ -109,9 +109,9 @@ const envSchema = z.object({
   META_REDIRECT_URI: z.string().optional().default('http://localhost:5000/api/v1/social/meta/callback'),
 
   // LinkedIn OAuth Credentials
-  LINKEDIN_CLIENT_ID: z.string().optional().default(''),
+  LINKEDIN_CLIENT_ID: z.string().optional().default('862ua0tj5ebtmp'),
   LINKEDIN_CLIENT_SECRET: z.string().optional().default(''),
-  LINKEDIN_REDIRECT_URI: z.string().optional().default('http://localhost:5000/api/v1/social/linkedin/callback'),
+  LINKEDIN_REDIRECT_URI: z.string().optional().default('https://c2c-negk.onrender.com/api/v1/social/linkedin/callback'),
 
   // Social Encryption & Publisher Mode ('LIVE' | 'MOCK')
   SOCIAL_TOKEN_ENCRYPTION_KEY: z.string().optional().default('brandflow_social_encryption_secret_key_32b'),
