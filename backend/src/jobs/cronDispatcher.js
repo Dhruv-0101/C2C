@@ -45,7 +45,7 @@ export const triggerScheduledPostsNow = async () => {
         scheduledPostId: item.id,
         postId: item.postId,
         userId: item.post?.userId,
-        targetPlatforms: item.targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],
+        targetPlatforms: item.targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN", "TWITTER"],
         postContent: item.post?.customText || item.post?.occasionName,
         graphicUrl: item.post?.finalGraphicUrl || item.post?.customImageUrl,
       };

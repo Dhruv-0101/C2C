@@ -37,7 +37,7 @@ export const processPostJob = async (jobData) => {
       userId,
       postContent,
       graphicUrl,
-      targetPlatforms: targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],
+      targetPlatforms: targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN", "TWITTER"],
     });
 
     // 3. Mark as SUCCESS in Database
