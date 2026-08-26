@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Instagram, Facebook, Linkedin, Twitter, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
 import { socialApi } from '../../../services/social.api';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
@@ -38,7 +38,6 @@ export const SocialAccountsManager = () => {
   const instagramAccount = accounts.find((a) => a.platform === 'INSTAGRAM');
   const facebookAccount = accounts.find((a) => a.platform === 'FACEBOOK');
   const linkedinAccount = accounts.find((a) => a.platform === 'LINKEDIN');
-  const twitterAccount = accounts.find((a) => a.platform === 'TWITTER');
 
   // Fetch Instagram/Meta Auth URL
   const { data: authUrlResponse, isLoading: isLoadingAuthUrl } = useQuery({
@@ -59,10 +58,6 @@ export const SocialAccountsManager = () => {
   const [showManualLiInput, setShowManualLiInput] = useState(false);
   const [isLoadingLiAuthUrl, setIsLoadingLiAuthUrl] = useState(false);
 
-  const [manualTwHandle, setManualTwHandle] = useState('');
-  const [showManualTwInput, setShowManualTwInput] = useState(false);
-  const [isLoadingTwAuthUrl, setIsLoadingTwAuthUrl] = useState(false);
-
   // Manual Handle Connect Mutation
   const manualConnectMutation = useMutation({
     mutationFn: ({ handle, platform }) => socialApi.connectManualHandle(handle, platform),
@@ -72,11 +67,9 @@ export const SocialAccountsManager = () => {
       setShowManualInput(false);
       setShowManualFbInput(false);
       setShowManualLiInput(false);
-      setShowManualTwInput(false);
       setManualHandle('');
       setManualFbHandle('');
       setManualLiHandle('');
-      setManualTwHandle('');
       queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
     },
     onError: (err) => {
@@ -504,135 +497,6 @@ export const SocialAccountsManager = () => {
               className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs"
             >
               Connect LinkedIn Account
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* X (Twitter) Integration Card */}
-      <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-glow">
-            <Twitter className="w-7 h-7" />
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h4 className="font-bold text-base text-white">X (Twitter) Profile Publishing</h4>
-              {twitterAccount?.isConnected ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Connected</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Not Connected</span>
-                </span>
-              )}
-            </div>
-
-            {twitterAccount?.isConnected ? (
-              <div className="space-y-0.5 text-xs text-slate-300">
-                <a
-                  href={`https://x.com/${twitterAccount.accountName.replace(/^@/, '').trim()}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono font-bold text-slate-200 text-sm hover:text-white hover:underline transition group"
-                  title="View Profile on X"
-                >
-                  <span>{twitterAccount.accountName}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
-                </a>
-                <p className="text-[11px] text-slate-400">
-                  Linked via X API v2 • Tweet & Graphic Auto-Publish Ready
-                </p>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400">
-                Publish tweets, branded graphics, and updates directly to your X feed.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons & Manual Connect Form */}
-        <div className="flex flex-col items-end gap-2">
-          {twitterAccount?.isConnected ? (
-            <Button
-              variant="outline"
-              className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
-              isLoading={disconnectMutation.isPending}
-              onClick={() => disconnectMutation.mutate('TWITTER')}
-              icon={Unlink}
-            >
-              Disconnect X (Twitter)
-            </Button>
-          ) : (
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <Button
-                variant="primary"
-                className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs justify-center shadow-lg border border-slate-600"
-                isLoading={isLoadingTwAuthUrl}
-                onClick={async () => {
-                  try {
-                    setIsLoadingTwAuthUrl(true);
-                    setErrorMsg('');
-                    const res = await socialApi.getTwitterAuthUrl();
-                    const authUrl = res.data?.authUrl || res.authUrl;
-                    if (authUrl) {
-                      window.location.href = authUrl;
-                    } else {
-                      setErrorMsg('Twitter Client ID is not configured in backend.');
-                    }
-                  } catch (err) {
-                    setErrorMsg(err.message || 'Failed to start Twitter OAuth.');
-                  } finally {
-                    setIsLoadingTwAuthUrl(false);
-                  }
-                }}
-                icon={Link2}
-              >
-                Connect via X OAuth
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setShowManualTwInput(!showManualTwInput)}
-                className="text-xs text-slate-400 hover:underline px-2 py-1 font-semibold"
-              >
-                {showManualTwInput ? 'Cancel' : 'Or Enter Handle Manually'}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Manual Page Handle Input Box - X / Twitter */}
-      {!twitterAccount?.isConnected && showManualTwInput && (
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
-          <label className="text-xs font-semibold text-slate-300 block">
-            Enter your exact X (Twitter) Username or Profile URL:
-          </label>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
-              <input
-                type="text"
-                placeholder="your_x_handle"
-                value={manualTwHandle}
-                onChange={(e) => setManualTwHandle(e.target.value)}
-                className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-slate-400"
-              />
-            </div>
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={manualConnectMutation.isPending}
-              onClick={() => manualConnectMutation.mutate({ handle: manualTwHandle, platform: 'TWITTER' })}
-              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-600"
-            >
-              Connect X Account
             </Button>
           </div>
         </div>

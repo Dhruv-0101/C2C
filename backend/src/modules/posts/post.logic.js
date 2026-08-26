@@ -27,7 +27,7 @@ export const postLogic = {
     const jobPayload = {
       postId: post.id,
       userId,
-      targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'TWITTER'],
+      targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'],
       postContent: payload.customText || payload.occasionName || 'Branded Graphic Post',
       graphicUrl: post.finalGraphicUrl,
     };
@@ -51,7 +51,7 @@ export const postLogic = {
     const scheduledPost = await postRepository.createScheduledPost({
       postId: post.id,
       scheduledAt: scheduledDate,
-      targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'TWITTER'],
+      targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'],
       status: 'PENDING',
     });
 
