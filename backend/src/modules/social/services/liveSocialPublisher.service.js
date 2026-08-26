@@ -1,6 +1,7 @@
 import { facebookPublisherService } from "./facebookPublisher.service.js";
 import { instagramPublisherService } from "./instagramPublisher.service.js";
 import { linkedinPublisherService } from "./linkedinPublisher.service.js";
+import { whatsappPublisherService } from "./whatsappPublisher.service.js";
 import { mockSocialPublisherService } from "../mockSocialPublisher.service.js";
 import { socialRepository } from "../social.repository.js";
 import { decryptToken } from "../../../common/helpers/encryption.helper.js";
@@ -227,6 +228,34 @@ export const liveSocialPublisherService = {
             status: "SUCCESS",
             accountName: liAccount?.accountName || mockRes.platformResults.LINKEDIN.accountName,
             postUrl: handleName ? `https://linkedin.com/in/${handleName}` : mockRes.platformResults.LINKEDIN.postUrl,
+          };
+        }
+      } else if (platformUpper === "WHATSAPP") {
+        try {
+          const waAccount = userId
+            ? await socialRepository.findByUserAndPlatform(userId, "WHATSAPP")
+            : null;
+
+          const phone = waAccount?.accountName ? waAccount.accountName.replace(/[^0-9]/g, '') : '';
+
+          const result = await whatsappPublisherService.publishToWhatsapp({
+            phone,
+            graphicUrl,
+            caption: postContent,
+          });
+
+          platformResults.WHATSAPP = {
+            ...result,
+            accountName: waAccount?.accountName || "WhatsApp Business",
+          };
+        } catch (err) {
+          logger.error("❌ [LiveSocialPublisher] WhatsApp publisher error:", err.message);
+          platformResults.WHATSAPP = {
+            status: "FAILED",
+            platform: "WHATSAPP",
+            accountName: "WhatsApp",
+            error: err.message,
+            publishedAt: new Date().toISOString(),
           };
         }
       } else {

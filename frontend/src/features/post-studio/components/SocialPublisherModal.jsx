@@ -21,6 +21,7 @@ const SOCIAL_PLATFORMS = [
   { id: "INSTAGRAM", name: "Instagram", icon: "📸", color: "from-pink-500 to-rose-600" },
   { id: "FACEBOOK", name: "Facebook", icon: "📘", color: "from-blue-600 to-blue-800" },
   { id: "LINKEDIN", name: "LinkedIn", icon: "💼", color: "from-blue-500 to-indigo-700" },
+  { id: "WHATSAPP", name: "WhatsApp Status", icon: "💬", color: "from-emerald-500 to-teal-700" },
 ];
 
 /**
@@ -50,6 +51,7 @@ export const SocialPublisherModal = ({
     "INSTAGRAM",
     "FACEBOOK",
     "LINKEDIN",
+    "WHATSAPP",
   ]);
   const [publishMode, setPublishMode] = useState("NOW"); // 'NOW' | 'SCHEDULE'
   
@@ -191,6 +193,16 @@ export const SocialPublisherModal = ({
                           <span className="text-rose-400 font-mono text-[11px] truncate max-w-[320px]" title={res.error}>
                             ❌ {res.error || "Publishing Failed"}
                           </span>
+                        ) : platformKey === "WHATSAPP" ? (
+                          <a
+                            href={res.postUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
+                          >
+                            <span>Share on WhatsApp Status 💬</span>
+                            <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                          </a>
                         ) : (
                           <a
                             href={(() => {
