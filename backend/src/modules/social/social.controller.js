@@ -39,6 +39,61 @@ export const socialController = {
   },
 
   /**
+   * GET /api/v1/social/auth-url/twitter
+   */
+  getTwitterAuthUrl: async (req, res, next) => {
+    try {
+      const result = await socialLogic.getTwitterAuthUrl(req.user.id);
+      return res.status(200).json({
+        success: true,
+        message: result.configured
+          ? 'Twitter OAuth URL generated successfully'
+          : 'Twitter App configuration status retrieved',
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * GET /api/v1/social/twitter/callback
+   */
+  handleTwitterCallback: async (req, res, next) => {
+    try {
+      const { code, state, error, error_description } = req.query;
+
+      if (error) {
+        return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
+      }
+
+      let userId = req.user?.id;
+
+      if (!userId && state) {
+        try {
+          const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+          userId = decoded.userId;
+        } catch (e) {
+          // ignore parse error
+        }
+      }
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized callback execution. Missing user context.',
+        });
+      }
+
+      const result = await socialLogic.handleTwitterCallback(code, userId);
+
+      return res.redirect(`${env.CLIENT_URL}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
+    } catch (err) {
+      return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect Twitter account')}`);
+    }
+  },
+
+  /**
    * GET /api/v1/social/linkedin/callback
    */
   handleLinkedinCallback: async (req, res, next) => {

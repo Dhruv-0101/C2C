@@ -54,6 +54,10 @@ const activeLinkedinRedirectUri = isProd
   ? process.env.LINKEDIN_REDIRECT_URI_PROD || process.env.LINKEDIN_REDIRECT_URI || 'https://c2c-negk.onrender.com/api/v1/social/linkedin/callback'
   : process.env.LINKEDIN_REDIRECT_URI_DEV || process.env.LINKEDIN_REDIRECT_URI || 'http://localhost:5000/api/v1/social/linkedin/callback';
 
+const activeTwitterRedirectUri = isProd
+  ? process.env.TWITTER_REDIRECT_URI_PROD || process.env.TWITTER_REDIRECT_URI || 'https://c2c-negk.onrender.com/api/v1/social/twitter/callback'
+  : process.env.TWITTER_REDIRECT_URI_DEV || process.env.TWITTER_REDIRECT_URI || 'http://localhost:5000/api/v1/social/twitter/callback';
+
 
 const envSchema = z.object({
   PORT: z.string().default('5000'),
@@ -113,6 +117,11 @@ const envSchema = z.object({
   LINKEDIN_CLIENT_SECRET: z.string().optional().default(''),
   LINKEDIN_REDIRECT_URI: z.string().optional().default('https://c2c-negk.onrender.com/api/v1/social/linkedin/callback'),
 
+  // Twitter / X OAuth Credentials
+  TWITTER_CLIENT_ID: z.string().optional().default(''),
+  TWITTER_CLIENT_SECRET: z.string().optional().default(''),
+  TWITTER_REDIRECT_URI: z.string().optional().default('http://localhost:5000/api/v1/social/twitter/callback'),
+
   // Social Encryption & Publisher Mode ('LIVE' | 'MOCK')
   SOCIAL_TOKEN_ENCRYPTION_KEY: z.string().optional().default('brandflow_social_encryption_secret_key_32b'),
   SOCIAL_PUBLISHER_MODE: z.enum(['LIVE', 'MOCK']).optional().default('MOCK'),
@@ -129,6 +138,7 @@ const _env = envSchema.safeParse({
   REDIS_URL: activeRedisUrl,
   META_REDIRECT_URI: activeMetaRedirectUri,
   LINKEDIN_REDIRECT_URI: activeLinkedinRedirectUri,
+  TWITTER_REDIRECT_URI: activeTwitterRedirectUri,
 });
 
 
