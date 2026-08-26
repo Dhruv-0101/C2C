@@ -12,6 +12,9 @@ import {
   Flame,
   AlertTriangle,
   Zap,
+  Download,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
@@ -62,6 +65,7 @@ export const SocialPublisherModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [publishResult, setPublishResult] = useState(null);
+  const [copiedCaption, setCopiedCaption] = useState(false);
 
   if (!isOpen) return null;
 
@@ -194,15 +198,70 @@ export const SocialPublisherModal = ({
                             ❌ {res.error || "Publishing Failed"}
                           </span>
                         ) : platformKey === "WHATSAPP" ? (
-                          <a
-                            href={res.postUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
-                          >
-                            <span>Share on WhatsApp Status 💬</span>
-                            <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                          </a>
+                          <div className="flex flex-col gap-2 w-full mt-2 p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                                <span>WhatsApp Status Studio</span>
+                              </span>
+                              <a
+                                href={res.postUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition"
+                              >
+                                <span>Open WhatsApp 💬</span>
+                                <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                              </a>
+                            </div>
+
+                            {/* Quick Tools: Download Image & Copy Caption */}
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {/* Download Image */}
+                              {(postData?.finalGraphicUrl || postData?.graphicUrl) && (
+                                <a
+                                  href={postData?.finalGraphicUrl || postData?.graphicUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  download="brandflow_whatsapp_status.png"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition"
+                                >
+                                  <Download className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>Download Graphic 🖼️</span>
+                                </a>
+                              )}
+
+                              {/* Copy Caption */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const text = postData?.customText || postData?.occasionName || res.shareText || '';
+                                  if (text) {
+                                    navigator.clipboard.writeText(text);
+                                    setCopiedCaption(true);
+                                    setTimeout(() => setCopiedCaption(false), 3000);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition"
+                              >
+                                {copiedCaption ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                    <span className="text-emerald-400">Caption Copied!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>Copy Caption 📋</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            {/* Tip Box */}
+                            <p className="text-[11px] text-slate-400 leading-snug pt-1 border-t border-emerald-500/20">
+                              💡 <strong className="text-slate-300">How to set Status:</strong> Click <span className="text-emerald-300 font-medium">Download Graphic</span> & <span className="text-amber-300 font-medium">Copy Caption</span>, open WhatsApp Status, choose the downloaded graphic and paste your caption!
+                            </p>
+                          </div>
                         ) : (
                           <a
                             href={(() => {
