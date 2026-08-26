@@ -183,33 +183,40 @@ export const SocialPublisherModal = ({
                     ([platformKey, res]) => (
                       <div
                         key={platformKey}
-                        className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs"
+                        className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs gap-2"
                       >
-                        <span className="font-bold text-white uppercase tracking-wider">
+                        <span className="font-bold text-white uppercase tracking-wider flex-shrink-0">
                           {platformKey}
                         </span>
-                        <a
-                          href={(() => {
-                            const url = res.postUrl || '';
-                            if (url.includes("facebook.com/")) {
-                              const path = url.split("facebook.com/")[1] || "";
-                              if (path.startsWith("profile.php") || path.startsWith("permalink.php") || path.includes("/posts/")) {
-                                return url;
+
+                        {res.status === "FAILED" ? (
+                          <span className="text-rose-400 font-mono text-[11px] truncate max-w-[320px]" title={res.error}>
+                            ❌ {res.error || "Publishing Failed"}
+                          </span>
+                        ) : (
+                          <a
+                            href={(() => {
+                              const url = res.postUrl || '';
+                              if (url.includes("facebook.com/")) {
+                                const path = url.split("facebook.com/")[1] || "";
+                                if (path.startsWith("profile.php") || path.startsWith("permalink.php") || path.includes("/posts/")) {
+                                  return url;
+                                }
+                                const clean = path.replace(/^@/, "").trim();
+                                if (/^\d+$/.test(clean)) {
+                                  return `https://facebook.com/profile.php?id=${clean}`;
+                                }
                               }
-                              const clean = path.replace(/^@/, "").trim();
-                              if (/^\d+$/.test(clean)) {
-                                return `https://facebook.com/profile.php?id=${clean}`;
-                              }
-                            }
-                            return url;
-                          })()}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-amber-400 hover:underline font-mono font-semibold truncate max-w-[280px]"
-                        >
-                          <span>{res.postUrl}</span>
-                          <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                        </a>
+                              return url;
+                            })()}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-amber-400 hover:underline font-mono font-semibold truncate max-w-[280px]"
+                          >
+                            <span>{res.postUrl}</span>
+                            <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                          </a>
+                        )}
                       </div>
                     ),
                   )}
