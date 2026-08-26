@@ -13,47 +13,16 @@ const app = express();
 // Trust reverse proxy headers from Render/Vercel/Nginx
 app.set('trust proxy', 1);
 
-// Security HTTP headers
-app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' },
-  })
-);
-
-// CORS Configuration
-const allowedOrigins = [
-  env.CLIENT_URL,
-  'https://c2-c-puce.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:5174',
-].filter(Boolean);
-
-// Universal CORS & Preflight Interceptor Middleware
+// 1. Universal Bulletproof CORS & Preflight Interceptor (FIRST MIDDLEWARE IN PIPELINE)
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  const origin = req.headers.origin || '*';
 
-  if (origin) {
-    const isAllowed =
-      allowedOrigins.includes(origin) ||
-      origin.endsWith('.vercel.app') ||
-      origin.includes('vercel.app') ||
-      origin.includes('localhost') ||
-      origin.includes('127.0.0.1') ||
-      env.NODE_ENV === 'development';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Access-Control-Allow-Methods');
 
-    if (isAllowed) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    }
-  }
-
-  // Intercept and immediately respond to OPTIONS preflight requests
+  // Immediately terminate OPTIONS preflight requests with HTTP 200 OK
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -61,27 +30,24 @@ app.use((req, res, next) => {
   next();
 });
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const isAllowed =
-      allowedOrigins.includes(origin) ||
-      origin.endsWith('.vercel.app') ||
-      origin.includes('vercel.app') ||
-      origin.includes('localhost') ||
-      origin.includes('127.0.0.1') ||
-      env.NODE_ENV === 'development';
+// Security HTTP headers
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 
-    return callback(null, isAllowed ? true : false);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+// Fallback Standard CORS Middleware
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+    optionsSuccessStatus: 200,
+  })
+);
+app.options('*', cors());
 
 // Body Parsers & Cookie Parser
 app.use(express.json({ limit: '10mb' }));
