@@ -3,7 +3,8 @@ import { logger } from '../../../config/logger.js';
 import { env } from '../../../config/env.js';
 
 const TWITTER_API_V2_URL = 'https://api.twitter.com/2';
-const TWITTER_AUTH_URL = 'https://twitter.com/i/oauth2';
+const TWITTER_AUTH_URL = 'https://twitter.com/i/oauth2/authorize';
+const TWITTER_TOKEN_URL = 'https://api.twitter.com/2/oauth2/token';
 
 /**
  * Enterprise X (Twitter) Publisher Service
@@ -21,7 +22,7 @@ export const twitterPublisherService = {
     const redirectUri = encodeURIComponent(env.TWITTER_REDIRECT_URI);
     const scopes = encodeURIComponent('tweet.read tweet.write users.read offline.access');
 
-    return `${TWITTER_AUTH_URL}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
+    return `${TWITTER_AUTH_URL}?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
   },
 
   /**
@@ -31,32 +32,36 @@ export const twitterPublisherService = {
    * @returns {Promise<{accessToken: string, refreshToken?: string, tokenExpiresAt: Date|null}>}
    */
   exchangeCodeForToken: async (code, codeVerifier = 'challenge') => {
-    logger.info('🔑 [TwitterPublisher] Exchanging authorization code for Twitter access token...');
+    logger.info('🔑 [TwitterPublisher] Exchanging authorization code for Twitter User Access Token...');
 
     try {
-      const authHeader = Buffer.from(`${env.TWITTER_CLIENT_ID}:${env.TWITTER_CLIENT_SECRET || ''}`).toString('base64');
+      const params = new URLSearchParams({
+        code,
+        grant_type: 'authorization_code',
+        client_id: env.TWITTER_CLIENT_ID,
+        redirect_uri: env.TWITTER_REDIRECT_URI,
+        code_verifier: codeVerifier,
+      });
 
-      const response = await axios.post(
-        `${TWITTER_AUTH_URL}/token`,
-        new URLSearchParams({
-          grant_type: 'authorization_code',
-          code,
-          redirect_uri: env.TWITTER_REDIRECT_URI,
-          code_verifier: codeVerifier,
-          client_id: env.TWITTER_CLIENT_ID,
-        }).toString(),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Basic ${authHeader}`,
-          },
-        }
-      );
+      const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
+
+      if (env.TWITTER_CLIENT_SECRET) {
+        const credentials = `${env.TWITTER_CLIENT_ID}:${env.TWITTER_CLIENT_SECRET}`;
+        headers.Authorization = `Basic ${Buffer.from(credentials).toString('base64')}`;
+      }
+
+      const response = await axios.post(TWITTER_TOKEN_URL, params.toString(), { headers });
 
       const accessToken = response.data?.access_token;
       const refreshToken = response.data?.refresh_token;
       const expiresIn = response.data?.expires_in; // seconds
       const tokenExpiresAt = expiresIn ? new Date(Date.now() + expiresIn * 1000) : null;
+
+      if (!accessToken) {
+        throw new Error('Twitter API response did not contain an access token.');
+      }
 
       return {
         accessToken,
