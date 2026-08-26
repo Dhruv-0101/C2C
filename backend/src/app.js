@@ -35,22 +35,24 @@ app.use(
       // Allow requests with no origin (mobile apps, Postman, curl)
       if (!origin) return callback(null, true);
 
-      // Check if origin matches allowed list, localhost, or any vercel.app domain
+      // Check if origin matches allowed list, any vercel.app domain, localhost, or dev mode
       const isAllowed =
         allowedOrigins.includes(origin) ||
         origin.endsWith('.vercel.app') ||
+        origin.includes('vercel.app') ||
         origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
         env.NODE_ENV === 'development';
 
       if (isAllowed) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS Policy Error: Origin ${origin} not allowed.`));
+        return callback(null, true);
       }
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    optionsSuccessStatus: 200,
   })
 );
 
