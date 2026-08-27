@@ -10,6 +10,9 @@ import apiRouter from './routes/index.js';
 
 const app = express();
 
+// Trust reverse proxy (Render / Cloudflare / AWS) for correct client IP detection
+app.set('trust proxy', 1);
+
 // Security HTTP headers
 app.use(
   helmet({
