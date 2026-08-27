@@ -22,6 +22,8 @@ if (env.SMTP_USER && env.SMTP_PASS) {
       pass: env.SMTP_PASS,
     },
     tls: {
+      rejectUnauthorized: false,
+    },
   });
 }
 
