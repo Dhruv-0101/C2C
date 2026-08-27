@@ -27,8 +27,11 @@ export const whatsappPublisherService = {
     // Clean target phone number if provided (strip spaces, dashes, parentheses)
     let cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
     
-    // Universal WhatsApp Status & Chat Share Link
-    const postUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+    // Generate WhatsApp Web & Mobile App Universal Share Link
+    let postUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+    if (cleanPhone) {
+      postUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedText}`;
+    }
 
     const postId = `wa_${Date.now()}`;
 
