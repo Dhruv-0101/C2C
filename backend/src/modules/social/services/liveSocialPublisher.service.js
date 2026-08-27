@@ -1,7 +1,6 @@
 import { facebookPublisherService } from "./facebookPublisher.service.js";
 import { instagramPublisherService } from "./instagramPublisher.service.js";
 import { linkedinPublisherService } from "./linkedinPublisher.service.js";
-import { twitterPublisherService } from "./twitterPublisher.service.js";
 import { mockSocialPublisherService } from "../mockSocialPublisher.service.js";
 import { socialRepository } from "../social.repository.js";
 import { decryptToken } from "../../../common/helpers/encryption.helper.js";
@@ -230,62 +229,8 @@ export const liveSocialPublisherService = {
             postUrl: handleName ? `https://linkedin.com/in/${handleName}` : mockRes.platformResults.LINKEDIN.postUrl,
           };
         }
-      } else if (platformUpper === "TWITTER" || platformUpper === "X") {
-        let twAccount = null;
-        try {
-          twAccount = userId
-            ? await socialRepository.findByUserAndPlatform(userId, "TWITTER")
-            : null;
-
-          const decryptedToken = twAccount?.accessToken ? decryptToken(twAccount.accessToken) : null;
-          const isRealToken = decryptedToken && decryptedToken !== 'manual_connected_token';
-
-          if (isLiveMode && twAccount && twAccount.isConnected && isRealToken) {
-            logger.info(`🌐 [LiveSocialPublisher] Publishing to Live X (Twitter) Account (@${twAccount.accountName})...`);
-
-            const result = await twitterPublisherService.publishToTwitter({
-              accessToken: decryptedToken,
-              graphicUrl,
-              caption: postContent,
-            });
-
-            platformResults.TWITTER = result;
-          } else {
-            logger.info(`ℹ️ [LiveSocialPublisher] Publishing post for X (Twitter) (@${twAccount?.accountName || 'twitter'}).`);
-
-            const mockRes = await mockSocialPublisherService.publishToPlatforms({
-              postId,
-              postContent,
-              graphicUrl,
-              targetPlatforms: ["TWITTER"],
-            });
-
-            const handleName = twAccount?.accountName ? twAccount.accountName.replace(/^@/, '') : 'brandflow_user';
-
-            platformResults.TWITTER = {
-              ...mockRes.platformResults.TWITTER,
-              accountName: twAccount?.accountName || mockRes.platformResults.TWITTER.accountName,
-              postUrl: `https://x.com/${handleName}/status/${postId || Date.now()}`,
-            };
-          }
-        } catch (err) {
-          logger.warn("ℹ️ [LiveSocialPublisher] Live Twitter publishing warning:", err.message);
-          const handleName = twAccount?.accountName ? twAccount.accountName.replace(/^@/, '') : 'brandflow_user';
-          const mockRes = await mockSocialPublisherService.publishToPlatforms({
-            postId,
-            postContent,
-            graphicUrl,
-            targetPlatforms: ["TWITTER"],
-          });
-          platformResults.TWITTER = {
-            ...mockRes.platformResults.TWITTER,
-            status: "SUCCESS",
-            accountName: twAccount?.accountName || mockRes.platformResults.TWITTER.accountName,
-            postUrl: `https://x.com/${handleName}/status/${postId || Date.now()}`,
-          };
-        }
       } else {
-        // Fallback for other platforms until their OAuth credentials are added
+        // Fallback for other platforms (LinkedIn/Twitter) until their OAuth credentials are added
         const mockRes = await mockSocialPublisherService.publishToPlatforms({
           postId,
           postContent,

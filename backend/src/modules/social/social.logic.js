@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { instagramPublisherService } from './services/instagramPublisher.service.js';
 import { linkedinPublisherService } from './services/linkedinPublisher.service.js';
-import { twitterPublisherService } from './services/twitterPublisher.service.js';
 import { socialRepository } from './social.repository.js';
 import { encryptToken } from '../../common/helpers/encryption.helper.js';
 import { env } from '../../config/env.js';
@@ -47,64 +46,6 @@ export const socialLogic = {
     return {
       configured: true,
       authUrl,
-    };
-  },
-
-  /**
-   * Get X (Twitter) OAuth Authorization URL
-   */
-  getTwitterAuthUrl: async (userId) => {
-    if (!env.TWITTER_CLIENT_ID) {
-      return {
-        configured: false,
-        message: 'Twitter Client ID is not configured in backend environment variables (.env).',
-        authUrl: null,
-      };
-    }
-
-    const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString('base64');
-    const authUrl = twitterPublisherService.getOAuthUrl(state);
-
-    return {
-      configured: true,
-      authUrl,
-    };
-  },
-
-  /**
-   * Handle Twitter / X OAuth Callback
-   */
-  handleTwitterCallback: async (code, userId) => {
-    // 1. Exchange code for access token
-    const { accessToken, refreshToken, tokenExpiresAt } = await twitterPublisherService.exchangeCodeForToken(code);
-
-    // 2. Fetch Twitter user profile
-    const profile = await twitterPublisherService.getTwitterProfile(accessToken);
-
-    // 3. Encrypt access token before storing
-    const encryptedToken = encryptToken(accessToken);
-    const encryptedRefreshToken = refreshToken ? encryptToken(refreshToken) : null;
-
-    // 4. Save to SocialAccount table
-    const socialAccount = await socialRepository.upsertAccount({
-      userId,
-      platform: 'TWITTER',
-      platformUserId: profile.platformUserId,
-      accountName: `@${profile.username || 'Twitter User'}`,
-      accessToken: encryptedToken,
-      refreshToken: encryptedRefreshToken,
-      tokenExpiresAt,
-    });
-
-    return {
-      success: true,
-      account: {
-        id: socialAccount.id,
-        platform: socialAccount.platform,
-        accountName: socialAccount.accountName,
-        isConnected: socialAccount.isConnected,
-        profile,
-      },
     };
   },
 
@@ -257,10 +198,6 @@ export const socialLogic = {
       cleanHandle = cleanHandle.split('instagram.com/')[1].split('/')[0].split('?')[0];
     } else if (cleanHandle.includes('facebook.com/')) {
       cleanHandle = cleanHandle.split('facebook.com/')[1].split('/')[0].split('?')[0];
-    } else if (cleanHandle.includes('x.com/')) {
-      cleanHandle = cleanHandle.split('x.com/')[1].split('/')[0].split('?')[0];
-    } else if (cleanHandle.includes('twitter.com/')) {
-      cleanHandle = cleanHandle.split('twitter.com/')[1].split('/')[0].split('?')[0];
     }
     cleanHandle = cleanHandle.replace(/^@/, '').trim();
 
@@ -271,12 +208,9 @@ export const socialLogic = {
     const formattedHandle = `@${cleanHandle}`;
     const encryptedToken = encryptToken('manual_connected_token');
 
-    let targetPlatform = (platform || 'INSTAGRAM').toUpperCase();
-    if (targetPlatform === 'X') targetPlatform = 'TWITTER';
-
     const socialAccount = await socialRepository.upsertAccount({
       userId,
-      platform: targetPlatform,
+      platform: (platform || 'INSTAGRAM').toUpperCase(),
       platformUserId: `manual_${userId}_${cleanHandle}`,
       accountName: formattedHandle,
       accessToken: encryptedToken,

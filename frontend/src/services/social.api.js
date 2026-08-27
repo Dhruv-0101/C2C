@@ -24,13 +24,6 @@ export const socialApi = {
   },
 
   /**
-   * Get X (Twitter) OAuth Authorization URL
-   */
-  getTwitterAuthUrl: async () => {
-    return api.get('/social/auth-url/twitter');
-  },
-
-  /**
    * Connect social account manually by handle
    */
   connectManualHandle: async (handle, platform = 'INSTAGRAM') => {

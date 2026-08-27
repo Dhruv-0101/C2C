@@ -21,7 +21,7 @@ const SOCIAL_PLATFORMS = [
   { id: "INSTAGRAM", name: "Instagram", icon: "📸", color: "from-pink-500 to-rose-600" },
   { id: "FACEBOOK", name: "Facebook", icon: "📘", color: "from-blue-600 to-blue-800" },
   { id: "LINKEDIN", name: "LinkedIn", icon: "💼", color: "from-blue-500 to-indigo-700" },
-  { id: "TWITTER", name: "X (Twitter)", icon: "🐦", color: "from-slate-700 to-slate-900" },
+  { id: "TWITTER", name: "Twitter / X", icon: "🐦", color: "from-slate-700 to-slate-900" },
 ];
 
 /**
@@ -51,7 +51,6 @@ export const SocialPublisherModal = ({
     "INSTAGRAM",
     "FACEBOOK",
     "LINKEDIN",
-    "TWITTER",
   ]);
   const [publishMode, setPublishMode] = useState("NOW"); // 'NOW' | 'SCHEDULE'
   
