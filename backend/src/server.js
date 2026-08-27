@@ -8,22 +8,16 @@ let server;
 
 async function startServer() {
   try {
+    // Verify database connection
+    await connectDatabase();
+
+    // Initialize BullMQ Background Workers
+    initWorkers();
+
     const PORT = env.PORT || 5000;
     server = app.listen(PORT, () => {
       logger.info(`🚀 BrandFlow Backend Server running on http://localhost:${PORT} [${env.NODE_ENV}]`);
     });
-
-    // Verify database connection asynchronously
-    connectDatabase().catch((err) => {
-      logger.error('⚠️ Database connection deferred on startup:', err.message);
-    });
-
-    // Initialize BullMQ Background Workers
-    try {
-      initWorkers();
-    } catch (workerErr) {
-      logger.warn('⚠️ Background workers deferred on startup:', workerErr.message);
-    }
   } catch (error) {
     logger.error('❌ Failed to start backend server:', error);
     process.exit(1);
