@@ -20,11 +20,7 @@ export function sendSuccessResponse(res, { statusCode = HTTP_STATUS.OK, message 
 /**
  * Standardized API Error Response Formatter
  */
-export function sendErrorResponse(res, { statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR, message = 'Internal Server Error', errors = [] }, req = null) {
-  if (req && req.headers && req.headers.origin && !res.headersSent) {
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
+export function sendErrorResponse(res, { statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR, message = 'Internal Server Error', errors = [] }) {
   return res.status(statusCode).json({
     success: false,
     message,
