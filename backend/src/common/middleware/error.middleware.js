@@ -10,6 +10,12 @@ export function errorHandler(err, req, res, next) {
   let message = err.message || 'Internal Server Error';
   let errors = err.errors || [];
 
+  const origin = req.headers?.origin;
+  if (origin && !res.headersSent) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   if (env.NODE_ENV === 'development') {
     console.error('💥 Error Stack:', err);
   }

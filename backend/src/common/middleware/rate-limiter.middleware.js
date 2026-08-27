@@ -8,7 +8,7 @@ import { logger } from '../../config/logger.js';
  */
 const skipIfDisabled = (limiterInstance) => {
   return (req, res, next) => {
-    if (env.ENABLE_RATE_LIMITER === 'false') {
+    if (req.method === 'OPTIONS' || env.ENABLE_RATE_LIMITER === 'false') {
       return next();
     }
     return limiterInstance(req, res, next);
