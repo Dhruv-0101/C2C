@@ -10,9 +10,6 @@ import apiRouter from './routes/index.js';
 
 const app = express();
 
-// Trust reverse proxy headers from Render/Vercel/Nginx
-app.set('trust proxy', 1);
-
 // Security HTTP headers
 app.use(
   helmet({
