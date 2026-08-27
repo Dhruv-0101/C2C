@@ -10,47 +10,52 @@ import apiRouter from './routes/index.js';
 
 const app = express();
 
-// Security HTTP headers
+// Trust reverse proxy (Render / Cloudflare) for correct client IP detection
+app.set('trust proxy', 1);
+
+// 1. CORS Configuration - MUST BE FIRST BEFORE HELMET OR ANY OTHER MIDDLEWARE
+const corsOptions = {
+  origin: true, // Dynamically echoes back incoming request origin (e.g. https://c2-c-puce.vercel.app)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers',
+  ],
+  optionsSuccessStatus: 200,
+};
+
+// Register Express CORS middleware and wildcard OPTIONS handler
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// Bulletproof CORS header fallback middleware to GUARANTEE headers on every single response
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
+// 2. Security HTTP headers configured for cross-origin API access
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
-  })
-);
-
-// CORS Configuration
-const allowedOrigins = [
-  env.CLIENT_URL,
-  'https://c2-c-puce.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:5174',
-].filter(Boolean);
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, Postman, curl)
-      if (!origin) return callback(null, true);
-
-      // Check if origin matches allowed list, localhost, or any vercel.app domain
-      const isAllowed =
-        allowedOrigins.includes(origin) ||
-        origin.endsWith('.vercel.app') ||
-        origin.includes('localhost') ||
-        env.NODE_ENV === 'development';
-
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS Policy Error: Origin ${origin} not allowed.`));
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    crossOriginOpenerPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: false,
   })
 );
 
