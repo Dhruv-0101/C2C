@@ -32,9 +32,13 @@ export function errorHandler(err, req, res, next) {
     message = 'Authentication token expired';
   }
 
-  return sendErrorResponse(res, {
-    statusCode,
-    message,
-    errors,
-  });
+  return sendErrorResponse(
+    res,
+    {
+      statusCode,
+      message,
+      errors,
+    },
+    req
+  );
 }
