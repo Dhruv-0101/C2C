@@ -141,7 +141,7 @@ try {
     },
     {
       connection: redisConnectionOptions,
-      concurrency: 5, // Safe concurrency limit for memory efficiency
+      concurrency: 50, // 50 parallel worker threads per container
       limiter: {
         max: 1000,
         duration: 60000, // Max 1,000 jobs per minute per node
