@@ -9,21 +9,27 @@ const redisHost = process.env.REDIS_HOST || "127.0.0.1";
 const redisPort = Number(process.env.REDIS_PORT) || 6379;
 const redisPassword = process.env.REDIS_PASSWORD || undefined;
 
+const safeRetryStrategy = (times) => {
+  if (times > 3) {
+    return null; // Stop retrying after 3 attempts to prevent memory leaks
+  }
+  return 1000;
+};
+
 export const redisConnectionOptions = process.env.REDIS_URL
-  ? { url: process.env.REDIS_URL, maxRetriesPerRequest: null }
+  ? {
+      url: process.env.REDIS_URL,
+      maxRetriesPerRequest: null,
+      enableOfflineQueue: false,
+      retryStrategy: safeRetryStrategy,
+    }
   : {
       host: redisHost,
       port: redisPort,
       password: redisPassword,
       maxRetriesPerRequest: null,
-      enableOfflineQueue: false, // Prevent queuing in memory when Redis is disconnected
-      retryStrategy: (times) => {
-        // Stop retrying after 2 attempts when running locally without a Redis server
-        if (times > 2) {
-          return null; // Stops reconnect attempts cleanly
-        }
-        return 200;
-      },
+      enableOfflineQueue: false,
+      retryStrategy: safeRetryStrategy,
     };
 
 // Alias export for backward compatibility
