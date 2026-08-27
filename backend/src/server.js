@@ -4,6 +4,14 @@ import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { initWorkers, closeWorkers } from './jobs/index.js';
 
+import sharp from 'sharp';
+
+// Disable Sharp C++ native memory cache to fit safely within Render 512MB RAM
+try {
+  sharp.cache(false);
+  sharp.concurrency(1);
+} catch (e) {}
+
 let server;
 
 async function startServer() {
