@@ -133,35 +133,37 @@ export const processPostJob = async (jobData) => {
 
 let workerInstance = null;
 
-try {
-  workerInstance = new Worker(
-    "scheduled-post-queue",
-    async (job) => {
-      return await processPostJob(job.data);
-    },
-    {
-      connection: redisConnectionOptions,
-      concurrency: 50, // 50 parallel worker threads per container
-      limiter: {
-        max: 1000,
-        duration: 60000, // Max 1,000 jobs per minute per node
+const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOST);
+
+if (isRedisConfigured) {
+  try {
+    workerInstance = new Worker(
+      "scheduled-post-queue",
+      async (job) => {
+        return await processPostJob(job.data);
       },
-    },
-  );
+      {
+        connection: redisConnectionOptions,
+        concurrency: 2,
+        limiter: {
+          max: 100,
+          duration: 60000,
+        },
+      },
+    );
 
-  workerInstance.on("completed", (job) => {
-    logger.info(`🏁 [PostWorker] Job ${job.id} completed successfully.`);
-  });
+    workerInstance.on("completed", (job) => {
+      logger.info(`🏁 [PostWorker] Job ${job.id} completed successfully.`);
+    });
 
-  workerInstance.on("failed", (job, err) => {
-    logger.error(`❌ [PostWorker] Job ${job?.id} failed with error:`, err);
-  });
+    workerInstance.on("failed", (job, err) => {
+      logger.error(`❌ [PostWorker] Job ${job?.id} failed:`, err);
+    });
 
-  workerInstance.on("error", () => {
-    // Quiet error handler for offline local Redis
-  });
-} catch (err) {
-  logger.warn("⚠️ [PostWorker] BullMQ Worker initialization deferred (running in direct DB execution mode).");
+    workerInstance.on("error", () => {});
+  } catch (err) {
+    logger.warn("⚠️ [PostWorker] BullMQ Worker initialization deferred.");
+  }
 }
 
 export { workerInstance };

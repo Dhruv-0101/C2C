@@ -7,54 +7,55 @@ import { logger } from '../config/logger.js';
 /**
  * BullMQ Worker: Processes Email Jobs from the Redis Queue
  */
-export const emailWorker = new Worker(
-  EMAIL_QUEUE_NAME,
-  async (job) => {
-    logger.info(`⚙️ [BullMQ Worker] Processing Job #${job.id} (${job.name}) for ${job.data.email}...`);
+let emailWorker = null;
 
-    switch (job.name) {
-      case EMAIL_JOB_NAMES.WELCOME_EMAIL:
-        await sendWelcomeEmail({
-          email: job.data.email,
-          fullName: job.data.fullName,
-        });
-        break;
+const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOST);
 
-      case EMAIL_JOB_NAMES.PASSWORD_RESET:
-        await sendPasswordResetEmail({
-          email: job.data.email,
-          fullName: job.data.fullName,
-          resetUrl: job.data.resetUrl,
-        });
-        break;
+if (isRedisConfigured) {
+  try {
+    emailWorker = new Worker(
+      EMAIL_QUEUE_NAME,
+      async (job) => {
+        logger.info(`⚙️ [BullMQ Worker] Processing Job #${job.id} (${job.name}) for ${job.data.email}...`);
 
-      case EMAIL_JOB_NAMES.TWO_FACTOR_CODE:
-        // Future expansion for 2FA Email Code Job
-        break;
+        switch (job.name) {
+          case EMAIL_JOB_NAMES.WELCOME_EMAIL:
+            await sendWelcomeEmail({
+              email: job.data.email,
+              fullName: job.data.fullName,
+            });
+            break;
 
-      default:
-        logger.warn(`⚠️ [BullMQ Worker] Unknown job name: ${job.name}`);
-    }
-  },
-  {
-    connection: redisConnection,
-    concurrency: 5, // Process up to 5 concurrent email jobs
+          case EMAIL_JOB_NAMES.PASSWORD_RESET:
+            await sendPasswordResetEmail({
+              email: job.data.email,
+              fullName: job.data.fullName,
+              resetUrl: job.data.resetUrl,
+            });
+            break;
+
+          default:
+            logger.warn(`⚠️ [BullMQ Worker] Unknown job name: ${job.name}`);
+        }
+      },
+      {
+        connection: redisConnection,
+        concurrency: 2,
+      }
+    );
+
+    emailWorker.on('completed', (job) => {
+      logger.info(`✅ [BullMQ Worker] Job #${job.id} (${job.name}) completed!`);
+    });
+
+    emailWorker.on('failed', (job, err) => {
+      logger.error(`❌ [BullMQ Worker] Job #${job?.id} (${job?.name}) failed:`, err.message);
+    });
+
+    emailWorker.on('error', () => {});
+  } catch (err) {
+    logger.warn('⚠️ [BullMQ Worker] Email worker deferred.');
   }
-);
+}
 
-// Worker Event Listeners
-emailWorker.on('completed', (job) => {
-  logger.info(`✅ [BullMQ Worker] Job #${job.id} (${job.name}) successfully completed!`);
-});
-
-emailWorker.on('failed', (job, err) => {
-  logger.error(`❌ [BullMQ Worker] Job #${job?.id} (${job?.name}) failed:`, err.message);
-});
-
-let hasLoggedWorkerWarning = false;
-emailWorker.on('error', (err) => {
-  if (!hasLoggedWorkerWarning) {
-    logger.warn(`ℹ️ [BullMQ Worker Info] Local Redis is offline (${err.message}). Queue fallback active.`);
-    hasLoggedWorkerWarning = true;
-  }
-});
+export { emailWorker };

@@ -11,31 +11,29 @@ export const EMAIL_JOB_NAMES = {
   // TWO_FACTOR_CODE: 'SEND_2FA_CODE',
 };
 
-// Initialize Email BullMQ Queue
-export const emailQueue = new Queue(EMAIL_QUEUE_NAME, {
-  connection: redisConnection,
-  defaultJobOptions: {
-    attempts: 3, // Retry up to 3 times on failure
-    backoff: {
-      type: 'exponential',
-      delay: 5000, // 5s, 10s, 20s backoff
-    },
-    removeOnComplete: {
-      count: 100, // Retain last 100 completed jobs in memory/Redis
-    },
-    removeOnFail: {
-      count: 500, // Retain last 500 failed jobs for audit
-    },
-  },
-});
+// Initialize Email BullMQ Queue only if Redis is configured
+const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOST);
+export const emailQueue = isRedisConfigured
+  ? new Queue(EMAIL_QUEUE_NAME, {
+      connection: redisConnection,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: { count: 50 },
+        removeOnFail: { count: 100 },
+      },
+    })
+  : null;
 
-let hasLoggedQueueWarning = false;
-emailQueue.on('error', (err) => {
-  if (!hasLoggedQueueWarning) {
-    logger.warn(`ℹ️ [BullMQ Queue Info] Local Redis is offline (${err.message}). Fallback to direct execution mode.`);
-    hasLoggedQueueWarning = true;
-  }
-});
+if (emailQueue) {
+  let hasLoggedQueueWarning = false;
+  emailQueue.on('error', (err) => {
+    if (!hasLoggedQueueWarning) {
+      logger.warn(`ℹ️ [BullMQ Queue Info] Redis issue: ${err.message}. Fallback active.`);
+      hasLoggedQueueWarning = true;
+    }
+  });
+}
 
 /**
  * Producer: Add Welcome Email Job to BullMQ Queue
