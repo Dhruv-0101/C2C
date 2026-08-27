@@ -22,6 +22,17 @@ if (env.SMTP_USER && env.SMTP_PASS) {
       pass: env.SMTP_PASS,
     },
     tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  // Verify SMTP Connection readiness on startup
+  transporter.verify((error) => {
+    if (error) {
+      logger.error('❌ SMTP Email Transporter connection failed:', error.message);
+    } else {
+      logger.success(`✅ SMTP Email Transporter connected & ready to send real emails via ${env.SMTP_USER}!`);
+    }
   });
 }
 
