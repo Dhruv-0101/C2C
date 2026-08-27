@@ -10,16 +10,9 @@ import apiRouter from './routes/index.js';
 
 const app = express();
 
-// Security HTTP headers
-app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' },
-  })
-);
-
-// CORS Configuration - Dynamically allow incoming origin with credentials
+// CORS Configuration - Must run FIRST before any security or body parsing middleware
 const corsOptions = {
-  origin: true, // Echoes back request origin (e.g. https://c2-c-puce.vercel.app, localhost, etc.)
+  origin: true, // Echoes back incoming request origin dynamically
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
@@ -36,6 +29,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// Security HTTP headers configured for cross-origin API access
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginOpenerPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: false,
+  })
+);
 
 // Body Parsers & Cookie Parser
 app.use(express.json({ limit: '10mb' }));
