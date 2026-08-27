@@ -2,6 +2,10 @@ import { api } from './api.service';
 import { API_ENDPOINTS } from '../constants/api.constants';
 
 export const templateApi = {
+  getTemplateCategories: async () => {
+    return api.get('/templates/categories');
+  },
+
   getTemplates: async (params = {}) => {
     return api.get(API_ENDPOINTS.TEMPLATES.BASE, { params });
   },

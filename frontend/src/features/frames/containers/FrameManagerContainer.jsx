@@ -3,9 +3,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { frameApi } from "@/services/frame.api";
 import { useFrames } from "@/hooks/useFrames";
 import { useFeedbackModal } from "@/hooks/useFeedbackModal";
-import { useFrameCanvasEngine } from "@/hooks/useFrameCanvasEngine";
+import { useFrameCanvasEngine, drawVectorShapePath } from "@/hooks/useFrameCanvasEngine";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { FrameManagerView } from "../components/FrameManagerView";
+import { MASTER_FRAME_PRESETS } from "../../../constants/framePresets";
 
 /**
  * FrameManagerContainer
@@ -25,6 +26,8 @@ export const FrameManagerContainer = () => {
     canvasRef,
     stageBgColor,
     setStageBgColor,
+    showSelectionBox,
+    setShowSelectionBox,
     elements,
     setElements,
     selectedId,
@@ -36,9 +39,18 @@ export const FrameManagerContainer = () => {
     handleAddElement,
     updateSelectedElement,
     deleteSelectedElement,
+    clearAllElements,
     bringForward,
     sendBackward,
   } = useFrameCanvasEngine(activeTab);
+
+  const handleClearStage = () => {
+    clearAllElements();
+    setFrameMeta({
+      title: "New Custom Canva Frame",
+      description: "Custom vector frame overlay created from scratch",
+    });
+  };
 
   // Frame Metadata State
   const [frameMeta, setFrameMeta] = useState({
@@ -134,56 +146,41 @@ export const FrameManagerContainer = () => {
           ctx.translate(-cx, -cy);
         }
 
-        if (el.type === "RECTANGLE" || el.type === "CAPSULE") {
-          ctx.fillStyle = el.fillColor || "#000000";
-          ctx.beginPath();
-          const r = el.type === "CAPSULE" ? el.height / 2 : el.borderRadius || 0;
-          ctx.roundRect(el.x, el.y, el.width, el.height, r);
-          ctx.fill();
-
-          if (el.borderWidth > 0) {
-            ctx.strokeStyle = el.borderColor || "#FFFFFF";
-            ctx.lineWidth = el.borderWidth;
-            ctx.stroke();
-          }
-        } else if (el.type === "CIRCLE") {
+        if (el.type === "TEXT") {
+          // Skip rendering text on transparent overlay PNG so it remains 100% text-free
+          ctx.restore();
+          return;
+        } else if (
+          el.dynamicSlot === "AVATAR_CIRCLE" ||
+          (el.slotCategory === "IMAGE_SLOT" && el.type === "CIRCLE")
+        ) {
           const radius = el.width / 2;
           const cx = el.x + radius;
           const cy = el.y + radius;
-
-          if (el.dynamicSlot === "AVATAR_CIRCLE") {
-            ctx.globalCompositeOperation = "destination-out";
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalCompositeOperation = "source-over";
-          } else {
-            ctx.fillStyle = el.fillColor || "#1E293B";
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-            ctx.fill();
-          }
+          ctx.globalCompositeOperation = "destination-out";
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalCompositeOperation = "source-over";
 
           if (el.borderWidth > 0) {
             ctx.strokeStyle = el.borderColor || "#EAB308";
             ctx.lineWidth = el.borderWidth;
             ctx.stroke();
           }
-        } else if (el.type === "TEXT") {
-          const fontFamily = el.fontFamily || "Space Grotesk";
-          const fontWeight = el.fontWeight || "bold";
-          const fontSize = el.fontSize || 24;
-          ctx.fillStyle = el.fontColor || el.fillColor || "#0B0F17";
-          ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
-          ctx.textAlign = el.textAlign || "left";
-          ctx.textBaseline = "top";
-          const tx =
-            el.textAlign === "center"
-              ? el.x + el.width / 2
-              : el.textAlign === "right"
-                ? el.x + el.width
-                : el.x;
-          ctx.fillText(el.text || "Sample Text", tx, el.y);
+        } else {
+          drawVectorShapePath(ctx, el);
+
+          if (el.type !== "LINE") {
+            ctx.fillStyle = el.fillColor || "#000000";
+            ctx.fill();
+          }
+
+          if (el.borderWidth > 0) {
+            ctx.strokeStyle = el.borderColor || "#FFFFFF";
+            ctx.lineWidth = el.borderWidth;
+            ctx.stroke();
+          }
         }
         ctx.restore();
       });
@@ -243,6 +240,8 @@ export const FrameManagerContainer = () => {
       errorMsg={errorMsg}
       stageBgColor={stageBgColor}
       setStageBgColor={setStageBgColor}
+      showSelectionBox={showSelectionBox}
+      setShowSelectionBox={setShowSelectionBox}
       frameMeta={frameMeta}
       setFrameMeta={setFrameMeta}
       uploadData={uploadData}
@@ -268,8 +267,18 @@ export const FrameManagerContainer = () => {
       handleAddElement={handleAddElement}
       updateSelectedElement={updateSelectedElement}
       handleDeleteSelected={deleteSelectedElement}
+      handleClearStage={handleClearStage}
       handleMoveLayer={handleMoveLayer}
-      loadPreset={(presetElements) => setElements(presetElements)}
+      loadPreset={(presetKey) => {
+        const found = MASTER_FRAME_PRESETS.find((p) => p.key === presetKey);
+        if (found) {
+          setElements(found.elements);
+          setFrameMeta({
+            title: found.title,
+            description: found.description,
+          });
+        }
+      }}
       handlePublishCanvaFrame={handlePublishCanvaFrame}
       handleOverlayFileChange={handleOverlayFileChange}
       handleSaveUploadFrame={handleSaveUploadFrame}

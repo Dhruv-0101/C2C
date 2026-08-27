@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Sparkles,
   Download,
@@ -11,6 +12,12 @@ import {
   CheckCircle2,
   Zap,
   Share2,
+  FolderKanban,
+  Calendar,
+  Search,
+  ZoomIn,
+  Maximize2,
+  X,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -34,6 +41,12 @@ export const PostStudioEditorView = ({
   customBaseImage,
   setCustomBaseImage,
   saveSuccess,
+  selectedCategory,
+  setSelectedCategory,
+  selectedFestival,
+  setSelectedFestival,
+  categoriesList = [],
+  festivals = [],
   templates,
   templatesMeta,
   isLoadingTemplates,
@@ -48,6 +61,7 @@ export const PostStudioEditorView = ({
   setFrameLimit,
   customDetails,
   setCustomDetails,
+  brandKit,
   currentTemplate,
   isRendering,
   savePostMutation,
@@ -55,6 +69,36 @@ export const PostStudioEditorView = ({
   handleDownloadHD,
   onOpenPublisherModal,
 }) => {
+  // Step 1 Category Pagination (5 per page) & Search State
+  const [catSearch, setCatSearch] = useState("");
+  const [catPage, setCatPage] = useState(1);
+  const CAT_PER_PAGE = 5;
+
+  const filteredCategories = categoriesList.filter((cat) =>
+    cat.name.toLowerCase().includes(catSearch.toLowerCase())
+  );
+  const catTotalPages = Math.ceil(filteredCategories.length / CAT_PER_PAGE) || 1;
+  const paginatedCategories = filteredCategories.slice(
+    (catPage - 1) * CAT_PER_PAGE,
+    catPage * CAT_PER_PAGE
+  );
+
+  // Step 1 Festival Pagination (5 per page) & Search State
+  const [festSearch, setFestSearch] = useState("");
+  const [festPage, setFestPage] = useState(1);
+  const FEST_PER_PAGE = 5;
+
+  const filteredFestivals = festivals.filter((f) =>
+    f.name.toLowerCase().includes(festSearch.toLowerCase())
+  );
+  const festTotalPages = Math.ceil(filteredFestivals.length / FEST_PER_PAGE) || 1;
+  const paginatedFestivals = filteredFestivals.slice(
+    (festPage - 1) * FEST_PER_PAGE,
+    festPage * FEST_PER_PAGE
+  );
+  // Zoomed Frame Lightbox Modal State
+  const [zoomedFrame, setZoomedFrame] = useState(null);
+
   const steps = [
     { num: 1, title: "Select Base Graphic" },
     { num: 2, title: "Choose Canva Frame" },
@@ -120,7 +164,7 @@ export const PostStudioEditorView = ({
               </div>
 
               {/* Custom Base Image File Upload Option */}
-              <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3">
+              <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2">
                 <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
                   <Upload className="w-4 h-4 text-amber-400" />
                   <span>Or Upload Custom 1080x1080 Background Image</span>
@@ -140,18 +184,246 @@ export const PostStudioEditorView = ({
                 />
               </div>
 
-              {/* Search Base Templates */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search templates..."
-                  value={templateSearch}
-                  onChange={(e) => {
-                    setTemplateSearch(e.target.value);
-                    setTemplatePage(1);
-                  }}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
-                />
+              {/* 1. Categories Navigation (5 per page + Search) */}
+              <div className="space-y-2.5 p-3.5 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <FolderKanban className="w-3.5 h-3.5 text-amber-400" />
+                    <h4 className="font-heading font-extrabold text-xs text-white">
+                      Categories (5 per page)
+                    </h4>
+                    <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.2 rounded-full border border-slate-700">
+                      {catPage}/{catTotalPages}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative">
+                      <Search className="w-3 h-3 text-slate-400 absolute left-2 top-2" />
+                      <input
+                        type="text"
+                        placeholder="Search category..."
+                        value={catSearch}
+                        onChange={(e) => {
+                          setCatSearch(e.target.value);
+                          setCatPage(1);
+                        }}
+                        className="pl-6 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-28"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        disabled={catPage <= 1}
+                        onClick={() => setCatPage((p) => Math.max(1, p - 1))}
+                        className="p-1 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={catPage >= catTotalPages}
+                        onClick={() => setCatPage((p) => Math.min(catTotalPages, p + 1))}
+                        className="p-1 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory("");
+                      setTemplatePage(1);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
+                      !selectedCategory
+                        ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
+                        : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                    }`}
+                  >
+                    <span>🎨 All</span>
+                  </button>
+
+                  {paginatedCategories.map((cat) => {
+                    const isSelected = selectedCategory === cat.name;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(cat.name);
+                          setTemplatePage(1);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
+                          isSelected
+                            ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
+                            : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                        }`}
+                      >
+                        <span>{cat.icon || "🎨"}</span>
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Festivals Navigation (5 per page + Search) */}
+              <div className="space-y-2.5 p-3.5 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                    <h4 className="font-heading font-extrabold text-xs text-white">
+                      Festivals (5 per page)
+                    </h4>
+                    <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.2 rounded-full border border-slate-700">
+                      {festPage}/{festTotalPages}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative">
+                      <Search className="w-3 h-3 text-slate-400 absolute left-2 top-2" />
+                      <input
+                        type="text"
+                        placeholder="Search festival..."
+                        value={festSearch}
+                        onChange={(e) => {
+                          setFestSearch(e.target.value);
+                          setFestPage(1);
+                        }}
+                        className="pl-6 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-28"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        disabled={festPage <= 1}
+                        onClick={() => setFestPage((p) => Math.max(1, p - 1))}
+                        className="p-1 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={festPage >= festTotalPages}
+                        onClick={() => setFestPage((p) => Math.min(festTotalPages, p + 1))}
+                        className="p-1 rounded bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFestival("");
+                      setTemplatePage(1);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
+                      !selectedFestival
+                        ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
+                        : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                    }`}
+                  >
+                    <span>🎉 All</span>
+                  </button>
+
+                  {paginatedFestivals.map((f) => {
+                    const isSelected = selectedFestival === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedFestival(f.id);
+                          setTemplatePage(1);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
+                          isSelected
+                            ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
+                            : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                        }`}
+                      >
+                        <span>🪔</span>
+                        <span>{f.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 3. Search Base Templates & Active Combined Filter Badges */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    placeholder="Search templates by title..."
+                    value={templateSearch}
+                    onChange={(e) => {
+                      setTemplateSearch(e.target.value);
+                      setTemplatePage(1);
+                    }}
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
+                  />
+                </div>
+
+                {(selectedCategory || selectedFestival) && (
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                    <span className="text-[11px] text-slate-400 font-medium">Filters:</span>
+                    {selectedCategory && (
+                      <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-semibold flex items-center gap-1">
+                        <span>Cat: {selectedCategory}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategory("");
+                            setTemplatePage(1);
+                          }}
+                          className="hover:text-white font-bold ml-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    {selectedFestival && (
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold flex items-center gap-1">
+                        <span>Fest: {festivals.find((f) => f.id === selectedFestival)?.name || selectedFestival}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFestival("");
+                            setTemplatePage(1);
+                          }}
+                          className="hover:text-white font-bold ml-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategory("");
+                        setSelectedFestival("");
+                        setTemplatePage(1);
+                      }}
+                      className="text-[11px] text-amber-400 hover:underline font-semibold ml-1"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Clean 6-Item Grid */}
@@ -179,7 +451,7 @@ export const PostStudioEditorView = ({
                       <img
                         src={t.baseImageUrl || t.imageUrl || t.fileUrl}
                         alt={t.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition"
+                        className="w-full h-full object-contain group-hover:scale-105 transition bg-[#0B0F17]"
                       />
                       <div className="absolute inset-x-0 bottom-0 bg-black/75 p-1.5 truncate">
                         <p className="text-[10px] font-bold text-white truncate">{t.title}</p>
@@ -236,19 +508,58 @@ export const PostStudioEditorView = ({
                     <button
                       key={frame.id}
                       onClick={() => setSelectedFrame(frame)}
-                      className={`relative aspect-square rounded-xl border p-2 overflow-hidden transition group ${
+                      className={`relative aspect-square rounded-xl border p-2 overflow-hidden transition group flex flex-col justify-between text-left ${
                         selectedFrame?.id === frame.id
-                          ? "border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/40"
+                          ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50"
                           : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
                       }`}
                     >
-                      <img
-                        src={frame.overlayPngUrl}
-                        alt={frame.title}
-                        className="w-full h-full object-contain group-hover:scale-105 transition"
-                      />
-                      <div className="absolute inset-x-0 bottom-0 bg-black/80 p-1.5 truncate">
-                        <p className="text-[10px] font-bold text-white truncate">{frame.title}</p>
+                      {/* Background Frame Preview Overlay (Renders previewUrl WITH sample text) */}
+                      <div className="absolute inset-0 bg-[#0B0F17] overflow-hidden pointer-events-none p-1">
+                        {(frame.previewUrl || frame.overlayPngUrl) && (
+                          <img
+                            src={frame.previewUrl || frame.overlayPngUrl}
+                            alt={frame.title}
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                            className="w-full h-full object-contain relative z-10 opacity-100"
+                          />
+                        )}
+                      </div>
+
+                      {/* Top Header Row with Badge & Zoom Button */}
+                      <div className="relative z-20 w-full flex items-center justify-between pointer-events-auto">
+                        <div className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[9px] font-extrabold uppercase backdrop-blur-md">
+                          {frame.isSystem ? "✨ Vector Frame" : "Custom"}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setZoomedFrame(frame);
+                          }}
+                          className="p-1 rounded-lg bg-black/70 hover:bg-amber-500 text-slate-300 hover:text-slate-950 border border-slate-700/60 shadow-lg backdrop-blur-md transition group-hover:scale-110"
+                          title="Zoom / Preview Frame in Fullscreen"
+                        >
+                          <ZoomIn className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Center Decorative Initials (Fallback ONLY if no image exists) */}
+                      {!frame.previewUrl && !frame.overlayPngUrl && (
+                        <div className="relative z-20 self-center my-auto flex flex-col items-center gap-1 text-slate-300 group-hover:scale-110 transition-transform">
+                          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-sm shadow-md">
+                            {frame.title?.substring(0, 2).toUpperCase() || "FR"}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bottom Overlay Label */}
+                      <div className="relative z-20 w-full bg-black/85 backdrop-blur-sm p-1.5 rounded-lg border border-[#2C384E] text-left">
+                        <p className="text-[11px] font-extrabold text-white truncate">{frame.title}</p>
+                        <p className="text-[9px] text-slate-400 truncate">{frame.description || "Vector Canva Frame"}</p>
                       </div>
                     </button>
                   ))
@@ -289,7 +600,22 @@ export const PostStudioEditorView = ({
                   <FileText className="w-5 h-5 text-amber-400" />
                   <span>Step 3: Business & Contact Details Overrides</span>
                 </h3>
-                <span className="text-xs font-semibold text-amber-400 font-mono">3 / 4</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCustomDetails((prev) => ({
+                      ...prev,
+                      businessName: brandKit?.businessName || "Sunrise Real Estate",
+                      phone: brandKit?.phone || brandKit?.whatsapp || "+91 98765 43210",
+                      address: brandKit?.address || "Business Park, MG Road, Mumbai",
+                      tagline: brandKit?.tagline || "Premium Luxury Homes & Commercial Spaces",
+                    }))
+                  }
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition flex items-center gap-1"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Auto-Fill AI BrandKit</span>
+                </button>
               </div>
 
               <div className="space-y-4">
@@ -449,6 +775,70 @@ export const PostStudioEditorView = ({
           </p>
         </div>
       </div>
+
+      {/* ZOOMED FRAME LIGHTBOX MODAL */}
+      {zoomedFrame &&
+        createPortal(
+          <div
+            onClick={() => setZoomedFrame(null)}
+            className="fixed inset-0 w-screen h-screen z-[99999] flex flex-col items-center justify-center p-4 sm:p-8 bg-black/95 backdrop-blur-lg animate-in fade-in duration-200 select-none cursor-zoom-out"
+          >
+            {/* Center High-Res Frame Image */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-2xl max-h-[68vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/40 bg-[#0B0F17] flex items-center justify-center my-auto mb-20 cursor-default p-2"
+            >
+              <img
+                src={zoomedFrame.previewUrl || zoomedFrame.overlayPngUrl}
+                alt={zoomedFrame.title}
+                className="w-full h-full object-contain rounded-xl"
+              />
+            </div>
+
+            {/* Lightbox Bottom Details Bar */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute bottom-5 left-4 right-4 max-w-2xl mx-auto flex items-center justify-between z-10 bg-[#131B2A]/95 backdrop-blur-xl px-6 py-4 rounded-2xl border border-[#2C384E] shadow-2xl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                  <Maximize2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-extrabold text-base text-white truncate max-w-xs">
+                    {zoomedFrame.title}
+                  </h3>
+                  <p className="text-xs text-slate-400 truncate">
+                    {zoomedFrame.description || "Canva Vector Frame with sample text details"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="primary"
+                  icon={Sparkles}
+                  onClick={() => {
+                    setSelectedFrame(zoomedFrame);
+                    setZoomedFrame(null);
+                  }}
+                  className="py-2 text-xs font-extrabold bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950 border-0 shadow-lg"
+                >
+                  ⚡ Select & Apply Frame
+                </Button>
+
+                <button
+                  onClick={() => setZoomedFrame(null)}
+                  className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer border border-[#2C384E]"
+                  title="Close Zoom Preview"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

@@ -38,6 +38,18 @@ export const templateController = {
     }
   },
 
+  getCategories: async (req, res, next) => {
+    try {
+      const categories = await templateLogic.getCategories();
+      return sendSuccessResponse(res, {
+        message: 'Template categories retrieved successfully',
+        data: { categories },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   getTemplates: async (req, res, next) => {
     try {
       const result = await templateLogic.getTemplates(req.query);

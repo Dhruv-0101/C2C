@@ -30,22 +30,45 @@ export const frameLogic = {
   },
 
   /**
-   * Upload new transparent PNG frame (Admin restricted)
+   * Upload new frame (Admin restricted)
    */
   createFrame: async (payload, fileBuffer) => {
     let overlayPngUrl = payload.overlayPngUrl || null;
+    let previewUrl = payload.previewUrl || null;
 
     if (fileBuffer) {
       const uploadResult = await uploadToCloudinaryBuffer(fileBuffer, 'brandflow/frames');
       overlayPngUrl = uploadResult.url;
-    } else if (payload.base64Overlay || payload.base64Image) {
-      let cleanBase64 = payload.base64Overlay || payload.base64Image;
-      if (cleanBase64.includes(';base64,')) {
-        cleanBase64 = cleanBase64.split(';base64,').pop();
+      previewUrl = uploadResult.url;
+    } else {
+      // 1. Upload transparent overlay WITHOUT text (only shapes)
+      if (payload.base64Overlay) {
+        let cleanOverlayBase64 = payload.base64Overlay;
+        if (cleanOverlayBase64.includes(';base64,')) {
+          cleanOverlayBase64 = cleanOverlayBase64.split(';base64,').pop();
+        }
+        const overlayBuffer = Buffer.from(cleanOverlayBase64, 'base64');
+        const overlayResult = await uploadToCloudinaryBuffer(overlayBuffer, 'brandflow/frames/overlays');
+        overlayPngUrl = overlayResult.url;
       }
-      const buffer = Buffer.from(cleanBase64, 'base64');
-      const uploadResult = await uploadToCloudinaryBuffer(buffer, 'brandflow/frames');
-      overlayPngUrl = uploadResult.url;
+
+      // 2. Upload full frame preview WITH sample text
+      if (payload.base64Image) {
+        let cleanImageBase64 = payload.base64Image;
+        if (cleanImageBase64.includes(';base64,')) {
+          cleanImageBase64 = cleanImageBase64.split(';base64,').pop();
+        }
+        const imageBuffer = Buffer.from(cleanImageBase64, 'base64');
+        const imageResult = await uploadToCloudinaryBuffer(imageBuffer, 'brandflow/frames/previews');
+        previewUrl = imageResult.url;
+      }
+    }
+
+    if (!overlayPngUrl) {
+      overlayPngUrl = previewUrl;
+    }
+    if (!previewUrl) {
+      previewUrl = overlayPngUrl;
     }
 
     if (!overlayPngUrl) {
@@ -56,7 +79,8 @@ export const frameLogic = {
       title: payload.title,
       description: payload.description || null,
       overlayPngUrl: overlayPngUrl,
-      configJson: payload.configJson || null,
+      previewUrl: previewUrl,
+      configJson: payload.blueprint || payload.configJson || null,
       isSystem: false,
       isActive: true,
     };

@@ -29,6 +29,7 @@ import { FrameManager } from "../../../components/admin/FrameManager";
 import { DesignStylesManager } from "../../../components/admin/DesignStylesManager";
 import { BaseTemplateManager } from "../../../components/admin/BaseTemplateManager";
 import { FestivalCalendarView } from "../../../components/admin/FestivalCalendarView";
+import { AdminFestivalManagerView } from "./AdminFestivalManagerView";
 import { AdminTemplateUploadModal } from "../../../components/admin/AdminTemplateUploadModal";
 
 /**
@@ -317,10 +318,10 @@ export const AdminDashboardView = ({
           </div>
         )}
 
-        {/* Interactive Festival Calendar View */}
+        {/* Interactive Festival & Special Days Manager */}
         {(activeTab === "festivals" || activeTab === "calendar") && (
           <div className="animate-in fade-in duration-200 w-full">
-            <FestivalCalendarView isAdmin={true} />
+            <AdminFestivalManagerView />
           </div>
         )}
 

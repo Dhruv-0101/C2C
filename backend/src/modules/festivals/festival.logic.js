@@ -12,10 +12,10 @@ function slugify(text) {
 }
 
 /**
- * Get all festivals (optionally filtered by year)
+ * Get all festivals (optionally filtered by year and active status)
  */
-export async function getFestivals(year) {
-  return await festivalRepository.findAllFestivals(year);
+export async function getFestivals(year, includeInactive = false) {
+  return await festivalRepository.findAllFestivals(year, includeInactive);
 }
 
 /**
@@ -51,6 +51,57 @@ export async function createFestival({ name, description, date, targetRegion, ba
   });
 
   return festival;
+}
+
+/**
+ * Update an existing festival by ID
+ */
+export async function updateFestival(id, data) {
+  const existing = await festivalRepository.findFestivalById(id);
+  if (!existing) {
+    throw new NotFoundError('Festival not found.');
+  }
+
+  const updatePayload = {};
+
+  if (data.name !== undefined) {
+    updatePayload.name = data.name.trim();
+  }
+  if (data.description !== undefined) {
+    updatePayload.description = data.description ? data.description.trim() : null;
+  }
+  if (data.targetRegion !== undefined) {
+    updatePayload.targetRegion = data.targetRegion ? data.targetRegion.trim() : 'India';
+  }
+  if (data.bannerUrl !== undefined) {
+    updatePayload.bannerUrl = data.bannerUrl ? data.bannerUrl.trim() : null;
+  }
+  if (data.isActive !== undefined) {
+    updatePayload.isActive = Boolean(data.isActive);
+  }
+  if (data.date !== undefined) {
+    const dateObj = new Date(data.date);
+    if (isNaN(dateObj.getTime())) {
+      throw new BadRequestError('Invalid date format.');
+    }
+    updatePayload.date = dateObj;
+  }
+
+  if (updatePayload.name || updatePayload.date) {
+    const nameForSlug = updatePayload.name || existing.name;
+    const dateForSlug = updatePayload.date || existing.date;
+    const baseSlug = slugify(nameForSlug);
+    const yearSuffix = new Date(dateForSlug).getFullYear();
+    let slug = `${baseSlug}-${yearSuffix}`;
+
+    const existingSlugMatch = await festivalRepository.findFestivalBySlug(slug);
+    if (existingSlugMatch && existingSlugMatch.id !== id) {
+      slug = `${baseSlug}-${yearSuffix}-${Date.now().toString().slice(-4)}`;
+    }
+    updatePayload.slug = slug;
+  }
+
+  return await festivalRepository.updateFestival(id, updatePayload);
 }
 
 /**

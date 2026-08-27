@@ -108,13 +108,13 @@ export const InteractiveWorkflowDemo = () => {
   };
 
   return (
-    <div className="w-full glass-panel p-5 sm:p-6 rounded-3xl border border-[#2C384E] bg-gradient-to-b from-[#131B2A] via-[#101726] to-[#0B0F17] shadow-2xl relative overflow-hidden text-left">
+    <div className="w-full glass-panel p-4 sm:p-5 rounded-3xl border border-[#2C384E] bg-gradient-to-b from-[#131B2A] via-[#101726] to-[#0B0F17] shadow-2xl relative overflow-hidden text-left">
       {/* Background Glows */}
       <div className="absolute -top-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Compact Top Navigation Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-3.5 mb-5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 mb-3.5">
         <div className="space-y-0.5">
           <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30 uppercase tracking-wider">
             <Sparkles className="w-3 h-3" /> Live Simulator

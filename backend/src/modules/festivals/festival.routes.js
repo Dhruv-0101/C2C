@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { createFestivalSchema } from './festival.validator.js';
+import { createFestivalSchema, updateFestivalSchema } from './festival.validator.js';
 import * as festivalController from './festival.controller.js';
 
 const router = Router();
@@ -15,6 +15,13 @@ router.post(
   authenticate,
   validate(createFestivalSchema),
   festivalController.createFestival
+);
+
+router.put(
+  '/:id',
+  authenticate,
+  validate(updateFestivalSchema),
+  festivalController.updateFestival
 );
 
 router.delete(

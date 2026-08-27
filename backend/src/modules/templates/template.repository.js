@@ -38,15 +38,19 @@ export const templateRepository = {
     }
   },
 
-  findPaginated: async ({ skip, take, festivalId, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
+  findPaginated: async ({ skip, take, festivalId, category, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
     const where = {};
     if (festivalId && festivalId !== 'undefined' && festivalId !== 'null') {
       where.festivalId = festivalId;
+    }
+    if (category && category !== 'undefined' && category !== 'null' && category !== 'ALL') {
+      where.category = { equals: category, mode: 'insensitive' };
     }
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
+        { category: { contains: search, mode: 'insensitive' } },
       ];
     }
 

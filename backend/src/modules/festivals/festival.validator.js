@@ -15,3 +15,17 @@ export const createFestivalSchema = z.object({
     isActive: z.boolean().optional().default(true),
   }),
 });
+
+export const updateFestivalSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, 'Festival ID is required'),
+  }),
+  body: z.object({
+    name: z.string().min(2).max(100).optional(),
+    date: z.string().optional(),
+    description: z.string().optional(),
+    targetRegion: z.string().optional(),
+    bannerUrl: z.string().optional(),
+    isActive: z.boolean().optional(),
+  }),
+});

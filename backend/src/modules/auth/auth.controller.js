@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '../../common/constants/http-status.js';
 import { sendSuccessResponse } from '../../common/utils/response.util.js';
-import { COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_NAME } from './auth.constants.js';
+import { COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_NAME, getCookieOptions } from './auth.constants.js';
 import * as authLogic from './auth.logic.js';
 
 /**
@@ -45,7 +45,7 @@ export async function login(req, res, next) {
       });
     }
 
-    res.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, COOKIE_OPTIONS);
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, getCookieOptions(req.body.rememberMe));
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,

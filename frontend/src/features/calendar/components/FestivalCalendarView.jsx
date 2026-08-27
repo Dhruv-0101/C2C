@@ -213,17 +213,26 @@ export const FestivalCalendarView = ({
                       </div>
                     ))}
 
-                  {/* Festival Badges */}
+                  {/* Festival & Attached Templates Badges */}
                   {hasFestivals &&
-                    cell.festivals.slice(0, 2).map((fest) => (
-                      <div
-                        key={fest.id}
-                        className="px-2 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-semibold flex items-center justify-between gap-1 truncate"
-                      >
-                        <span className="truncate">{fest.name}</span>
-                        <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
-                      </div>
-                    ))}
+                    cell.festivals.slice(0, 2).map((fest) => {
+                      const templateCount = fest.templates?.length || 0;
+                      return (
+                        <div key={fest.id} className="space-y-1">
+                          <div className="px-2 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-semibold flex items-center justify-between gap-1 truncate">
+                            <span className="truncate">{fest.name}</span>
+                            <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+                          </div>
+
+                          {templateCount > 0 && (
+                            <div className="px-2 py-0.5 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-glow">
+                              <span className="truncate">🎨 {templateCount} {templateCount === 1 ? 'Template' : 'Templates'}</span>
+                              <ImageIcon className="w-3 h-3 text-purple-400 shrink-0" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
 
                   {!hasEvents && (
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-slate-500 flex items-center gap-1 justify-center py-1">
@@ -487,7 +496,7 @@ export const FestivalCalendarView = ({
                                   <img
                                     src={template.baseImageUrl}
                                     alt={template.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                    className="w-full h-full object-contain group-hover:scale-105 transition duration-300 bg-[#0B0F17]"
                                   />
                                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-3">
                                     <Button

@@ -6,11 +6,19 @@ import { API_ENDPOINTS } from '../constants/api.constants';
  */
 export const festivalApi = {
   /**
-   * Fetch all festivals (optionally filtered by year)
-   * @param {number|string} [year]
+   * Fetch all festivals (optionally filtered by year & active status)
+   * @param {number|string|{ year?: number|string, includeInactive?: boolean }} [options]
    */
-  getFestivals: async (year) => {
-    const url = year ? `${API_ENDPOINTS.FESTIVALS.BASE}?year=${year}` : API_ENDPOINTS.FESTIVALS.BASE;
+  getFestivals: async (options) => {
+    let year = typeof options === 'object' ? options?.year : options;
+    let includeInactive = typeof options === 'object' ? options?.includeInactive : false;
+
+    const params = new URLSearchParams();
+    if (year) params.append('year', year);
+    if (includeInactive) params.append('includeInactive', 'true');
+
+    const queryString = params.toString();
+    const url = queryString ? `${API_ENDPOINTS.FESTIVALS.BASE}?${queryString}` : API_ENDPOINTS.FESTIVALS.BASE;
     return await api.get(url);
   },
 
@@ -20,6 +28,15 @@ export const festivalApi = {
    */
   createFestival: async (data) => {
     return await api.post(API_ENDPOINTS.FESTIVALS.BASE, data);
+  },
+
+  /**
+   * Update an existing festival by ID
+   * @param {string} id
+   * @param {{ name?: string, date?: string, description?: string, targetRegion?: string, bannerUrl?: string, isActive?: boolean }} data
+   */
+  updateFestival: async (id, data) => {
+    return await api.put(API_ENDPOINTS.FESTIVALS.BY_ID(id), data);
   },
 
   /**

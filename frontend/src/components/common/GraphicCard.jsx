@@ -40,7 +40,7 @@ export const GraphicCard = ({
         <img
           src={imageUrl}
           alt={title}
-          className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
+          className="w-full h-full object-contain group-hover/img:scale-105 transition-transform duration-300 bg-[#0B0F17]"
         />
 
         {/* Hover Zoom Overlay */}

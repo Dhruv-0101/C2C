@@ -3,10 +3,25 @@ import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
 
 export const brandKitLogic = {
   /**
-   * Get user's BrandKit
+   * Get user's BrandKit (with default fallback if not created yet)
    */
   getBrandKit: async (userId) => {
-    return brandKitRepository.findByUserId(userId);
+    let brandKit = await brandKitRepository.findByUserId(userId);
+    if (!brandKit) {
+      return {
+        userId,
+        businessName: 'Sunrise Real Estate',
+        phone: '+91 98765 43210',
+        whatsapp: '+91 98765 43210',
+        address: 'Business Park, MG Road, Mumbai',
+        tagline: 'Premium Luxury Homes & Commercial Spaces',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        country: 'India',
+        websiteUrl: 'https://sunriserealestate.com',
+      };
+    }
+    return brandKit;
   },
 
   /**

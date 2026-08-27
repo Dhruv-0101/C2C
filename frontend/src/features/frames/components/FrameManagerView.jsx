@@ -19,8 +19,16 @@ import {
   ArrowDown,
   Layout,
   RotateCw,
+  RotateCcw,
   Search,
   X,
+  Star,
+  Gem,
+  Bookmark,
+  Shield,
+  Minus,
+  Hexagon,
+  Triangle,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -28,6 +36,7 @@ import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { FeedbackModal } from "@/components/common/FeedbackModal";
 import Pagination from "@/components/common/Pagination";
+import { MASTER_FRAME_PRESETS } from "../../../constants/framePresets";
 
 /**
  * FrameManagerView
@@ -44,6 +53,8 @@ export const FrameManagerView = ({
   errorMsg,
   stageBgColor,
   setStageBgColor,
+  showSelectionBox = true,
+  setShowSelectionBox,
   frameMeta,
   setFrameMeta,
   elements,
@@ -65,6 +76,7 @@ export const FrameManagerView = ({
   handleAddElement,
   updateSelectedElement,
   handleDeleteSelected,
+  handleClearStage,
   handleMoveLayer,
   loadPreset,
   handlePublishCanvaFrame,
@@ -132,6 +144,7 @@ export const FrameManagerView = ({
                 <span>Add Canva Shapes & Input Slots</span>
               </h3>
 
+              {/* Shape & Element Buttons Grid */}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -162,42 +175,116 @@ export const FrameManagerView = ({
 
                 <button
                   type="button"
+                  onClick={() => handleAddElement("STAR")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Star className="w-4 h-4 text-yellow-400" />
+                  <span>+ Star Accent</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("DIAMOND")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Gem className="w-4 h-4 text-sky-400" />
+                  <span>+ Diamond</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("RIBBON")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Bookmark className="w-4 h-4 text-rose-400" />
+                  <span>+ Banner Ribbon</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("TRIANGLE")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Triangle className="w-4 h-4 text-orange-400" />
+                  <span>+ Triangle</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("HEXAGON")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Hexagon className="w-4 h-4 text-purple-400" />
+                  <span>+ Hexagon</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("SHIELD")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                  <span>+ Shield Badge</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("LINE")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Minus className="w-4 h-4 text-cyan-400" />
+                  <span>+ Divider Line</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("IMAGE_SLOT")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <ImageIcon className="w-4 h-4 text-blue-400" />
+                  <span>+ Image Slot</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddElement("FRAME_BORDER")}
+                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
+                >
+                  <Maximize2 className="w-4 h-4 text-amber-400" />
+                  <span>+ Frame Border</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => handleAddElement("TEXT")}
                   className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold hover:border-amber-500 transition flex items-center gap-2"
                 >
-                  <Type className="w-4 h-4 text-emerald-400" />
+                  <Type className="w-4 h-4 text-pink-400" />
                   <span>+ Text Input</span>
                 </button>
               </div>
 
-              {/* Starter Presets */}
-              <div className="pt-2 border-t border-[#2C384E] space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Starter Presets
+              {/* Starter Presets Selector */}
+              <div className="pt-2 border-t border-[#2C384E] space-y-2">
+                <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                  Select 15 Master Premium Presets
                 </label>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => loadPreset("GOLD_REAL_ESTATE")}
-                    className="px-2.5 py-1 rounded bg-slate-800 text-[11px] text-amber-300 font-semibold hover:bg-slate-700"
-                  >
-                    Gold Estate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => loadPreset("DOCTOR_CLINIC")}
-                    className="px-2.5 py-1 rounded bg-slate-800 text-[11px] text-teal-300 font-semibold hover:bg-slate-700"
-                  >
-                    Doctor Capsule
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => loadPreset("BLANK")}
-                    className="px-2.5 py-1 rounded bg-rose-500/10 text-[11px] text-rose-400 font-semibold hover:bg-rose-500/20"
-                  >
-                    Clear All
-                  </button>
-                </div>
+                <select
+                  onChange={(e) => {
+                    const presetKey = e.target.value;
+                    if (presetKey) {
+                      loadPreset(presetKey);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs font-semibold focus:outline-none focus:border-amber-500"
+                >
+                  <option value="">-- Choose Preset to Load & Publish --</option>
+                  {MASTER_FRAME_PRESETS.map((p, idx) => (
+                    <option key={p.key} value={p.key}>
+                      {idx + 1}. {p.title}
+                    </option>
+                  ))}
+                </select>
               </div>
             </Card>
 
@@ -669,6 +756,78 @@ export const FrameManagerView = ({
                         </span>
                       </div>
                     </div>
+
+                    {/* Border Thickness & Style Controls */}
+                    <div className="col-span-2 space-y-2 pt-2 border-t border-[#2C384E]">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                          Border Thickness ({selectedElement.borderWidth || 0}px)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="40"
+                          value={selectedElement.borderWidth || 0}
+                          onChange={(e) =>
+                            updateSelectedElement({
+                              borderWidth: Number(e.target.value),
+                            })
+                          }
+                          className="w-14 px-1.5 py-0.5 rounded bg-[#131B2A] border border-[#2C384E] text-amber-400 text-xs font-mono font-bold text-center"
+                        />
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="40"
+                        value={selectedElement.borderWidth || 0}
+                        onChange={(e) =>
+                          updateSelectedElement({
+                            borderWidth: Number(e.target.value),
+                          })
+                        }
+                        className="w-full accent-amber-500 cursor-pointer"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-300 uppercase block">
+                            Border Style
+                          </label>
+                          <select
+                            value={selectedElement.borderStyle || "SOLID"}
+                            onChange={(e) =>
+                              updateSelectedElement({
+                                borderStyle: e.target.value,
+                              })
+                            }
+                            className="w-full px-2 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold"
+                          >
+                            <option value="SOLID">Solid Line ───</option>
+                            <option value="DASHED">Dashed ╌╌╌</option>
+                            <option value="DOTTED">Dotted • • •</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-300 uppercase block">
+                            Corner Radius
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="200"
+                            value={selectedElement.borderRadius || 0}
+                            onChange={(e) =>
+                              updateSelectedElement({
+                                borderRadius: Number(e.target.value),
+                              })
+                            }
+                            className="w-full px-2 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -774,6 +933,29 @@ export const FrameManagerView = ({
                       }`}
                     >
                       Dark Canvas
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSelectionBox && setShowSelectionBox(!showSelectionBox)}
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
+                        showSelectionBox
+                          ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                          : "bg-slate-800/60 text-slate-400"
+                      }`}
+                      title="Toggle selection box outline on/off"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{showSelectionBox ? "Outline: ON" : "Outline: OFF"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleClearStage}
+                      className="px-2.5 py-1 rounded-lg font-bold transition bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 flex items-center gap-1"
+                      title="Clear canvas stage & start designing frame from scratch"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Clear / Start Scratch 🧹</span>
                     </button>
                   </div>
 

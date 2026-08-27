@@ -4,6 +4,8 @@ import { seedCategories } from './seeds/categories.seed.js';
 import { seedFestivals } from './seeds/festivals.seed.js';
 import { seedDesignStyles } from './seeds/designStyles.seed.js';
 import { seedFrames } from './seeds/frames.seed.js';
+import { seedTemplates } from './seeds/templates.seed.js';
+import { seedTemplateCategories } from './seeds/templateCategories.seed.js';
 
 const prisma = new PrismaClient();
 
@@ -22,8 +24,14 @@ async function main() {
   // 4. Seed Master Design Styles & Color Palettes
   await seedDesignStyles(prisma);
 
-  // 5. Seed Master Preset Frames
+  // 5. Seed Master Template Categories
+  await seedTemplateCategories(prisma);
+
+  // 6. Seed Master Preset Frames
   await seedFrames(prisma);
+
+  // 7. Seed Master Default Templates
+  await seedTemplates(prisma);
 
   console.log('✅ Seeding completed successfully!');
 }

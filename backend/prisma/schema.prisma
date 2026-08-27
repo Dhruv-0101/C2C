@@ -179,7 +179,8 @@ model Frame {
   id            String   @id @default(uuid())
   title         String
   description   String?
-  overlayPngUrl String   // Cloudinary PNG URL of transparent frame overlay / preview
+  overlayPngUrl String   // Cloudinary PNG URL of transparent frame overlay WITHOUT text
+  previewUrl    String?  // Cloudinary PNG URL of frame preview WITH sample text
   configJson    Json?    // Vector shapes, slots, fonts, and positions JSON config
   isSystem      Boolean  @default(true)
   isActive      Boolean  @default(true)
@@ -253,23 +254,41 @@ model DesignStyle {
   posts Post[]
 }
 
+model TemplateCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?  @default("🎨")
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  templates Template[]
+}
+
 model Template {
-  id             String    @id @default(uuid())
-  title          String
-  description    String?
-  festivalId     String?
-  festival       Festival? @relation(fields: [festivalId], references: [id], onDelete: SetNull)
-  baseImageUrl   String
-  isCustomUpload Boolean   @default(true)
-  isActive       Boolean   @default(true)
-  createdBy      String?
-  creator        User?     @relation("TemplateCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                 String            @id @default(uuid())
+  title              String
+  description        String?
+  category           String            @default("GENERAL")
+  templateCategoryId String?
+  templateCategory   TemplateCategory? @relation(fields: [templateCategoryId], references: [id], onDelete: SetNull)
+  festivalId         String?
+  festival           Festival?         @relation(fields: [festivalId], references: [id], onDelete: SetNull)
+  baseImageUrl       String
+  isCustomUpload     Boolean           @default(true)
+  isActive           Boolean           @default(true)
+  createdBy          String?
+  creator            User?             @relation("TemplateCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   posts Post[]
 
   @@index([festivalId])
+  @@index([category])
+  @@index([templateCategoryId])
 }
 
 model Post {

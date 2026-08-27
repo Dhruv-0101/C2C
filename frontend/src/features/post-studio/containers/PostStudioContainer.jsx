@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { brandKitApi } from "../../../services/brandkit.api";
-import { postApi } from "../../../services/post.api";
+import { templateApi } from "../../../services/template.api";
+import { festivalApi } from "../../../services/festival.api";
 import { useTemplates } from "../../../hooks/useTemplates";
 import { useFrames } from "../../../hooks/useFrames";
 import { useCanvasCompositor } from "../../../hooks/useCanvasCompositor";
@@ -36,6 +37,10 @@ export const PostStudioContainer = () => {
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
 
+  // Template Category & Festival Filter States
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedFestival, setSelectedFestival] = useState("");
+
   // Template Search & Central Pagination State
   const [templatePage, setTemplatePage] = useState(1);
   const [templateLimit, setTemplateLimit] = useState(6);
@@ -46,7 +51,7 @@ export const PostStudioContainer = () => {
   const [frameLimit, setFrameLimit] = useState(6);
   const [frameSearch, setFrameSearch] = useState("");
 
-  // Modular Hook for Graphic Templates
+  // Modular Hook for Graphic Templates (Combined category + festival filtering)
   const {
     templates,
     meta: templatesMeta,
@@ -55,7 +60,24 @@ export const PostStudioContainer = () => {
     page: templatePage,
     limit: templateLimit,
     search: templateSearch,
+    category: selectedCategory,
+    festivalId: selectedFestival,
   });
+
+  // Master Festivals Query
+  const { data: festivalResponse } = useQuery({
+    queryKey: QUERY_KEYS.FESTIVALS.ALL,
+    queryFn: () => festivalApi.getFestivals(),
+  });
+
+  // Master Categories Query
+  const { data: categoryResponse } = useQuery({
+    queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES,
+    queryFn: () => templateApi.getTemplateCategories(),
+  });
+
+  const festivals = festivalResponse?.data?.festivals || [];
+  const categoriesList = categoryResponse?.data?.categories || [];
 
   // Modular Hook for Canva Frames
   const {
@@ -119,27 +141,20 @@ export const PostStudioContainer = () => {
 
   // Populate customDetails whenever brandKit or selectedFrame loads
   useEffect(() => {
-    const newDetails = {};
-
-    if (brandKit?.businessName) newDetails.businessName = brandKit.businessName;
-    if (brandKit?.phone || brandKit?.whatsapp)
-      newDetails.phone = brandKit.phone || brandKit.whatsapp;
-    if (brandKit?.whatsapp) newDetails.whatsapp = brandKit.whatsapp;
-    if (brandKit?.email) newDetails.email = brandKit.email;
-    if (brandKit?.instagramHandle)
-      newDetails.instagramHandle = brandKit.instagramHandle;
-    if (brandKit?.facebookHandle)
-      newDetails.facebookHandle = brandKit.facebookHandle;
-    if (brandKit?.address) newDetails.address = brandKit.address;
-    if (brandKit?.city) newDetails.city = brandKit.city;
-    if (brandKit?.state) newDetails.state = brandKit.state;
-    if (brandKit?.country) newDetails.country = brandKit.country;
-    if (brandKit?.websiteUrl) newDetails.websiteUrl = brandKit.websiteUrl;
-    if (brandKit?.tagline) newDetails.tagline = brandKit.tagline;
-
     setCustomDetails((prev) => ({
       ...prev,
-      ...newDetails,
+      businessName: prev.businessName || brandKit?.businessName || "Sunrise Real Estate",
+      phone: prev.phone || brandKit?.phone || brandKit?.whatsapp || "+91 98765 43210",
+      whatsapp: prev.whatsapp || brandKit?.whatsapp || "+91 98765 43210",
+      email: prev.email || brandKit?.email || "contact@sunriserealestate.com",
+      instagramHandle: prev.instagramHandle || brandKit?.instagramHandle || "@sunriserealestate",
+      facebookHandle: prev.facebookHandle || brandKit?.facebookHandle || "sunriserealestate",
+      address: prev.address || brandKit?.address || "Business Park, MG Road, Mumbai",
+      city: prev.city || brandKit?.city || "Mumbai",
+      state: prev.state || brandKit?.state || "Maharashtra",
+      country: prev.country || brandKit?.country || "India",
+      websiteUrl: prev.websiteUrl || brandKit?.websiteUrl || "https://sunriserealestate.com",
+      tagline: prev.tagline || brandKit?.tagline || "Premium Luxury Homes & Commercial Spaces",
     }));
   }, [brandKit, selectedFrame]);
 
@@ -220,6 +235,12 @@ export const PostStudioContainer = () => {
         customBaseImage={customBaseImage}
         setCustomBaseImage={setCustomBaseImage}
         saveSuccess={saveSuccess}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedFestival={selectedFestival}
+        setSelectedFestival={setSelectedFestival}
+        categoriesList={categoriesList}
+        festivals={festivals}
         templates={templates}
         templatesMeta={templatesMeta}
         isLoadingTemplates={isLoadingTemplates}
@@ -234,6 +255,7 @@ export const PostStudioContainer = () => {
         setFrameLimit={setFrameLimit}
         customDetails={customDetails}
         setCustomDetails={setCustomDetails}
+        brandKit={brandKit}
         currentTemplate={currentTemplate}
         isRendering={isRendering}
         savePostMutation={savePostMutation}

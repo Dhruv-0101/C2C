@@ -18,6 +18,7 @@ export const QUERY_KEYS = {
     ALL: ['templates'],
     LIST: (params = {}) => ['templates', 'list', params],
     BY_ID: (id) => ['templates', id],
+    CATEGORIES: ['templateCategories'],
   },
   FESTIVALS: {
     ALL: ['festivals'],

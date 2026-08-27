@@ -1,4 +1,50 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { drawVectorShapePath } from './useFrameCanvasEngine';
+
+const drawImageAspectCover = (ctx, img, dx, dy, dWidth, dHeight) => {
+  if (!img) return;
+  const imgW = img.naturalWidth || img.width || dWidth;
+  const imgH = img.naturalHeight || img.height || dHeight;
+  const imgRatio = imgW / imgH;
+  const targetRatio = dWidth / dHeight;
+
+  let sx = 0, sy = 0, sW = imgW, sH = imgH;
+
+  if (imgRatio > targetRatio) {
+    sW = imgH * targetRatio;
+    sx = (imgW - sW) / 2;
+  } else {
+    sH = imgW / targetRatio;
+    sy = (imgH - sH) / 2;
+  }
+
+  ctx.drawImage(img, sx, sy, sW, sH, dx, dy, dWidth, dHeight);
+};
+
+const drawImageAspectContain = (ctx, img, dx, dy, dWidth, dHeight) => {
+  if (!img) return;
+  const imgW = img.naturalWidth || img.width || dWidth;
+  const imgH = img.naturalHeight || img.height || dHeight;
+  const imgRatio = imgW / imgH;
+  const targetRatio = dWidth / dHeight;
+
+  let renderW = dWidth;
+  let renderH = dHeight;
+  let renderX = dx;
+  let renderY = dy;
+
+  if (imgRatio > targetRatio) {
+    renderH = dWidth / imgRatio;
+    renderY = dy + (dHeight - renderH) / 2;
+  } else {
+    renderW = dHeight * imgRatio;
+    renderX = dx + (dWidth - renderW) / 2;
+  }
+
+  ctx.fillStyle = '#0B0F17';
+  ctx.fillRect(dx, dy, dWidth, dHeight);
+  ctx.drawImage(img, 0, 0, imgW, imgH, renderX, renderY, renderW, renderH);
+};
 
 /**
  * Enterprise HTML5 2D Canvas Compositor Hook
@@ -77,11 +123,11 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
       // Clear previous canvas frame
       ctx.clearRect(0, 0, 1080, 1080);
 
-      // 1. LAYER 1: Base Graphic Background (1080x1080)
+      // 1. LAYER 1: Base Graphic Background (1080x1080 full uncropped contain)
       if (baseImg) {
-        ctx.drawImage(baseImg, 0, 0, 1080, 1080);
+        drawImageAspectContain(ctx, baseImg, 0, 0, 1080, 1080);
       } else {
-        ctx.fillStyle = '#0F172A';
+        ctx.fillStyle = '#0B0F17';
         ctx.fillRect(0, 0, 1080, 1080);
       }
 
@@ -120,6 +166,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
               }
 
               const isCircle = slot.type === 'CIRCLE' || slot.dynamicSlot === 'AVATAR_CIRCLE';
+              const targetH = slot.height || slot.width;
               if (isCircle) {
                 const radius = slot.width / 2;
                 const cx = slot.x + radius;
@@ -129,7 +176,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
                 ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
                 ctx.closePath();
                 ctx.clip();
-                ctx.drawImage(slotImg, slot.x, slot.y, slot.width, slot.height || slot.width);
+                drawImageAspectCover(ctx, slotImg, slot.x, slot.y, slot.width, targetH);
                 ctx.restore();
 
                 if (slot.borderWidth > 0 || slot.borderColor) {
@@ -140,11 +187,11 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
                   ctx.stroke();
                 }
               } else {
-                ctx.drawImage(slotImg, slot.x, slot.y, slot.width, slot.height || slot.width);
+                drawImageAspectCover(ctx, slotImg, slot.x, slot.y, slot.width, targetH);
                 if (slot.borderWidth > 0) {
                   ctx.strokeStyle = slot.borderColor || '#FFFFFF';
                   ctx.lineWidth = slot.borderWidth;
-                  ctx.strokeRect(slot.x, slot.y, slot.width, slot.height || slot.width);
+                  ctx.strokeRect(slot.x, slot.y, slot.width, targetH);
                 }
               }
 
@@ -162,7 +209,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
           ctx.strokeStyle = '#E2E8F0';
           ctx.lineWidth = 2;
           ctx.stroke();
-          ctx.drawImage(logoImg, 35, 35, 110, 110);
+          drawImageAspectCover(ctx, logoImg, 35, 35, 110, 110);
         }
 
         if (avatarImg && showAvatar) {
@@ -176,7 +223,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
           ctx.arc(ax, ay, radius, 0, Math.PI * 2, true);
           ctx.closePath();
           ctx.clip();
-          ctx.drawImage(avatarImg, ax - radius, ay - radius, avatarSize, avatarSize);
+          drawImageAspectCover(ctx, avatarImg, ax - radius, ay - radius, avatarSize, avatarSize);
           ctx.restore();
 
           ctx.beginPath();

@@ -1,63 +1,59 @@
 export const DEFAULT_FESTIVALS = [
   {
-    name: "New Year's Day",
-    slug: 'new-years-day-2026',
-    date: '2026-01-01',
-    description: 'Kickstart new year promotions and resolutions.',
-  },
-  {
-    name: 'Republic Day',
-    slug: 'republic-day-2026',
-    date: '2026-01-26',
-    description: 'National pride offers and patriotic campaigns.',
-  },
-  {
-    name: 'Holi - Festival of Colors',
-    slug: 'holi-2026',
-    date: '2026-03-04',
-    description: 'Vibrant color graphics and festive discounts.',
-  },
-  {
-    name: "International Women's Day",
-    slug: 'womens-day-2026',
-    date: '2026-03-08',
-    description: 'Celebrate women empowerment & exclusive offers.',
-  },
-  {
-    name: "National Doctor's Day",
-    slug: 'doctors-day-2026',
-    date: '2026-07-01',
-    description: 'Tribute to healthcare professionals & wellness offers.',
-  },
-  {
-    name: 'Independence Day',
-    slug: 'independence-day-2026',
-    date: '2026-08-15',
-    description: 'Freedom sale campaigns & patriotic greetings.',
+    name: 'Ganesh Chaturthi',
+    slug: 'ganesh-chaturthi-2026',
+    date: '2026-09-14',
+    description: 'Lord Ganesha festive greetings and special promotional offers.',
+    bannerUrl: 'https://images.unsplash.com/photo-1631548674996-5e04cb2a7bc7?q=80&w=800&auto=format&fit=crop',
   },
   {
     name: 'Gandhi Jayanti',
     slug: 'gandhi-jayanti-2026',
     date: '2026-10-02',
-    description: 'Tribute to Mahatma Gandhi & peace messages.',
+    description: 'Tribute to Mahatma Gandhi, peace messages & khadi offers.',
+    bannerUrl: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    name: 'Navratri & Durga Puja',
+    slug: 'navratri-2026',
+    date: '2026-10-11',
+    description: 'Vibrant Garba night specials & 9-day festive deals.',
+    bannerUrl: 'https://images.unsplash.com/photo-1604537466158-719b1972feb8?q=80&w=800&auto=format&fit=crop',
   },
   {
     name: 'Dussehra / Vijayadashami',
     slug: 'dussehra-2026',
     date: '2026-10-20',
-    description: 'Victory of good over evil promotional offers.',
+    description: 'Victory of good over evil promotional sales and discounts.',
+    bannerUrl: 'https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?q=80&w=800&auto=format&fit=crop',
   },
   {
     name: 'Diwali - Festival of Lights',
     slug: 'diwali-2026',
     date: '2026-11-08',
-    description: 'Bumper festival sales, gifting & festive wishes.',
+    description: 'Bumper festival sales, gifting offers & Diwali greetings.',
+    bannerUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop',
   },
   {
-    name: 'Christmas Day',
+    name: "Children's Day & Bhai Dooj",
+    slug: 'bhai-dooj-2026',
+    date: '2026-11-14',
+    description: 'Family festive greetings & special gift box promotions.',
+    bannerUrl: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    name: 'Christmas Celebration',
     slug: 'christmas-2026',
     date: '2026-12-25',
-    description: 'Year-end holiday deals & Christmas greetings.',
+    description: 'Year-end holiday mega deals & Christmas greetings.',
+    bannerUrl: 'https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    name: "New Year's Day 2027",
+    slug: 'new-years-day-2027',
+    date: '2027-01-01',
+    description: 'Kickstart 2027 with early bird offers and new launches.',
+    bannerUrl: 'https://images.unsplash.com/photo-1467810563316-b5476525c0f9?q=80&w=800&auto=format&fit=crop',
   },
 ];
 
@@ -73,16 +69,18 @@ export async function seedFestivals(prisma) {
         name: fest.name,
         date: new Date(fest.date),
         description: fest.description,
+        bannerUrl: fest.bannerUrl,
       },
       create: {
         name: fest.name,
         slug: fest.slug,
         date: new Date(fest.date),
         description: fest.description,
+        bannerUrl: fest.bannerUrl,
         targetRegion: 'India',
         isActive: true,
       },
     });
   }
-  console.log(`🎉 Default Master Festivals & Special Days seeded (${DEFAULT_FESTIVALS.length} festivals).`);
+  console.log(`🎉 Default Master Festivals & Special Days seeded (${DEFAULT_FESTIVALS.length} upcoming festivals).`);
 }

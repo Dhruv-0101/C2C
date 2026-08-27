@@ -4,14 +4,15 @@ import { QUERY_KEYS } from '@/constants/queryKeys';
 
 /**
  * Custom TanStack Query Hook for Festival Calendar Data & Operations
+ * @param {{ year?: number|string, includeInactive?: boolean }} [options={ includeInactive: true }]
  */
-export const useFestivals = () => {
+export const useFestivals = (options = { includeInactive: true }) => {
   const queryClient = useQueryClient();
 
   const festivalsQuery = useQuery({
-    queryKey: QUERY_KEYS.FESTIVALS.ALL,
+    queryKey: [...QUERY_KEYS.FESTIVALS.ALL, options],
     queryFn: async () => {
-      const response = await festivalApi.getFestivals();
+      const response = await festivalApi.getFestivals(options);
       // Handle array vs object response structures safely
       if (Array.isArray(response.data)) {
         return response.data;
@@ -34,6 +35,13 @@ export const useFestivals = () => {
     },
   });
 
+  const updateFestivalMutation = useMutation({
+    mutationFn: ({ id, data }) => festivalApi.updateFestival(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL });
+    },
+  });
+
   const deleteFestivalMutation = useMutation({
     mutationFn: (id) => festivalApi.deleteFestival(id),
     onSuccess: () => {
@@ -50,6 +58,9 @@ export const useFestivals = () => {
     createFestival: createFestivalMutation.mutateAsync,
     isCreating: createFestivalMutation.isPending,
     createError: createFestivalMutation.error,
+    updateFestival: (id, data) => updateFestivalMutation.mutateAsync({ id, data }),
+    isUpdating: updateFestivalMutation.isPending,
+    updateError: updateFestivalMutation.error,
     deleteFestival: deleteFestivalMutation.mutateAsync,
     isDeleting: deleteFestivalMutation.isPending,
   };

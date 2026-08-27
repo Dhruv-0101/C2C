@@ -38,10 +38,18 @@ export const ImageLightbox = ({ isOpen, item, onClose, onDownload }) => {
       onClick={onClose}
       className="fixed inset-0 w-screen h-screen z-[99999] flex flex-col items-center justify-center p-4 sm:p-8 bg-black/95 backdrop-blur-lg animate-in fade-in duration-200 select-none cursor-zoom-out"
     >
-      {/* Lightbox Top Control Bar */}
+      {/* Center Image Container */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-4 left-4 right-4 max-w-5xl mx-auto flex items-center justify-between z-10 bg-[#131B2A]/90 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-[#2C384E] shadow-2xl"
+        className="relative max-w-4xl max-h-[68vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-[#2C384E] bg-[#0B0F17] flex items-center justify-center my-auto mb-20 cursor-default"
+      >
+        <img src={imageUrl} alt={title} className="w-full h-full object-contain" />
+      </div>
+
+      {/* Lightbox Bottom Details & Control Bar */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="absolute bottom-5 left-4 right-4 max-w-4xl mx-auto flex items-center justify-between z-10 bg-[#131B2A]/95 backdrop-blur-xl px-6 py-3.5 rounded-2xl border border-[#2C384E] shadow-2xl"
       >
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -75,18 +83,6 @@ export const ImageLightbox = ({ isOpen, item, onClose, onDownload }) => {
           </button>
         </div>
       </div>
-
-      {/* Center Image Container */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl max-h-[82vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-[#2C384E] bg-[#0B0F17] flex items-center justify-center my-auto cursor-default"
-      >
-        <img src={imageUrl} alt={title} className="w-full h-full object-contain" />
-      </div>
-
-      <p className="text-xs text-slate-400 mt-3 font-mono">
-        Click anywhere outside or press ESC / X to exit full screen view
-      </p>
     </div>,
     document.body,
   );

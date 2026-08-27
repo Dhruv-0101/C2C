@@ -82,6 +82,7 @@ export const LoginView = ({
                 type="checkbox"
                 disabled={isAuthenticating || !!successMessage}
                 className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500/50"
+                {...register("rememberMe")}
               />
               <span>Remember me</span>
             </label>

@@ -8,13 +8,16 @@ import { QUERY_KEYS } from "../../../constants/queryKeys";
 import { readImageAsBase64 } from "../../../utils/file.utils";
 import { BaseTemplateManagerView } from "../components/BaseTemplateManagerView";
 
+import { TemplateCreateView } from "../components/TemplateCreateView";
+
 /**
  * BaseTemplateManagerContainer
- * Container component handling base graphic templates queries, image upload readers, and modal states.
+ * Container component handling base graphic templates queries, image upload readers, and full-screen view switching.
  */
 export const BaseTemplateManagerContainer = () => {
   const queryClient = useQueryClient();
   const { modalProps, showSuccess, showError } = useFeedbackModal();
+  const [viewMode, setViewMode] = useState("list"); // 'list' | 'create'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fullscreenTemplate, setFullscreenTemplate] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -22,6 +25,7 @@ export const BaseTemplateManagerContainer = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    category: "GENERAL",
     festivalId: "",
     baseImageUrl: "",
   });
@@ -30,6 +34,7 @@ export const BaseTemplateManagerContainer = () => {
   const [limit, setLimit] = useState(8);
   const [search, setSearch] = useState("");
   const [selectedFestival, setSelectedFestival] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const {
     templates,
@@ -40,6 +45,7 @@ export const BaseTemplateManagerContainer = () => {
     limit,
     search,
     festivalId: selectedFestival,
+    category: selectedCategory,
   });
 
   const { data: festivalResponse } = useQuery({
@@ -47,7 +53,13 @@ export const BaseTemplateManagerContainer = () => {
     queryFn: () => festivalApi.getFestivals(),
   });
 
+  const { data: categoryResponse } = useQuery({
+    queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES,
+    queryFn: () => templateApi.getTemplateCategories(),
+  });
+
   const festivals = festivalResponse?.data?.festivals || [];
+  const categoriesList = categoryResponse?.data?.categories || [];
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -66,7 +78,9 @@ export const BaseTemplateManagerContainer = () => {
     mutationFn: (data) => templateApi.createTemplate(data),
     onSuccess: (res, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
       setIsModalOpen(false);
+      setViewMode("list");
       resetForm();
       showSuccess(
         "Base Template Published! 🎨",
@@ -110,18 +124,49 @@ export const BaseTemplateManagerContainer = () => {
   };
 
   const handleFormSubmit = (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!formData.title.trim() || !formData.baseImageUrl) {
       setErrorMsg(
         "Please enter a template title and upload an image from your computer.",
       );
       return;
     }
-    createTemplateMutation.mutate(formData);
+    if (formData.category === "NEW" && !formData.newCategoryName?.trim()) {
+      setErrorMsg("Please enter a name for your custom category.");
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      category: formData.category === "NEW" ? formData.newCategoryName.trim() : formData.category,
+      newCategoryName: formData.category === "NEW" ? formData.newCategoryName.trim() : undefined,
+    };
+
+    createTemplateMutation.mutate(payload);
   };
+
+  if (viewMode === "create") {
+    return (
+      <TemplateCreateView
+        onBack={() => {
+          setViewMode("list");
+          resetForm();
+        }}
+        formData={formData}
+        setFormData={setFormData}
+        handleFileChange={handleFileChange}
+        handleFormSubmit={handleFormSubmit}
+        errorMsg={errorMsg}
+        categoriesList={categoriesList}
+        festivals={festivals}
+        isUploading={createTemplateMutation.isPending}
+      />
+    );
+  }
 
   return (
     <BaseTemplateManagerView
+      onOpenCreate={() => setViewMode("create")}
       modalProps={modalProps}
       isModalOpen={isModalOpen}
       setIsModalOpen={setIsModalOpen}
@@ -138,10 +183,13 @@ export const BaseTemplateManagerContainer = () => {
       setSearch={setSearch}
       selectedFestival={selectedFestival}
       setSelectedFestival={setSelectedFestival}
+      selectedCategory={selectedCategory}
+      setSelectedCategory={setSelectedCategory}
       templates={templates}
       templateMeta={templateMeta}
       isLoadingTemplates={isLoadingTemplates}
       festivals={festivals}
+      categoriesList={categoriesList}
       handleFileChange={handleFileChange}
       createTemplateMutation={createTemplateMutation}
       deleteTemplateMutation={deleteTemplateMutation}

@@ -13,6 +13,7 @@ import {
 const router = Router();
 
 // Public / User Endpoints with pagination validation
+router.get('/categories', templateController.getCategories);
 router.get('/', validate(getTemplatesQuerySchema), templateController.getTemplates);
 router.post('/composite-post', validate(compositePostSchema), templateController.compositePost);
 

@@ -1,9 +1,10 @@
 import { templateRepository } from './template.repository.js';
+import { templateCategoryRepository } from './templateCategory.repository.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
 
 export const templateLogic = {
-  uploadAdminTemplate: async ({ fileBuffer, base64Image, title, description, festivalId, creatorId }) => {
+  uploadAdminTemplate: async ({ fileBuffer, base64Image, title, description, category, newCategoryName, festivalId, creatorId }) => {
     let imageUrl = null;
 
     if (fileBuffer) {
@@ -21,9 +22,19 @@ export const templateLogic = {
       throw new Error('Image file or base64 image data is required.');
     }
 
+    let catName = (newCategoryName || (category !== 'NEW' ? category : '') || 'General Business').trim();
+    if (catName === 'NEW') catName = 'General Business';
+
+    let catRecord = await templateCategoryRepository.findByNameOrSlug(catName);
+    if (!catRecord && catName) {
+      catRecord = await templateCategoryRepository.create({ name: catName, isSystem: false });
+    }
+
     return templateRepository.create({
       title: title || 'Festival Base Template',
       description: description || null,
+      category: catRecord ? catRecord.name : catName,
+      templateCategoryId: catRecord ? catRecord.id : null,
       festivalId: festivalId || null,
       baseImageUrl: imageUrl,
       isCustomUpload: true,
@@ -32,9 +43,19 @@ export const templateLogic = {
   },
 
   createTemplate: async (data, creatorId) => {
+    let catName = (data.newCategoryName || (data.category !== 'NEW' ? data.category : '') || 'General Business').trim();
+    if (catName === 'NEW') catName = 'General Business';
+
+    let catRecord = await templateCategoryRepository.findByNameOrSlug(catName);
+    if (!catRecord && catName) {
+      catRecord = await templateCategoryRepository.create({ name: catName, isSystem: false });
+    }
+
     return templateRepository.create({
       title: data.title,
       description: data.description,
+      category: catRecord ? catRecord.name : catName,
+      templateCategoryId: catRecord ? catRecord.id : null,
       festivalId: data.festivalId || null,
       baseImageUrl: data.baseImageUrl,
       isCustomUpload: true,
@@ -42,13 +63,18 @@ export const templateLogic = {
     });
   },
 
+  getCategories: async () => {
+    return templateCategoryRepository.findMany();
+  },
+
   getTemplates: async (queryParams = {}) => {
     const pagination = parsePaginationParams(queryParams);
-    const { festivalId } = queryParams;
+    const { festivalId, category } = queryParams;
 
     const { templates, totalCount } = await templateRepository.findPaginated({
       ...pagination,
       festivalId: festivalId || undefined,
+      category: category || undefined,
     });
 
     const paginatedResponse = buildPaginatedResponse({

@@ -1,5 +1,90 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
+/**
+ * Reusable helper to draw vector shape paths onto 2D Canvas context.
+ * Supports RECTANGLE, CAPSULE, CIRCLE, STAR, DIAMOND, TRIANGLE, HEXAGON, SHIELD, RIBBON, LINE, and IMAGE_SLOT.
+ */
+export const drawVectorShapePath = (ctx, el) => {
+  const { x, y, width: w, height: h, type, borderRadius } = el;
+  ctx.beginPath();
+
+  if (type === 'RECTANGLE' || type === 'CAPSULE') {
+    const r = type === 'CAPSULE' ? h / 2 : borderRadius || 0;
+    ctx.roundRect(x, y, w, h, r);
+  } else if (type === 'CIRCLE') {
+    const radius = w / 2;
+    ctx.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+  } else if (type === 'STAR') {
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const outerR = Math.min(w, h) / 2;
+    const innerR = outerR * 0.4;
+    const spikes = 5;
+    let rot = (Math.PI / 2) * 3;
+    let step = Math.PI / spikes;
+
+    ctx.moveTo(cx, cy - outerR);
+    for (let i = 0; i < spikes; i++) {
+      let px = cx + Math.cos(rot) * outerR;
+      let py = cy + Math.sin(rot) * outerR;
+      ctx.lineTo(px, py);
+      rot += step;
+
+      px = cx + Math.cos(rot) * innerR;
+      py = cy + Math.sin(rot) * innerR;
+      ctx.lineTo(px, py);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerR);
+    ctx.closePath();
+  } else if (type === 'DIAMOND') {
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    ctx.moveTo(cx, y);
+    ctx.lineTo(x + w, cy);
+    ctx.lineTo(cx, y + h);
+    ctx.lineTo(x, cy);
+    ctx.closePath();
+  } else if (type === 'TRIANGLE') {
+    ctx.moveTo(x + w / 2, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.closePath();
+  } else if (type === 'HEXAGON') {
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const r = Math.min(w, h) / 2;
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i - Math.PI / 6;
+      const px = cx + r * Math.cos(angle);
+      const py = cy + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  } else if (type === 'SHIELD') {
+    ctx.moveTo(x + w / 2, y);
+    ctx.lineTo(x + w, y + h * 0.25);
+    ctx.quadraticCurveTo(x + w, y + h * 0.75, x + w / 2, y + h);
+    ctx.quadraticCurveTo(x, y + h * 0.75, x, y + h * 0.25);
+    ctx.closePath();
+  } else if (type === 'RIBBON') {
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w - 20, y);
+    ctx.lineTo(x + w, y + h / 2);
+    ctx.lineTo(x + w - 20, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.closePath();
+  } else if (type === 'LINE') {
+    ctx.moveTo(x, y + h / 2);
+    ctx.lineTo(x + w, y + h / 2);
+  } else if (type === 'IMAGE_SLOT') {
+    ctx.roundRect(x, y, w, h, borderRadius || 8);
+  } else if (type === 'FRAME_BORDER') {
+    ctx.roundRect(x, y, w, h, borderRadius || 16);
+  }
+};
+
 const defaultElements = [
   {
     id: 'el-footer-bg',
@@ -103,6 +188,7 @@ const defaultElements = [
 export const useFrameCanvasEngine = (activeTab = 'canva') => {
   const canvasRef = useRef(null);
   const [stageBgColor, setStageBgColor] = useState('WHITE');
+  const [showSelectionBox, setShowSelectionBox] = useState(true);
   const [elements, setElements] = useState(defaultElements);
   const [selectedId, setSelectedId] = useState('el-footer-bg');
 
@@ -166,57 +252,7 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
         ctx.translate(-cx, -cy);
       }
 
-      if (el.type === 'RECTANGLE' || el.type === 'CAPSULE') {
-        ctx.fillStyle = el.fillColor || '#000000';
-        ctx.beginPath();
-        const r = el.type === 'CAPSULE' ? el.height / 2 : el.borderRadius || 0;
-        ctx.roundRect(el.x, el.y, el.width, el.height, r);
-        ctx.fill();
-
-        if (el.borderWidth > 0) {
-          ctx.strokeStyle = el.borderColor || '#FFFFFF';
-          ctx.lineWidth = el.borderWidth;
-          ctx.stroke();
-        }
-
-        if (
-          el.dynamicSlot === 'LOGO_BOX' ||
-          (el.slotCategory === 'IMAGE_SLOT' && el.type !== 'CIRCLE')
-        ) {
-          ctx.fillStyle =
-            el.fillColor === '#FFFFFF' || !el.fillColor ? '#0B0F17' : '#FFFFFF';
-          ctx.font = 'bold 20px "Space Grotesk", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('🏢 LOGO', el.x + el.width / 2, el.y + el.height / 2);
-        }
-      } else if (el.type === 'CIRCLE') {
-        const radius = el.width / 2;
-        const cx = el.x + radius;
-        const cy = el.y + radius;
-
-        ctx.fillStyle = el.fillColor || '#1E293B';
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (el.borderWidth > 0) {
-          ctx.strokeStyle = el.borderColor || '#EAB308';
-          ctx.lineWidth = el.borderWidth;
-          ctx.stroke();
-        }
-
-        if (
-          el.dynamicSlot === 'AVATAR_CIRCLE' ||
-          (el.slotCategory === 'IMAGE_SLOT' && el.type === 'CIRCLE')
-        ) {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = 'bold 16px "Space Grotesk", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('👤 PHOTO', cx, cy);
-        }
-      } else if (el.type === 'TEXT') {
+      if (el.type === 'TEXT') {
         const fontFamily = el.fontFamily || 'Space Grotesk';
         const fontWeight = el.fontWeight || 'bold';
         const fontSize = el.fontSize || 24;
@@ -231,24 +267,72 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
               ? el.x + el.width
               : el.x;
         ctx.fillText(el.text || 'Sample Text', tx, el.y);
+      } else {
+        // Draw Vector Shape (RECTANGLE, CAPSULE, CIRCLE, STAR, DIAMOND, TRIANGLE, HEXAGON, SHIELD, RIBBON, LINE, IMAGE_SLOT, FRAME_BORDER)
+        drawVectorShapePath(ctx, el);
+
+        if (el.type !== 'LINE' && el.type !== 'FRAME_BORDER' && el.fillColor && el.fillColor !== 'transparent') {
+          ctx.fillStyle = el.fillColor;
+          ctx.fill();
+        }
+
+        if (el.borderWidth > 0) {
+          ctx.strokeStyle = el.borderColor || '#FFFFFF';
+          ctx.lineWidth = el.borderWidth;
+
+          if (el.borderStyle === 'DASHED') {
+            ctx.setLineDash([el.borderWidth * 3, el.borderWidth * 2]);
+          } else if (el.borderStyle === 'DOTTED') {
+            ctx.setLineDash([el.borderWidth, el.borderWidth]);
+          } else {
+            ctx.setLineDash([]);
+          }
+
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Draw Dynamic Slot Labels & Icons
+        if (
+          el.dynamicSlot === 'LOGO_BOX' ||
+          el.type === 'IMAGE_SLOT'
+        ) {
+          ctx.fillStyle =
+            el.fillColor === '#FFFFFF' || !el.fillColor ? '#0B0F17' : '#FFFFFF';
+          ctx.font = 'bold 18px "Space Grotesk", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🖼️ IMAGE SLOT', el.x + el.width / 2, el.y + el.height / 2);
+        } else if (
+          el.dynamicSlot === 'AVATAR_CIRCLE' ||
+          (el.slotCategory === 'IMAGE_SLOT' && el.type === 'CIRCLE')
+        ) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 16px "Space Grotesk", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('👤 PHOTO', el.x + el.width / 2, el.y + el.height / 2);
+        }
       }
 
-      // Draw Selection Bounding Box & Resizing Handles
-      if (el.id === selectedId) {
+      // Draw Selection Bounding Box & Resizing Handles (Padded 14px outward so it never overlaps shape stroke)
+      if (showSelectionBox && el.id === selectedId) {
         const elH = el.type === 'TEXT' ? (el.fontSize || 24) + 6 : el.height;
+        const pad = 14;
+
         ctx.strokeStyle = '#38BDF8';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([6, 6]);
-        ctx.strokeRect(el.x - 4, el.y - 4, el.width + 8, elH + 8);
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.strokeRect(el.x - pad, el.y - pad, el.width + pad * 2, elH + pad * 2);
         ctx.setLineDash([]);
 
-        const handleSize = 16;
+        const handleSize = 14;
         const halfH = handleSize / 2;
         const corners = [
-          { x: el.x - halfH, y: el.y - halfH },
-          { x: el.x + el.width - halfH, y: el.y - halfH },
-          { x: el.x - halfH, y: el.y + elH - halfH },
-          { x: el.x + el.width - halfH, y: el.y + elH - halfH },
+          { x: el.x - pad - halfH, y: el.y - pad - halfH },
+          { x: el.x + el.width + pad - halfH, y: el.y - pad - halfH },
+          { x: el.x - pad - halfH, y: el.y + elH + pad - halfH },
+          { x: el.x + el.width + pad - halfH, y: el.y + elH + pad - halfH },
         ];
 
         corners.forEach((c) => {
@@ -262,7 +346,7 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
 
       ctx.restore();
     });
-  }, [elements, selectedId, stageBgColor]);
+  }, [elements, selectedId, stageBgColor, showSelectionBox]);
 
   useEffect(() => {
     if (activeTab === 'canva') {
@@ -424,6 +508,54 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
       newEl.width = 120;
       newEl.height = 120;
       newEl.borderRadius = 60;
+    } else if (type === 'STAR') {
+      newEl.width = 100;
+      newEl.height = 100;
+      newEl.fillColor = '#EAB308';
+      newEl.borderColor = '#FFFFFF';
+    } else if (type === 'DIAMOND') {
+      newEl.width = 110;
+      newEl.height = 110;
+      newEl.fillColor = '#38BDF8';
+    } else if (type === 'TRIANGLE') {
+      newEl.width = 120;
+      newEl.height = 100;
+      newEl.fillColor = '#F43F5E';
+    } else if (type === 'HEXAGON') {
+      newEl.width = 120;
+      newEl.height = 120;
+      newEl.fillColor = '#8B5CF6';
+    } else if (type === 'SHIELD') {
+      newEl.width = 100;
+      newEl.height = 130;
+      newEl.fillColor = '#10B981';
+    } else if (type === 'RIBBON') {
+      newEl.width = 300;
+      newEl.height = 70;
+      newEl.fillColor = '#D97706';
+    } else if (type === 'LINE') {
+      newEl.width = 400;
+      newEl.height = 10;
+      newEl.borderWidth = 4;
+      newEl.borderColor = '#EAB308';
+    } else if (type === 'IMAGE_SLOT') {
+      newEl.width = 140;
+      newEl.height = 140;
+      newEl.fillColor = '#1E293B';
+      newEl.borderColor = '#94A3B8';
+      newEl.slotCategory = 'IMAGE_SLOT';
+      newEl.dynamicSlot = 'CUSTOM_IMAGE';
+    } else if (type === 'FRAME_BORDER') {
+      newEl.x = 25;
+      newEl.y = 25;
+      newEl.width = 1030;
+      newEl.height = 1030;
+      newEl.fillColor = 'transparent';
+      newEl.borderColor = '#EAB308';
+      newEl.borderWidth = 6;
+      newEl.borderRadius = 16;
+      newEl.borderStyle = 'SOLID';
+      newEl.name = 'Full Canvas Frame Border';
     } else if (type === 'TEXT') {
       newEl.width = 300;
       newEl.height = 40;
@@ -501,10 +633,17 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
     }
   };
 
+  const clearAllElements = () => {
+    setElements([]);
+    setSelectedId(null);
+  };
+
   return {
     canvasRef,
     stageBgColor,
     setStageBgColor,
+    showSelectionBox,
+    setShowSelectionBox,
     elements,
     setElements,
     selectedId,
@@ -516,6 +655,7 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
     handleAddElement,
     updateSelectedElement,
     deleteSelectedElement,
+    clearAllElements,
     bringForward,
     sendBackward,
   };

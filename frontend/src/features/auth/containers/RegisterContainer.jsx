@@ -41,6 +41,7 @@ export const RegisterContainer = () => {
   });
 
   const onSubmit = (data) => {
+    sessionStorage.setItem("just_authenticated", "register");
     registerUser(data);
   };
 

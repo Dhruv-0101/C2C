@@ -26,6 +26,8 @@ export const LoginContainer = () => {
 
   const successMessage = loginSuccess || googleSuccess;
 
+  const savedEmail = localStorage.getItem("rememberedEmail") || "";
+
   const {
     register,
     handleSubmit,
@@ -33,12 +35,19 @@ export const LoginContainer = () => {
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      email: savedEmail,
       password: "",
+      rememberMe: Boolean(savedEmail),
     },
   });
 
   const onSubmit = (data) => {
+    if (data.rememberMe) {
+      localStorage.setItem("rememberedEmail", data.email);
+    } else {
+      localStorage.removeItem("rememberedEmail");
+    }
+    sessionStorage.setItem("just_authenticated", "login");
     login(data);
   };
 
