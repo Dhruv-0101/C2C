@@ -53,6 +53,14 @@ export const mockSocialPublisherService = {
             publishedAt: new Date().toISOString(),
           };
           break;
+        case "TWITTER":
+        case "X":
+          platformResults.TWITTER = {
+            status: "SUCCESS",
+            postUrl: `https://x.com/brandflow/status/mock_${mockId}`,
+            publishedAt: new Date().toISOString(),
+          };
+          break;
         default:
           platformResults[platformUpper] = {
             status: "SUCCESS",

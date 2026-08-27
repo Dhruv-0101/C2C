@@ -1,6 +1,7 @@
 import { facebookPublisherService } from "./facebookPublisher.service.js";
 import { instagramPublisherService } from "./instagramPublisher.service.js";
 import { linkedinPublisherService } from "./linkedinPublisher.service.js";
+import { twitterPublisherService } from "./twitterPublisher.service.js";
 import { mockSocialPublisherService } from "../mockSocialPublisher.service.js";
 import { socialRepository } from "../social.repository.js";
 import { decryptToken } from "../../../common/helpers/encryption.helper.js";
@@ -227,6 +228,104 @@ export const liveSocialPublisherService = {
             status: "SUCCESS",
             accountName: liAccount?.accountName || mockRes.platformResults.LINKEDIN.accountName,
             postUrl: handleName ? `https://linkedin.com/in/${handleName}` : mockRes.platformResults.LINKEDIN.postUrl,
+          };
+        }
+      } else if (platformUpper === "TWITTER" || platformUpper === "X") {
+        let twAccount = null;
+        try {
+          twAccount = userId
+            ? await socialRepository.findByUserAndPlatform(userId, "TWITTER")
+            : null;
+
+          let decryptedToken = twAccount?.accessToken ? decryptToken(twAccount.accessToken) : null;
+          let decryptedRefreshToken = twAccount?.refreshToken ? decryptToken(twAccount.refreshToken) : null;
+          const isRealToken = decryptedToken && decryptedToken !== 'manual_connected_token';
+
+          if (isLiveMode && twAccount && twAccount.isConnected && isRealToken) {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing to Live X (Twitter) Account (@${twAccount.accountName})...`);
+
+            try {
+              const result = await twitterPublisherService.publishToTwitter({
+                accessToken: decryptedToken,
+                graphicUrl,
+                caption: postContent,
+              });
+
+              platformResults.TWITTER = result;
+            } catch (postErr) {
+              // Auto-refresh token if expired (401) and refresh token exists
+              if (postErr.status === 401 && decryptedRefreshToken) {
+                logger.info(`🔄 [LiveSocialPublisher] Twitter token expired (401). Attempting token refresh for @${twAccount.accountName}...`);
+                try {
+                  const refreshed = await twitterPublisherService.refreshAccessToken(decryptedRefreshToken);
+
+                  // Save updated tokens to DB
+                  await socialRepository.upsertAccount({
+                    userId,
+                    platform: "TWITTER",
+                    platformUserId: twAccount.platformUserId,
+                    accountName: twAccount.accountName,
+                    accessToken: encryptToken(refreshed.accessToken),
+                    refreshToken: refreshed.refreshToken ? encryptToken(refreshed.refreshToken) : twAccount.refreshToken,
+                    tokenExpiresAt: refreshed.tokenExpiresAt,
+                  });
+
+                  // Retry publishing tweet with new token
+                  const retryResult = await twitterPublisherService.publishToTwitter({
+                    accessToken: refreshed.accessToken,
+                    graphicUrl,
+                    caption: postContent,
+                  });
+
+                  platformResults.TWITTER = retryResult;
+                } catch (refreshErr) {
+                  logger.error("❌ [LiveSocialPublisher] Token refresh failed:", refreshErr.message);
+                  platformResults.TWITTER = {
+                    status: "FAILED",
+                    platform: "TWITTER",
+                    accountName: twAccount.accountName,
+                    error: `Token expired and refresh failed: ${refreshErr.message}`,
+                    publishedAt: new Date().toISOString(),
+                  };
+                }
+              } else {
+                logger.error("❌ [LiveSocialPublisher] Live Twitter publishing error:", postErr.message);
+                platformResults.TWITTER = {
+                  status: "FAILED",
+                  platform: "TWITTER",
+                  accountName: twAccount.accountName,
+                  error: postErr.message,
+                  publishedAt: new Date().toISOString(),
+                };
+              }
+            }
+          } else {
+            logger.info(`ℹ️ [LiveSocialPublisher] Publishing post for X (Twitter) (@${twAccount?.accountName || 'twitter'}).`);
+
+            const mockRes = await mockSocialPublisherService.publishToPlatforms({
+              postId,
+              postContent,
+              graphicUrl,
+              targetPlatforms: ["TWITTER"],
+            });
+
+            const handleName = twAccount?.accountName ? twAccount.accountName.replace(/^@/, '') : 'brandflow_user';
+
+            platformResults.TWITTER = {
+              ...mockRes.platformResults.TWITTER,
+              accountName: twAccount?.accountName || mockRes.platformResults.TWITTER.accountName,
+              postUrl: `https://x.com/${handleName}/status/${postId || Date.now()}`,
+            };
+          }
+        } catch (err) {
+          logger.error("❌ [LiveSocialPublisher] Twitter handler error:", err.message);
+          const handleName = twAccount?.accountName ? twAccount.accountName.replace(/^@/, '') : 'brandflow_user';
+          platformResults.TWITTER = {
+            status: "FAILED",
+            platform: "TWITTER",
+            accountName: twAccount?.accountName || "TWITTER",
+            error: err.message,
+            publishedAt: new Date().toISOString(),
           };
         }
       } else {
