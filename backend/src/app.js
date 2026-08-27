@@ -17,25 +17,42 @@ app.use(
   })
 );
 
-// CORS Configuration - Dynamically allow incoming origin with credentials
-const corsOptions = {
-  origin: true, // Echoes back request origin (e.g. https://c2-c-puce.vercel.app, localhost, etc.)
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'Accept',
-    'Origin',
-    'Access-Control-Request-Method',
-    'Access-Control-Request-Headers',
-  ],
-  optionsSuccessStatus: 200,
-};
+// CORS Configuration
+const allowedOrigins = [
+  env.CLIENT_URL,
+  'https://c2-c-puce.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+].filter(Boolean);
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, curl)
+      if (!origin) return callback(null, true);
+
+      // Check if origin matches allowed list, localhost, or any vercel.app domain
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.includes('localhost') ||
+        env.NODE_ENV === 'development';
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS Policy Error: Origin ${origin} not allowed.`));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
 
 // Body Parsers & Cookie Parser
 app.use(express.json({ limit: '10mb' }));
