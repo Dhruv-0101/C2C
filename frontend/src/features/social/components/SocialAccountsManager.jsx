@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Instagram, Facebook, Linkedin, MessageCircle, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
 import { socialApi } from '../../../services/social.api';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
@@ -38,7 +38,6 @@ export const SocialAccountsManager = () => {
   const instagramAccount = accounts.find((a) => a.platform === 'INSTAGRAM');
   const facebookAccount = accounts.find((a) => a.platform === 'FACEBOOK');
   const linkedinAccount = accounts.find((a) => a.platform === 'LINKEDIN');
-  const whatsappAccount = accounts.find((a) => a.platform === 'WHATSAPP');
 
   // Fetch Instagram/Meta Auth URL
   const { data: authUrlResponse, isLoading: isLoadingAuthUrl } = useQuery({
@@ -59,9 +58,6 @@ export const SocialAccountsManager = () => {
   const [showManualLiInput, setShowManualLiInput] = useState(false);
   const [isLoadingLiAuthUrl, setIsLoadingLiAuthUrl] = useState(false);
 
-  const [manualWaHandle, setManualWaHandle] = useState('');
-  const [showManualWaInput, setShowManualWaInput] = useState(false);
-
   // Manual Handle Connect Mutation
   const manualConnectMutation = useMutation({
     mutationFn: ({ handle, platform }) => socialApi.connectManualHandle(handle, platform),
@@ -71,11 +67,9 @@ export const SocialAccountsManager = () => {
       setShowManualInput(false);
       setShowManualFbInput(false);
       setShowManualLiInput(false);
-      setShowManualWaInput(false);
       setManualHandle('');
       setManualFbHandle('');
       setManualLiHandle('');
-      setManualWaHandle('');
       queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
     },
     onError: (err) => {
@@ -503,107 +497,6 @@ export const SocialAccountsManager = () => {
               className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs"
             >
               Connect LinkedIn Account
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* WhatsApp Business & Status Integration Card */}
-      <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 shadow-glow">
-            <MessageCircle className="w-7 h-7" />
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h4 className="font-bold text-base text-white">WhatsApp Business & Status Sharing</h4>
-              {whatsappAccount?.isConnected ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Connected</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Not Connected</span>
-                </span>
-              )}
-            </div>
-
-            {whatsappAccount?.isConnected ? (
-              <div className="space-y-0.5 text-xs text-slate-300">
-                <a
-                  href={`https://wa.me/${whatsappAccount.accountName.replace(/[^0-9]/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono font-bold text-emerald-400 text-sm hover:underline transition group"
-                  title="Open WhatsApp Chat"
-                >
-                  <span>{whatsappAccount.accountName}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
-                </a>
-                <p className="text-[11px] text-slate-400">
-                  Linked for 1-Click WhatsApp Status & Customer Chat Broadcast
-                </p>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400">
-                Publish graphics and promotional updates directly to your WhatsApp Status and business contacts.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons & Manual Connect Form */}
-        <div className="flex flex-col items-end gap-2">
-          {whatsappAccount?.isConnected ? (
-            <Button
-              variant="outline"
-              className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
-              isLoading={disconnectMutation.isPending}
-              onClick={() => disconnectMutation.mutate('WHATSAPP')}
-              icon={Unlink}
-            >
-              Disconnect WhatsApp
-            </Button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="primary"
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs justify-center shadow-lg border border-emerald-500/40"
-                onClick={() => setShowManualWaInput(!showManualWaInput)}
-                icon={Link2}
-              >
-                {showManualWaInput ? 'Cancel' : 'Connect WhatsApp Number'}
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Manual Phone Number Input Box - WhatsApp */}
-      {!whatsappAccount?.isConnected && showManualWaInput && (
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
-          <label className="text-xs font-semibold text-slate-300 block">
-            Enter your WhatsApp Business Phone Number with Country Code (e.g. +91 98765 43210):
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="+91 98765 43210"
-              value={manualWaHandle}
-              onChange={(e) => setManualWaHandle(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-emerald-500"
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={manualConnectMutation.isPending}
-              onClick={() => manualConnectMutation.mutate({ handle: manualWaHandle, platform: 'WHATSAPP' })}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shrink-0"
-            >
-              Save WhatsApp Number
             </Button>
           </div>
         </div>

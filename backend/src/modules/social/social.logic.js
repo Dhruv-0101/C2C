@@ -190,38 +190,28 @@ export const socialLogic = {
     }
 
     let cleanHandle = handle.trim();
-    const platformUpper = (platform || 'INSTAGRAM').toUpperCase();
-
-    if (platformUpper === 'WHATSAPP') {
-      const digits = cleanHandle.replace(/[^0-9]/g, '');
-      if (!digits || digits.length < 7) {
-        throw new Error('Please enter a valid WhatsApp phone number with country code (e.g. +91 9876543210).');
-      }
-      cleanHandle = `+${digits}`;
-    } else {
-      if (cleanHandle.includes('linkedin.com/in/')) {
-        cleanHandle = cleanHandle.split('linkedin.com/in/')[1].split('/')[0].split('?')[0];
-      } else if (cleanHandle.includes('linkedin.com/company/')) {
-        cleanHandle = cleanHandle.split('linkedin.com/company/')[1].split('/')[0].split('?')[0];
-      } else if (cleanHandle.includes('instagram.com/')) {
-        cleanHandle = cleanHandle.split('instagram.com/')[1].split('/')[0].split('?')[0];
-      } else if (cleanHandle.includes('facebook.com/')) {
-        cleanHandle = cleanHandle.split('facebook.com/')[1].split('/')[0].split('?')[0];
-      }
-      cleanHandle = cleanHandle.replace(/^@/, '').trim();
+    if (cleanHandle.includes('linkedin.com/in/')) {
+      cleanHandle = cleanHandle.split('linkedin.com/in/')[1].split('/')[0].split('?')[0];
+    } else if (cleanHandle.includes('linkedin.com/company/')) {
+      cleanHandle = cleanHandle.split('linkedin.com/company/')[1].split('/')[0].split('?')[0];
+    } else if (cleanHandle.includes('instagram.com/')) {
+      cleanHandle = cleanHandle.split('instagram.com/')[1].split('/')[0].split('?')[0];
+    } else if (cleanHandle.includes('facebook.com/')) {
+      cleanHandle = cleanHandle.split('facebook.com/')[1].split('/')[0].split('?')[0];
     }
+    cleanHandle = cleanHandle.replace(/^@/, '').trim();
 
     if (!cleanHandle) {
-      throw new Error('Please enter a valid handle, URL, or phone number.');
+      throw new Error('Please enter a valid handle or profile URL.');
     }
 
-    const formattedHandle = platformUpper === 'WHATSAPP' ? cleanHandle : `@${cleanHandle}`;
+    const formattedHandle = `@${cleanHandle}`;
     const encryptedToken = encryptToken('manual_connected_token');
 
     const socialAccount = await socialRepository.upsertAccount({
       userId,
-      platform: platformUpper,
-      platformUserId: `manual_${userId}_${cleanHandle.replace(/[^a-zA-Z0-9_]/g, '')}`,
+      platform: (platform || 'INSTAGRAM').toUpperCase(),
+      platformUserId: `manual_${userId}_${cleanHandle}`,
       accountName: formattedHandle,
       accessToken: encryptedToken,
     });
