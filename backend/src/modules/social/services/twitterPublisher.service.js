@@ -8,7 +8,7 @@ const TWITTER_TOKEN_URL = 'https://api.twitter.com/2/oauth2/token';
 
 /**
  * Enterprise X (Twitter) Publisher Service
- * Handles OAuth 2.0 PKCE authentication, profile fetching, token refresh, and post publishing.
+ * Handles OAuth 2.0 PKCE authentication, profile fetching, and post publishing.
  */
 export const twitterPublisherService = {
   /**
@@ -76,55 +76,6 @@ export const twitterPublisherService = {
   },
 
   /**
-   * Refresh Expired OAuth 2.0 User Access Token using Refresh Token
-   * @param {string} refreshToken - Decrypted Twitter refresh token
-   * @returns {Promise<{accessToken: string, refreshToken?: string, tokenExpiresAt: Date|null}>}
-   */
-  refreshAccessToken: async (refreshToken) => {
-    logger.info('🔄 [TwitterPublisher] Refreshing expired Twitter access token...');
-
-    try {
-      const params = new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        client_id: env.TWITTER_CLIENT_ID,
-      });
-
-      const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      };
-
-      if (env.TWITTER_CLIENT_SECRET) {
-        const credentials = `${env.TWITTER_CLIENT_ID}:${env.TWITTER_CLIENT_SECRET}`;
-        headers.Authorization = `Basic ${Buffer.from(credentials).toString('base64')}`;
-      }
-
-      const response = await axios.post(TWITTER_TOKEN_URL, params.toString(), { headers });
-
-      const newAccessToken = response.data?.access_token;
-      const newRefreshToken = response.data?.refresh_token || refreshToken;
-      const expiresIn = response.data?.expires_in;
-      const tokenExpiresAt = expiresIn ? new Date(Date.now() + expiresIn * 1000) : null;
-
-      if (!newAccessToken) {
-        throw new Error('Twitter token refresh response did not contain an access token.');
-      }
-
-      logger.info('✅ [TwitterPublisher] Successfully refreshed Twitter access token.');
-
-      return {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-        tokenExpiresAt,
-      };
-    } catch (err) {
-      const errorMsg = err.response?.data?.error_description || err.response?.data?.error || err.message;
-      logger.error(`❌ [TwitterPublisher] Twitter token refresh failed: ${errorMsg}`);
-      throw new Error(`Twitter token refresh failed: ${errorMsg}`);
-    }
-  },
-
-  /**
    * Get authenticated X user profile details
    * @param {string} accessToken - Decrypted Twitter access token
    * @returns {Promise<{platformUserId: string, name: string, username: string}>}
@@ -152,15 +103,7 @@ export const twitterPublisherService = {
         username: user.username,
       };
     } catch (err) {
-      let errorMsg = err.message;
-      if (err.response?.data) {
-        const d = err.response.data;
-        if (Array.isArray(d.errors) && d.errors.length > 0) {
-          errorMsg = d.errors.map((e) => e.message || e.detail || JSON.stringify(e)).join('; ');
-        } else {
-          errorMsg = d.detail || d.title || d.message || JSON.stringify(d);
-        }
-      }
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || err.message;
       logger.warn(`ℹ️ [TwitterPublisher] /users/me lookup error: ${errorMsg}`);
       throw new Error(`Failed to fetch Twitter profile: ${errorMsg}`);
     }
@@ -168,7 +111,6 @@ export const twitterPublisherService = {
 
   /**
    * Publish Tweet with optional image media/URL to X (Twitter)
-   * Ensures tweet text length adheres strictly to Twitter's 280-character limit.
    * @param {object} params
    * @param {string} params.accessToken - Decrypted OAuth access token
    * @param {string} [params.graphicUrl] - Graphic / image URL to include in tweet
@@ -178,22 +120,10 @@ export const twitterPublisherService = {
   publishToTwitter: async ({ accessToken, graphicUrl, caption }) => {
     logger.info('📢 [TwitterPublisher] Publishing post to X (Twitter)...');
 
-    const MAX_TWEET_LEN = 280;
-    let baseText = (caption || 'Created with BrandFlow 🚀').trim();
-
-    let tweetText = baseText;
-    if (graphicUrl && !baseText.includes(graphicUrl)) {
-      // In Twitter API, attached URLs consume 23 characters
-      // Max caption text length = 280 - 23 - 2 (newlines) = 255 chars
-      const maxCaptionLen = 255;
-      if (baseText.length > maxCaptionLen) {
-        baseText = baseText.slice(0, maxCaptionLen - 3) + '...';
-      }
-      tweetText = `${baseText}\n\n${graphicUrl}`;
-    } else {
-      if (tweetText.length > MAX_TWEET_LEN) {
-        tweetText = tweetText.slice(0, MAX_TWEET_LEN - 3) + '...';
-      }
+    // Standardize tweet text content (Twitter 280 character limit note: URLs consume ~23 chars)
+    let tweetText = caption || 'Created with BrandFlow 🚀';
+    if (graphicUrl && !tweetText.includes(graphicUrl)) {
+      tweetText = `${tweetText}\n\n${graphicUrl}`;
     }
 
     try {
@@ -221,20 +151,9 @@ export const twitterPublisherService = {
         publishedAt: new Date().toISOString(),
       };
     } catch (err) {
-      let errorMsg = err.message;
-      const status = err.response?.status;
-      if (err.response?.data) {
-        const d = err.response.data;
-        if (Array.isArray(d.errors) && d.errors.length > 0) {
-          errorMsg = d.errors.map((e) => e.message || e.detail || JSON.stringify(e)).join('; ');
-        } else {
-          errorMsg = d.detail || d.title || d.message || JSON.stringify(d);
-        }
-      }
-      logger.error(`❌ [TwitterPublisher] Twitter posting error (${status || 'unknown'}): ${errorMsg}`);
-      const customErr = new Error(`Twitter API error (${status || 'unknown'}): ${errorMsg}`);
-      customErr.status = status;
-      throw customErr;
+      const errorMsg = err.response?.data?.detail || err.response?.data?.title || err.message;
+      logger.error(`❌ [TwitterPublisher] Twitter posting error: ${errorMsg}`);
+      throw new Error(`Twitter API error: ${errorMsg}`);
     }
   },
 };
