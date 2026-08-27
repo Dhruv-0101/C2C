@@ -32,6 +32,9 @@ export const redisConnection = redisConnectionOptions;
 let redisClient = null;
 
 export const getRedisClient = () => {
+  const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOST);
+  if (!isRedisConfigured) return null;
+
   if (!redisClient) {
     redisClient = new Redis(process.env.REDIS_URL || redisConnectionOptions);
 
@@ -39,9 +42,7 @@ export const getRedisClient = () => {
       logger.info("🟢 [Redis] Successfully connected to Redis Server.");
     });
 
-    redisClient.on("error", () => {
-      // Quiet warning for local dev when Redis server is offline
-    });
+    redisClient.on("error", () => {});
   }
   return redisClient;
 };
