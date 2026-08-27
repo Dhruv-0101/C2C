@@ -14,15 +14,12 @@ if (env.SMTP_USER && env.SMTP_PASS) {
     port: Number(env.SMTP_PORT) || 587,
     secure: Number(env.SMTP_PORT) === 465,
     requireTLS: true,
-    connectionTimeout: 3000, // 3s fast timeout to prevent Render memory leaks
-    greetingTimeout: 3000,
-    socketTimeout: 5000,
     auth: {
       user: env.SMTP_USER,
       pass: env.SMTP_PASS,
     },
     tls: {
-      rejectUnauthorized: false,
+      rejectUnauthorized: false, // Prevents cloud SSL certificate handshake rejection
     },
   });
 
