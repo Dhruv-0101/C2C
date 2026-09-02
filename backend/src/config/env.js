@@ -7,52 +7,52 @@ dotenv.config();
 const currentEnv = process.env.NODE_ENV || 'development';
 const isProd = currentEnv === 'production';
 
-// 1. Dynamic Database URL (Dev Localhost vs Production Neon PostgreSQL)
-const activeDbUrl = isProd
-  ? process.env.DATABASE_URL_PROD || process.env.DATABASE_URL
-  : process.env.DATABASE_URL_DEV || process.env.DATABASE_URL;
+// 1. Dynamic Database URL (Prioritizes explicit DATABASE_URL passed by Docker/System, then falls back to Dev/Prod variants)
+const activeDbUrl = process.env.DATABASE_URL || (isProd
+  ? process.env.DATABASE_URL_PROD
+  : process.env.DATABASE_URL_DEV);
 
 if (activeDbUrl) {
   process.env.DATABASE_URL = activeDbUrl;
 }
 
-// 2. Dynamic Client Application URL (Dev Frontend vs Production Frontend)
-const activeClientUrl = isProd
-  ? process.env.CLIENT_URL_PROD || process.env.CLIENT_URL || 'https://c2-c-puce.vercel.app'
-  : process.env.CLIENT_URL_DEV || process.env.CLIENT_URL || 'http://localhost:3000';
+// 2. Dynamic Client Application URL
+const activeClientUrl = process.env.CLIENT_URL || (isProd
+  ? process.env.CLIENT_URL_PROD || 'https://c2-c-puce.vercel.app'
+  : process.env.CLIENT_URL_DEV || 'http://localhost:5173');
 
 if (activeClientUrl) {
   process.env.CLIENT_URL = activeClientUrl;
 }
 
 // 3. Dynamic Redis Connection Configuration
-const activeRedisHost = isProd
-  ? process.env.REDIS_HOST_PROD || process.env.REDIS_HOST || '127.0.0.1'
-  : process.env.REDIS_HOST_DEV || process.env.REDIS_HOST || '127.0.0.1';
+const activeRedisHost = process.env.REDIS_HOST || (isProd
+  ? process.env.REDIS_HOST_PROD || '127.0.0.1'
+  : process.env.REDIS_HOST_DEV || '127.0.0.1');
 
-const activeRedisPort = isProd
-  ? process.env.REDIS_PORT_PROD || process.env.REDIS_PORT || '6379'
-  : process.env.REDIS_PORT_DEV || process.env.REDIS_PORT || '6379';
+const activeRedisPort = process.env.REDIS_PORT || (isProd
+  ? process.env.REDIS_PORT_PROD || '6379'
+  : process.env.REDIS_PORT_DEV || '6379');
 
-const activeRedisPassword = isProd
-  ? process.env.REDIS_PASSWORD_PROD || process.env.REDIS_PASSWORD
-  : process.env.REDIS_PASSWORD_DEV || process.env.REDIS_PASSWORD;
+const activeRedisPassword = process.env.REDIS_PASSWORD || (isProd
+  ? process.env.REDIS_PASSWORD_PROD
+  : process.env.REDIS_PASSWORD_DEV);
 
-const activeRedisTls = isProd
-  ? process.env.REDIS_TLS_PROD || process.env.REDIS_TLS || 'false'
-  : process.env.REDIS_TLS_DEV || process.env.REDIS_TLS || 'false';
+const activeRedisTls = process.env.REDIS_TLS || (isProd
+  ? process.env.REDIS_TLS_PROD || 'false'
+  : process.env.REDIS_TLS_DEV || 'false');
 
-const activeRedisUrl = isProd
-  ? process.env.REDIS_URL_PROD || process.env.REDIS_URL
-  : process.env.REDIS_URL_DEV || process.env.REDIS_URL;
+const activeRedisUrl = process.env.REDIS_URL || (isProd
+  ? process.env.REDIS_URL_PROD
+  : process.env.REDIS_URL_DEV);
 
-const activeMetaRedirectUri = isProd
-  ? process.env.META_REDIRECT_URI_PROD || process.env.META_REDIRECT_URI || 'https://c2c-negk.onrender.com/api/v1/social/meta/callback'
-  : process.env.META_REDIRECT_URI_DEV || process.env.META_REDIRECT_URI || 'http://localhost:5000/api/v1/social/meta/callback';
+const activeMetaRedirectUri = process.env.META_REDIRECT_URI || (isProd
+  ? process.env.META_REDIRECT_URI_PROD || 'https://c2c-negk.onrender.com/api/v1/social/meta/callback'
+  : process.env.META_REDIRECT_URI_DEV || 'http://localhost:5000/api/v1/social/meta/callback');
 
-const activeLinkedinRedirectUri = isProd
-  ? process.env.LINKEDIN_REDIRECT_URI_PROD || process.env.LINKEDIN_REDIRECT_URI || 'https://c2c-negk.onrender.com/api/v1/social/linkedin/callback'
-  : process.env.LINKEDIN_REDIRECT_URI_DEV || process.env.LINKEDIN_REDIRECT_URI || 'http://localhost:5000/api/v1/social/linkedin/callback';
+const activeLinkedinRedirectUri = process.env.LINKEDIN_REDIRECT_URI || (isProd
+  ? process.env.LINKEDIN_REDIRECT_URI_PROD || 'https://c2c-negk.onrender.com/api/v1/social/linkedin/callback'
+  : process.env.LINKEDIN_REDIRECT_URI_DEV || 'http://localhost:5000/api/v1/social/linkedin/callback');
 
 
 const envSchema = z.object({

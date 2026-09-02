@@ -10,9 +10,10 @@ import { seedTemplateCategories } from './seeds/templateCategories.seed.js';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding pipeline...');
+  const env = process.env.NODE_ENV || 'development';
+  console.log(`🌱 Starting database seeding pipeline [Environment: ${env}]...`);
 
-  // 1. Seed SuperAdmin User
+  // 1. Seed SuperAdmin User (Reads from env or safe default)
   await seedAdmin(prisma);
 
   // 2. Seed Master Business Categories
@@ -44,3 +45,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+

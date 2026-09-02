@@ -1,0 +1,103 @@
+# ==============================================================================
+# BrandFlow Enterprise Production Multi-Container Orchestration (Docker Compose)
+# ------------------------------------------------------------------------------
+# Usage Command: docker compose -f docker-compose.prod.yml up -d --build
+# Target Environment: High-Performance Production Containers (Nginx + Node.js Prod)
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # 1. PostgreSQL Production Relational Database Service
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: brandflow-postgres-prod
+    restart: always # Auto-restarts DB container if host reboots or crashes
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword2026}
+      POSTGRES_DB: ${POSTGRES_DB:-brandflow_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Persistent host volume to preserve database data across container upgrades
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # Verifies PostgreSQL instance is ready to serve queries
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ============================================================================
+  # 2. Redis Production In-Memory Store & BullMQ Task Queue Service
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: brandflow-redis-prod
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      # Persistent host volume for queue state & cache snapshots
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # 3. Express Backend API Service (Production Build Stage: AS production)
+  # ============================================================================
+  backend:
+    build:
+      context: ./backend # Path to backend folder
+      target: production # EXPLICITLY TARGETS STAGE 3 (production) in backend/Dockerfile
+    container_name: brandflow-backend-prod
+    restart: always
+    # Automatically loads all production environment secrets from root .env file
+    env_file:
+      - .env
+    environment:
+      PORT: ${PORT:-5000}
+      NODE_ENV: production
+      # Production DB Connection String (Internal Docker DNS resolution)
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgrespassword2026@postgres:5432/brandflow_db?schema=public}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-super_secret_access_key_brandflow_2026}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super_secret_refresh_key_brandflow_2026}
+      CLIENT_URL: ${CLIENT_URL:-https://c2-c-puce.vercel.app}
+    depends_on:
+      # Backend container boots ONLY after PostgreSQL and Redis are 100% HEALTHY
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ============================================================================
+  # 4. React Frontend Nginx Web Server Service (Production Build Stage: AS production)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./frontend # Path to frontend folder
+      target: production # EXPLICITLY TARGETS STAGE 4 (production Nginx) in frontend/Dockerfile
+    container_name: brandflow-frontend-prod
+    restart: always
+    ports:
+      - "${HTTP_PORT:-80}:80" # Serves high-performance compiled React bundle via Nginx on HTTP port 80
+    depends_on:
+      - backend
+
+# ==============================================================================
+# Persistent Production Named Volumes
+# ==============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

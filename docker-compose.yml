@@ -1,95 +1,136 @@
+# ==============================================================================
+# BrandFlow Multi-Container Orchestration (Docker Compose)
+# Enterprise Development Stack: PostgreSQL, Redis, Express Backend, Vite Frontend
+# ==============================================================================
+
+# Compose Specification File Format Schema Version (v3.8 is the most stable enterprise standard)
 version: '3.8'
 
+# Container Services registry containing all 4 application micro-components
 services:
-  # ==========================================
-  # PostgreSQL Database Service
-  # ==========================================
+  # ============================================================================
+  # 1. PostgreSQL Relational Database Service
+  # ============================================================================
   postgres:
+    # Official lightweight Alpine Linux image for PostgreSQL 16
     image: postgres:16-alpine
+    # Explicit container identifier in Docker engine network
     container_name: brandflow-postgres
+    # Restart Policy: Always auto-restart if container crashes or Docker daemon reboots
     restart: always
+    # Environment variables configured using ${VAR:-default} interpolation for security best practice.
+    # Allows production overrides via .env / secrets manager while maintaining safe local fallbacks.
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword2026
-      POSTGRES_DB: brandflow_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword2026}
+      POSTGRES_DB: ${POSTGRES_DB:-brandflow_db}
+    # Port Forwarding: "HostPort:ContainerPort" -> Maps laptop port 5432 to container DB port 5432
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
+    # Data Persistence: Named volume maps DB data folder to prevent data loss when container is stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # Health Monitoring: Uses pg_isready utility to verify PostgreSQL is accepting connections
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d brandflow_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s       # Test every 10 seconds
+      timeout: 5s         # Fail test if no response in 5 seconds
+      retries: 10         # Allows up to 10 retries during startup
+      start_period: 30s   # Grace period for PostgreSQL to complete initial database setup (initdb)
 
-  # ==========================================
-  # Redis Cache & BullMQ Queue Service
-  # ==========================================
+  # ============================================================================
+  # 2. Redis In-Memory Store & BullMQ Task Queue Service
+  # ============================================================================
   redis:
+    # Official lightweight Alpine Linux image for Redis 7
     image: redis:7-alpine
     container_name: brandflow-redis
     restart: always
+    # Port Forwarding: Maps laptop port 6379 to container Redis port 6379
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    # Persistence: Saves Redis cache and BullMQ job queue snapshots to disk
     volumes:
       - redis_data:/data
+    # Health Monitoring: Executes redis-cli ping command (expects PONG)
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ==========================================
-  # Node.js Express Backend Service
-  # ==========================================
+  # ============================================================================
+  # 3. Node.js / Express Backend Service (Multi-Stage Target: development)
+  # ============================================================================
   backend:
     build:
-      context: ./backend
-      target: development
+      context: ./backend # Path to backend source directory containing Dockerfile
+      target: development # Explicitly targets STAGE 2 (development) in backend/Dockerfile
     container_name: brandflow-backend
+    # Restart Policy: Restart automatically unless explicitly stopped by developer
     restart: unless-stopped
+    # Port Forwarding: Maps laptop port 5000 to Express API server port 5000
     ports:
-      - "5000:5000"
+      - "${PORT:-5000}:5000"
+    # Automatically loads all secret keys & API credentials (Google, Cloudinary, Meta, SMTP) from root .env file
+    env_file:
+      - .env
+    # Container Environment Overrides (takes precedence for Docker container internal DNS resolution)
     environment:
-      PORT: 5000
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:postgrespassword2026@postgres:5432/brandflow_db?schema=public"
-      REDIS_HOST: "redis"
-      REDIS_PORT: 6379
-      JWT_ACCESS_SECRET: "super_secret_access_key_brandflow_2026"
-      JWT_REFRESH_SECRET: "super_secret_refresh_key_brandflow_2026"
-      CLIENT_URL: "http://localhost:5173"
+      PORT: ${PORT:-5000}
+      NODE_ENV: ${NODE_ENV:-development}
+      # Connection string uses Docker internal DNS name 'postgres' (not localhost!)
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgrespassword2026@postgres:5432/brandflow_db?schema=public}
+      # Connection string uses Docker internal DNS name 'redis' (not localhost!)
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-super_secret_access_key_brandflow_2026}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super_secret_refresh_key_brandflow_2026}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:5173}
     volumes:
+      # Bind Mount: Syncs local backend code edits instantly into container (Hot-Reloading)
       - ./backend:/app
+      # Anonymous Volume Mask: Protects container Linux node_modules from Windows host override
       - /app/node_modules
     depends_on:
+      # Strict Startup Dependency: Backend starts ONLY AFTER PostgreSQL & Redis are 100% HEALTHY
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  # ==========================================
-  # React.js Vite Frontend Service
-  # ==========================================
+  # ============================================================================
+  # 4. React.js / Vite Frontend Service (Multi-Stage Target: development)
+  # ============================================================================
   frontend:
     build:
-      context: ./frontend
-      target: development
+      context: ./frontend # Path to frontend source directory containing Dockerfile
+      target: development # Explicitly targets STAGE 2 (development) in frontend/Dockerfile
     container_name: brandflow-frontend
     restart: unless-stopped
+    # Port Forwarding: Maps laptop port 5173 to Vite dev server port 5173
     ports:
-      - "5173:5173"
+      - "${VITE_PORT:-5173}:5173"
     environment:
-      VITE_API_BASE_URL: "http://localhost:5000/api/v1"
+      # API Base URL used by Axios/TanStack Query to connect to backend
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000/api/v1}
     volumes:
+      # Bind Mount: Syncs local React code edits instantly into container (Vite Fast Refresh/HMR)
       - ./frontend:/app
+      # Anonymous Volume Mask: Protects container Linux node_modules from Windows host override
       - /app/node_modules
     depends_on:
+      # Ensures frontend starts after backend service is initialized
       - backend
 
+# ==============================================================================
+# Persistent Named Volume Definitions (Managed by Docker Engine)
+# ==============================================================================
 volumes:
   postgres_data:
-    driver: local
+    driver: local # Retains database data on host disk across container restarts
   redis_data:
-    driver: local
+    driver: local # Retains Redis queue snapshots on host disk across container restarts
+
+
 

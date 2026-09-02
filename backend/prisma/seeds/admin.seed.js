@@ -1,46 +1,37 @@
 import bcrypt from 'bcryptjs';
 
-export const ADMIN_CONFIG = {
-  email: 'admin1@gmail.com',
-  password: 'admin1',
-  fullName: 'admin1',
-};
-
 /**
  * Seed Default System SuperAdmin Account
+ * Uses environment variables for security in production environments.
  * @param {import('@prisma/client').PrismaClient} prisma
  */
 export async function seedAdmin(prisma) {
-  const existing = await prisma.user.findUnique({
-    where: { email: ADMIN_CONFIG.email },
+  const email = (process.env.INITIAL_ADMIN_EMAIL || 'admin@brandflow.com').toLowerCase().trim();
+  const rawPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin@123456';
+  const fullName = process.env.INITIAL_ADMIN_NAME || 'Super Admin';
+
+  const passwordHash = await bcrypt.hash(rawPassword, 12);
+
+  const adminUser = await prisma.user.upsert({
+    where: { email },
+    update: {
+      role: 'ADMIN',
+      isAdmin: true,
+      isSuperAdmin: true,
+      isSubAdmin: false,
+    },
+    create: {
+      email,
+      passwordHash,
+      fullName,
+      role: 'ADMIN',
+      isAdmin: true,
+      isSuperAdmin: true,
+      isSubAdmin: false,
+      allowedTabs: ['all'],
+    },
   });
 
-  const passwordHash = await bcrypt.hash(ADMIN_CONFIG.password, 12);
-
-  if (existing) {
-    await prisma.user.update({
-      where: { email: ADMIN_CONFIG.email },
-      data: {
-        role: 'ADMIN',
-        isAdmin: true,
-        isSuperAdmin: true,
-        isSubAdmin: false,
-      },
-    });
-    console.log(`✅ Existing user updated to SuperAdmin: ${ADMIN_CONFIG.email}`);
-  } else {
-    await prisma.user.create({
-      data: {
-        email: ADMIN_CONFIG.email,
-        passwordHash,
-        fullName: ADMIN_CONFIG.fullName,
-        role: 'ADMIN',
-        isAdmin: true,
-        isSuperAdmin: true,
-        isSubAdmin: false,
-        allowedTabs: ['all'],
-      },
-    });
-    console.log(`🚀 Created SuperAdmin account: ${ADMIN_CONFIG.email} / ${ADMIN_CONFIG.password}`);
-  }
+  console.log(`🚀 SuperAdmin account verified/created: ${adminUser.email}`);
 }
+
