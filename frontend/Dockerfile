@@ -41,10 +41,13 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 # STAGE 3: Production Build Stage
 # ==========================================
 FROM base AS builder
-ENV NODE_ENV=production
 
-# Clean install dependencies strictly from package-lock.json
-RUN npm ci
+# Build argument for dynamic API endpoint embedding during Vite build
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+# Install all dependencies (including devDependencies like Vite) needed for building static assets
+RUN npm ci --include=dev
 
 # Copy application source code into container
 COPY . .
