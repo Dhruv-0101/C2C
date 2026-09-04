@@ -15,6 +15,7 @@ export async function seedAdmin(prisma) {
   const adminUser = await prisma.user.upsert({
     where: { email },
     update: {
+      passwordHash,
       role: 'ADMIN',
       isAdmin: true,
       isSuperAdmin: true,

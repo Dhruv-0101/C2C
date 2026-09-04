@@ -64,6 +64,9 @@ FROM nginx:alpine AS production
 # Copy compiled static HTML/JS/CSS assets from builder stage into Nginx web root
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copy custom Nginx configuration to support SPA routing (Fixes 404 on page refresh)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 
 # Production Container Healthcheck Configuration:
