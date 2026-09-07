@@ -6,8 +6,8 @@ import bcrypt from 'bcryptjs';
  * @param {import('@prisma/client').PrismaClient} prisma
  */
 export async function seedAdmin(prisma) {
-  const email = (process.env.INITIAL_ADMIN_EMAIL || 'admin@brandflow.com').toLowerCase().trim();
-  const rawPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin@123456';
+  const email = (process.env.INITIAL_ADMIN_EMAIL || 'admin1@gmail.com').toLowerCase().trim();
+  const rawPassword = process.env.INITIAL_ADMIN_PASSWORD || 'admin1';
   const fullName = process.env.INITIAL_ADMIN_NAME || 'Super Admin';
 
   const passwordHash = await bcrypt.hash(rawPassword, 12);

@@ -1,7 +1,7 @@
 import { facebookPublisherService } from "./facebookPublisher.service.js";
 import { instagramPublisherService } from "./instagramPublisher.service.js";
 import { linkedinPublisherService } from "./linkedinPublisher.service.js";
-import { mockSocialPublisherService } from "../mockSocialPublisher.service.js";
+import { mockSocialPublisherService } from "./mockSocialPublisher.service.js";
 import { socialRepository } from "../social.repository.js";
 import { decryptToken } from "../../../common/helpers/encryption.helper.js";
 import { logger } from "../../../config/logger.js";

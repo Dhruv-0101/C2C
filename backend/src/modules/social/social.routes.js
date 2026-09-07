@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { socialController } from './social.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
+import { validate } from '../../common/middleware/validate.middleware.js';
+import { connectManualSchema, disconnectAccountSchema } from './social.validator.js';
 
 const router = Router();
 
@@ -21,9 +23,9 @@ router.get('/auth-url/instagram', socialController.getInstagramAuthUrl);
 router.get('/auth-url/linkedin', socialController.getLinkedinAuthUrl);
 
 // POST /api/v1/social/connect-manual
-router.post('/connect-manual', socialController.connectManualHandle);
+router.post('/connect-manual', validate(connectManualSchema), socialController.connectManualHandle);
 
 // DELETE /api/v1/social/accounts/:platform
-router.delete('/accounts/:platform', socialController.disconnectAccount);
+router.delete('/accounts/:platform', validate(disconnectAccountSchema), socialController.disconnectAccount);
 
 export default router;
