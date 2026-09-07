@@ -1,4 +1,4 @@
-name: BrandFlow CI/CD Pipeline
+name: BrandFlow Continuous Integration (CI)
 
 on:
   push:
@@ -7,63 +7,100 @@ on:
     branches: [ main, master, develop ]
 
 jobs:
-  validate-and-lint:
-    name: 🔍 Validate Fullstack Dependencies & Schema
+  # ============================================================================
+  # 1. Backend API & Database Schema Validation
+  # ============================================================================
+  backend-ci:
+    name: ⚙️ Backend & Prisma Schema Validation
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
       - name: ⚙️ Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
-      - name: 📦 Install & Validate Backend
-        env:
-          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/brandflow_ci_db?schema=public"
+      - name: 📦 Install Backend Dependencies
         run: |
           cd backend
-          npm install
+          npm ci
+
+      - name: 💎 Validate Prisma Schema & Generate Client
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword2026@localhost:5432/brandflow_ci_db?schema=public"
+        run: |
+          cd backend
           npx prisma validate
           npx prisma generate
 
-      - name: 🎨 Install & Validate Frontend
-        env:
-          VITE_API_BASE_URL_PROD: "https://c2c-negk.onrender.com/api/v1"
-        run: |
-          cd frontend
-          npm install
-          npm run build
-
-  docker-build:
-    name: 🐳 Docker Container Build Check
-    needs: validate-and-lint
+  # ============================================================================
+  # 2. Frontend React Build & Type Verification
+  # ============================================================================
+  frontend-ci:
+    name: 🎨 Frontend React & Vite Production Build Check
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: 🏗️ Compile Production React Bundle (Vite)
+        env:
+          VITE_API_BASE_URL: "http://localhost:5000/api/v1"
+        run: |
+          cd frontend
+          npm run build
+
+  # ============================================================================
+  # 3. Docker Container Build Verification (Buildx + GHA Cache)
+  # ============================================================================
+  docker-ci:
+    name: 🐳 Docker Multi-Stage Image Build Check
+    needs: [backend-ci, frontend-ci]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
       - name: ⚙️ Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 🏗️ Build Backend Docker Image
+      - name: 🏗️ Build Backend Docker Image (Production Target)
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/Dockerfile
           target: production
           push: false
-          tags: brandflow-backend:test
+          tags: brandflow-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: 🏗️ Build Frontend Docker Image
+      - name: 🏗️ Build Frontend Docker Image (Production Target)
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           target: production
           push: false
-          tags: brandflow-frontend:test
-
+          tags: brandflow-frontend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

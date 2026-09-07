@@ -1,0 +1,48 @@
+name: BrandFlow Automated CD Deployment (AWS EC2)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual trigger'
+        required: false
+        default: 'Manual release trigger'
+
+jobs:
+  deploy-to-ec2:
+    name: 🚀 Deploy to AWS EC2 (Pattern 1 / Production Stack)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 SSH Remote Deployment to AWS EC2 Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST || '54.144.96.139' }}
+          username: ${{ secrets.EC2_USER || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            echo "🚀 Initiating Automated Production Deployment on AWS EC2..."
+            
+            # Navigate to workspace repository
+            cd /home/ubuntu/BrandFlow/C2C || cd ~/BrandFlow/C2C || cd ~/app
+            
+            # Fetch latest release from main branch
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Rebuild and restart production Docker containers
+            docker compose -f docker-compose.prod.yml up -d --build
+            
+            # Run Prisma database migrations inside production container
+            docker exec brandflow-backend-prod npx prisma db push
+            
+            # Clean dangling Docker image layers to preserve disk space
+            docker image prune -f
+            
+            echo "✅ Production Deployment Successfully Completed!"
