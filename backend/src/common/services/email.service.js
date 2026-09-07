@@ -19,16 +19,17 @@ if (env.SMTP_USER && env.SMTP_PASS) {
       pass: env.SMTP_PASS,
     },
     tls: {
-      rejectUnauthorized: false, // Prevents cloud SSL certificate handshake rejection
+      rejectUnauthorized: env.NODE_ENV === 'production', // Enforce strict TLS certificate verification in production
     },
   });
 
-  // Verify SMTP Connection readiness on startup
+  // Verify SMTP Connection readiness on startup gracefully
   transporter.verify((error) => {
     if (error) {
-      logger.error('❌ SMTP Email Transporter connection failed:', error.message);
+      logger.warn(`⚠️ SMTP Connection warning (${error.message}). Falling back to Email Simulation mode.`);
+      transporter = null;
     } else {
-      logger.success(`✅ SMTP Email Transporter connected & ready to send real emails via ${env.SMTP_USER}!`);
+      logger.success(`✅ SMTP Transporter initialized & authenticated via ${env.SMTP_USER}!`);
     }
   });
 }

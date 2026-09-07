@@ -1,0 +1,93 @@
+{
+  "info": {
+    "_postman_id": "bf-categories-v1",
+    "name": "BrandFlow — Categories Module",
+    "description": "API endpoints for Business Categories management.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Business Categories",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/categories?page=1&limit=20",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Business Category (SuperAdmin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Real Estate & Property\",\n  \"slug\": \"real-estate\",\n  \"description\": \"Real estate agents, property consultants, and construction companies.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/categories",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Business Category (SuperAdmin)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/categories/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "category_id_here"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

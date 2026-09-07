@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-master-api-v5",
-    "name": "BrandFlow Enterprise Platform — Complete API Suite (v5)",
-    "description": "Comprehensive production API collection for BrandFlow AI Social Media Platform. Contains complete test suites for Auth, RBAC, 2FA, Categories, BrandKit, Transparent PNG Frame Blueprints (configJson), Base Graphic Templates, User Composited Posts (userConfigJson), and Content Calendar Festivals.",
+    "_postman_id": "bf-master-api-v6",
+    "name": "BrandFlow Enterprise Platform — Complete API Suite (v6)",
+    "description": "Comprehensive production API collection for BrandFlow AI Social Media Platform. Contains complete test suites for Auth, RBAC, 2FA, Business Categories, Design Styles, BrandKit, Transparent PNG Frame Blueprints, Graphic Base Templates, User Composited Posts, Content Calendar Festivals, Graphic Vault, and Social Media Integrations.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -98,7 +98,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user@brandflow.ai\",\n  \"password\": \"Password123!\"\n}"
+              "raw": "{\n  \"email\": \"admin@brandflow.com\",\n  \"password\": \"Admin@123456\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -137,7 +137,173 @@
       ]
     },
     {
-      "name": "2. AI BrandKit Profile Module",
+      "name": "2. Business Categories Module",
+      "item": [
+        {
+          "name": "Get All Business Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories?page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Business Category (SuperAdmin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Real Estate & Property\",\n  \"slug\": \"real-estate\",\n  \"description\": \"Real estate consultants and brokers.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Business Category (SuperAdmin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "category_id"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Design Styles & Palettes Module",
+      "item": [
+        {
+          "name": "Get All Master Design Styles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/design-styles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "design-styles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Master Design Style",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Gold Luxe Minimalist\",\n  \"slug\": \"gold-luxe-minimalist\",\n  \"primaryColor\": \"#F59E0B\",\n  \"secondaryColor\": \"#1E293B\",\n  \"accentColor\": \"#10B981\",\n  \"fontFamily\": \"Plus Jakarta Sans\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/design-styles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "design-styles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Design Style",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/design-styles/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "design-styles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "style_id"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. AI BrandKit Profile Module",
       "item": [
         {
           "name": "Get BrandKit Profile",
@@ -192,7 +358,7 @@
       ]
     },
     {
-      "name": "3. Transparent PNG Overlay Frames & Config Engine",
+      "name": "5. Transparent PNG Overlay Frames & Config Engine",
       "item": [
         {
           "name": "Get All Active Frames",
@@ -231,7 +397,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Gold Festival Overlay Frame\",\n  \"description\": \"Enterprise Canva frame with dynamic text & photo slots.\",\n  \"base64Overlay\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"configJson\": {\n    \"elements\": [\n      {\n        \"id\": \"shape_1\",\n        \"type\": \"CAPSULE\",\n        \"slotCategory\": \"STATIC_SHAPE\",\n        \"x\": 200,\n        \"y\": 900,\n        \"width\": 680,\n        \"height\": 120,\n        \"fillColor\": \"#EAB308\"\n      },\n      {\n        \"id\": \"circle_1\",\n        \"type\": \"CIRCLE\",\n        \"slotCategory\": \"IMAGE_SLOT\",\n        \"dynamicSlot\": \"AVATAR_CIRCLE\",\n        \"customLabel\": \"Profile Headshot\",\n        \"x\": 215,\n        \"y\": 910,\n        \"width\": 100,\n        \"height\": 100\n      },\n      {\n        \"id\": \"text_1\",\n        \"type\": \"TEXT\",\n        \"slotCategory\": \"TEXT_INPUT\",\n        \"dynamicSlot\": \"PHONE\",\n        \"customLabel\": \"Phone Number\",\n        \"fieldKey\": \"phone\",\n        \"iconPrefix\": \"📞\",\n        \"text\": \"+91 8320369230\",\n        \"x\": 340,\n        \"y\": 945,\n        \"width\": 500,\n        \"height\": 50,\n        \"fontSize\": 28\n      }\n    ]\n  }\n}"
+              "raw": "{\n  \"title\": \"Gold Festival Overlay Frame\",\n  \"description\": \"Enterprise Canva frame with dynamic text & photo slots.\",\n  \"base64Overlay\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"configJson\": {\n    \"elements\": [\n      {\n        \"id\": \"shape_1\",\n        \"type\": \"CAPSULE\",\n        \"slotCategory\": \"STATIC_SHAPE\",\n        \"x\": 200,\n        \"y\": 900,\n        \"width\": 680,\n        \"height\": 120,\n        \"fillColor\": \"#EAB308\"\n      }\n    ]\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/frames",
@@ -275,7 +441,7 @@
       ]
     },
     {
-      "name": "4. Graphic Base Templates Module",
+      "name": "6. Graphic Base Templates Module",
       "item": [
         {
           "name": "Get Graphic Base Templates",
@@ -331,7 +497,7 @@
       ]
     },
     {
-      "name": "5. User Composited Posts & Instances",
+      "name": "7. User Composited Posts & Instances",
       "item": [
         {
           "name": "Get User Composited Posts",
@@ -355,7 +521,7 @@
           }
         },
         {
-          "name": "Save Composited Post with userConfigJson",
+          "name": "Save Composited Post",
           "request": {
             "method": "POST",
             "header": [
@@ -370,7 +536,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"templateId\": \"template_id\",\n  \"frameId\": \"frame_id\",\n  \"customText\": \"Diwali Special Offer\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\"\n  }\n}"
+              "raw": "{\n  \"templateId\": \"template_id\",\n  \"frameId\": \"frame_id\",\n  \"customText\": \"Diwali Special Offer\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/posts",
@@ -386,7 +552,7 @@
       ]
     },
     {
-      "name": "6. Festivals & Content Calendar",
+      "name": "8. Festivals & Content Calendar",
       "item": [
         {
           "name": "Get Festival Events Calendar",
@@ -434,6 +600,256 @@
               ],
               "path": [
                 "festivals"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Graphic Vault Module",
+      "item": [
+        {
+          "name": "Get Graphic Vault Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vault?page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vault"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Vault Item By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vault/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vault",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "vault_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Vault Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customText\": \"Updated Diwali Festival Banner\",\n  \"status\": \"READY\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vault/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vault",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "vault_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Vault Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vault/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vault",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "vault_id"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Social Media & OAuth Module",
+      "item": [
+        {
+          "name": "Get Connected Social Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social",
+                "accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Instagram OAuth Redirect URL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social/auth-url/instagram",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social",
+                "auth-url",
+                "instagram"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get LinkedIn OAuth Redirect URL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social/auth-url/linkedin",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social",
+                "auth-url",
+                "linkedin"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Connect Social Handle Manually",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"INSTAGRAM\",\n  \"accountName\": \"sunrise_real_estate\",\n  \"handle\": \"@sunrise_real_estate\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/social/connect-manual",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social",
+                "connect-manual"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Disconnect Social Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/social/accounts/:platform",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social",
+                "accounts",
+                ":platform"
+              ],
+              "variable": [
+                {
+                  "key": "platform",
+                  "value": "INSTAGRAM"
+                }
               ]
             }
           }

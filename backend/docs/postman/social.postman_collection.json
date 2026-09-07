@@ -1,0 +1,137 @@
+{
+  "info": {
+    "_postman_id": "bf-social-v1",
+    "name": "BrandFlow — Social Media Integration Module",
+    "description": "API endpoints for Meta/Instagram, LinkedIn accounts and OAuth connections.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Connected Social Accounts",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/social/accounts",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "social",
+            "accounts"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Instagram OAuth Redirect URL",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/social/auth-url/instagram",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "social",
+            "auth-url",
+            "instagram"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get LinkedIn OAuth Redirect URL",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/social/auth-url/linkedin",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "social",
+            "auth-url",
+            "linkedin"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Connect Social Handle Manually",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"platform\": \"INSTAGRAM\",\n  \"accountName\": \"sunrise_real_estate\",\n  \"handle\": \"@sunrise_real_estate\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/social/connect-manual",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "social",
+            "connect-manual"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Disconnect Social Account",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/social/accounts/:platform",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "social",
+            "accounts",
+            ":platform"
+          ],
+          "variable": [
+            {
+              "key": "platform",
+              "value": "INSTAGRAM"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

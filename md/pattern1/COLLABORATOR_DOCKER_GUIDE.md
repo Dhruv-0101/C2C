@@ -2,9 +2,42 @@
 
 This guide explains how collaborators on the team can seamlessly write code in **Frontend** and **Backend** while running the application inside Docker, including **when changes sync automatically** and **when Docker commands are required**.
 
+## 🚀 1. First-Time Developer Setup (One-Time Onboarding)
+
+If you are joining the BrandFlow project for the first time on a new laptop, follow these 5 quick steps to get running in under 2 minutes:
+
+### Step 1: Clone Repository & Open Folder
+```bash
+git clone <REPOSITORY_URL>
+cd C2C
+```
+
+### Step 2: Create Local Environment Configuration
+Copy `.env.example` to create your local `.env` file:
+```bash
+cp .env.example .env
+```
+*(Pre-set local environment defaults work 100% out-of-the-box with Docker)*
+
+### Step 3: Build & Launch Docker Containers
+```bash
+docker compose up -d --build
+```
+
+### Step 4: Sync Database Schema & Seed SuperAdmin User
+```bash
+docker exec -it brandflow-backend npx prisma db push
+docker exec -it brandflow-backend npx prisma db seed
+```
+
+### Step 5: Access Application
+- 🎨 **Frontend Web App**: `http://localhost:5173`
+- ⚙️ **Backend REST API**: `http://localhost:5000/api/v1`
+- 🔐 **SuperAdmin Credentials**: `admin@brandflow.com` / `Admin@123456`
+
 ---
 
-## ⚡ 1. Daily Code Editing (Automatic Hot-Reloading)
+## ⚡ 2. Daily Code Editing (Automatic Hot-Reloading)
 
 When you make changes to regular source code files, **you DO NOT need to restart or rebuild Docker!**
 

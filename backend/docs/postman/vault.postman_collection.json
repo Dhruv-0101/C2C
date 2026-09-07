@@ -1,0 +1,133 @@
+{
+  "info": {
+    "_postman_id": "bf-vault-v1",
+    "name": "BrandFlow — Graphic Vault Module",
+    "description": "API endpoints for User Graphic Vault & Saved Designs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Graphic Vault Items",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/vault?page=1&limit=20",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "vault"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Vault Item By ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/vault/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "vault",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "vault_item_id_here"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update Vault Item",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customText\": \"Updated Diwali Festival Banner Text\",\n  \"status\": \"READY\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/vault/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "vault",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "vault_item_id_here"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Vault Item",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/vault/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "vault",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "vault_item_id_here"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
