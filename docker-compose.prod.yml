@@ -11,7 +11,7 @@ services:
   # ============================================================================
   # 1. PostgreSQL Production Relational Database Service
   # ============================================================================
-  postgres:
+  brandflow-postgres:
     image: postgres:16-alpine
     container_name: brandflow-postgres-prod
     restart: always # Auto-restarts DB container if host reboots or crashes
@@ -35,7 +35,7 @@ services:
   # ============================================================================
   # 2. Redis Production In-Memory Store & BullMQ Task Queue Service
   # ============================================================================
-  redis:
+  brandflow-redis:
     image: redis:7-alpine
     container_name: brandflow-redis-prod
     restart: always
@@ -53,7 +53,7 @@ services:
   # ============================================================================
   # 3. Express Backend API Service (Production Build Stage: AS production)
   # ============================================================================
-  backend:
+  brandflow-backend:
     build:
       context: ./backend # Path to backend folder
       target: production # EXPLICITLY TARGETS STAGE 3 (production) in backend/Dockerfile
@@ -66,8 +66,8 @@ services:
       PORT: ${PORT:-5000}
       NODE_ENV: production
       # Production DB Connection String (Internal Docker DNS resolution)
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgrespassword2026@postgres:5432/brandflow_db?schema=public}
-      REDIS_HOST: ${REDIS_HOST:-redis}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgrespassword2026@brandflow-postgres:5432/brandflow_db?schema=public}
+      REDIS_HOST: ${REDIS_HOST:-brandflow-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-super_secret_access_key_brandflow_2026}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super_secret_refresh_key_brandflow_2026}
@@ -76,15 +76,15 @@ services:
       - "${PORT:-5000}:5000"
     depends_on:
       # Backend container boots ONLY after PostgreSQL and Redis are 100% HEALTHY
-      postgres:
+      brandflow-postgres:
         condition: service_healthy
-      redis:
+      brandflow-redis:
         condition: service_healthy
 
   # ============================================================================
   # 4. React Frontend Nginx Web Server Service (Production Build Stage: AS production)
   # ============================================================================
-  frontend:
+  brandflow-frontend:
     build:
       context: ./frontend # Path to frontend folder
       target: production # EXPLICITLY TARGETS STAGE 4 (production Nginx) in frontend/Dockerfile
@@ -95,7 +95,7 @@ services:
     ports:
       - "${HTTP_PORT:-80}:80" # Serves high-performance compiled React bundle via Nginx on HTTP port 80
     depends_on:
-      - backend
+      - brandflow-backend
 
 # ==============================================================================
 # Persistent Production Named Volumes

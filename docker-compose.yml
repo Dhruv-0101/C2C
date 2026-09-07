@@ -11,7 +11,7 @@ services:
   # ============================================================================
   # 1. PostgreSQL Relational Database Service
   # ============================================================================
-  postgres:
+  brandflow-postgres:
     # Official lightweight Alpine Linux image for PostgreSQL 16
     image: postgres:16-alpine
     # Explicit container identifier in Docker engine network
@@ -31,6 +31,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     # Health Monitoring: Uses pg_isready utility to verify PostgreSQL is accepting connections
+    # Breakdown of test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]:
+    # - test:       -> Docker directive defining the health check execution script
+    # - CMD-SHELL   -> Executes the command string inside container's default shell (/bin/sh -c)
+    # - pg_isready  -> Official PostgreSQL CLI binary utility that tests if DB server is accepting connections (returns exit code 0 when ready)
+    # - -U          -> Flag specifying the PostgreSQL Database User to authenticate/test connection as
+    # - ${POSTGRES_USER:-postgres} -> Evaluates DB username from .env file (defaulting to 'postgres' if unset)
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s       # Test every 10 seconds
@@ -41,7 +47,7 @@ services:
   # ============================================================================
   # 2. Redis In-Memory Store & BullMQ Task Queue Service
   # ============================================================================
-  redis:
+  brandflow-redis:
     # Official lightweight Alpine Linux image for Redis 7
     image: redis:7-alpine
     container_name: brandflow-redis
@@ -62,7 +68,7 @@ services:
   # ============================================================================
   # 3. Node.js / Express Backend Service (Multi-Stage Target: development)
   # ============================================================================
-  backend:
+  brandflow-backend:
     build:
       context: ./backend # Path to backend source directory containing Dockerfile
       target: development # Explicitly targets STAGE 2 (development) in backend/Dockerfile
@@ -79,10 +85,10 @@ services:
     environment:
       PORT: ${PORT:-5000}
       NODE_ENV: ${NODE_ENV:-development}
-      # Connection string uses Docker internal DNS name 'postgres' (not localhost!)
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgrespassword2026@postgres:5432/brandflow_db?schema=public}
-      # Connection string uses Docker internal DNS name 'redis' (not localhost!)
-      REDIS_HOST: ${REDIS_HOST:-redis}
+      # Connection string uses Docker internal DNS name 'brandflow-postgres' (not localhost!)
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgrespassword2026@brandflow-postgres:5432/brandflow_db?schema=public}
+      # Connection string uses Docker internal DNS name 'brandflow-redis' (not localhost!)
+      REDIS_HOST: ${REDIS_HOST:-brandflow-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-super_secret_access_key_brandflow_2026}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super_secret_refresh_key_brandflow_2026}
@@ -94,15 +100,15 @@ services:
       - /app/node_modules
     depends_on:
       # Strict Startup Dependency: Backend starts ONLY AFTER PostgreSQL & Redis are 100% HEALTHY
-      postgres:
+      brandflow-postgres:
         condition: service_healthy
-      redis:
+      brandflow-redis:
         condition: service_healthy
 
   # ============================================================================
   # 4. React.js / Vite Frontend Service (Multi-Stage Target: development)
   # ============================================================================
-  frontend:
+  brandflow-frontend:
     build:
       context: ./frontend # Path to frontend source directory containing Dockerfile
       target: development # Explicitly targets STAGE 2 (development) in frontend/Dockerfile
@@ -121,7 +127,7 @@ services:
       - /app/node_modules
     depends_on:
       # Ensures frontend starts after backend service is initialized
-      - backend
+      - brandflow-backend
 
 # ==============================================================================
 # Persistent Named Volume Definitions (Managed by Docker Engine)
