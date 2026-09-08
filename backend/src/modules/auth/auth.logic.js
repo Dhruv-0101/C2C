@@ -64,7 +64,7 @@ export async function loginWithGoogle({ idToken }) {
     });
 
     // Dispatch Welcome Email Job
-    addWelcomeEmailJob({ email: user.email, fullName: user.fullName }).catch(() => {});
+    addWelcomeEmailJob({ email: user.email, fullName: user.fullName }).catch(() => { });
   } else {
     if (!user.isActive) {
       throw new UnauthorizedError('Your account has been deactivated. Please contact support.');
@@ -76,7 +76,7 @@ export async function loginWithGoogle({ idToken }) {
     if (!user.isGoogleRegistered) updates.isGoogleRegistered = true;
 
     if (Object.keys(updates).length > 0) {
-      await authRepository.updateUserProfile(user.id, updates).catch(() => {});
+      await authRepository.updateUserProfile(user.id, updates).catch(() => { });
     }
   }
 
@@ -505,7 +505,7 @@ export async function refreshSession(refreshToken) {
 export async function logoutUser(refreshToken) {
   if (refreshToken) {
     const tokenHash = hashToken(refreshToken);
-    await authRepository.revokeRefreshToken(tokenHash).catch(() => {});
+    await authRepository.revokeRefreshToken(tokenHash).catch(() => { });
   }
 }
 
@@ -590,7 +590,7 @@ export async function resetPassword({ token, newPassword }) {
   await authRepository.markResetTokenUsed(resetTokenRecord.id);
 
   // Revoke all existing refresh sessions for security
-  await authRepository.revokeAllUserTokens(resetTokenRecord.userId).catch(() => {});
+  await authRepository.revokeAllUserTokens(resetTokenRecord.userId).catch(() => { });
 
   return { message: 'Password reset successful! You can now log in with your new password.' };
 }

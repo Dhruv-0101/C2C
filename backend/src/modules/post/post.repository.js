@@ -123,8 +123,27 @@ export const postRepository = {
   },
 
   /**
-   * Find scheduled posts for a user
+   * Find scheduled posts for a user with pagination
    */
+  findPaginatedScheduledByUserId: async (userId, { skip = 0, take = 10 }) => {
+    const where = { post: { userId } };
+
+    const [scheduledPosts, totalCount] = await Promise.all([
+      prisma.scheduledPost.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          post: true,
+        },
+        orderBy: { scheduledAt: 'asc' },
+      }),
+      prisma.scheduledPost.count({ where }),
+    ]);
+
+    return { scheduledPosts, totalCount };
+  },
+
   findScheduledPostsByUserId: async (userId) => {
     return prisma.scheduledPost.findMany({
       where: {
@@ -153,6 +172,42 @@ export const postRepository = {
       },
       take: limit,
     });
+  },
+
+  /**
+   * Find all posts belonging to a user with pagination & optional search
+   */
+  findPaginatedByUserId: async (userId, { skip = 0, take = 10, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
+    const where = {
+      userId,
+      ...(search
+        ? {
+            OR: [
+              { customText: { contains: search, mode: 'insensitive' } },
+              { caption: { contains: search, mode: 'insensitive' } },
+              { festival: { name: { contains: search, mode: 'insensitive' } } },
+              { category: { name: { contains: search, mode: 'insensitive' } } },
+            ],
+          }
+        : {}),
+    };
+
+    const [posts, totalCount] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          template: true,
+          festival: true,
+          category: true,
+        },
+        orderBy: { [sortBy]: sortOrder },
+      }),
+      prisma.post.count({ where }),
+    ]);
+
+    return { posts, totalCount };
   },
 
   /**

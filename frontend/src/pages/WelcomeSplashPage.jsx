@@ -10,7 +10,6 @@ import {
   Wand2,
   Clock,
   Send,
-  FolderKanban,
   Check,
   Sparkles,
 } from "lucide-react";
@@ -170,7 +169,7 @@ export const WelcomeSplashPage = () => {
               See BrandFlow in Action
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
-              Test how business details seamlessly auto-populate onto vector
+              Test how business details seamlessly auto-populate onto custom brand
               frames in real-time.
             </p>
           </div>
@@ -199,11 +198,10 @@ export const WelcomeSplashPage = () => {
             {/* Step 1 */}
             <div
               onClick={() => setActiveStep(1)}
-              className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 ${
-                activeStep === 1
+              className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 ${activeStep === 1
                   ? "bg-[#131B2A] border-amber-400/80 shadow-xl shadow-amber-500/10"
                   : "bg-[#131B2A]/60 border-[#2C384E] hover:border-amber-500/40"
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-400 flex items-center justify-center font-extrabold text-sm font-mono">
@@ -215,8 +213,7 @@ export const WelcomeSplashPage = () => {
                 1. Select Event or Offer
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Choose an upcoming festival (Diwali, New Year, Independence Day)
-                or custom business promotion.
+                Choose from upcoming festivals, seasonal holidays, or custom business promotions.
               </p>
               <div className="pt-2 text-xs font-mono text-amber-400 flex items-center gap-1.5 font-bold border-t border-amber-500/20">
                 <Check className="w-4 h-4" /> Ready-made templates
@@ -226,11 +223,10 @@ export const WelcomeSplashPage = () => {
             {/* Step 2 */}
             <div
               onClick={() => setActiveStep(2)}
-              className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 ${
-                activeStep === 2
+              className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 ${activeStep === 2
                   ? "bg-[#131B2A] border-teal-400/80 shadow-xl shadow-teal-500/10"
                   : "bg-[#131B2A]/60 border-[#2C384E] hover:border-teal-500/40"
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-2xl bg-teal-500/10 border border-teal-500/40 text-teal-400 flex items-center justify-center font-extrabold text-sm font-mono">
@@ -243,7 +239,7 @@ export const WelcomeSplashPage = () => {
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 Your logo, phone number, address, and headshot automatically
-                overlay onto Canva vector frames.
+                overlay onto custom brand frames.
               </p>
               <div className="pt-2 text-xs font-mono text-teal-400 flex items-center gap-1.5 font-bold border-t border-teal-500/20">
                 <Check className="w-4 h-4" /> 100% Brand consistency
@@ -253,11 +249,10 @@ export const WelcomeSplashPage = () => {
             {/* Step 3 */}
             <div
               onClick={() => setActiveStep(3)}
-              className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 ${
-                activeStep === 3
+              className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 ${activeStep === 3
                   ? "bg-[#131B2A] border-indigo-400/80 shadow-xl shadow-indigo-500/10"
                   : "bg-[#131B2A]/60 border-[#2C384E] hover:border-indigo-500/40"
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/40 text-indigo-400 flex items-center justify-center font-extrabold text-sm font-mono">
@@ -292,84 +287,77 @@ export const WelcomeSplashPage = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
-            <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-amber-500/50 transition-all duration-200 space-y-2.5">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
-                <Building2 className="w-4.5 h-4.5" />
-              </div>
-              <h3 className="font-heading font-extrabold text-base text-white">
-                Master BrandKit
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Save your business logo, primary colors, contact details, and
-                handles once for automatic placement.
-              </p>
-            </Card>
+          <div className="space-y-5 text-left">
+            {/* Top Row: 3 Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-amber-500/50 transition-all duration-200 space-y-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                  <Building2 className="w-4.5 h-4.5" />
+                </div>
+                <h3 className="font-heading font-extrabold text-base text-white">
+                  Master BrandKit
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Save your business logo, contact details, and
+                  handles once for automatic placement.
+                </p>
+              </Card>
 
-            <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-teal-500/50 transition-all duration-200 space-y-2.5">
-              <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center">
-                <Layers className="w-4.5 h-4.5" />
-              </div>
-              <h3 className="font-heading font-extrabold text-base text-white">
-                Vector Frame Studio
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Overlay transparent vector frames with headshot rings and logo
-                containers dynamically in real-time.
-              </p>
-            </Card>
+              <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-teal-500/50 transition-all duration-200 space-y-2.5">
+                <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center">
+                  <Layers className="w-4.5 h-4.5" />
+                </div>
+                <h3 className="font-heading font-extrabold text-base text-white">
+                  Brand Frame Studio
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Overlay custom brand frames with photo rings, badges, and logo
+                  containers dynamically in real-time.
+                </p>
+              </Card>
 
-            <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-indigo-500/50 transition-all duration-200 space-y-2.5">
-              <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
-                <Calendar className="w-4.5 h-4.5" />
-              </div>
-              <h3 className="font-heading font-extrabold text-base text-white">
-                Festival Calendar
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Never miss key dates with automated festival prompts for
-                holidays and national celebrations.
-              </p>
-            </Card>
+              <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-indigo-500/50 transition-all duration-200 space-y-2.5 sm:col-span-2 lg:col-span-1">
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+                  <Calendar className="w-4.5 h-4.5" />
+                </div>
+                <h3 className="font-heading font-extrabold text-base text-white">
+                  Festival Calendar
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Never miss key dates with automated festival prompts for
+                  holidays and national celebrations.
+                </p>
+              </Card>
+            </div>
 
-            <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-emerald-500/50 transition-all duration-200 space-y-2.5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
-                <Wand2 className="w-4.5 h-4.5" />
-              </div>
-              <h3 className="font-heading font-extrabold text-base text-white">
-                Caption & Copy Writer
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Generate high-converting post captions, promotional copy, and
-                trending hashtags for your niche.
-              </p>
-            </Card>
+            {/* Bottom Row: 2 Centered Cards */}
+            <div className="flex flex-col sm:flex-row justify-center items-stretch gap-5">
+              <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-emerald-500/50 transition-all duration-200 space-y-2.5 w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                  <Wand2 className="w-4.5 h-4.5" />
+                </div>
+                <h3 className="font-heading font-extrabold text-base text-white">
+                  Caption & Copy Writer
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Generate high-converting post captions, promotional copy, and
+                  trending hashtags for your niche.
+                </p>
+              </Card>
 
-            <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-cyan-500/50 transition-all duration-200 space-y-2.5">
-              <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
-                <Clock className="w-4.5 h-4.5" />
-              </div>
-              <h3 className="font-heading font-extrabold text-base text-white">
-                Multi-Channel Queue
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Queue and schedule posts for peak audience engagement across
-                Instagram, Facebook, and LinkedIn.
-              </p>
-            </Card>
-
-            <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-rose-500/50 transition-all duration-200 space-y-2.5">
-              <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center">
-                <FolderKanban className="w-4.5 h-4.5" />
-              </div>
-              <h3 className="font-heading font-extrabold text-base text-white">
-                Asset Vault
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Store and organize your graphics, published posts, and reusable
-                design assets in one place.
-              </p>
-            </Card>
+              <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-cyan-500/50 transition-all duration-200 space-y-2.5 w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                  <Clock className="w-4.5 h-4.5" />
+                </div>
+                <h3 className="font-heading font-extrabold text-base text-white">
+                  Multi-Channel Queue
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Queue and schedule posts for peak audience engagement across
+                  Instagram, Facebook, and LinkedIn.
+                </p>
+              </Card>
+            </div>
           </div>
         </section>
 

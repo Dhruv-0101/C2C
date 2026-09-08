@@ -113,10 +113,10 @@ export const PostStudioEditorView = ({
         <div>
           <h1 className="font-heading font-extrabold text-2xl text-white flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-amber-400" />
-            <span>AI Post Studio & Canva Frame Engine</span>
+            <span>AI Post Studio & Brand Frame Engine</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Composite master graphic backgrounds with Canva vector frames & your AI BrandKit.
+            Combine master graphic backgrounds with custom brand frames & your AI BrandKit.
           </p>
         </div>
 
@@ -491,17 +491,17 @@ export const PostStudioEditorView = ({
               <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
                 <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
                   <Layers className="w-5 h-5 text-amber-400" />
-                  <span>Step 2: Select Canva Vector Frame Overlay</span>
+                  <span>Step 2: Select Custom Brand Frame</span>
                 </h3>
                 <span className="text-xs font-semibold text-amber-400 font-mono">2 / 4</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[220px]">
                 {isLoadingFrames ? (
-                  <div className="col-span-3 p-12 text-center text-slate-400 text-xs">Loading vector frames...</div>
+                  <div className="col-span-3 p-12 text-center text-slate-400 text-xs">Loading brand frames...</div>
                 ) : frames.length === 0 ? (
                   <div className="col-span-3 p-8 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
-                    No Canva vector frames created yet.
+                    No custom brand frames created yet.
                   </div>
                 ) : (
                   frames.map((frame) => (
@@ -531,7 +531,7 @@ export const PostStudioEditorView = ({
                       {/* Top Header Row with Badge & Zoom Button */}
                       <div className="relative z-20 w-full flex items-center justify-between pointer-events-auto">
                         <div className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[9px] font-extrabold uppercase backdrop-blur-md">
-                          {frame.isSystem ? "✨ Vector Frame" : "Custom"}
+                          {frame.isSystem ? "✨ Brand Frame" : "Custom"}
                         </div>
 
                         <button
@@ -559,7 +559,7 @@ export const PostStudioEditorView = ({
                       {/* Bottom Overlay Label */}
                       <div className="relative z-20 w-full bg-black/85 backdrop-blur-sm p-1.5 rounded-lg border border-[#2C384E] text-left">
                         <p className="text-[11px] font-extrabold text-white truncate">{frame.title}</p>
-                        <p className="text-[9px] text-slate-400 truncate">{frame.description || "Vector Canva Frame"}</p>
+                        <p className="text-[9px] text-slate-400 truncate">{frame.description || "Custom Brand Frame"}</p>
                       </div>
                     </button>
                   ))
@@ -809,7 +809,7 @@ export const PostStudioEditorView = ({
                     {zoomedFrame.title}
                   </h3>
                   <p className="text-xs text-slate-400 truncate">
-                    {zoomedFrame.description || "Canva Vector Frame with sample text details"}
+                    {zoomedFrame.description || "Custom Brand Frame with sample text details"}
                   </p>
                 </div>
               </div>

@@ -195,3 +195,40 @@ docker stats
 # Clean up all unused images & dangling build caches:
 docker system prune -f
 ```
+
+---
+
+## ❓ 8. Common Errors & Troubleshooting
+
+### Error: `listen tcp 0.0.0.0:5432: bind: address already in use`
+
+#### Cause:
+A local PostgreSQL service is already running directly on your host machine (e.g. via Homebrew or PostgreSQL App), occupying host port `5432`.
+
+#### Solution 1 (Recommended): Stop Local PostgreSQL Service
+Stop the local PostgreSQL process running on your laptop so Docker can claim port `5432`:
+```bash
+# macOS (Homebrew):
+brew services stop postgresql
+
+# 1. Kill the process running on port 5432 (PID 502 from your terminal):
+sudo kill -9 502
+
+# OR run this automated one-liner:
+sudo kill -9 $(sudo lsof -t -i:5432)
+```
+Then start Docker containers again:
+```bash
+docker compose up -d --build
+```
+
+#### Solution 2: Change Port Mapping in `.env`
+If you need your local PostgreSQL service to keep running on host port `5432`, change the host port for Docker in your `.env` file:
+```env
+POSTGRES_PORT=5433
+```
+Then launch Docker Compose:
+```bash
+docker compose up -d --build
+```
+

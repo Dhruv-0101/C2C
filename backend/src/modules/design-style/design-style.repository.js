@@ -1,6 +1,33 @@
 import { prisma } from '../../config/database.js';
 
 /**
+ * Fetch design styles with pagination and search
+ */
+export async function findPaginatedDesignStyles({ skip = 0, take = 10, search, sortBy = 'name', sortOrder = 'asc' }) {
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+        ],
+      }
+    : {};
+
+  const [designStyles, totalCount] = await Promise.all([
+    prisma.designStyle.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { [sortBy]: sortOrder },
+    }),
+    prisma.designStyle.count({ where }),
+  ]);
+
+  return { designStyles, totalCount };
+}
+
+/**
  * Fetch all master design styles ordered by name
  */
 export async function findAllDesignStyles() {

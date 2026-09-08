@@ -107,7 +107,7 @@ export const FrameManagerView = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Canva Vector Builder</span>
+            <span>Brand Frame Builder</span>
           </button>
 
           <button
@@ -132,7 +132,7 @@ export const FrameManagerView = ({
         </div>
       )}
 
-      {/* TAB 1: Canva Vector Builder */}
+      {/* TAB 1: Brand Frame Builder */}
       {activeTab === "canva" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT TOOLBAR (4 Cols): Add Shapes & Element Layer Inspector */}
@@ -1069,7 +1069,7 @@ export const FrameManagerView = ({
                 No frames found.
               </p>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Use the Canva Vector Builder to design and publish your first
+                Use the Brand Frame Builder to design and publish your first
                 frame overlay!
               </p>
             </div>

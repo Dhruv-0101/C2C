@@ -1,6 +1,6 @@
 /**
  * Centralized Query Keys Factory for TanStack Query
- * Prevents string typos and standardizes cache invalidation across the frontend application.
+ * Standardizes cache keys and cache invalidation across the frontend application.
  */
 export const QUERY_KEYS = {
   POSTS: {
@@ -30,6 +30,7 @@ export const QUERY_KEYS = {
   },
   DESIGN_STYLES: {
     ALL: ['designStyles'],
+    LIST: (params = {}) => ['designStyles', 'list', params],
   },
   SUB_ADMINS: {
     ALL: ['subadmins'],
@@ -46,5 +47,11 @@ export const QUERY_KEYS = {
     ALL: ['vault'],
     LIST: (params = {}) => ['vault', 'list', params],
     BY_ID: (id) => ['vault', id],
+  },
+  SOCIAL: {
+    ALL: ['socialAccounts'],
+    LIST: (params = {}) => ['socialAccounts', 'list', params],
+    AUTH_URL: ['instagramAuthUrl'],
+    LINKEDIN_AUTH_URL: ['linkedinAuthUrl'],
   },
 };

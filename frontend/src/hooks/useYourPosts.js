@@ -1,33 +1,40 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { postApi } from "../services/post.api";
 import { QUERY_KEYS } from "../constants/queryKeys";
 
 /**
- * Custom Hook for managing User Posts, Scheduled Posts Queue, and Manual Dispatch Triggers
+ * Custom Hook for managing User Posts, Scheduled Posts Queue, and Manual Dispatch Triggers with central pagination
  */
-export const useYourPosts = () => {
+export const useYourPosts = (initialParams = {}) => {
   const queryClient = useQueryClient();
 
-  // Query User All Posts
+  const [postsPage, setPostsPage] = useState(initialParams.postsPage || 1);
+  const [postsLimit, setPostsLimit] = useState(initialParams.postsLimit || 10);
+
+  const [scheduledPage, setScheduledPage] = useState(initialParams.scheduledPage || 1);
+  const [scheduledLimit, setScheduledLimit] = useState(initialParams.scheduledLimit || 10);
+
+  // Query User All Posts with Pagination
   const {
-    data: postsData,
+    data: postsResponse,
     isLoading: isLoadingPosts,
     error: postsError,
     refetch: refetchPosts,
   } = useQuery({
-    queryKey: QUERY_KEYS.POSTS.ALL,
-    queryFn: () => postApi.getUserPosts(),
+    queryKey: [...QUERY_KEYS.POSTS.ALL, postsPage, postsLimit],
+    queryFn: () => postApi.getUserPosts({ page: postsPage, limit: postsLimit }),
   });
 
-  // Query User Scheduled Posts Queue
+  // Query User Scheduled Posts Queue with Pagination
   const {
-    data: scheduledData,
+    data: scheduledResponse,
     isLoading: isLoadingScheduled,
     error: scheduledError,
     refetch: refetchScheduled,
   } = useQuery({
-    queryKey: QUERY_KEYS.POSTS.SCHEDULED,
-    queryFn: () => postApi.getScheduledPosts(),
+    queryKey: [...QUERY_KEYS.POSTS.SCHEDULED, scheduledPage, scheduledLimit],
+    queryFn: () => postApi.getScheduledPosts({ page: scheduledPage, limit: scheduledLimit }),
   });
 
   // Delete Post Mutation
@@ -49,12 +56,25 @@ export const useYourPosts = () => {
     },
   });
 
-  const posts = postsData?.posts || postsData?.data?.posts || [];
-  const scheduledPosts = scheduledData?.scheduledPosts || scheduledData?.data?.scheduledPosts || [];
+  const posts = postsResponse?.posts || postsResponse?.data?.posts || [];
+  const postsMeta = postsResponse?.meta;
+
+  const scheduledPosts = scheduledResponse?.scheduledPosts || scheduledResponse?.data?.scheduledPosts || [];
+  const scheduledMeta = scheduledResponse?.meta;
 
   return {
     posts,
+    postsMeta,
+    postsPage,
+    setPostsPage,
+    postsLimit,
+    setPostsLimit,
     scheduledPosts,
+    scheduledMeta,
+    scheduledPage,
+    setScheduledPage,
+    scheduledLimit,
+    setScheduledLimit,
     isLoading: isLoadingPosts || isLoadingScheduled,
     error: postsError || scheduledError,
     deletePost: deleteMutation.mutate,

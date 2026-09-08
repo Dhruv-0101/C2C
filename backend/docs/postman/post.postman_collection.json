@@ -1,0 +1,209 @@
+{
+  "info": {
+    "_postman_id": "bf-posts-module-v1",
+    "name": "BrandFlow — Post Collection",
+    "description": "API endpoints for saving, scheduling, instant publishing, and deleting user-composited social media marketing posts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get User Posts",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        },
+        "description": "Fetches all composited posts created by the authenticated user."
+      }
+    },
+    {
+      "name": "2. Get Scheduled Posts Queue",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/posts/scheduled",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts",
+            "scheduled"
+          ]
+        },
+        "description": "Fetches the scheduled posts queue for the authenticated user."
+      }
+    },
+    {
+      "name": "3. Publish Post Now",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"caption\": \"Celebrating Diwali with our valued customers! 🪔✨\",\n  \"platforms\": [\"INSTAGRAM\", \"LINKEDIN\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/posts/publish-now",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts",
+            "publish-now"
+          ]
+        },
+        "description": "Instantly publishes a composited graphic post across connected social media platforms."
+      }
+    },
+    {
+      "name": "4. Schedule Post",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"caption\": \"Exclusive Festive Discounts on MG Road!\",\n  \"scheduledFor\": \"2026-11-08T09:00:00.000Z\",\n  \"platforms\": [\"INSTAGRAM\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/posts/schedule",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts",
+            "schedule"
+          ]
+        },
+        "description": "Schedules a composited post for automatic social media publishing at a future date & time."
+      }
+    },
+    {
+      "name": "5. Trigger Scheduled Jobs Dispatcher",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/posts/trigger-scheduled-jobs",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts",
+            "trigger-scheduled-jobs"
+          ]
+        },
+        "description": "Manually triggers the background cron dispatcher cycle to process due scheduled posts."
+      }
+    },
+    {
+      "name": "6. Create Post",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"frameId\": \"clx456frameid\",\n  \"customText\": \"Happy Diwali from Sunrise Real Estate!\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        },
+        "description": "Saves a composited 1080x1080 post image strictly to Cloudinary 'brandflow/posts', database, and Vault."
+      }
+    },
+    {
+      "name": "7. Delete Post",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/posts/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "post_id_here"
+            }
+          ]
+        },
+        "description": "Deletes a composited post by ID and cleans up associated image from Cloudinary storage."
+      }
+    }
+  ]
+}

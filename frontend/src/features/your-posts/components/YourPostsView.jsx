@@ -17,6 +17,7 @@ import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { SearchBar } from "../../../components/common/SearchBar";
 import { ImageLightbox } from "../../../components/common/ImageLightbox";
+import Pagination from "../../../components/common/Pagination";
 
 /**
  * YourPostsView
@@ -24,7 +25,15 @@ import { ImageLightbox } from "../../../components/common/ImageLightbox";
  */
 export const YourPostsView = ({
   posts,
+  postsMeta,
+  postsPage,
+  setPostsPage,
+  setPostsLimit,
   scheduledPosts,
+  scheduledMeta,
+  scheduledPage,
+  setScheduledPage,
+  setScheduledLimit,
   isLoading,
   error,
   activeTab,
@@ -348,6 +357,23 @@ export const YourPostsView = ({
             ))}
           </div>
         )
+      )}
+
+      {/* Central Pagination Controls */}
+      {activeTab === "SCHEDULED" ? (
+        <Pagination
+          meta={scheduledMeta}
+          currentPage={scheduledPage}
+          onPageChange={setScheduledPage}
+          onLimitChange={setScheduledLimit}
+        />
+      ) : (
+        <Pagination
+          meta={postsMeta}
+          currentPage={postsPage}
+          onPageChange={setPostsPage}
+          onLimitChange={setPostsLimit}
+        />
       )}
 
       {/* Image Lightbox Preview Modal */}

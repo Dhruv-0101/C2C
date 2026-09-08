@@ -6,12 +6,11 @@ import { DesignStylesManagerView } from "../components/DesignStylesManagerView";
 
 export const FONT_HEADER_OPTIONS = [
   "Space Grotesk",
-  "Playfair Display",
   "Outfit",
-  "Cinzel",
-  "Roboto",
+  "Plus Jakarta Sans",
   "Montserrat",
-  "Poppins",
+  "Playfair Display",
+  "Cinzel",
 ];
 
 export const FONT_BODY_OPTIONS = [
@@ -23,64 +22,34 @@ export const FONT_BODY_OPTIONS = [
 ];
 
 export const GRADIENT_PRESETS = [
-  {
-    name: "Sunset Gold",
-    rule: "linear-gradient(135deg, #F59E0B 0%, #EC4899 50%, #8B5CF6 100%)",
-    c1: "#F59E0B",
-    c2: "#EC4899",
-    c3: "#8B5CF6",
-  },
-  {
-    name: "Cyber Neon",
-    rule: "linear-gradient(135deg, #00F0FF 0%, #FF007A 100%)",
-    c1: "#00F0FF",
-    c2: "#FF007A",
-    c3: "",
-  },
-  {
-    name: "Emerald Teal",
-    rule: "linear-gradient(135deg, #0D9488 0%, #10B981 50%, #059669 100%)",
-    c1: "#0D9488",
-    c2: "#10B981",
-    c3: "#059669",
-  },
-  {
-    name: "Royal Flame",
-    rule: "linear-gradient(135deg, #EF4444 0%, #F59E0B 100%)",
-    c1: "#EF4444",
-    c2: "#F59E0B",
-    c3: "",
-  },
-  {
-    name: "Midnight Purple",
-    rule: "linear-gradient(135deg, #1E1B4B 0%, #7C3AED 50%, #DB2777 100%)",
-    c1: "#1E1B4B",
-    c2: "#7C3AED",
-    c3: "#DB2777",
-  },
+  { name: "Sunset Gold", c1: "#F59E0B", c2: "#EC4899", c3: "#8B5CF6", rule: "linear-gradient(135deg, #F59E0B 0%, #EC4899 50%, #8B5CF6 100%)" },
+  { name: "Emerald Cyber", c1: "#10B981", c2: "#06B6D4", c3: "#3B82F6", rule: "linear-gradient(135deg, #10B981 0%, #06B6D4 50%, #3B82F6 100%)" },
+  { name: "Neon Sunset", c1: "#FF007A", c2: "#9600FF", c3: "#00E1FF", rule: "linear-gradient(135deg, #FF007A 0%, #9600FF 50%, #00E1FF 100%)" },
+  { name: "Royal Purple", c1: "#6366F1", c2: "#A855F7", c3: "#EC4899", rule: "linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%)" },
+  { name: "Dark Titan", c1: "#1E293B", c2: "#0F172A", c3: "#020617", rule: "linear-gradient(135deg, #1E293B 0%, #0F172A 50%, #020617 100%)" },
 ];
 
-const loadGoogleFont = (fontName) => {
-  if (!fontName) return;
-  const fontSlug = fontName.replace(/\s+/g, "+");
-  const linkId = `google-font-${fontSlug}`;
-  if (!document.getElementById(linkId)) {
-    const link = document.createElement("link");
-    link.id = linkId;
-    link.rel = "stylesheet";
-    link.href = `https://fonts.googleapis.com/css2?family=${fontSlug}:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap`;
-    document.head.appendChild(link);
-  }
-};
+function loadGoogleFont(fontFamily) {
+  if (!fontFamily) return;
+  const fontId = `google-font-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
+  if (document.getElementById(fontId)) return;
 
-/**
- * DesignStylesManagerContainer
- * Container component handling Master Design Styles, gradient math engine, Google Fonts injection, and mutations.
- */
+  const link = document.createElement("link");
+  link.id = fontId;
+  link.rel = "stylesheet";
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
+    fontFamily
+  )}:wght@400;600;700;800&display=swap`;
+  document.head.appendChild(link);
+}
+
 export const DesignStylesManagerContainer = () => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(9);
 
   const [gradientAngle, setGradientAngle] = useState(135);
   const [blendColor1, setBlendColor1] = useState("#F59E0B");
@@ -101,20 +70,23 @@ export const DesignStylesManagerContainer = () => {
   });
 
   useEffect(() => {
-    let rule = "";
-    if (useThreeColors && blendColor3) {
-      rule = `linear-gradient(${gradientAngle}deg, ${blendColor1} 0%, ${blendColor2} 50%, ${blendColor3} 100%)`;
+    if (useThreeColors) {
+      setFormData((prev) => ({
+        ...prev,
+        gradient: `linear-gradient(${gradientAngle}deg, ${blendColor1} 0%, ${blendColor2} 50%, ${blendColor3} 100%)`,
+        primaryColor: blendColor1,
+        secondaryColor: blendColor2,
+        accentColor: blendColor3,
+      }));
     } else {
-      rule = `linear-gradient(${gradientAngle}deg, ${blendColor1} 0%, ${blendColor2} 100%)`;
+      setFormData((prev) => ({
+        ...prev,
+        gradient: `linear-gradient(${gradientAngle}deg, ${blendColor1} 0%, ${blendColor2} 100%)`,
+        primaryColor: blendColor1,
+        secondaryColor: blendColor2,
+        accentColor: blendColor2,
+      }));
     }
-
-    setFormData((prev) => ({
-      ...prev,
-      gradient: rule,
-      primaryColor: blendColor1,
-      secondaryColor: blendColor2,
-      accentColor: useThreeColors && blendColor3 ? blendColor3 : blendColor2,
-    }));
   }, [gradientAngle, blendColor1, blendColor2, blendColor3, useThreeColors]);
 
   useEffect(() => {
@@ -127,12 +99,13 @@ export const DesignStylesManagerContainer = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: QUERY_KEYS.DESIGN_STYLES.ALL,
-    queryFn: () => designStyleApi.getDesignStyles(),
+    queryKey: [...QUERY_KEYS.DESIGN_STYLES.ALL, page, limit],
+    queryFn: () => designStyleApi.getDesignStyles({ page, limit }),
     staleTime: 5 * 60 * 1000,
   });
 
   const designStyles = designStyleResponse?.data?.designStyles || [];
+  const meta = designStyleResponse?.meta;
 
   useEffect(() => {
     designStyles.forEach((style) => {
@@ -240,6 +213,10 @@ export const DesignStylesManagerContainer = () => {
       formData={formData}
       setFormData={setFormData}
       designStyles={designStyles}
+      meta={meta}
+      page={page}
+      setPage={setPage}
+      setLimit={setLimit}
       isLoading={isLoading}
       error={error}
       createDesignStyleMutation={createDesignStyleMutation}

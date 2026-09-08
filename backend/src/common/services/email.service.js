@@ -10,16 +10,30 @@ let transporter = null;
 
 if (env.SMTP_USER && env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
+    // 📮 SMTP MAIL SERVER CONFIGURATION:
+    // - host: Domain address of the mail server (Gmail, SendGrid, Mailgun, AWS SES)
     host: env.SMTP_HOST || 'smtp.gmail.com',
+    
+    // - port: 587 = Standard STARTTLS port (upgrades connection to TLS); 465 = Legacy SSL port
     port: Number(env.SMTP_PORT) || 587,
+    
+    // - secure: true ONLY for port 465 (implicit SSL). For port 587, set false so it starts plain & upgrades via STARTTLS
     secure: Number(env.SMTP_PORT) === 465,
+    
+    // - requireTLS: Aborts connection if mail server does NOT support encrypted TLS transmission
     requireTLS: true,
+    
+    // - auth: Sender email address and 16-character App Password (for Gmail 2FA enabled accounts)
     auth: {
       user: env.SMTP_USER,
       pass: env.SMTP_PASS,
     },
+    // TLS (Transport Layer Security) Encryption & Certificate Validation:
+    // - Real World Analogy: Passport Officer checking if a ID card is genuine or fake.
+    // - Production (rejectUnauthorized: true): Enforces strict SSL/TLS certificate verification to block Man-in-the-Middle (MITM) attacks.
+    // - Development (rejectUnauthorized: false): Allows local testing with self-signed SSL certs or local mail proxies (Mailtrap/Docker).
     tls: {
-      rejectUnauthorized: env.NODE_ENV === 'production', // Enforce strict TLS certificate verification in production
+      rejectUnauthorized: env.NODE_ENV === 'production',
     },
   });
 

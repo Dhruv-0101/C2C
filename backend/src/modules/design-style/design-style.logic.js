@@ -1,4 +1,5 @@
 import { NotFoundError, BadRequestError, ConflictError } from '../../common/errors/custom-errors.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import * as designStyleRepository from './design-style.repository.js';
 
 function slugify(text) {
@@ -12,10 +13,25 @@ function slugify(text) {
 }
 
 /**
- * Get all master design styles
+ * Get master design styles with pagination & search
  */
-export async function getDesignStyles() {
-  return await designStyleRepository.findAllDesignStyles();
+export async function getDesignStyles(queryParams = {}) {
+  const pagination = parsePaginationParams(queryParams);
+  const { designStyles, totalCount } = await designStyleRepository.findPaginatedDesignStyles(pagination);
+
+  const paginatedResponse = buildPaginatedResponse({
+    items: designStyles,
+    totalCount,
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+
+  return {
+    data: {
+      designStyles: paginatedResponse.data,
+    },
+    meta: paginatedResponse.meta,
+  };
 }
 
 /**

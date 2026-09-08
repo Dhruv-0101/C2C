@@ -4,12 +4,17 @@ import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink,
 import { socialApi } from '../../../services/social.api';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
+import Pagination from '../../../components/common/Pagination';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 
 export const SocialAccountsManager = () => {
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [showConfigGuide, setShowConfigGuide] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   // Handle Meta OAuth Redirect Success / Error query parameters
   React.useEffect(() => {
@@ -20,7 +25,7 @@ export const SocialAccountsManager = () => {
 
     if (socialSuccess === 'true' && account) {
       setSuccessMsg(`🎉 Social Account ${account} connected successfully! Live post publishing is ready.`);
-      queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SOCIAL.ALL });
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (error) {
       setErrorMsg(`Connection Error: ${error}`);
@@ -30,18 +35,19 @@ export const SocialAccountsManager = () => {
 
   // Fetch Connected Social Accounts
   const { data: accountsResponse, isLoading, refetch } = useQuery({
-    queryKey: ['socialAccounts'],
-    queryFn: () => socialApi.getAccounts(),
+    queryKey: [...QUERY_KEYS.SOCIAL.ALL, page, limit],
+    queryFn: () => socialApi.getAccounts({ page, limit }),
   });
 
   const accounts = accountsResponse?.data?.accounts || [];
+  const accountsMeta = accountsResponse?.data?.meta || accountsResponse?.meta;
   const instagramAccount = accounts.find((a) => a.platform === 'INSTAGRAM');
   const facebookAccount = accounts.find((a) => a.platform === 'FACEBOOK');
   const linkedinAccount = accounts.find((a) => a.platform === 'LINKEDIN');
 
   // Fetch Instagram/Meta Auth URL
   const { data: authUrlResponse, isLoading: isLoadingAuthUrl } = useQuery({
-    queryKey: ['instagramAuthUrl'],
+    queryKey: QUERY_KEYS.SOCIAL.AUTH_URL,
     queryFn: () => socialApi.getInstagramAuthUrl(),
   });
 
@@ -499,6 +505,14 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
       )}
+
+      {/* Central Pagination Controls */}
+      <Pagination
+        meta={accountsMeta}
+        currentPage={page}
+        onPageChange={setPage}
+        onLimitChange={setLimit}
+      />
 
       {/* Configuration Assistant Box (If Meta Credentials Not Set) */}
       {(!isMetaConfigured || showConfigGuide) && (

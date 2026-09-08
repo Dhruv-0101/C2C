@@ -1,13 +1,13 @@
 {
   "info": {
     "_postman_id": "bf-design-styles-v1",
-    "name": "BrandFlow — Design Styles Module",
+    "name": "BrandFlow — Design Style Collection",
     "description": "API endpoints for Master Design Styles & Color Palettes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Get All Master Design Styles",
+      "name": "1. Get All Design Styles",
       "request": {
         "method": "GET",
         "header": [],
@@ -23,7 +23,7 @@
       }
     },
     {
-      "name": "Create Master Design Style",
+      "name": "2. Create Design Style",
       "request": {
         "method": "POST",
         "header": [
@@ -52,7 +52,7 @@
       }
     },
     {
-      "name": "Delete Design Style",
+      "name": "3. Delete Design Style",
       "request": {
         "method": "DELETE",
         "header": [

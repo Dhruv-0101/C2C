@@ -7,11 +7,12 @@ export const postController = {
    */
   getUserPosts: async (req, res, next) => {
     try {
-      const posts = await postLogic.getUserPosts(req.user.id);
+      const result = await postLogic.getUserPosts(req.user.id, req.query);
       return res.status(200).json({
         success: true,
         message: 'User posts retrieved successfully',
-        data: { posts },
+        data: result.data,
+        meta: result.meta,
       });
     } catch (err) {
       next(err);
@@ -24,11 +25,12 @@ export const postController = {
    */
   getScheduledPosts: async (req, res, next) => {
     try {
-      const scheduledPosts = await postLogic.getScheduledPosts(req.user.id);
+      const result = await postLogic.getScheduledPosts(req.user.id, req.query);
       return res.status(200).json({
         success: true,
         message: 'Scheduled posts queue retrieved successfully',
-        data: { scheduledPosts },
+        data: result.data,
+        meta: result.meta,
       });
     } catch (err) {
       next(err);

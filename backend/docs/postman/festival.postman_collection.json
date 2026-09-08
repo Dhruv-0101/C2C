@@ -1,13 +1,13 @@
 {
   "info": {
-    "_postman_id": "bf-templates-module-v1",
-    "name": "BrandFlow — Graphic Base Templates & Sharp Server Compositing API",
-    "description": "API endpoints for fetching festival/marketing graphic base templates, uploading Cloudinary master templates, and server-side Sharp fallback compositing.",
+    "_postman_id": "bf-festivals-module-v1",
+    "name": "BrandFlow — Festival Collection",
+    "description": "API endpoints for managing national/cultural festival calendar events, dates, cover banners, and region mappings.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Get All Graphic Templates (Public / Authenticated)",
+      "name": "1. Get All Festivals",
       "request": {
         "method": "GET",
         "header": [
@@ -18,19 +18,19 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/templates",
+          "raw": "{{base_url}}/festivals",
           "host": [
             "{{base_url}}"
           ],
           "path": [
-            "templates"
+            "festivals"
           ]
         },
-        "description": "Fetches all festival and marketing graphic base templates."
+        "description": "Fetches all upcoming national and regional festival calendar events."
       }
     },
     {
-      "name": "2. Upload Cloudinary Admin Template (Admin / SubAdmin)",
+      "name": "2. Create Festival Event",
       "request": {
         "method": "POST",
         "header": [
@@ -47,25 +47,24 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"title\": \"Diwali Golden Lights Master Graphic\",\n  \"description\": \"Base 1080x1080 graphic background for Diwali 2026 festival.\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+          "raw": "{\n  \"name\": \"Diwali — Festival of Lights 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"description\": \"Grand celebration of light, prosperity, and wisdom.\",\n  \"region\": \"National (India)\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
         },
         "url": {
-          "raw": "{{base_url}}/templates/upload",
+          "raw": "{{base_url}}/festivals",
           "host": [
             "{{base_url}}"
           ],
           "path": [
-            "templates",
-            "upload"
+            "festivals"
           ]
         },
-        "description": "Uploads a base festival/marketing graphic background to Cloudinary and saves to database."
+        "description": "Adds a new festival calendar event with optional cover banner image upload to Cloudinary 'brandflow/festivals'."
       }
     },
     {
-      "name": "3. Server-Side Sharp Compositing Fallback (Public / Authenticated)",
+      "name": "3. Update Festival Event",
       "request": {
-        "method": "POST",
+        "method": "PUT",
         "header": [
           {
             "key": "Authorization",
@@ -80,23 +79,29 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"customText\": \"Wishing you a prosperous & bright Diwali!\",\n  \"brandKit\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 98765 43210\",\n    \"address\": \"MG Road, Mumbai\"\n  }\n}"
+          "raw": "{\n  \"name\": \"Diwali — Grand Festival of Lights 2026\",\n  \"description\": \"Updated description for Diwali celebration.\",\n  \"region\": \"Maharashtra\"\n}"
         },
         "url": {
-          "raw": "{{base_url}}/templates/composite-post",
+          "raw": "{{base_url}}/festivals/:id",
           "host": [
             "{{base_url}}"
           ],
           "path": [
-            "templates",
-            "composite-post"
+            "festivals",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "festival_id_here"
+            }
           ]
         },
-        "description": "Fall-back server-side image compositing via Sharp Node.js worker."
+        "description": "Updates festival details and cover banner image, cleaning up old cover banner from Cloudinary if replaced."
       }
     },
     {
-      "name": "4. Delete Template (Admin / SubAdmin)",
+      "name": "4. Delete Festival Event",
       "request": {
         "method": "DELETE",
         "header": [
@@ -107,22 +112,22 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/templates/:id",
+          "raw": "{{base_url}}/festivals/:id",
           "host": [
             "{{base_url}}"
           ],
           "path": [
-            "templates",
+            "festivals",
             ":id"
           ],
           "variable": [
             {
               "key": "id",
-              "value": "template_id_here"
+              "value": "festival_id_here"
             }
           ]
         },
-        "description": "Deletes a graphic base template by ID."
+        "description": "Deletes a festival calendar event and removes associated cover banner image from Cloudinary storage."
       }
     }
   ]

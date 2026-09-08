@@ -1,3 +1,14 @@
+/**
+ * 🛡️ AUTHENTICATION ZOD VALIDATION SCHEMAS:
+ * 
+ * Real World Analogy: Airport Security Scanner 🔍.
+ * Before an incoming HTTP request reaches your controller, Zod inspects the payload shape.
+ * If data is malformed (e.g. invalid email format or password < 6 chars), Zod halts the request instantly 
+ * with a 400 Bad Request JSON response, protecting your database & logic from bad data!
+ * 
+ * Execution Flow:
+ * Client Request ──> [auth.routes.js] ──> [validate(signupSchema)] ──> [authController.signup]
+ */
 import { z } from 'zod';
 import { paginationQuerySchema } from '../../common/helpers/pagination.helper.js';
 

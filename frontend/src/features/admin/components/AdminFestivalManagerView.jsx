@@ -15,6 +15,8 @@ import {
   AlertCircle,
   LayoutGrid,
   List,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -24,6 +26,7 @@ import Pagination from "../../../components/common/Pagination";
 import { useFestivals } from "../../../hooks/useFestivals";
 import { FeedbackModal } from "../../../components/common/FeedbackModal";
 import { FestivalCalendarView } from "../../../components/admin/FestivalCalendarView";
+import { readImageAsBase64 } from "../../../utils/file.utils";
 
 /**
  * AdminFestivalManagerView
@@ -56,7 +59,7 @@ export const AdminFestivalManagerView = () => {
   const [feedback, setFeedback] = useState({ isOpen: false, type: "success", title: "", message: "" });
   const [formError, setFormError] = useState("");
 
-  // Form Fields State
+  // Form Fields & Banner File Upload State
   const [formData, setFormData] = useState({
     name: "",
     date: "",
@@ -65,6 +68,21 @@ export const AdminFestivalManagerView = () => {
     bannerUrl: "",
     isActive: true,
   });
+  const [base64Banner, setBase64Banner] = useState("");
+  const [bannerPreview, setBannerPreview] = useState("");
+
+  // Handle Banner Image File Selection
+  const handleBannerFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const base64 = await readImageAsBase64(file, 5);
+      setBase64Banner(base64);
+      setBannerPreview(base64);
+    } catch (err) {
+      setFormError(err.message || "Failed to process image file.");
+    }
+  };
 
   // Open Create Modal
   const handleOpenCreate = () => {
@@ -77,6 +95,8 @@ export const AdminFestivalManagerView = () => {
       bannerUrl: "",
       isActive: true,
     });
+    setBase64Banner("");
+    setBannerPreview("");
     setFormError("");
     setIsFormModalOpen(true);
   };
@@ -96,6 +116,8 @@ export const AdminFestivalManagerView = () => {
       bannerUrl: fest.bannerUrl || "",
       isActive: fest.isActive !== undefined ? fest.isActive : true,
     });
+    setBase64Banner("");
+    setBannerPreview(fest.bannerUrl || "");
     setFormError("");
     setIsFormModalOpen(true);
   };
@@ -115,30 +137,29 @@ export const AdminFestivalManagerView = () => {
     }
 
     try {
+      const festivalPayload = {
+        name: formData.name.trim(),
+        date: formData.date,
+        description: formData.description?.trim() || "",
+        targetRegion: formData.targetRegion?.trim() || "India",
+        bannerUrl: formData.bannerUrl?.trim() || undefined,
+        base64Banner: base64Banner || undefined,
+        isActive: formData.isActive,
+      };
+
       if (editingFestival) {
-        await updateFestival(editingFestival.id, {
-          name: formData.name.trim(),
-          date: formData.date,
-          description: formData.description?.trim() || "",
-          targetRegion: formData.targetRegion?.trim() || "India",
-          bannerUrl: formData.bannerUrl?.trim() || "",
-          isActive: formData.isActive,
+        await updateFestival({
+          id: editingFestival.id,
+          data: festivalPayload,
         });
         setFeedback({
           isOpen: true,
           type: "success",
           title: "Festival Updated!",
-          message: `"${formData.name}" details updated successfully.`,
+          message: `"${formData.name}" details and banner updated successfully.`,
         });
       } else {
-        await createFestival({
-          name: formData.name.trim(),
-          date: formData.date,
-          description: formData.description?.trim() || "",
-          targetRegion: formData.targetRegion?.trim() || "India",
-          bannerUrl: formData.bannerUrl?.trim() || "",
-          isActive: formData.isActive,
-        });
+        await createFestival(festivalPayload);
         setFeedback({
           isOpen: true,
           type: "success",
@@ -287,65 +308,79 @@ export const AdminFestivalManagerView = () => {
                 return (
                   <div
                     key={fest.id}
-                    className="group relative p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 transition shadow-lg space-y-3 flex flex-col justify-between"
+                    className="group relative rounded-2xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 transition shadow-lg overflow-hidden flex flex-col justify-between"
                   >
-                    <div>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                            <Sparkles className="w-4 h-4" />
+                    {/* Festival Cover Banner Image if present */}
+                    {fest.bannerUrl ? (
+                      <div className="relative h-28 w-full overflow-hidden bg-slate-900 border-b border-[#2C384E]">
+                        <img
+                          src={fest.bannerUrl}
+                          alt={fest.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-transparent" />
+                      </div>
+                    ) : null}
+
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                              <Sparkles className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h3 className="font-heading font-bold text-sm text-white truncate max-w-[140px]">
+                                {fest.name}
+                              </h3>
+                              <p className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{formattedDate}</span>
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-heading font-bold text-sm text-white truncate max-w-[140px]">
-                              {fest.name}
-                            </h3>
-                            <p className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>{formattedDate}</span>
-                            </p>
-                          </div>
+
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              fest.isActive !== false
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                : "bg-slate-800 text-slate-400 border-slate-700"
+                            }`}
+                          >
+                            {fest.isActive !== false ? "Active" : "Inactive"}
+                          </span>
                         </div>
 
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            fest.isActive !== false
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                              : "bg-slate-800 text-slate-400 border-slate-700"
-                          }`}
-                        >
-                          {fest.isActive !== false ? "Active" : "Inactive"}
-                        </span>
+                        {fest.description && (
+                          <p className="text-xs text-slate-400 line-clamp-2 mt-1">
+                            {fest.description}
+                          </p>
+                        )}
                       </div>
 
-                      {fest.description && (
-                        <p className="text-xs text-slate-400 line-clamp-2 mt-1">
-                          {fest.description}
-                        </p>
-                      )}
-                    </div>
+                      <div className="pt-3 border-t border-[#2C384E]/60 flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                          <Globe className="w-3 h-3 text-slate-500" />
+                          <span>{fest.targetRegion || "India"}</span>
+                        </span>
 
-                    <div className="pt-3 border-t border-[#2C384E]/60 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                        <Globe className="w-3 h-3 text-slate-500" />
-                        <span>{fest.targetRegion || "India"}</span>
-                      </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleOpenEdit(fest)}
+                            className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition cursor-pointer"
+                            title="Edit Festival"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
 
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleOpenEdit(fest)}
-                          className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition cursor-pointer"
-                          title="Edit Festival"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-
-                        <button
-                          onClick={() => setDeleteConfirmId(fest.id)}
-                          className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-red-400 hover:border-red-500/50 transition cursor-pointer"
-                          title="Delete Festival"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(fest.id)}
+                            className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-red-400 hover:border-red-500/50 transition cursor-pointer"
+                            title="Delete Festival"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -377,7 +412,7 @@ export const AdminFestivalManagerView = () => {
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg rounded-2xl bg-[#131B2A] border border-[#2C384E] p-6 shadow-2xl space-y-5"
+              className="relative w-full max-w-lg rounded-2xl bg-[#131B2A] border border-[#2C384E] p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">
                 <h3 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
@@ -441,6 +476,82 @@ export const AdminFestivalManagerView = () => {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-500 resize-none"
                   />
+                </div>
+
+                {/* Festival Banner Image Upload Section */}
+                <div className="space-y-2 p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
+                  <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Festival Banner Image (Cloudinary brandflow/festivals)</span>
+                    </span>
+                    {bannerPreview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBase64Banner("");
+                          setBannerPreview("");
+                          setFormData({ ...formData, bannerUrl: "" });
+                        }}
+                        className="text-[10px] text-red-400 hover:underline"
+                      >
+                        Remove Banner
+                      </button>
+                    )}
+                  </label>
+
+                  {/* Banner Preview if uploaded or provided */}
+                  {bannerPreview ? (
+                    <div className="relative h-32 w-full rounded-lg overflow-hidden border border-[#2C384E] bg-slate-900 group">
+                      <img
+                        src={bannerPreview}
+                        alt="Banner Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold shadow-lg flex items-center gap-1.5">
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Change Image</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleBannerFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="border-2 border-dashed border-[#2C384E] hover:border-amber-500/50 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition bg-[#131B2A]/50 hover:bg-[#131B2A]">
+                      <Upload className="w-6 h-6 text-amber-400 mb-1" />
+                      <span className="text-xs font-semibold text-slate-200">
+                        Click to Upload Festival Cover Banner
+                      </span>
+                      <span className="text-[10px] text-slate-500 mt-0.5">
+                        PNG, JPG, WEBP up to 5MB (Saved to Cloudinary)
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+
+                  {/* Or Direct Image URL input */}
+                  <div className="pt-1.5">
+                    <input
+                      type="text"
+                      placeholder="Or paste direct image URL (https://...)"
+                      value={formData.bannerUrl}
+                      onChange={(e) => {
+                        setFormData({ ...formData, bannerUrl: e.target.value });
+                        if (e.target.value) setBannerPreview(e.target.value);
+                      }}
+                      className="w-full px-3 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">

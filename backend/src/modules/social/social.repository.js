@@ -16,6 +16,25 @@ export const socialRepository = {
   },
 
   /**
+   * Find all active connected social accounts for user with pagination
+   */
+  findPaginatedByUserId: async (userId, { skip = 0, take = 10 }) => {
+    const where = { userId };
+
+    const [accounts, totalCount] = await Promise.all([
+      prisma.socialAccount.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.socialAccount.count({ where }),
+    ]);
+
+    return { accounts, totalCount };
+  },
+
+  /**
    * Find all active connected social accounts for user
    */
   findAllByUserId: async (userId) => {
@@ -81,4 +100,3 @@ export const socialRepository = {
     });
   },
 };
-//done

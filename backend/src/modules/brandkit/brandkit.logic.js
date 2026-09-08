@@ -1,5 +1,5 @@
 import { brandKitRepository } from './brandkit.repository.js';
-import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
+import { uploadLogoBuffer, uploadAvatarBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
 
 export const brandKitLogic = {
   /**
@@ -26,14 +26,21 @@ export const brandKitLogic = {
 
   /**
    * Create or update user's BrandKit
+   * Strictly enforces:
+   * - Brand Logos -> Cloudinary 'brandflow/logos'
+   * - User Avatars -> Cloudinary 'brandflow/avatars'
+   * - Automatically deletes previous logo/avatar from Cloudinary storage upon replacement
    */
   updateBrandKit: async (userId, payload, fileBuffer) => {
+    // Fetch existing BrandKit to check for previous logo/avatar for clean deletion
+    const existingBrandKit = await brandKitRepository.findByUserId(userId);
+
     let logoUrl = payload.logoUrl || null;
     let avatarUrl = payload.avatarUrl || null;
 
-    // Process file upload or base64 logo if provided
+    // 1. Process Brand Logo upload (fileBuffer or Base64 string) -> Cloudinary brandflow/logos
     if (fileBuffer) {
-      const uploadResult = await uploadToCloudinaryBuffer(fileBuffer, 'brandflow/logos');
+      const uploadResult = await uploadLogoBuffer(fileBuffer);
       logoUrl = uploadResult.url;
     } else if (payload.base64Logo) {
       let cleanBase64 = payload.base64Logo;
@@ -41,18 +48,33 @@ export const brandKitLogic = {
         cleanBase64 = cleanBase64.split(';base64,').pop();
       }
       const buffer = Buffer.from(cleanBase64, 'base64');
-      const uploadResult = await uploadToCloudinaryBuffer(buffer, 'brandflow/logos');
+      const uploadResult = await uploadLogoBuffer(buffer);
       logoUrl = uploadResult.url;
     }
 
+    // Deletes previous old logo from Cloudinary if logo changed
+    if (logoUrl && existingBrandKit?.logoUrl && existingBrandKit.logoUrl !== logoUrl) {
+      deleteFromCloudinary(existingBrandKit.logoUrl).catch((err) =>
+        console.warn(`⚠️ Failed to cleanup old logo from Cloudinary: ${err.message}`)
+      );
+    }
+
+    // 2. Process User Avatar / Profile photo upload (Base64 string) -> Cloudinary brandflow/avatars
     if (payload.base64Avatar) {
       let cleanBase64 = payload.base64Avatar;
       if (cleanBase64.includes(';base64,')) {
         cleanBase64 = cleanBase64.split(';base64,').pop();
       }
       const buffer = Buffer.from(cleanBase64, 'base64');
-      const uploadResult = await uploadToCloudinaryBuffer(buffer, 'brandflow/avatars');
+      const uploadResult = await uploadAvatarBuffer(buffer);
       avatarUrl = uploadResult.url;
+    }
+
+    // Deletes previous old avatar photo from Cloudinary if avatar changed
+    if (avatarUrl && existingBrandKit?.avatarUrl && existingBrandKit.avatarUrl !== avatarUrl) {
+      deleteFromCloudinary(existingBrandKit.avatarUrl).catch((err) =>
+        console.warn(`⚠️ Failed to cleanup old avatar from Cloudinary: ${err.message}`)
+      );
     }
 
     const dataToSave = {

@@ -17,14 +17,21 @@ export const emailQueue = isRedisConfigured
   ? new Queue(EMAIL_QUEUE_NAME, {
       connection: redisConnection,
       defaultJobOptions: {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 5000 },
+        attempts: 3, // Auto-retry failed jobs up to 3 times
+        backoff: { type: 'exponential', delay: 5000 }, // Retry after 5s, 10s, 20s
+        // Redis RAM Protection (Garbage Collection):
+        // - removeOnComplete: Keeps only the last 50 successful job logs in Redis; auto-prunes older completed jobs to prevent RAM bloat.
+        // - removeOnFail: Retains the last 100 failed job logs (with error stack traces) for developer debugging before auto-pruning.
         removeOnComplete: { count: 50 },
         removeOnFail: { count: 100 },
       },
     })
   : null;
 
+// Redis Connection Warning Suppressor Latch:
+// - Real World Analogy: Fire Alarm One-Time Alert 🔔.
+// - WHY: Prevents console log spamming if Redis drops offline. Logs a single warning informing the developer 
+//   that Redis is unavailable and fallback mode is active, then suppresses thousands of duplicate error logs per second.
 if (emailQueue) {
   let hasLoggedQueueWarning = false;
   emailQueue.on('error', (err) => {

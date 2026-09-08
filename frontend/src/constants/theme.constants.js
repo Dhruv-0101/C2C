@@ -10,7 +10,7 @@ export const USER_ROLES = {
 export const ADMIN_TABS = [
   { id: 'templates', label: 'AI Base Templates', description: 'Manage graphic base templates' },
   { id: 'festivals', label: 'Festival Calendar', description: 'Interactive monthly festival events & special days' },
-  { id: 'frames', label: 'Canva Vector Frames', description: 'Manage transparent Canva frames' },
+  { id: 'frames', label: 'Brand Frames Studio', description: 'Manage custom brand frames & overlays' },
   { id: 'styles', label: 'Design System & Palettes', description: 'Manage brand color palettes & typography' },
   { id: 'categories', label: 'Business Categories', description: 'Manage industry category tags' },
   { id: 'subadmins', label: 'SubAdmin Directory', description: 'Manage sub-admin privileges' },

@@ -118,11 +118,12 @@ export const socialController = {
    */
   getUserAccounts: async (req, res, next) => {
     try {
-      const accounts = await socialLogic.getUserAccounts(req.user.id);
+      const result = await socialLogic.getUserAccounts(req.user.id, req.query);
       return res.status(200).json({
         success: true,
         message: 'Social accounts retrieved successfully',
-        data: { accounts },
+        data: result.data,
+        meta: result.meta,
       });
     } catch (err) {
       next(err);

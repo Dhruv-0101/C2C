@@ -47,15 +47,15 @@ export const FrameManagerContainer = () => {
   const handleClearStage = () => {
     clearAllElements();
     setFrameMeta({
-      title: "New Custom Canva Frame",
-      description: "Custom vector frame overlay created from scratch",
+      title: "New Custom Brand Frame",
+      description: "Custom brand frame overlay created from scratch",
     });
   };
 
   // Frame Metadata State
   const [frameMeta, setFrameMeta] = useState({
-    title: "Custom Canva Frame Overlay",
-    description: "Fully customizable Canva-style frame with shapes and dynamic slots",
+    title: "Custom Brand Frame Overlay",
+    description: "Fully customizable brand frame with shapes and dynamic slots",
   });
 
   // Upload Pre-made PNG State
@@ -189,8 +189,8 @@ export const FrameManagerContainer = () => {
       const previewBase64 = canvas.toDataURL("image/png");
 
       createFrameMutation.mutate({
-        title: frameMeta.title || "Custom Canva Vector Frame",
-        description: frameMeta.description || "Interactive vector overlay frame",
+        title: frameMeta.title || "Custom Brand Frame",
+        description: frameMeta.description || "Interactive brand overlay frame",
         base64Overlay: transparentBase64,
         base64Image: previewBase64,
         blueprint: elements,

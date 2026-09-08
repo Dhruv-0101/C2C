@@ -1,13 +1,13 @@
 {
   "info": {
     "_postman_id": "bf-categories-v1",
-    "name": "BrandFlow — Categories Module",
+    "name": "BrandFlow — Category Collection",
     "description": "API endpoints for Business Categories management.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Get All Business Categories",
+      "name": "1. Get All Categories",
       "request": {
         "method": "GET",
         "header": [],
@@ -33,7 +33,7 @@
       }
     },
     {
-      "name": "Create Business Category (SuperAdmin)",
+      "name": "2. Create Category",
       "request": {
         "method": "POST",
         "header": [
@@ -62,7 +62,7 @@
       }
     },
     {
-      "name": "Delete Business Category (SuperAdmin)",
+      "name": "3. Delete Category",
       "request": {
         "method": "DELETE",
         "header": [

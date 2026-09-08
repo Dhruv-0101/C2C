@@ -3,18 +3,18 @@ import { API_ENDPOINTS } from '../constants/api.constants';
 
 export const postApi = {
   /**
-   * Get all user posts
+   * Get user posts with optional pagination
    */
-  getUserPosts: async () => {
-    const response = await api.get(API_ENDPOINTS.POSTS.BASE);
+  getUserPosts: async (params = {}) => {
+    const response = await api.get(API_ENDPOINTS.POSTS.BASE, { params });
     return response.data;
   },
 
   /**
-   * Get user scheduled posts queue
+   * Get user scheduled posts queue with optional pagination
    */
-  getScheduledPosts: async () => {
-    const response = await api.get(`${API_ENDPOINTS.POSTS.BASE}/scheduled`);
+  getScheduledPosts: async (params = {}) => {
+    const response = await api.get(API_ENDPOINTS.POSTS.SCHEDULED, { params });
     return response.data;
   },
 
@@ -22,7 +22,7 @@ export const postApi = {
    * Instant mock social media publishing
    */
   publishNow: async (payload) => {
-    const response = await api.post(`${API_ENDPOINTS.POSTS.BASE}/publish-now`, payload);
+    const response = await api.post(API_ENDPOINTS.POSTS.PUBLISH_NOW, payload);
     return response.data;
   },
 
@@ -30,7 +30,7 @@ export const postApi = {
    * Schedule post for future date/time
    */
   schedulePost: async (payload) => {
-    const response = await api.post(`${API_ENDPOINTS.POSTS.BASE}/schedule`, payload);
+    const response = await api.post(API_ENDPOINTS.POSTS.SCHEDULE, payload);
     return response.data;
   },
 
@@ -38,7 +38,7 @@ export const postApi = {
    * Manual test trigger to force-process due scheduled posts immediately
    */
   triggerScheduledJobs: async () => {
-    const response = await api.post(`${API_ENDPOINTS.POSTS.BASE}/trigger-scheduled-jobs`);
+    const response = await api.post(API_ENDPOINTS.POSTS.TRIGGER_SCHEDULED);
     return response.data;
   },
 

@@ -36,6 +36,8 @@ export const FestivalCalendarView = ({
   prevMonth,
   nextMonth,
   goToToday,
+  selectedRegion = "ALL",
+  setSelectedRegion,
   calendarCells,
   selectedDayDetails,
   setSelectedDayDetails,
@@ -72,6 +74,15 @@ export const FestivalCalendarView = ({
   const safeSelectedFestivals = selectedDayDetails?.festivals || [];
   const safeScheduledPosts = selectedDayDetails?.scheduledPosts || [];
   const safePublishedPosts = selectedDayDetails?.publishedPosts || [];
+
+  const REGION_OPTIONS = [
+    { id: "ALL", label: "All Regions", icon: "🌍" },
+    { id: "India", label: "National (India)", icon: "🇮🇳" },
+    { id: "Maharashtra", label: "Maharashtra", icon: "🚩" },
+    { id: "Gujarat", label: "Gujarat", icon: "🪔" },
+    { id: "South India", label: "South India", icon: "🌺" },
+    { id: "International", label: "International", icon: "🌐" },
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -118,6 +129,35 @@ export const FestivalCalendarView = ({
           </Button>
         </div>
       </div>
+
+      {/* Region Filter Pills Bar */}
+      {setSelectedRegion && (
+        <div className="flex items-center gap-2 p-2 bg-[#131B2A] border border-[#2C384E] rounded-2xl overflow-x-auto no-scrollbar shadow-lg">
+          <span className="text-xs font-bold text-slate-400 px-3 flex items-center gap-1.5 shrink-0 border-r border-[#2C384E]">
+            <span>Filter Region:</span>
+          </span>
+
+          <div className="flex items-center gap-2">
+            {REGION_OPTIONS.map((reg) => {
+              const isSelected = selectedRegion === reg.id;
+              return (
+                <button
+                  key={reg.id}
+                  onClick={() => setSelectedRegion(reg.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 border ${
+                    isSelected
+                      ? "bg-amber-500 text-slate-950 border-amber-400 shadow-glow"
+                      : "bg-[#0B0F17] text-slate-400 border-[#2C384E] hover:text-white hover:border-slate-600"
+                  }`}
+                >
+                  <span>{reg.icon}</span>
+                  <span>{reg.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Main Calendar Grid */}
       <Card className="border-[#2C384E] bg-[#131B2A] p-4 sm:p-6">

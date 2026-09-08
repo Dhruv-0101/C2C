@@ -7,7 +7,7 @@
 
 ## 📌 Executive Summary
 
-This document captures prioritized future backend enhancements deferred for later development phases. Whenever your project roadmap priorities focus on documentation auto-generation, testing suites, or database transactions, follow the step-by-step instructions detailed below.
+This document captures prioritized future backend & platform enhancements deferred for later development phases. Whenever your project roadmap priorities focus on documentation auto-generation, testing suites, AI copy generation, or frontend data virtualization, follow the step-by-step instructions detailed below.
 
 ---
 
@@ -18,6 +18,8 @@ This document captures prioritized future backend enhancements deferred for late
 [ ] Phase 2: Automated Unit & Integration Testing Suite (Jest / Vitest)
 [ ] Phase 3: Explicit Prisma Database Transactions ($transaction)
 [ ] Phase 4: Dedicated Billing & Stripe Webhook Module
+[ ] Phase 5: AI Caption & Smart Hashtag Generation Engine for Social Publishing
+[ ] Phase 6: Component Virtualization Strategy for Large Data Tables (@tanstack/react-virtual)
 ```
 
 ---
@@ -213,6 +215,40 @@ src/modules/billing/
 ├── billing.routes.js       # Express routes for /billing/checkout & /billing/webhook
 └── billing.validator.js    # Zod payload schemas for plan selection
 ```
+
+---
+
+## 🤖 5. Phase 5: AI Caption & Smart Hashtag Generation Engine
+
+### Goal
+Provide automated AI caption and trending hashtag generation while users compose and schedule posts for social media platforms (Instagram, Facebook, LinkedIn).
+
+### Key Capabilities
+- **Context-Aware AI Captions**: Generates engaging promotional captions based on post category (e.g. Festival Greeting, Special Offer, Product Launch) and the user's AI BrandKit tone.
+- **Platform-Specific Formatting**: Formats copy with appropriate character limits, line breaks, call-to-actions, and emoji styles tailored for Instagram, Facebook, and LinkedIn.
+- **Smart Hashtag Recommendations**: Suggests high-converting, trending hashtags customized for the user's business industry.
+- **Pre-Publish Integration**: Automatically populates generated captions directly into post creation and scheduling payloads (`/api/v1/posts/schedule` & `/api/v1/posts/publish-now`).
+
+### Architecture & Placement
+```text
+src/modules/ai/ (or src/modules/post/)
+├── ai.controller.js   # Express endpoint handler for POST /api/v1/ai/generate-caption
+├── ai.logic.js        # LLM integration logic (OpenAI / Gemini API prompt templates)
+├── ai.routes.js       # Route registrations with rate limiting & authentication
+└── ai.validator.js    # Zod payload validation for caption requests
+```
+
+---
+
+## 🎨 6. Phase 6: Component Virtualization Strategy for Large Data Tables
+
+### Goal
+For huge user directory lists (e.g., 10,000+ user records in Admin Directory or un-paginated infinite lists), integrate `@tanstack/react-virtual` to optimize DOM rendering performance under high scale.
+
+### Key Capabilities
+- **DOM Element Savings**: Only renders the visible table rows in the active viewport instead of rendering thousands of DOM nodes simultaneously.
+- **Infinite Scrolling Support**: Enables seamless continuous scrolling without UI frame drops or memory leaks.
+- **Dynamic Row Heights**: Supports dynamic user cards and variable row heights cleanly.
 
 ---
 

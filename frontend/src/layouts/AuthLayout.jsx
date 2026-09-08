@@ -27,7 +27,7 @@ export const AuthLayout = () => {
             </h1>
 
             <p className="text-slate-400 text-sm leading-relaxed">
-              BrandFlow empowers small businesses to composite Canva-style frame overlays, auto-fill master BrandKits, and schedule festival marketing content seamlessly.
+              BrandFlow empowers small businesses to composite custom brand frame overlays, auto-fill master BrandKits, and schedule festival marketing content seamlessly.
             </p>
 
             {/* Feature Highlights Grid */}
@@ -44,8 +44,8 @@ export const AuthLayout = () => {
                 <div className="w-7 h-7 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-400">
                   <Layers className="w-3.5 h-3.5" />
                 </div>
-                <h4 className="font-semibold text-xs text-slate-200">Canva Frame Studio</h4>
-                <p className="text-[11px] text-slate-400">Dynamic 0ms vector layer text slots.</p>
+                <h4 className="font-semibold text-xs text-slate-200">Brand Frame Studio</h4>
+                <p className="text-[11px] text-slate-400">Instant auto-filling brand text & logo slots.</p>
               </div>
 
               <div className="glass-panel p-3.5 rounded-xl border border-slate-800 space-y-1">
@@ -53,7 +53,7 @@ export const AuthLayout = () => {
                   <Calendar className="w-3.5 h-3.5" />
                 </div>
                 <h4 className="font-semibold text-xs text-slate-200">Festival Calendar</h4>
-                <p className="text-[11px] text-slate-400">Pre-designed Diwali & event graphics.</p>
+                <p className="text-[11px] text-slate-400">Pre-designed festival & event graphics.</p>
               </div>
 
               <div className="glass-panel p-3.5 rounded-xl border border-slate-800 space-y-1">

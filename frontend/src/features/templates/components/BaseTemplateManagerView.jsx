@@ -98,7 +98,7 @@ export const BaseTemplateManagerView = ({
               Master Graphic Base Templates Manager
             </h2>
             <p className="text-xs text-slate-400">
-              Upload clean 1080x1080 graphic backgrounds that end-users composite with Canva-style transparent vector frames.
+              Upload clean 1080x1080 graphic backgrounds that end-users composite with custom transparent brand frames.
             </p>
           </div>
         </div>

@@ -1,13 +1,13 @@
 {
   "info": {
     "_postman_id": "bf-brandkit-module-v1",
-    "name": "BrandFlow — AI BrandKit Profile API",
+    "name": "BrandFlow — BrandKit Collection",
     "description": "API endpoints for managing user business profiles, branding details, logo uploads, headshot avatar images, and primary colors.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Get User BrandKit Profile (Authenticated)",
+      "name": "1. Get BrandKit Profile",
       "request": {
         "method": "GET",
         "header": [
@@ -30,7 +30,7 @@
       }
     },
     {
-      "name": "2. Update BrandKit Profile (Authenticated)",
+      "name": "2. Update BrandKit Profile",
       "request": {
         "method": "PUT",
         "header": [

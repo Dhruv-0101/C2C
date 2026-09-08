@@ -40,21 +40,21 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
 
   // Fetch User's BrandKit from DB
   const { data: brandKitResponse } = useQuery({
-    queryKey: ['brandKit'],
+    queryKey: QUERY_KEYS.BRANDKIT.MINE,
     queryFn: () => brandKitApi.getBrandKit(),
     enabled: isOpen,
   });
 
   // Fetch Available Transparent PNG Frames from DB
   const { data: framesResponse } = useQuery({
-    queryKey: ['frames'],
+    queryKey: QUERY_KEYS.FRAMES.ALL,
     queryFn: () => frameApi.getFrames(),
     enabled: isOpen,
   });
 
   // Fetch Available Graphic Templates from DB
   const { data: templatesResponse } = useQuery({
-    queryKey: ['templates'],
+    queryKey: QUERY_KEYS.TEMPLATES.ALL,
     queryFn: () => templateApi.getTemplates(),
     enabled: isOpen,
   });

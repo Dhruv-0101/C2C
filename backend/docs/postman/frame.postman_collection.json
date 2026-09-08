@@ -1,13 +1,13 @@
 {
   "info": {
     "_postman_id": "bf-frames-module-v1",
-    "name": "BrandFlow — Transparent PNG Overlay Frames & Dynamic Config Engine",
+    "name": "BrandFlow — Frame Collection",
     "description": "API endpoints for creating, fetching, and managing Canva-style transparent PNG overlay frames with vector element configuration JSON schemas.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Get All Active Frames (Public / Authenticated)",
+      "name": "1. Get All Frames",
       "request": {
         "method": "GET",
         "header": [
@@ -18,19 +18,34 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/frames",
+          "raw": "{{base_url}}/frames?page=1&limit=20",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "frames"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "search",
+              "value": "Diwali",
+              "disabled": true
+            }
           ]
         },
-        "description": "Fetches all transparent PNG overlay frames along with their configJson vector slot schemas."
+        "description": "Fetches paginated transparent PNG overlay frames along with their configJson vector slot schemas."
       }
     },
     {
-      "name": "2. Create / Publish Canva Frame (Admin / SubAdmin)",
+      "name": "2. Create Frame",
       "request": {
         "method": "POST",
         "header": [
@@ -58,11 +73,11 @@
             "frames"
           ]
         },
-        "description": "Publishes a new transparent PNG frame overlay along with its configJson vector element schema."
+        "description": "Publishes a new transparent PNG frame overlay (strictly stored in Cloudinary 'brandflow/frames/overlays' for overlayPngUrl and 'brandflow/frames/previews' for previewUrl)."
       }
     },
     {
-      "name": "3. Delete Frame (Admin / SubAdmin)",
+      "name": "3. Delete Frame",
       "request": {
         "method": "DELETE",
         "header": [
@@ -88,7 +103,7 @@
             }
           ]
         },
-        "description": "Deletes a transparent PNG overlay frame by ID."
+        "description": "Deletes a transparent PNG overlay frame by ID and cleans up images from Cloudinary storage."
       }
     }
   ]

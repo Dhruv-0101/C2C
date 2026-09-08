@@ -1,6 +1,6 @@
 import { frameRepository } from './frame.repository.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
-import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
+import { uploadFrameBuffer, uploadFrameOverlayBuffer, uploadFramePreviewBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
 
 export const frameLogic = {
   /**
@@ -31,35 +31,40 @@ export const frameLogic = {
 
   /**
    * Upload new frame (Admin restricted)
+   * Strictly uploads transparent PNG frames & overlays to Cloudinary 'brandflow/frames':
+   * - WITHOUT Text Overlay -> Cloudinary 'brandflow/frames/overlays'
+   * - WITH Text Preview   -> Cloudinary 'brandflow/frames/previews'
    */
   createFrame: async (payload, fileBuffer) => {
     let overlayPngUrl = payload.overlayPngUrl || null;
     let previewUrl = payload.previewUrl || null;
 
     if (fileBuffer) {
-      const uploadResult = await uploadToCloudinaryBuffer(fileBuffer, 'brandflow/frames');
+      const uploadResult = await uploadFrameBuffer(fileBuffer);
       overlayPngUrl = uploadResult.url;
       previewUrl = uploadResult.url;
     } else {
-      // 1. Upload transparent overlay WITHOUT text (only shapes)
+      // 1. WITHOUT TEXT: Upload transparent overlay PNG (only vector shapes & badge graphics)
+      // Saved to: Cloudinary 'brandflow/frames/overlays' (Used for live canvas rendering on frontend)
       if (payload.base64Overlay) {
         let cleanOverlayBase64 = payload.base64Overlay;
         if (cleanOverlayBase64.includes(';base64,')) {
           cleanOverlayBase64 = cleanOverlayBase64.split(';base64,').pop();
         }
         const overlayBuffer = Buffer.from(cleanOverlayBase64, 'base64');
-        const overlayResult = await uploadToCloudinaryBuffer(overlayBuffer, 'brandflow/frames/overlays');
+        const overlayResult = await uploadFrameOverlayBuffer(overlayBuffer);
         overlayPngUrl = overlayResult.url;
       }
 
-      // 2. Upload full frame preview WITH sample text
+      // 2. WITH SAMPLE TEXT: Upload full frame preview PNG (with sample text & details pre-rendered)
+      // Saved to: Cloudinary 'brandflow/frames/previews' (Used for thumbnail/gallery preview)
       if (payload.base64Image) {
         let cleanImageBase64 = payload.base64Image;
         if (cleanImageBase64.includes(';base64,')) {
           cleanImageBase64 = cleanImageBase64.split(';base64,').pop();
         }
         const imageBuffer = Buffer.from(cleanImageBase64, 'base64');
-        const imageResult = await uploadToCloudinaryBuffer(imageBuffer, 'brandflow/frames/previews');
+        const imageResult = await uploadFramePreviewBuffer(imageBuffer);
         previewUrl = imageResult.url;
       }
     }
@@ -89,9 +94,19 @@ export const frameLogic = {
   },
 
   /**
-   * Delete frame
+   * Delete frame and cleanup Cloudinary storage
    */
   deleteFrame: async (id) => {
+    const frame = await frameRepository.findById(id);
+    if (frame) {
+      if (frame.overlayPngUrl) {
+        deleteFromCloudinary(frame.overlayPngUrl).catch(() => {});
+      }
+      if (frame.previewUrl && frame.previewUrl !== frame.overlayPngUrl) {
+        deleteFromCloudinary(frame.previewUrl).catch(() => {});
+      }
+    }
     return frameRepository.delete(id);
   },
 };
+

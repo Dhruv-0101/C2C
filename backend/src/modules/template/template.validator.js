@@ -18,21 +18,3 @@ export const createTemplateSchema = z.object({
   }),
 });
 
-export const compositePostSchema = z.object({
-  body: z.object({
-    templateId: z.string().optional(),
-    customText: z.string().optional(),
-    base64Graphic: z.string().optional(),
-    base64Image: z.string().optional(),
-    brandKit: z
-      .object({
-        businessName: z.string().optional(),
-        logoUrl: z.string().optional().nullable(),
-        phone: z.string().optional().nullable(),
-        websiteUrl: z.string().optional().nullable(),
-        primaryColor: z.string().optional(),
-        secondaryColor: z.string().optional(),
-      })
-      .optional(),
-  }),
-});

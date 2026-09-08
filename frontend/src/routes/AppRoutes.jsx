@@ -1,25 +1,10 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { MainLayout } from "../layouts/MainLayout";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { LoginPage } from "../features/auth/pages/LoginPage";
-import { RegisterPage } from "../features/auth/pages/RegisterPage";
-import { TwoFactorVerifyPage } from "../features/auth/pages/TwoFactorVerifyPage";
-import { ForgotPasswordPage } from "../features/auth/pages/ForgotPasswordPage";
-import { ResetPasswordPage } from "../features/auth/pages/ResetPasswordPage";
-import { DashboardPage } from "../pages/DashboardPage";
-import { CreatePostPage } from "../pages/CreatePostPage";
-import { YourPostsPage } from "../pages/YourPostsPage";
-import { CalendarPage } from "../pages/CalendarPage";
-import { FramesPage } from "../pages/FramesPage";
-import { DesignStylesPage } from "../pages/DesignStylesPage";
-import { AdminDashboardPage } from "../pages/AdminDashboardPage";
-import { SubAdminDashboardPage } from "../pages/SubAdminDashboardPage";
-import { BrandKitPage } from "../pages/BrandKitPage";
-import { VaultPage } from "../pages/VaultPage";
-import { WelcomeSplashPage } from "../pages/WelcomeSplashPage";
+import { PageLoader } from "../components/common/PageLoader";
 import { useAuth } from "../hooks/useAuth";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -31,7 +16,93 @@ import {
   BarChart3,
   Settings,
 } from "lucide-react";
-import { SocialAccountsManager } from "../features/social/components/SocialAccountsManager";
+
+// Route Code Splitting (React.lazy Dynamic Imports for Enterprise 100,000+ Scalability)
+const WelcomeSplashPage = lazy(() =>
+  import("../pages/WelcomeSplashPage").then((m) => ({
+    default: m.WelcomeSplashPage || m.default,
+  }))
+);
+const LoginPage = lazy(() =>
+  import("../features/auth/pages/LoginPage").then((m) => ({
+    default: m.LoginPage || m.default,
+  }))
+);
+const RegisterPage = lazy(() =>
+  import("../features/auth/pages/RegisterPage").then((m) => ({
+    default: m.RegisterPage || m.default,
+  }))
+);
+const TwoFactorVerifyPage = lazy(() =>
+  import("../features/auth/pages/TwoFactorVerifyPage").then((m) => ({
+    default: m.TwoFactorVerifyPage || m.default,
+  }))
+);
+const ForgotPasswordPage = lazy(() =>
+  import("../features/auth/pages/ForgotPasswordPage").then((m) => ({
+    default: m.ForgotPasswordPage || m.default,
+  }))
+);
+const ResetPasswordPage = lazy(() =>
+  import("../features/auth/pages/ResetPasswordPage").then((m) => ({
+    default: m.ResetPasswordPage || m.default,
+  }))
+);
+const DashboardPage = lazy(() =>
+  import("../pages/DashboardPage").then((m) => ({
+    default: m.DashboardPage || m.default,
+  }))
+);
+const CreatePostPage = lazy(() =>
+  import("../pages/CreatePostPage").then((m) => ({
+    default: m.CreatePostPage || m.default,
+  }))
+);
+const YourPostsPage = lazy(() =>
+  import("../pages/YourPostsPage").then((m) => ({
+    default: m.YourPostsPage || m.default,
+  }))
+);
+const CalendarPage = lazy(() =>
+  import("../pages/CalendarPage").then((m) => ({
+    default: m.CalendarPage || m.default,
+  }))
+);
+const FramesPage = lazy(() =>
+  import("../pages/FramesPage").then((m) => ({
+    default: m.FramesPage || m.default,
+  }))
+);
+const DesignStylesPage = lazy(() =>
+  import("../pages/DesignStylesPage").then((m) => ({
+    default: m.DesignStylesPage || m.default,
+  }))
+);
+const AdminDashboardPage = lazy(() =>
+  import("../pages/AdminDashboardPage").then((m) => ({
+    default: m.AdminDashboardPage || m.default,
+  }))
+);
+const SubAdminDashboardPage = lazy(() =>
+  import("../pages/SubAdminDashboardPage").then((m) => ({
+    default: m.SubAdminDashboardPage || m.default,
+  }))
+);
+const BrandKitPage = lazy(() =>
+  import("../pages/BrandKitPage").then((m) => ({
+    default: m.BrandKitPage || m.default,
+  }))
+);
+const VaultPage = lazy(() =>
+  import("../pages/VaultPage").then((m) => ({
+    default: m.VaultPage || m.default,
+  }))
+);
+const SocialAccountsManager = lazy(() =>
+  import("../features/social/components/SocialAccountsManager").then((m) => ({
+    default: m.SocialAccountsManager || m.default,
+  }))
+);
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -53,98 +124,96 @@ export const AppRoutes = () => {
   };
 
   return (
-    <Routes>
-      {/* Root Route Redirect */}
-      <Route path="/" element={<Navigate to={getHomeRedirect()} replace />} />
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        {/* Root Route Redirect */}
+        <Route path="/" element={<Navigate to={getHomeRedirect()} replace />} />
 
-      {/* Public Welcome Splash Experience */}
-      <Route path="/welcome" element={<WelcomeSplashPage />} />
+        {/* Public Welcome Splash Experience */}
+        <Route path="/welcome" element={<WelcomeSplashPage />} />
 
-      {/* Public Guest Auth Routes & 2FA Challenge */}
-      <Route element={<PublicRoute />}>
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/verify-2fa" element={<TwoFactorVerifyPage />} />
+        {/* Public Guest Auth Routes & 2FA Challenge */}
+        <Route element={<PublicRoute />}>
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-2fa" element={<TwoFactorVerifyPage />} />
+          </Route>
         </Route>
-      </Route>
 
-      {/* Protected Shared Workspace Routes (SuperAdmin, SubAdmin, SMB Users) */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/create-post" element={<CreatePostPage />} />
-          <Route path="/posts" element={<YourPostsPage />} />
-          <Route path="/your-posts" element={<YourPostsPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/frames" element={<FramesPage />} />
-          <Route path="/design-styles" element={<DesignStylesPage />} />
-          <Route path="/brand-kit" element={<BrandKitPage />} />
-          <Route path="/brandkit" element={<BrandKitPage />} />
-          <Route path="/connections" element={<SocialAccountsManager />} />
-          <Route
-            path="/vault"
-            element={<VaultPage />}
-          />
-          <Route
-            path="/analytics"
-            element={
-              <GenericPage
-                title="Growth & Analytics Engine"
-                icon={BarChart3}
-                description="Track post engagement, follower reach, and campaign ROI metrics."
-              />
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <GenericPage
-                title="Account & Security Settings"
-                icon={Settings}
-                description="Manage account details, password updates, and 2FA security preferences."
-              />
-            }
-          />
+        {/* Protected Shared Workspace Routes (SuperAdmin, SubAdmin, SMB Users) */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/create-post" element={<CreatePostPage />} />
+            <Route path="/posts" element={<YourPostsPage />} />
+            <Route path="/your-posts" element={<YourPostsPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/frames" element={<FramesPage />} />
+            <Route path="/design-styles" element={<DesignStylesPage />} />
+            <Route path="/brand-kit" element={<BrandKitPage />} />
+            <Route path="/brandkit" element={<BrandKitPage />} />
+            <Route path="/connections" element={<SocialAccountsManager />} />
+            <Route path="/vault" element={<VaultPage />} />
+            <Route
+              path="/analytics"
+              element={
+                <GenericPage
+                  title="Growth & Analytics Engine"
+                  icon={BarChart3}
+                  description="Track post engagement, follower reach, and campaign ROI metrics."
+                />
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <GenericPage
+                  title="Account & Security Settings"
+                  icon={Settings}
+                  description="Manage account details, password updates, and 2FA security preferences."
+                />
+              }
+            />
+          </Route>
         </Route>
-      </Route>
 
-      {/* Protected Admin Routes (SuperAdmin & SubAdmin Allowed) */}
-      <Route element={<ProtectedRoute requireAdmin />}>
-        <Route element={<MainLayout />}>
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          <Route path="/subadmin/dashboard" element={<AdminDashboardPage />} />
+        {/* Protected Admin Routes (SuperAdmin & SubAdmin Allowed) */}
+        <Route element={<ProtectedRoute requireAdmin />}>
+          <Route element={<MainLayout />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+            <Route path="/subadmin/dashboard" element={<AdminDashboardPage />} />
+          </Route>
         </Route>
-      </Route>
 
-      {/* Catch-all 404 Route */}
-      <Route
-        path="*"
-        element={
-          <div className="min-h-screen flex items-center justify-center p-4 bg-[#0B0F17] text-white">
-            <Card className="max-w-md w-full text-center space-y-4">
-              <h1 className="font-heading font-extrabold text-6xl text-amber-500">
-                404
-              </h1>
-              <h2 className="font-heading font-bold text-xl">Page Not Found</h2>
-              <p className="text-sm text-slate-400">
-                The requested page does not exist or has been relocated.
-              </p>
-              <Button
-                variant="primary"
-                onClick={() => (window.location.href = "/")}
-                className="w-full"
-              >
-                Return to Home
-              </Button>
-            </Card>
-          </div>
-        }
-      />
-    </Routes>
+        {/* Catch-all 404 Route */}
+        <Route
+          path="*"
+          element={
+            <div className="min-h-screen flex items-center justify-center p-4 bg-[#0B0F17] text-white">
+              <Card className="max-w-md w-full text-center space-y-4">
+                <h1 className="font-heading font-extrabold text-6xl text-amber-500">
+                  404
+                </h1>
+                <h2 className="font-heading font-bold text-xl">Page Not Found</h2>
+                <p className="text-sm text-slate-400">
+                  The requested page does not exist or has been relocated.
+                </p>
+                <Button
+                  variant="primary"
+                  onClick={() => (window.location.href = "/")}
+                  className="w-full"
+                >
+                  Return to Home
+                </Button>
+              </Card>
+            </div>
+          }
+        />
+      </Routes>
+    </Suspense>
   );
 };
-//done now

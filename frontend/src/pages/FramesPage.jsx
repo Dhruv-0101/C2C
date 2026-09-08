@@ -8,9 +8,9 @@ export const FramesPage = () => {
       <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
         <Layers className="w-6 h-6" />
       </div>
-      <h2 className="font-heading font-extrabold text-2xl text-white">Canva Vector Frames Studio</h2>
+      <h2 className="font-heading font-extrabold text-2xl text-white">Brand Frames Studio</h2>
       <p className="text-sm text-slate-400 max-w-md mx-auto">
-        Explore transparent Canva PNG frames, photo placeholders, and custom badge overlays.
+        Explore custom brand frames, photo placeholders, and branded badge overlays.
       </p>
     </Card>
   );

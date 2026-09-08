@@ -60,7 +60,7 @@ export const AdminDashboardContainer = () => {
     error: subAdminFetchError,
   } = useSubAdmins(
     { page: subAdminPage, limit: subAdminLimit, search: subAdminSearch },
-    { enabled: isSuperAdmin && (activeTab === "subadmins" || isModalOpen || editingSubAdmin !== null) },
+    { enabled: isSuperAdmin },
   );
 
   // 2. Registered Users Directory Query
@@ -75,7 +75,7 @@ export const AdminDashboardContainer = () => {
     error: usersFetchError,
   } = useUsers(
     { page: userPage, limit: userLimit, search: userSearch },
-    { enabled: activeTab === "users" },
+    { enabled: true },
   );
 
   // 3. Master Business Categories Query

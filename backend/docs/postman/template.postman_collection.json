@@ -1,0 +1,172 @@
+{
+  "info": {
+    "_postman_id": "bf-templates-module-v1",
+    "name": "BrandFlow — Template Collection",
+    "description": "API endpoints for fetching festival/marketing graphic base templates, uploading Cloudinary master templates, and deleting template records.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get Template Categories",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/templates/categories",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "categories"
+          ]
+        },
+        "description": "Fetches predefined graphic template categories."
+      }
+    },
+    {
+      "name": "2. Get All Templates",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/templates?page=1&limit=20",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "category",
+              "value": "BUSINESS",
+              "disabled": true
+            },
+            {
+              "key": "festivalId",
+              "value": "festival_id_here",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "Fetches paginated festival and marketing graphic base templates."
+      }
+    },
+    {
+      "name": "3. Upload Cloudinary Template",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Diwali Golden Lights Master Graphic\",\n  \"description\": \"Base 1080x1080 graphic background for Diwali 2026 festival.\",\n  \"category\": \"FESTIVAL\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/templates/upload",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "upload"
+          ]
+        },
+        "description": "Uploads a base festival/marketing graphic background strictly to Cloudinary 'brandflow/festival-templates' and saves to database."
+      }
+    },
+    {
+      "name": "4. Create Template",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Navratri Festive Graphic\",\n  \"description\": \"Base graphic template for Navratri celebration.\",\n  \"category\": \"FESTIVAL\",\n  \"baseImageUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.jpg\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/templates",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates"
+          ]
+        },
+        "description": "Creates a master system graphic template with a direct image URL or base64."
+      }
+    },
+    {
+      "name": "5. Delete Template",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/templates/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "template_id_here"
+            }
+          ]
+        },
+        "description": "Deletes a graphic base template by ID and cleans up associated image from Cloudinary storage."
+      }
+    }
+  ]
+}

@@ -1,21 +1,51 @@
 import { postRepository } from './post.repository.js';
-import { uploadToCloudinaryBuffer } from '../../config/cloudinary.js';
-import { processPostJob } from '../../jobs/postWorker.js';
-import { triggerScheduledPostsNow } from '../../jobs/cronDispatcher.js';
+import { uploadPostBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
+import { processPostJob, triggerScheduledPostsNow } from '../../jobs/index.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 
 export const postLogic = {
   /**
-   * Get all posts created by user
+   * Get paginated posts created by user
    */
-  getUserPosts: async (userId) => {
-    return postRepository.findByUserId(userId);
+  getUserPosts: async (userId, queryParams = {}) => {
+    const pagination = parsePaginationParams(queryParams);
+    const { posts, totalCount } = await postRepository.findPaginatedByUserId(userId, pagination);
+
+    const paginatedResponse = buildPaginatedResponse({
+      items: posts,
+      totalCount,
+      page: pagination.page,
+      limit: pagination.limit,
+    });
+
+    return {
+      data: {
+        posts: paginatedResponse.data,
+      },
+      meta: paginatedResponse.meta,
+    };
   },
 
   /**
-   * Get user's scheduled queue
+   * Get user's scheduled queue with pagination
    */
-  getScheduledPosts: async (userId) => {
-    return postRepository.findScheduledPostsByUserId(userId);
+  getScheduledPosts: async (userId, queryParams = {}) => {
+    const pagination = parsePaginationParams(queryParams);
+    const { scheduledPosts, totalCount } = await postRepository.findPaginatedScheduledByUserId(userId, pagination);
+
+    const paginatedResponse = buildPaginatedResponse({
+      items: scheduledPosts,
+      totalCount,
+      page: pagination.page,
+      limit: pagination.limit,
+    });
+
+    return {
+      data: {
+        scheduledPosts: paginatedResponse.data,
+      },
+      meta: paginatedResponse.meta,
+    };
   },
 
   /**
@@ -70,13 +100,14 @@ export const postLogic = {
 
   /**
    * Generate & Save new composited post (Template + PNG Frame + BrandKit)
+   * Strictly uploads user created social graphics -> Cloudinary 'brandflow/posts'
    */
   createPost: async (userId, payload, fileBuffer) => {
     let finalGraphicUrl = payload.finalGraphicUrl || null;
 
-    // Upload composited post image to Cloudinary if provided as buffer or base64
+    // Upload composited post image buffer or base64 to Cloudinary brandflow/posts
     if (fileBuffer) {
-      const uploadResult = await uploadToCloudinaryBuffer(fileBuffer, 'brandflow/posts');
+      const uploadResult = await uploadPostBuffer(fileBuffer);
       finalGraphicUrl = uploadResult.url;
     } else if (payload.base64Graphic || payload.base64Image) {
       let cleanBase64 = payload.base64Graphic || payload.base64Image;
@@ -84,7 +115,7 @@ export const postLogic = {
         cleanBase64 = cleanBase64.split(';base64,').pop();
       }
       const buffer = Buffer.from(cleanBase64, 'base64');
-      const uploadResult = await uploadToCloudinaryBuffer(buffer, 'brandflow/posts');
+      const uploadResult = await uploadPostBuffer(buffer);
       finalGraphicUrl = uploadResult.url;
     }
 
@@ -106,9 +137,16 @@ export const postLogic = {
   },
 
   /**
-   * Delete user post
+   * Delete user post and cleanup Cloudinary storage
    */
   deletePost: async (id, userId) => {
+    const post = await postRepository.findById(id);
+    if (post?.finalGraphicUrl) {
+      deleteFromCloudinary(post.finalGraphicUrl).catch((err) =>
+        console.warn(`⚠️ Failed to cleanup post graphic from Cloudinary: ${err.message}`)
+      );
+    }
     return postRepository.delete(id, userId);
   },
 };
+

@@ -6,7 +6,19 @@ import { initWorkers, closeWorkers } from './jobs/index.js';
 
 import sharp from 'sharp';
 
-// Disable Sharp C++ native memory cache to fit safely within Render 512MB RAM
+/**
+ * 🖼️ SHARP C++ NATIVE IMAGE ENGINE MEMORY OPTIMIZATION:
+ * 
+ * A) What is Sharp?
+ *    - High-performance C++ native library (libvips) used to resize user logos, overlay frames on festival posts, 
+ *      and crop graphics.
+ * 
+ * B) Why sharp.cache(false) & sharp.concurrency(1)?
+ *    - Real World Analogy: Clearing the photographic printing tray after every photo instead of storing 1,000 photos in RAM.
+ *    - Tech Reason: Sharp by default caches processed image buffers in C++ native memory (outside Node.js V8 Garbage Collector).
+ *      In 512MB RAM cloud containers (Render / AWS t3.micro / Docker), default C++ caching consumes 400MB+ RAM and triggers 
+ *      'Out Of Memory' (OOM) container crashes. Disabling cache & setting concurrency to 1 keeps RAM rock-solid at ~50MB!
+ */
 try {
   sharp.cache(false);
   sharp.concurrency(1);

@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../config/database.js';
 
 export const templateCategoryRepository = {
   create: async (data) => {
@@ -20,6 +18,30 @@ export const templateCategoryRepository = {
         isSystem: data.isSystem || false,
       },
     });
+  },
+
+  findPaginated: async ({ skip = 0, take = 10, search, sortBy = 'name', sortOrder = 'asc' }) => {
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+            { slug: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const [categories, totalCount] = await Promise.all([
+      prisma.templateCategory.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { [sortBy]: sortOrder },
+      }),
+      prisma.templateCategory.count({ where }),
+    ]);
+
+    return { categories, totalCount };
   },
 
   findMany: async () => {

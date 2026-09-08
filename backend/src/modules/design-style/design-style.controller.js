@@ -1,17 +1,16 @@
 import * as designStyleLogic from './design-style.logic.js';
 
 /**
- * GET /api/v1/design-styles - Get all master design styles
+ * GET /api/v1/design-styles - Get paginated master design styles
  */
 export async function getDesignStyles(req, res, next) {
   try {
-    const designStyles = await designStyleLogic.getDesignStyles();
+    const result = await designStyleLogic.getDesignStyles(req.query);
     res.status(200).json({
       success: true,
       message: 'Design styles retrieved successfully',
-      data: {
-        designStyles,
-      },
+      data: result.data,
+      meta: result.meta,
     });
   } catch (error) {
     next(error);

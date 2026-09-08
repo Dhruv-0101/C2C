@@ -13,7 +13,6 @@ import {
   UserPlus,
   X,
   CheckCircle2,
-  Activity,
   Layers,
   Sparkles,
   Calendar as CalendarIcon,
@@ -102,7 +101,7 @@ const EditSubAdminModal = ({ subAdmin, onClose, updateSubAdminMutation }) => {
               {[
                 { id: "templates", label: "AI Base Templates" },
                 { id: "festivals", label: "Festival Calendar" },
-                { id: "frames", label: "Canva Vector Frames" },
+                { id: "frames", label: "Brand Frames Studio" },
                 { id: "styles", label: "Design System & Palettes" },
                 { id: "categories", label: "Business Categories" },
                 { id: "users", label: "SMB User Directory" },
@@ -232,14 +231,14 @@ export const AdminDashboardView = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Overview Stat Banners */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2">
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
             <span>SMB Workspace Tenants</span>
             <Users className="w-4 h-4 text-amber-400" />
           </div>
           <p className="font-heading text-3xl font-extrabold text-white">
-            {userMeta?.totalItems || 1248}
+            {userMeta?.totalItems ?? (isLoadingUsers ? "..." : (users?.length || 0))}
           </p>
           <p className="text-[11px] text-emerald-400 font-medium">
             Registered business tenants
@@ -252,7 +251,7 @@ export const AdminDashboardView = ({
             <Shield className="w-4 h-4 text-teal-400" />
           </div>
           <p className="font-heading text-3xl font-extrabold text-white">
-            {subAdminMeta?.totalItems || 8}
+            {subAdminMeta?.totalItems ?? (isLoadingSubAdmins ? "..." : (subAdmins?.length || 0))}
           </p>
           <p className="text-[11px] text-teal-400 font-medium">
             RBAC access granted
@@ -265,23 +264,10 @@ export const AdminDashboardView = ({
             <FolderKanban className="w-4 h-4 text-indigo-400" />
           </div>
           <p className="font-heading text-3xl font-extrabold text-white">
-            {categoryMeta?.totalItems || 24}
+            {categoryMeta?.totalItems ?? (isLoadingCategories ? "..." : (categories?.length || 0))}
           </p>
           <p className="text-[11px] text-indigo-400 font-medium">
             Active industry tags
-          </p>
-        </Card>
-
-        <Card className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
-            <span>Server Status</span>
-            <Activity className="w-4 h-4 text-emerald-400" />
-          </div>
-          <p className="font-heading text-2xl font-extrabold text-emerald-400">
-            99.98%
-          </p>
-          <p className="text-[11px] text-slate-400 font-medium">
-            Compositor workers healthy
           </p>
         </Card>
       </div>
@@ -719,7 +705,7 @@ export const AdminDashboardView = ({
                     {[
                       { id: "templates", label: "AI Base Templates" },
                       { id: "festivals", label: "Festival Calendar" },
-                      { id: "frames", label: "Canva Vector Frames" },
+                      { id: "frames", label: "Brand Frames Studio" },
                       { id: "styles", label: "Design System & Palettes" },
                       { id: "categories", label: "Business Categories" },
                       { id: "users", label: "SMB User Directory" },

@@ -15,6 +15,7 @@ import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
 import { ColorPickerInput } from "../../../components/common/ColorPickerInput";
+import Pagination from "../../../components/common/Pagination";
 import {
   FONT_HEADER_OPTIONS,
   FONT_BODY_OPTIONS,
@@ -42,6 +43,10 @@ export const DesignStylesManagerView = ({
   formData,
   setFormData,
   designStyles,
+  meta,
+  page,
+  setPage,
+  setLimit,
   isLoading,
   error,
   createDesignStyleMutation,
@@ -187,6 +192,14 @@ export const DesignStylesManagerView = ({
           ))}
         </div>
       )}
+
+      {/* Central Pagination Controls */}
+      <Pagination
+        meta={meta}
+        currentPage={page}
+        onPageChange={setPage}
+        onLimitChange={setLimit}
+      />
 
       {/* Create Design Style Modal */}
       {isModalOpen &&

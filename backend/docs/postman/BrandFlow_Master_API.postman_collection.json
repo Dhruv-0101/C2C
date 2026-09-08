@@ -1,13 +1,13 @@
 {
   "info": {
-    "_postman_id": "bf-master-api-v6",
-    "name": "BrandFlow Enterprise Platform — Complete API Suite (v6)",
-    "description": "Comprehensive production API collection for BrandFlow AI Social Media Platform. Contains complete test suites for Auth, RBAC, 2FA, Business Categories, Design Styles, BrandKit, Transparent PNG Frame Blueprints, Graphic Base Templates, User Composited Posts, Content Calendar Festivals, Graphic Vault, and Social Media Integrations.",
+    "_postman_id": "bf-master-api-v7",
+    "name": "BrandFlow Enterprise Platform — Master API Suite",
+    "description": "Comprehensive production API collection for BrandFlow Platform. Includes full test suites for Auth, Google OAuth, 2FA, SubAdmin RBAC, User Directory, Business Categories, Design Styles, BrandKit, Transparent PNG Frame Blueprints, Graphic Base Templates, User Composited Posts, Social Media Queue & Publishing, Content Calendar Festivals, Graphic Vault, and Social Integrations.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "0. System Health & Environment",
+      "name": "0. System Health",
       "item": [
         {
           "name": "API Health Check",
@@ -29,10 +29,10 @@
       ]
     },
     {
-      "name": "1. Authentication & RBAC Module",
+      "name": "1. Auth",
       "item": [
         {
-          "name": "Signup Regular User",
+          "name": "1. Signup User",
           "event": [
             {
               "listen": "test",
@@ -41,7 +41,7 @@
                   "var jsonData = pm.response.json();",
                   "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
                   "    pm.environment.set('access_token', jsonData.data.accessToken);",
-                  "    console.log('✅ Access Token saved to environment');",
+                  "    console.log('✅ Access Token stored in access_token');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -53,7 +53,8 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
@@ -69,11 +70,12 @@
                 "auth",
                 "signup"
               ]
-            }
+            },
+            "description": "Registers a new public user. Returns JWT Access Token & sets HTTP-Only refresh cookie."
           }
         },
         {
-          "name": "Login User",
+          "name": "2. Login User",
           "event": [
             {
               "listen": "test",
@@ -82,6 +84,11 @@
                   "var jsonData = pm.response.json();",
                   "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
                   "    pm.environment.set('access_token', jsonData.data.accessToken);",
+                  "    console.log('✅ Access Token stored in access_token');",
+                  "}",
+                  "if (jsonData.data && jsonData.data.require2FA) {",
+                  "    pm.environment.set('mfa_token', jsonData.data.mfaToken);",
+                  "    console.log('🔐 2FA Required! MFA Token stored in mfa_token');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -93,12 +100,13 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@brandflow.com\",\n  \"password\": \"Admin@123456\"\n}"
+              "raw": "{\n  \"email\": \"superadmin@brandflow.com\",\n  \"password\": \"SuperAdmin123!\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -109,17 +117,174 @@
                 "auth",
                 "login"
               ]
-            }
+            },
+            "description": "Authenticates user credentials. If 2FA is enabled, returns require2FA: true and mfaToken."
           }
         },
         {
-          "name": "Get Current Profile (/auth/me)",
+          "name": "3. Google OAuth Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"google_id_token_from_client_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/google",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
+            },
+            "description": "Authenticates user using Google One-Tap / OAuth ID Token."
+          }
+        },
+        {
+          "name": "4. Forgot Password Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@brandflow.ai\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Sends password reset instructions to user's registered email."
+          }
+        },
+        {
+          "name": "5. Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset_token_from_email_here\",\n  \"newPassword\": \"NewSecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Resets user password using reset token."
+          }
+        },
+        {
+          "name": "6. Verify 2FA Login Challenge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mfaToken\": \"{{mfa_token}}\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/verify-login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "verify-login"
+              ]
+            },
+            "description": "Verifies 6-digit TOTP code or recovery code during 2FA login challenge."
+          }
+        },
+        {
+          "name": "7. Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Rotates refresh token and returns a new Access Token using HTTP-Only cookie."
+          }
+        },
+        {
+          "name": "8. Logout Session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes refresh token in database and clears HTTP-Only refresh cookie."
+          }
+        },
+        {
+          "name": "9. Get Profile",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               }
             ],
             "url": {
@@ -131,16 +296,278 @@
                 "auth",
                 "me"
               ]
-            }
+            },
+            "description": "Fetches currently logged-in user profile, role flags, and 2FA status."
+          }
+        },
+        {
+          "name": "10. Setup 2FA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/setup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "setup"
+              ]
+            },
+            "description": "Generates TOTP secret and QR code Data URL for authenticator setup."
+          }
+        },
+        {
+          "name": "11. Enable 2FA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/enable",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "enable"
+              ]
+            },
+            "description": "Confirms TOTP code, enables 2FA, and returns single-use backup recovery codes."
+          }
+        },
+        {
+          "name": "12. Disable 2FA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/disable",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "disable"
+              ]
+            },
+            "description": "Disables 2FA security on authenticated account."
+          }
+        },
+        {
+          "name": "13. Create SubAdmin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Jane Smith (SubAdmin)\",\n  \"email\": \"subadmin@brandflow.com\",\n  \"password\": \"SubAdminPass123!\",\n  \"allowedTabs\": [\"users\", \"analytics\", \"templates\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/subadmin",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "subadmin"
+              ]
+            },
+            "description": "Creates a new SubAdmin account with assigned allowedTabs permissions (SuperAdmin only)."
+          }
+        },
+        {
+          "name": "14. List SubAdmins",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/subadmins?page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "subadmins"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Fetches paginated list of all created SubAdmins and permissions (SuperAdmin only)."
+          }
+        },
+        {
+          "name": "15. Update SubAdmin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allowedTabs\": [\"users\", \"templates\", \"festivals\", \"frames\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/subadmin/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "subadmin",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "subadmin_id_here"
+                }
+              ]
+            },
+            "description": "Updates allowedTabs permissions for an existing SubAdmin (SuperAdmin only)."
+          }
+        },
+        {
+          "name": "16. Delete SubAdmin",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/subadmin/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "subadmin",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "subadmin_id_here"
+                }
+              ]
+            },
+            "description": "Deletes a SubAdmin account by ID (SuperAdmin only)."
+          }
+        },
+        {
+          "name": "17. Get Users Directory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/users?page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "dhruv",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Fetches paginated directory of registered users (Admin / SuperAdmin only)."
           }
         }
       ]
     },
     {
-      "name": "2. Business Categories Module",
+      "name": "2. Category",
       "item": [
         {
-          "name": "Get All Business Categories",
+          "name": "1. Get All Categories",
           "request": {
             "method": "GET",
             "header": [],
@@ -166,7 +593,7 @@
           }
         },
         {
-          "name": "Create Business Category (SuperAdmin)",
+          "name": "2. Create Category",
           "request": {
             "method": "POST",
             "header": [
@@ -181,7 +608,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Real Estate & Property\",\n  \"slug\": \"real-estate\",\n  \"description\": \"Real estate consultants and brokers.\"\n}"
+              "raw": "{\n  \"name\": \"Real Estate & Property\",\n  \"slug\": \"real-estate\",\n  \"description\": \"Real estate agents, property consultants, and construction companies.\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/categories",
@@ -195,7 +622,7 @@
           }
         },
         {
-          "name": "Delete Business Category (SuperAdmin)",
+          "name": "3. Delete Category",
           "request": {
             "method": "DELETE",
             "header": [
@@ -216,7 +643,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "category_id"
+                  "value": "category_id_here"
                 }
               ]
             }
@@ -225,10 +652,10 @@
       ]
     },
     {
-      "name": "3. Design Styles & Palettes Module",
+      "name": "3. Design Style",
       "item": [
         {
-          "name": "Get All Master Design Styles",
+          "name": "1. Get All Design Styles",
           "request": {
             "method": "GET",
             "header": [],
@@ -244,7 +671,7 @@
           }
         },
         {
-          "name": "Create Master Design Style",
+          "name": "2. Create Design Style",
           "request": {
             "method": "POST",
             "header": [
@@ -259,7 +686,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Gold Luxe Minimalist\",\n  \"slug\": \"gold-luxe-minimalist\",\n  \"primaryColor\": \"#F59E0B\",\n  \"secondaryColor\": \"#1E293B\",\n  \"accentColor\": \"#10B981\",\n  \"fontFamily\": \"Plus Jakarta Sans\"\n}"
+              "raw": "{\n  \"name\": \"Gold Luxe Minimalist\",\n  \"slug\": \"gold-luxe-minimalist\",\n  \"primaryColor\": \"#F59E0B\",\n  \"secondaryColor\": \"#1E293B\",\n  \"accentColor\": \"#10B981\",\n  \"fontFamily\": \"Plus Jakarta Sans\",\n  \"previewUrl\": \"https://res.cloudinary.com/demo/image/upload/sample.jpg\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/design-styles",
@@ -273,7 +700,7 @@
           }
         },
         {
-          "name": "Delete Design Style",
+          "name": "3. Delete Design Style",
           "request": {
             "method": "DELETE",
             "header": [
@@ -294,7 +721,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "style_id"
+                  "value": "design_style_id_here"
                 }
               ]
             }
@@ -303,16 +730,17 @@
       ]
     },
     {
-      "name": "4. AI BrandKit Profile Module",
+      "name": "4. BrandKit",
       "item": [
         {
-          "name": "Get BrandKit Profile",
+          "name": "1. Get BrandKit Profile",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               }
             ],
             "url": {
@@ -323,26 +751,29 @@
               "path": [
                 "brandkit"
               ]
-            }
+            },
+            "description": "Fetches the authenticated user's active BrandKit profile."
           }
         },
         {
-          "name": "Update BrandKit Profile & Logos",
+          "name": "2. Update BrandKit Profile",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               },
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"businessName\": \"Sunrise Real Estate Ltd.\",\n  \"tagline\": \"Premium Housing Solutions\",\n  \"phone\": \"+91 98765 43210\",\n  \"address\": \"MG Road, Mumbai\",\n  \"city\": \"Mumbai\",\n  \"primaryColor\": \"#EAB308\"\n}"
+              "raw": "{\n  \"businessName\": \"Sunrise Real Estate Ltd.\",\n  \"tagline\": \"Premium & Commercial Property Leaders\",\n  \"phone\": \"+91 98765 43210\",\n  \"whatsapp\": \"+91 98765 43210\",\n  \"email\": \"contact@sunriserealestate.com\",\n  \"website\": \"https://sunriserealestate.com\",\n  \"address\": \"Suite 402, MG Road\",\n  \"city\": \"Mumbai\",\n  \"primaryColor\": \"#EAB308\",\n  \"secondaryColor\": \"#0F172A\",\n  \"base64Logo\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Avatar\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/brandkit",
@@ -352,52 +783,72 @@
               "path": [
                 "brandkit"
               ]
-            }
+            },
+            "description": "Updates user BrandKit profile and uploads logo/avatar to Cloudinary."
           }
         }
       ]
     },
     {
-      "name": "5. Transparent PNG Overlay Frames & Config Engine",
+      "name": "5. Frame",
       "item": [
         {
-          "name": "Get All Active Frames",
+          "name": "1. Get All Frames",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/frames",
+              "raw": "{{base_url}}/frames?page=1&limit=20",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "frames"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "Diwali",
+                  "disabled": true
+                }
               ]
-            }
+            },
+            "description": "Fetches paginated transparent PNG overlay frames along with their configJson vector slot schemas."
           }
         },
         {
-          "name": "Create Canva Frame with configJson",
+          "name": "2. Create Frame",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               },
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Gold Festival Overlay Frame\",\n  \"description\": \"Enterprise Canva frame with dynamic text & photo slots.\",\n  \"base64Overlay\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"configJson\": {\n    \"elements\": [\n      {\n        \"id\": \"shape_1\",\n        \"type\": \"CAPSULE\",\n        \"slotCategory\": \"STATIC_SHAPE\",\n        \"x\": 200,\n        \"y\": 900,\n        \"width\": 680,\n        \"height\": 120,\n        \"fillColor\": \"#EAB308\"\n      }\n    ]\n  }\n}"
+              "raw": "{\n  \"title\": \"Diwali Enterprise Gold Frame Overlay\",\n  \"description\": \"Custom Canva-style frame with circular headshot ring and custom text input fields.\",\n  \"base64Overlay\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"configJson\": {\n    \"elements\": [\n      {\n        \"id\": \"shape_1785820430253\",\n        \"type\": \"CAPSULE\",\n        \"slotCategory\": \"STATIC_SHAPE\",\n        \"x\": 200,\n        \"y\": 900,\n        \"width\": 680,\n        \"height\": 120,\n        \"fillColor\": \"#EAB308\",\n        \"borderColor\": \"#FFFFFF\",\n        \"borderWidth\": 3\n      },\n      {\n        \"id\": \"circle_1785820438159\",\n        \"type\": \"CIRCLE\",\n        \"slotCategory\": \"IMAGE_SLOT\",\n        \"dynamicSlot\": \"AVATAR_CIRCLE\",\n        \"customLabel\": \"Profile Headshot Photo\",\n        \"x\": 215,\n        \"y\": 910,\n        \"width\": 100,\n        \"height\": 100,\n        \"borderColor\": \"#EAB308\",\n        \"borderWidth\": 4\n      },\n      {\n        \"id\": \"text_1785820446387\",\n        \"type\": \"TEXT\",\n        \"slotCategory\": \"TEXT_INPUT\",\n        \"dynamicSlot\": \"PHONE\",\n        \"customLabel\": \"Phone Number\",\n        \"fieldKey\": \"phone\",\n        \"iconPrefix\": \"📞\",\n        \"text\": \"+91 8320369230\",\n        \"x\": 340,\n        \"y\": 945,\n        \"width\": 500,\n        \"height\": 50,\n        \"fontSize\": 28,\n        \"fontFamily\": \"Space Grotesk\",\n        \"fontWeight\": \"bold\",\n        \"fontColor\": \"#FFFFFF\",\n        \"textAlign\": \"left\"\n      }\n    ]\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/frames",
@@ -407,17 +858,19 @@
               "path": [
                 "frames"
               ]
-            }
+            },
+            "description": "Publishes a new transparent PNG frame overlay (strictly stored in Cloudinary 'brandflow/frames/overlays' for overlayPngUrl and 'brandflow/frames/previews' for previewUrl)."
           }
         },
         {
-          "name": "Delete Frame",
+          "name": "3. Delete Frame",
           "request": {
             "method": "DELETE",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               }
             ],
             "url": {
@@ -432,55 +885,104 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "frame_id"
+                  "value": "frame_id_here"
                 }
               ]
-            }
+            },
+            "description": "Deletes a transparent PNG overlay frame by ID and cleans up images from Cloudinary storage."
           }
         }
       ]
     },
     {
-      "name": "6. Graphic Base Templates Module",
+      "name": "6. Template",
       "item": [
         {
-          "name": "Get Graphic Base Templates",
+          "name": "1. Get Template Categories",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/templates",
+              "raw": "{{base_url}}/templates/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates",
+                "categories"
+              ]
+            },
+            "description": "Fetches predefined graphic template categories."
+          }
+        },
+        {
+          "name": "2. Get All Templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates?page=1&limit=20",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "templates"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "category",
+                  "value": "BUSINESS",
+                  "disabled": true
+                },
+                {
+                  "key": "festivalId",
+                  "value": "festival_id_here",
+                  "disabled": true
+                }
               ]
-            }
+            },
+            "description": "Fetches paginated festival and marketing graphic base templates."
           }
         },
         {
-          "name": "Upload Cloudinary Admin Base Graphic",
+          "name": "3. Upload Cloudinary Template",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               },
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Diwali Lights Master Graphic 1080x1080\",\n  \"description\": \"Festival background graphic\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+              "raw": "{\n  \"title\": \"Diwali Golden Lights Master Graphic\",\n  \"description\": \"Base 1080x1080 graphic background for Diwali 2026 festival.\",\n  \"category\": \"FESTIVAL\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/templates/upload",
@@ -491,22 +993,86 @@
                 "templates",
                 "upload"
               ]
-            }
+            },
+            "description": "Uploads a base festival/marketing graphic background strictly to Cloudinary 'brandflow/festival-templates' and saves to database."
+          }
+        },
+        {
+          "name": "4. Create Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Navratri Festive Graphic\",\n  \"description\": \"Base graphic template for Navratri celebration.\",\n  \"category\": \"FESTIVAL\",\n  \"baseImageUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates"
+              ]
+            },
+            "description": "Creates a master system graphic template with a direct image URL or base64."
+          }
+        },
+        {
+          "name": "5. Delete Template",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "template_id_here"
+                }
+              ]
+            },
+            "description": "Deletes a graphic base template by ID and cleans up associated image from Cloudinary storage."
           }
         }
       ]
     },
     {
-      "name": "7. User Composited Posts & Instances",
+      "name": "7. Post",
       "item": [
         {
-          "name": "Get User Composited Posts",
+          "name": "1. Get User Posts",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               }
             ],
             "url": {
@@ -517,26 +1083,143 @@
               "path": [
                 "posts"
               ]
-            }
+            },
+            "description": "Fetches all composited posts created by the authenticated user."
           }
         },
         {
-          "name": "Save Composited Post",
+          "name": "2. Get Scheduled Posts Queue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/scheduled",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "scheduled"
+              ]
+            },
+            "description": "Fetches the scheduled posts queue for the authenticated user."
+          }
+        },
+        {
+          "name": "3. Publish Post Now",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               },
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"templateId\": \"template_id\",\n  \"frameId\": \"frame_id\",\n  \"customText\": \"Diwali Special Offer\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\"\n}"
+              "raw": "{\n  \"postId\": \"post_id_here\",\n  \"caption\": \"Celebrating Diwali with our valued customers! 🪔✨\",\n  \"platforms\": [\"INSTAGRAM\", \"LINKEDIN\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/publish-now",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "publish-now"
+              ]
+            },
+            "description": "Instantly publishes a composited graphic post across connected social media platforms."
+          }
+        },
+        {
+          "name": "4. Schedule Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postId\": \"post_id_here\",\n  \"caption\": \"Exclusive Festive Discounts on MG Road!\",\n  \"scheduledFor\": \"2026-11-08T09:00:00.000Z\",\n  \"platforms\": [\"INSTAGRAM\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/schedule",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "schedule"
+              ]
+            },
+            "description": "Schedules a composited post for automatic social media publishing at a future date & time."
+          }
+        },
+        {
+          "name": "5. Trigger Scheduled Jobs Dispatcher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/trigger-scheduled-jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "trigger-scheduled-jobs"
+              ]
+            },
+            "description": "Manually triggers the background cron dispatcher cycle to process due scheduled posts."
+          }
+        },
+        {
+          "name": "6. Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"frameId\": \"clx456frameid\",\n  \"customText\": \"Happy Diwali from Sunrise Real Estate!\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/posts",
@@ -546,22 +1229,54 @@
               "path": [
                 "posts"
               ]
-            }
+            },
+            "description": "Saves a composited 1080x1080 post image strictly to Cloudinary 'brandflow/posts', database, and Vault."
+          }
+        },
+        {
+          "name": "7. Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "post_id_here"
+                }
+              ]
+            },
+            "description": "Deletes a composited post by ID and cleans up associated image from Cloudinary storage."
           }
         }
       ]
     },
     {
-      "name": "8. Festivals & Content Calendar",
+      "name": "8. Festival",
       "item": [
         {
-          "name": "Get Festival Events Calendar",
+          "name": "1. Get All Festivals",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               }
             ],
             "url": {
@@ -572,26 +1287,29 @@
               "path": [
                 "festivals"
               ]
-            }
+            },
+            "description": "Fetches all upcoming national and regional festival calendar events."
           }
         },
         {
-          "name": "Add Festival Event",
+          "name": "2. Create Festival Event",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{access_token}}"
+                "value": "Bearer {{access_token}}",
+                "type": "text"
               },
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Diwali 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"region\": \"India\"\n}"
+              "raw": "{\n  \"name\": \"Diwali — Festival of Lights 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"description\": \"Grand celebration of light, prosperity, and wisdom.\",\n  \"region\": \"National (India)\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/festivals",
@@ -601,16 +1319,86 @@
               "path": [
                 "festivals"
               ]
-            }
+            },
+            "description": "Adds a new festival calendar event with optional cover banner image upload to Cloudinary 'brandflow/festivals'."
+          }
+        },
+        {
+          "name": "3. Update Festival Event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Diwali — Grand Festival of Lights 2026\",\n  \"description\": \"Updated description for Diwali celebration.\",\n  \"region\": \"Maharashtra\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/festivals/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "festivals",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "festival_id_here"
+                }
+              ]
+            },
+            "description": "Updates festival details and cover banner image, cleaning up old cover banner from Cloudinary if replaced."
+          }
+        },
+        {
+          "name": "4. Delete Festival Event",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/festivals/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "festivals",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "festival_id_here"
+                }
+              ]
+            },
+            "description": "Deletes a festival calendar event and removes associated cover banner image from Cloudinary storage."
           }
         }
       ]
     },
     {
-      "name": "9. Graphic Vault Module",
+      "name": "9. Vault",
       "item": [
         {
-          "name": "Get Graphic Vault Items",
+          "name": "1. Get Vault Items",
           "request": {
             "method": "GET",
             "header": [
@@ -626,12 +1414,22 @@
               ],
               "path": [
                 "vault"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
               ]
             }
           }
         },
         {
-          "name": "Get Vault Item By ID",
+          "name": "2. Get Vault Item By ID",
           "request": {
             "method": "GET",
             "header": [
@@ -652,14 +1450,14 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "vault_id"
+                  "value": "vault_item_id_here"
                 }
               ]
             }
           }
         },
         {
-          "name": "Update Vault Item",
+          "name": "3. Update Vault Item",
           "request": {
             "method": "PUT",
             "header": [
@@ -674,7 +1472,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customText\": \"Updated Diwali Festival Banner\",\n  \"status\": \"READY\"\n}"
+              "raw": "{\n  \"customText\": \"Updated Diwali Festival Banner Text\",\n  \"status\": \"READY\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/vault/:id",
@@ -688,14 +1486,14 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "vault_id"
+                  "value": "vault_item_id_here"
                 }
               ]
             }
           }
         },
         {
-          "name": "Delete Vault Item",
+          "name": "4. Delete Vault Item",
           "request": {
             "method": "DELETE",
             "header": [
@@ -716,7 +1514,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "vault_id"
+                  "value": "vault_item_id_here"
                 }
               ]
             }
@@ -725,10 +1523,10 @@
       ]
     },
     {
-      "name": "10. Social Media & OAuth Module",
+      "name": "10. Social",
       "item": [
         {
-          "name": "Get Connected Social Accounts",
+          "name": "1. Get Connected Accounts",
           "request": {
             "method": "GET",
             "header": [
@@ -746,11 +1544,12 @@
                 "social",
                 "accounts"
               ]
-            }
+            },
+            "description": "Fetches list of all connected social media accounts for the user."
           }
         },
         {
-          "name": "Get Instagram OAuth Redirect URL",
+          "name": "2. Get Instagram OAuth URL",
           "request": {
             "method": "GET",
             "header": [
@@ -769,11 +1568,12 @@
                 "auth-url",
                 "instagram"
               ]
-            }
+            },
+            "description": "Generates Meta/Instagram OAuth login URL."
           }
         },
         {
-          "name": "Get LinkedIn OAuth Redirect URL",
+          "name": "3. Get LinkedIn OAuth URL",
           "request": {
             "method": "GET",
             "header": [
@@ -792,11 +1592,70 @@
                 "auth-url",
                 "linkedin"
               ]
-            }
+            },
+            "description": "Generates LinkedIn OAuth authorization URL."
           }
         },
         {
-          "name": "Connect Social Handle Manually",
+          "name": "4. Meta OAuth Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/social/meta/callback?code=auth_code_here&state=user_state_here",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social",
+                "meta",
+                "callback"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "auth_code_here"
+                },
+                {
+                  "key": "state",
+                  "value": "user_state_here"
+                }
+              ]
+            },
+            "description": "OAuth callback endpoint for Meta / Instagram OAuth code exchange."
+          }
+        },
+        {
+          "name": "5. LinkedIn OAuth Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/social/linkedin/callback?code=auth_code_here&state=user_state_here",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "social",
+                "linkedin",
+                "callback"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "auth_code_here"
+                },
+                {
+                  "key": "state",
+                  "value": "user_state_here"
+                }
+              ]
+            },
+            "description": "OAuth callback endpoint for LinkedIn OAuth code exchange."
+          }
+        },
+        {
+          "name": "6. Connect Social Account Manually",
           "request": {
             "method": "POST",
             "header": [
@@ -822,11 +1681,12 @@
                 "social",
                 "connect-manual"
               ]
-            }
+            },
+            "description": "Manually connects a social media handle."
           }
         },
         {
-          "name": "Disconnect Social Account",
+          "name": "7. Disconnect Social Account",
           "request": {
             "method": "DELETE",
             "header": [
@@ -851,7 +1711,8 @@
                   "value": "INSTAGRAM"
                 }
               ]
-            }
+            },
+            "description": "Disconnects a social media platform account by platform name."
           }
         }
       ]

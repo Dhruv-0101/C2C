@@ -145,3 +145,40 @@ docker exec -it brandflow-backend sh
 # Stop all containers
 docker compose down
 ```
+
+---
+
+## ❓ 5. Common Errors & Troubleshooting
+
+### Error: `listen tcp 0.0.0.0:5432: bind: address already in use`
+
+#### Cause:
+A local PostgreSQL database service is already running natively on your laptop outside of Docker, occupying host port `5432`.
+
+#### Solution 1 (Recommended): Stop Local PostgreSQL Service
+Stop the host PostgreSQL service so Docker can claim port `5432`:
+```bash
+# macOS (Homebrew):
+brew services stop postgresql
+
+# Kill process running on port 5432 (e.g. PID 502):
+sudo kill -9 502
+
+# OR run this automated one-liner:
+sudo kill -9 $(sudo lsof -t -i:5432)
+```
+Then start Docker:
+```bash
+docker compose up -d --build
+```
+
+#### Solution 2: Override Port in `.env`
+If you want to keep your native local PostgreSQL running, update `POSTGRES_PORT` in `.env`:
+```env
+POSTGRES_PORT=5433
+```
+Then start Docker:
+```bash
+docker compose up -d --build
+```
+

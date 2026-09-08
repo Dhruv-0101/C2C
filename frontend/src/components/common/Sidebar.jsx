@@ -51,7 +51,7 @@ export const Sidebar = () => {
     { label: 'Post Creator Studio', path: '/create-post', icon: Sparkles },
     { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
     { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
-    { label: 'Canva Vector Frames', path: '/frames', icon: Layers },
+    { label: 'Brand Frames Studio', path: '/frames', icon: Layers },
     { label: 'Design Styles Engine', path: '/design-styles', icon: Palette },
     { label: 'Graphic Vault', path: '/vault', icon: FolderKanban },
   ];
@@ -59,7 +59,7 @@ export const Sidebar = () => {
   const adminConsoleAllSubItems = [
     { id: 'templates', label: 'AI Base Templates', path: '/admin?tab=templates', icon: PlusCircle },
     { id: 'festivals', label: 'Festival Calendar', path: '/admin?tab=festivals', icon: Calendar },
-    { id: 'frames', label: 'Canva Vector Frames', path: '/admin?tab=frames', icon: Layers },
+    { id: 'frames', label: 'Brand Frames Studio', path: '/admin?tab=frames', icon: Layers },
     { id: 'styles', label: 'Design System & Palettes', path: '/admin?tab=styles', icon: Palette },
     { id: 'categories', label: 'Business Categories', path: '/admin?tab=categories', icon: FolderKanban },
     { id: 'subadmins', label: 'SubAdmin Directory', path: '/admin?tab=subadmins', icon: ShieldAlert, superAdminOnly: true },

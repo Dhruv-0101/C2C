@@ -6,15 +6,14 @@ import { API_ENDPOINTS } from '../constants/api.constants';
  */
 export const designStyleApi = {
   /**
-   * Fetch all master design styles & color palettes
+   * Fetch master design styles & color palettes with optional pagination & search params
    */
-  getDesignStyles: async () => {
-    return await api.get(API_ENDPOINTS.DESIGN_STYLES.BASE);
+  getDesignStyles: async (params = {}) => {
+    return await api.get(API_ENDPOINTS.DESIGN_STYLES.BASE, { params });
   },
 
   /**
    * Create a new master design style / color palette
-   * @param {{ name: string, description?: string, primaryColor?: string, secondaryColor?: string, accentColor?: string, backgroundColor?: string, gradient?: string, fontHeader?: string, fontBody?: string, colors?: string[] }} data
    */
   createDesignStyle: async (data) => {
     return await api.post(API_ENDPOINTS.DESIGN_STYLES.BASE, data);
@@ -22,7 +21,6 @@ export const designStyleApi = {
 
   /**
    * Delete a master design style by ID
-   * @param {string} id
    */
   deleteDesignStyle: async (id) => {
     return await api.delete(API_ENDPOINTS.DESIGN_STYLES.BY_ID(id));

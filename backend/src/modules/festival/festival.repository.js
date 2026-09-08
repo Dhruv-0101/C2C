@@ -1,9 +1,60 @@
 import { prisma } from '../../config/database.js';
 
 /**
+ * Fetch paginated festivals with search and year filtering
+ */
+export async function findPaginatedFestivals({
+  skip = 0,
+  take = 10,
+  search,
+  year,
+  includeInactive = false,
+  sortBy = 'date',
+  sortOrder = 'asc',
+}) {
+  const where = {};
+  if (!includeInactive) {
+    where.isActive = true;
+  }
+
+  if (year) {
+    const startOfYear = new Date(`${year}-01-01T00:00:00.000Z`);
+    const endOfYear = new Date(`${year}-12-31T23:59:59.999Z`);
+    where.date = {
+      gte: startOfYear,
+      lte: endOfYear,
+    };
+  }
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { targetRegion: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  const [festivals, totalCount] = await Promise.all([
+    prisma.festival.findMany({
+      where,
+      skip,
+      take,
+      include: {
+        templates: {
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+      orderBy: { [sortBy]: sortOrder },
+    }),
+    prisma.festival.count({ where }),
+  ]);
+
+  return { festivals, totalCount };
+}
+
+/**
  * Fetch all festivals ordered by date ascending
- * @param {number|string} [year]
- * @param {boolean} [includeInactive=false]
  */
 export async function findAllFestivals(year, includeInactive = false) {
   const where = {};

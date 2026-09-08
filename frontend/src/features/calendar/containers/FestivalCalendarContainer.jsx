@@ -138,9 +138,21 @@ export const FestivalCalendarContainer = ({ onSelectTemplate }) => {
   const safeFestivals = Array.isArray(festivals)
     ? festivals
     : festivals?.festivals || festivals?.data || [];
+  
+  // Region Filter State: "ALL", "India", "Maharashtra", "Gujarat", "South India", "International"
+  const [selectedRegion, setSelectedRegion] = useState("ALL");
 
+  // Filter festivals based on selectedRegion
+  const filteredFestivals = safeFestivals.filter((fest) => {
+    if (selectedRegion === "ALL") return true;
+    const region = (fest.targetRegion || "India").toLowerCase();
+    const query = selectedRegion.toLowerCase();
+    return region.includes(query) || query.includes(region);
+  });
+
+  // Festivals Map by Date (YYYY-MM-DD)
   const festivalMap = {};
-  safeFestivals.forEach((fest) => {
+  filteredFestivals.forEach((fest) => {
     if (!fest || !fest.date) return;
     const festDate = new Date(fest.date);
     const dateKey = `${festDate.getFullYear()}-${String(
@@ -225,6 +237,8 @@ export const FestivalCalendarContainer = ({ onSelectTemplate }) => {
       prevMonth={prevMonth}
       nextMonth={nextMonth}
       goToToday={goToToday}
+      selectedRegion={selectedRegion}
+      setSelectedRegion={setSelectedRegion}
       calendarCells={calendarCells}
       selectedDayDetails={selectedDayDetails}
       setSelectedDayDetails={setSelectedDayDetails}

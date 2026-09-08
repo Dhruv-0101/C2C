@@ -315,12 +315,12 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
               </div>
             )}
 
-            {/* Tab 2: Select Canva Vector Frame */}
+            {/* Tab 2: Select Custom Brand Frame */}
             {activeTab === 'frames' && (
               <div className="space-y-3 overflow-y-auto max-h-[340px] pr-1">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                    Select Canva Vector Overlay Frame
+                    Select Custom Brand Frame
                   </h4>
                   <span className="text-[11px] text-amber-400 font-mono font-bold">
                     {frames.length} Active Frames
@@ -330,11 +330,11 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
                 <div className="grid grid-cols-2 gap-2.5">
                   {isLoadingFrames ? (
                     <div className="col-span-2 p-8 text-center text-slate-400 text-xs">
-                      Loading Canva frames...
+                      Loading brand frames...
                     </div>
                   ) : frames.length === 0 ? (
                     <div className="col-span-2 p-6 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
-                      No Canva vector frames created yet.
+                      No custom brand frames created yet.
                     </div>
                   ) : (
                     frames.map((frame) => (

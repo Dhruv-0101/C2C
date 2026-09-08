@@ -3,10 +3,10 @@ import { API_ENDPOINTS } from '../constants/api.constants';
 
 export const socialApi = {
   /**
-   * Fetch connected social accounts for logged-in user
+   * Fetch connected social accounts for logged-in user with optional pagination
    */
-  getAccounts: async () => {
-    return api.get(API_ENDPOINTS.SOCIAL.ACCOUNTS);
+  getAccounts: async (params = {}) => {
+    return api.get(API_ENDPOINTS.SOCIAL.ACCOUNTS, { params });
   },
 
   /**
@@ -20,14 +20,14 @@ export const socialApi = {
    * Get LinkedIn OAuth Authorization URL
    */
   getLinkedinAuthUrl: async () => {
-    return api.get('/social/auth-url/linkedin');
+    return api.get(API_ENDPOINTS.SOCIAL.AUTH_URL_LINKEDIN);
   },
 
   /**
    * Connect social account manually by handle
    */
   connectManualHandle: async (handle, platform = 'INSTAGRAM') => {
-    return api.post('/social/connect-manual', { handle, platform });
+    return api.post(API_ENDPOINTS.SOCIAL.CONNECT_MANUAL, { handle, platform });
   },
 
   /**

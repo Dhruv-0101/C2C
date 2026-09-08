@@ -3,6 +3,7 @@ import { instagramPublisherService } from './services/instagramPublisher.service
 import { linkedinPublisherService } from './services/linkedinPublisher.service.js';
 import { socialRepository } from './social.repository.js';
 import { encryptToken } from '../../common/helpers/encryption.helper.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
 
@@ -155,13 +156,14 @@ export const socialLogic = {
   },
 
   /**
-   * Get all connected social accounts for logged-in user (sanitized)
+   * Get connected social accounts for logged-in user with pagination (sanitized)
    */
-  getUserAccounts: async (userId) => {
-    const accounts = await socialRepository.findAllByUserId(userId);
+  getUserAccounts: async (userId, queryParams = {}) => {
+    const pagination = parsePaginationParams(queryParams);
+    const { accounts, totalCount } = await socialRepository.findPaginatedByUserId(userId, pagination);
 
     // Sanitize response so encrypted access tokens are never returned to frontend
-    return accounts.map((acc) => ({
+    const sanitized = accounts.map((acc) => ({
       id: acc.id,
       platform: acc.platform,
       accountName: acc.accountName,
@@ -170,6 +172,20 @@ export const socialLogic = {
       tokenExpiresAt: acc.tokenExpiresAt,
       createdAt: acc.createdAt,
     }));
+
+    const paginatedResponse = buildPaginatedResponse({
+      items: sanitized,
+      totalCount,
+      page: pagination.page,
+      limit: pagination.limit,
+    });
+
+    return {
+      data: {
+        accounts: paginatedResponse.data,
+      },
+      meta: paginatedResponse.meta,
+    };
   },
 
   /**

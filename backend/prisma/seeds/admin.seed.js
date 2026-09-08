@@ -1,8 +1,7 @@
 import bcrypt from 'bcryptjs';
 
 /**
- * Seed Default System SuperAdmin Account
- * Uses environment variables for security in production environments.
+ * Seed Default System SuperAdmin Account from Environment Variables
  * @param {import('@prisma/client').PrismaClient} prisma
  */
 export async function seedAdmin(prisma) {
@@ -33,6 +32,6 @@ export async function seedAdmin(prisma) {
     },
   });
 
-  console.log(`🚀 SuperAdmin account verified/created: ${adminUser.email}`);
+  console.log(`🚀 SuperAdmin account verified/created from .env: ${adminUser.email}`);
 }
 

@@ -1,18 +1,16 @@
 import * as festivalLogic from './festival.logic.js';
 
 /**
- * GET /api/v1/festivals - Get all festivals (optionally filtered by year and active status)
+ * GET /api/v1/festivals - Get paginated festivals
  */
 export async function getFestivals(req, res, next) {
   try {
-    const { year, includeInactive } = req.query;
-    const festivals = await festivalLogic.getFestivals(year, includeInactive === 'true');
+    const result = await festivalLogic.getFestivals(req.query);
     res.status(200).json({
       success: true,
       message: 'Festivals retrieved successfully',
-      data: {
-        festivals,
-      },
+      data: result.data,
+      meta: result.meta,
     });
   } catch (error) {
     next(error);
@@ -24,7 +22,10 @@ export async function getFestivals(req, res, next) {
  */
 export async function createFestival(req, res, next) {
   try {
-    const festival = await festivalLogic.createFestival(req.body);
+    const festival = await festivalLogic.createFestival({
+      ...req.body,
+      fileBuffer: req.file?.buffer,
+    });
     res.status(201).json({
       success: true,
       message: 'Festival created successfully',
@@ -42,7 +43,7 @@ export async function createFestival(req, res, next) {
  */
 export async function updateFestival(req, res, next) {
   try {
-    const festival = await festivalLogic.updateFestival(req.params.id, req.body);
+    const festival = await festivalLogic.updateFestival(req.params.id, req.body, req.file?.buffer);
     res.status(200).json({
       success: true,
       message: 'Festival updated successfully',

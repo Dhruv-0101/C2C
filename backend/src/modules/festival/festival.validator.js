@@ -12,6 +12,7 @@ export const createFestivalSchema = z.object({
     description: z.string().optional(),
     targetRegion: z.string().optional().default('India'),
     bannerUrl: z.string().optional(),
+    base64Banner: z.string().optional(),
     isActive: z.boolean().optional().default(true),
   }),
 });
@@ -26,6 +27,8 @@ export const updateFestivalSchema = z.object({
     description: z.string().optional(),
     targetRegion: z.string().optional(),
     bannerUrl: z.string().optional(),
+    base64Banner: z.string().optional(),
     isActive: z.boolean().optional(),
   }),
 });
+

@@ -1,13 +1,13 @@
 {
   "info": {
     "_postman_id": "bf-social-v1",
-    "name": "BrandFlow — Social Media Integration Module",
-    "description": "API endpoints for Meta/Instagram, LinkedIn accounts and OAuth connections.",
+    "name": "BrandFlow — Social Collection",
+    "description": "API endpoints for Meta/Instagram and LinkedIn accounts, OAuth redirect flows, and manual account connections.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Get Connected Social Accounts",
+      "name": "1. Get Connected Accounts",
       "request": {
         "method": "GET",
         "header": [
@@ -25,11 +25,12 @@
             "social",
             "accounts"
           ]
-        }
+        },
+        "description": "Fetches list of all connected social media accounts for the user."
       }
     },
     {
-      "name": "Get Instagram OAuth Redirect URL",
+      "name": "2. Get Instagram OAuth URL",
       "request": {
         "method": "GET",
         "header": [
@@ -48,11 +49,12 @@
             "auth-url",
             "instagram"
           ]
-        }
+        },
+        "description": "Generates Meta/Instagram OAuth login URL."
       }
     },
     {
-      "name": "Get LinkedIn OAuth Redirect URL",
+      "name": "3. Get LinkedIn OAuth URL",
       "request": {
         "method": "GET",
         "header": [
@@ -71,11 +73,70 @@
             "auth-url",
             "linkedin"
           ]
-        }
+        },
+        "description": "Generates LinkedIn OAuth authorization URL."
       }
     },
     {
-      "name": "Connect Social Handle Manually",
+      "name": "4. Meta OAuth Callback",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/social/meta/callback?code=auth_code_here&state=user_state_here",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "social",
+            "meta",
+            "callback"
+          ],
+          "query": [
+            {
+              "key": "code",
+              "value": "auth_code_here"
+            },
+            {
+              "key": "state",
+              "value": "user_state_here"
+            }
+          ]
+        },
+        "description": "OAuth callback endpoint for Meta / Instagram OAuth code exchange."
+      }
+    },
+    {
+      "name": "5. LinkedIn OAuth Callback",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/social/linkedin/callback?code=auth_code_here&state=user_state_here",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "social",
+            "linkedin",
+            "callback"
+          ],
+          "query": [
+            {
+              "key": "code",
+              "value": "auth_code_here"
+            },
+            {
+              "key": "state",
+              "value": "user_state_here"
+            }
+          ]
+        },
+        "description": "OAuth callback endpoint for LinkedIn OAuth code exchange."
+      }
+    },
+    {
+      "name": "6. Connect Social Account Manually",
       "request": {
         "method": "POST",
         "header": [
@@ -101,11 +162,12 @@
             "social",
             "connect-manual"
           ]
-        }
+        },
+        "description": "Manually connects a social media handle."
       }
     },
     {
-      "name": "Disconnect Social Account",
+      "name": "7. Disconnect Social Account",
       "request": {
         "method": "DELETE",
         "header": [
@@ -130,7 +192,8 @@
               "value": "INSTAGRAM"
             }
           ]
-        }
+        },
+        "description": "Disconnects a social media platform account by platform name."
       }
     }
   ]
