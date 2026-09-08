@@ -149,10 +149,10 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
             </div>
             <div>
               <h3 className="font-heading font-extrabold text-lg text-white">
-                BrandFlow Studio — Master Graphic Compositor
+                BrandFlow Studio — Post Editor
               </h3>
               <p className="text-xs text-slate-400">
-                1080x1080 HD Canva Frame Engine with AI BrandKit & Overlay Slots
+                Create branded social media graphics with your custom BrandKit
               </p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
           <div className="lg:col-span-7 flex flex-col items-center justify-center bg-[#0B0F17] border border-[#2C384E] p-4 rounded-xl relative shadow-2xl min-h-[380px]">
             <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 text-[11px] font-extrabold shadow-lg">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Live 1080x1080 Compositor Engine</span>
+              <span>Live Design Preview</span>
             </div>
 
             <div className="relative aspect-square w-full max-w-md rounded-xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center mt-6">

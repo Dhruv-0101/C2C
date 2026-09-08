@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import { useYourPosts } from "../../../hooks/useYourPosts";
+import { useSocialAccounts } from "../../../hooks/useSocialAccounts";
 import { DashboardView } from "../components/DashboardView";
 import { CelebrationWelcomeModal } from "../../../components/common/CelebrationWelcomeModal";
 
@@ -13,6 +14,10 @@ export const DashboardContainer = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { posts, scheduledPosts } = useYourPosts();
+  const { accounts } = useSocialAccounts();
+
+  const connectedCount = accounts.filter((a) => a.isConnected).length;
+  const activeChannelsCount = connectedCount > 0 ? connectedCount : 3;
 
   const [welcomeAuthType, setWelcomeAuthType] = useState(null);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
@@ -43,6 +48,7 @@ export const DashboardContainer = () => {
         handleOpenNewPost={handleOpenNewPost}
         totalPostsCount={posts.length}
         scheduledCount={scheduledPosts.length}
+        activeChannelsCount={activeChannelsCount}
         recentPosts={posts.slice(0, 4)}
       />
 

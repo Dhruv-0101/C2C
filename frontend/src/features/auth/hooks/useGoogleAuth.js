@@ -28,6 +28,9 @@ export const useGoogleAuth = () => {
         return;
       }
 
+      // Always set just_authenticated so Welcome Modal triggers on dashboard
+      sessionStorage.setItem("just_authenticated", response?.data?.isNewUser ? "register" : "login");
+
       // 1. Show Green Success Banner FIRST without updating Redux state yet
       setSuccessMessage('🎉 Authenticated with Google! Preparing your brand workspace...');
 

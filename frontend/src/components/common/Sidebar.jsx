@@ -58,13 +58,13 @@ export const Sidebar = () => {
   ];
 
   const adminConsoleAllSubItems = [
-    { id: 'templates', label: 'AI Base Templates', path: '/admin?tab=templates', icon: PlusCircle },
+    { id: 'templates', label: 'Graphic Templates', path: '/admin?tab=templates', icon: PlusCircle },
     { id: 'festivals', label: 'Festival Calendar', path: '/admin?tab=festivals', icon: Calendar },
     { id: 'frames', label: 'Brand Frames Studio', path: '/admin?tab=frames', icon: Layers },
     { id: 'styles', label: 'Design System & Palettes', path: '/admin?tab=styles', icon: Palette },
     { id: 'categories', label: 'Business Categories', path: '/admin?tab=categories', icon: FolderKanban },
     { id: 'subadmins', label: 'SubAdmin Directory', path: '/admin?tab=subadmins', icon: ShieldAlert, superAdminOnly: true },
-    { id: 'users', label: 'SMB User Directory', path: '/admin?tab=users', icon: Users },
+    { id: 'users', label: 'Business User Directory', path: '/admin?tab=users', icon: Users },
   ];
 
   // RBAC Permission Filter for SubAdmins vs SuperAdmins
@@ -124,9 +124,13 @@ export const Sidebar = () => {
         }`}
       >
         {/* Sidebar Header Banner */}
-        <div className="p-4 border-b border-[#2C384E] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {(!isCollapsed || isMobileOpen) ? (
+        <div
+          className={`h-16 flex items-center border-b border-[#2C384E] shrink-0 ${
+            isCollapsed && !isMobileOpen ? "justify-center px-2" : "justify-between px-4"
+          }`}
+        >
+          {(!isCollapsed || isMobileOpen) ? (
+            <>
               <div className="flex flex-col">
                 <span className="font-heading font-extrabold text-lg tracking-tight text-white leading-none">
                   Brand<span className="text-amber-400">Flow</span>
@@ -135,21 +139,28 @@ export const Sidebar = () => {
                   AI Social Manager
                 </span>
               </div>
-            ) : (
-              <span className="font-heading font-extrabold text-base tracking-tight text-white">
+
+              {/* Desktop Collapse Toggle */}
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
+                title="Collapse Sidebar"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden lg:flex w-10 h-10 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition items-center justify-center group"
+              title="Expand Sidebar"
+            >
+              <span className="font-heading font-extrabold text-xs tracking-tight text-white group-hover:hidden">
                 B<span className="text-amber-400">F</span>
               </span>
-            )}
-          </div>
-
-          {/* Desktop Collapse Toggle */}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition"
-            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
+              <ChevronRight className="w-4 h-4 text-amber-400 hidden group-hover:block" />
+            </button>
+          )}
         </div>
 
         {/* Navigation Links List */}

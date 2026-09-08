@@ -6,6 +6,7 @@ import { templateApi } from "../../../services/template.api";
 import { festivalApi } from "../../../services/festival.api";
 import { useTemplates } from "../../../hooks/useTemplates";
 import { useFrames } from "../../../hooks/useFrames";
+import { useCategories } from "../../../hooks/useCategories";
 import { useCanvasCompositor } from "../../../hooks/useCanvasCompositor";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
 import { PostStudioEditorView } from "../components/PostStudioEditorView";
@@ -76,8 +77,24 @@ export const PostStudioContainer = () => {
     queryFn: () => templateApi.getTemplateCategories(),
   });
 
+  const { categories: masterCategories } = useCategories({ limit: 100 });
+
   const festivals = festivalResponse?.data?.festivals || [];
-  const categoriesList = categoryResponse?.data?.categories || [];
+  const rawTemplateCategories = categoryResponse?.data?.categories || [];
+
+  // Merge master business categories and template categories cleanly
+  const combinedMap = new Map();
+  (masterCategories || []).forEach((c) => {
+    if (c?.name) combinedMap.set(c.name, c);
+  });
+  rawTemplateCategories.forEach((c) => {
+    const name = typeof c === "string" ? c : c?.name;
+    if (name && !combinedMap.has(name)) {
+      combinedMap.set(name, typeof c === "object" ? c : { id: name, name });
+    }
+  });
+
+  const categoriesList = Array.from(combinedMap.values());
 
   // Modular Hook for Canva Frames
   const {

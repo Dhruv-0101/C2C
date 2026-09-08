@@ -23,6 +23,9 @@ export const useRegister = () => {
     onSuccess: (response) => {
       const { user, accessToken } = response.data;
 
+      // Always set just_authenticated so Welcome Modal triggers on dashboard
+      sessionStorage.setItem("just_authenticated", "register");
+
       // 1. Show Green Success Banner FIRST without updating Redux state yet
       setSuccessMessage('🎉 Account registered successfully! Preparing your brand workspace...');
 

@@ -14,17 +14,25 @@ import { Button } from "../ui/Button";
  * @param {Function} [props.onDownload] - Optional callback function to trigger high-res PNG download.
  */
 export const ImageLightbox = ({ isOpen, item, onClose, onDownload }) => {
-  // Listen for ESC key press to close lightbox automatically
+  // Lock background body scroll when open & listen for ESC key
   useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         onClose();
       }
     };
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen || !item) return null;
@@ -41,9 +49,9 @@ export const ImageLightbox = ({ isOpen, item, onClose, onDownload }) => {
       {/* Center Image Container */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl max-h-[68vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-[#2C384E] bg-[#0B0F17] flex items-center justify-center my-auto mb-20 cursor-default"
+        className="relative max-w-4xl max-h-[70vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-[#2C384E] flex items-center justify-center my-auto mb-20 cursor-default"
       >
-        <img src={imageUrl} alt={title} className="w-full h-full object-contain" />
+        <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
       </div>
 
       {/* Lightbox Bottom Details & Control Bar */}

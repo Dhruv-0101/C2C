@@ -78,15 +78,12 @@ export const TemplateCreateView = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="font-heading font-extrabold text-2xl text-white">
-                Upload New Base Graphic Blueprint
+                Upload New Graphic Template
               </h2>
               <span className="text-[10px] font-black uppercase bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full">
                 Full-Screen Creator
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Design and publish system graphic backgrounds for small businesses across all categories.
-            </p>
           </div>
         </div>
 
@@ -102,18 +99,18 @@ export const TemplateCreateView = ({
             icon={Sparkles}
             className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow"
           >
-            Publish Template Blueprint
+            Publish Template
           </Button>
         </div>
       </div>
 
       {errorMsg && <Alert variant="error" message={errorMsg} />}
 
-      {/* Main Creator Grid: Left Form Controls (8 Cols) vs Right Live Preview Studio (4 Cols) */}
+      {/* Main Creator Grid: Left Form Controls (7 Cols) vs Right Pure Image Preview (5 Cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Form Controls */}
         <form onSubmit={handleFormSubmit} className="lg:col-span-7 space-y-6">
-          <Card className="p-6 space-y-6 bg-[#131B2A]/90 border-[#2C384E] rounded-3xl shadow-xl">
+          <Card className="p-6 sm:p-8 space-y-6 bg-[#131B2A]/90 border-[#2C384E] rounded-3xl shadow-xl">
             {/* Step 1: Basic Metadata */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 border-b border-[#2C384E] pb-3">
@@ -206,8 +203,8 @@ export const TemplateCreateView = ({
                   </div>
                 </div>
 
-                {/* Category Pills (5 per page) */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
+                {/* Category Pills with custom scrollbar and padding bottom */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 custom-scrollbar">
                   {/* PROMINENTLY HIGHLIGHTED NEW CATEGORY BUTTON */}
                   <button
                     type="button"
@@ -321,8 +318,8 @@ export const TemplateCreateView = ({
                   </div>
                 </div>
 
-                {/* Festival Pills (5 per page) */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
+                {/* Festival Pills with custom scrollbar and padding bottom */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 custom-scrollbar">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, festivalId: "" })}
@@ -390,125 +387,108 @@ export const TemplateCreateView = ({
                   />
                 </label>
               ) : (
-                <div className="relative rounded-3xl overflow-hidden border border-[#2C384E] group bg-[#0B0F17]">
-                  <img
-                    src={formData.baseImageUrl}
-                    alt="Template Background Preview"
-                    className="w-full h-64 object-contain bg-[#0B0F17]"
-                  />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 backdrop-blur-sm">
+                <div className="p-4 rounded-2xl bg-[#0B0F17] border border-emerald-500/30 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Check className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                        <span>Background Image Selected</span>
+                        <span className="text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          Ready
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Image loaded and displaying in the side preview panel.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <label className="px-3 py-1.5 rounded-xl bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-400 text-xs font-semibold cursor-pointer transition">
+                      <span>Change Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, baseImageUrl: null })}
-                      className="p-3 rounded-2xl bg-red-500/80 text-white hover:bg-red-500 font-bold transition flex items-center gap-2 text-xs shadow-lg"
+                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs transition"
+                      title="Remove Image"
                     >
                       <X className="w-4 h-4" />
-                      <span>Remove Background Image</span>
                     </button>
                   </div>
-                  <span className="absolute bottom-3 right-3 text-xs font-bold bg-black/80 text-white px-3 py-1 rounded-xl backdrop-blur-md border border-slate-700">
-                    1080×1080 HD Blueprint
-                  </span>
                 </div>
               )}
+            </div>
+
+            {/* Form Actions Footer */}
+            <div className="pt-4 border-t border-[#2C384E] flex items-center justify-end gap-3">
+              <Button variant="ghost" type="button" onClick={onBack} disabled={isUploading}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                isLoading={isUploading}
+                icon={Sparkles}
+                className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-sm"
+              >
+                Publish Template
+              </Button>
             </div>
           </Card>
         </form>
 
-        {/* Right Column: Live Interactive Blueprint Studio Card Preview */}
+        {/* Right Column: Clean Image Preview Card */}
         <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-6">
-          <Card className="p-6 space-y-5 bg-[#131B2A]/90 border-[#2C384E] rounded-3xl shadow-xl">
+          <Card className="p-6 space-y-4 bg-[#131B2A]/90 border-[#2C384E] rounded-3xl shadow-xl">
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
               <h3 className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
-                <Eye className="w-4 h-4 text-amber-400" />
-                <span>Live Graphic Blueprint Preview</span>
+                <ImageIcon className="w-4 h-4 text-amber-400" />
+                <span>Image Preview</span>
               </h3>
-              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                Studio View
+              <span className="text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700">
+                1:1 Aspect Ratio
               </span>
             </div>
 
-            {/* Simulated SMB Frame Overlay Preview Card */}
-            <div className="relative aspect-square w-full rounded-2xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] shadow-2xl flex flex-col justify-between p-4">
+            <div className="relative aspect-square w-full rounded-2xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] shadow-2xl flex items-center justify-center">
               {formData.baseImageUrl ? (
-                <img
-                  src={formData.baseImageUrl}
-                  alt="Template Background"
-                  className="absolute inset-0 w-full h-full object-contain bg-[#0B0F17]"
-                />
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-600 bg-gradient-to-br from-[#0B0F17] to-[#131B2A]">
-                  <ImageIcon className="w-12 h-12 stroke-[1.5]" />
-                  <span className="text-xs font-semibold text-slate-500">
-                    Upload an image to see live preview
+                <>
+                  <img
+                    src={formData.baseImageUrl}
+                    alt="Selected Graphic Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute bottom-3 right-3 text-[11px] font-extrabold bg-black/80 text-white px-3 py-1 rounded-xl backdrop-blur-md border border-white/10">
+                    1080×1080 HD
                   </span>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-6 text-center gap-3 text-slate-500">
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
+                    <ImageIcon className="w-10 h-10 text-slate-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400">No Image Uploaded Yet</p>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Choose an image from Step 4 to preview it here.
+                    </p>
+                  </div>
                 </div>
               )}
-
-              {/* Simulated Admin Branding Overlay */}
-              <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white text-[11px] font-extrabold tracking-wide flex items-center gap-1.5">
-                  <Palette className="w-3.5 h-3.5 text-amber-400" />
-                  <span>
-                    {formData.category === "NEW"
-                      ? formData.newCategoryName || "Custom Category"
-                      : formData.category || "General Category"}
-                  </span>
-                </span>
-
-                {formData.festivalId && (
-                  <span className="px-3 py-1 rounded-xl bg-emerald-500/80 text-slate-950 font-black text-[10px] tracking-wider uppercase shadow-glow">
-                    {festivals.find((f) => f.id === formData.festivalId)?.name || "Festival Tag"}
-                  </span>
-                )}
-              </div>
-
-              {/* Simulated Title Banner */}
-              <div className="relative z-10 p-3.5 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 space-y-1">
-                <span className="text-[10px] font-bold text-amber-400 block uppercase tracking-wider">
-                  Template Title
-                </span>
-                <p className="text-xs font-bold text-white line-clamp-2">
-                  {formData.title || "Untitled Master Graphic Blueprint"}
-                </p>
-              </div>
             </div>
-
-            {/* Template Specs Summary Table */}
-            <div className="p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-2 text-xs">
-              <div className="flex items-center justify-between text-slate-400">
-                <span>Aspect Ratio</span>
-                <span className="text-white font-semibold">1:1 Square (1080×1080)</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-400">
-                <span>Category Tag</span>
-                <span className="text-amber-400 font-bold">
-                  {formData.category === "NEW"
-                    ? formData.newCategoryName || "Custom"
-                    : formData.category}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-slate-400">
-                <span>Associated Event</span>
-                <span className="text-emerald-400 font-bold">
-                  {festivals.find((f) => f.id === formData.festivalId)?.name || "General Business"}
-                </span>
-              </div>
-            </div>
-
-            <Button
-              variant="primary"
-              type="button"
-              onClick={handleFormSubmit}
-              isLoading={isUploading}
-              icon={Sparkles}
-              className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-sm"
-            >
-              Publish Template Blueprint
-            </Button>
           </Card>
         </div>
       </div>
+
     </div>
   );
 };

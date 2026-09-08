@@ -95,7 +95,7 @@ export const BaseTemplateManagerView = ({
           </div>
           <div>
             <h2 className="font-heading font-extrabold text-lg text-white">
-              Master Graphic Base Templates Manager
+              Graphic Templates Manager
             </h2>
             <p className="text-xs text-slate-400">
               Upload clean 1080x1080 graphic backgrounds that end-users composite with custom transparent brand frames.

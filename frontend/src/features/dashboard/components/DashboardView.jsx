@@ -32,6 +32,7 @@ export const DashboardView = ({
   handleOpenNewPost,
   totalPostsCount = 0,
   scheduledCount = 0,
+  activeChannelsCount = 3,
   recentPosts = [],
 }) => {
   const navigate = useNavigate();
@@ -43,13 +44,13 @@ export const DashboardView = ({
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>SMB Workspace Dashboard</span>
+            <span>Brand Workspace Dashboard</span>
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
             Welcome back, <span className="text-amber-400">{user?.fullName || "Creator"}</span>!
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
-            Your BrandKit & Canva Frame Compositor engine is active. Ready to create your next multi-platform post?
+            Your BrandKit is active and ready. Easily create, design, and share branded posts across your social media channels!
           </p>
         </div>
 
@@ -116,9 +117,9 @@ export const DashboardView = ({
                 <Share2 className="w-4 h-4" />
               </div>
             </div>
-            <p className="font-heading text-3xl font-extrabold text-white">4 Active</p>
+            <p className="font-heading text-3xl font-extrabold text-white">{activeChannelsCount} Active</p>
             <p className="text-[11px] text-indigo-400 font-medium">
-              <span>Instagram, FB, LinkedIn, X &rarr;</span>
+              <span>Instagram, FB, LinkedIn &rarr;</span>
             </p>
           </Card>
 

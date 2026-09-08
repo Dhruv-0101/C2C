@@ -14,7 +14,7 @@ import { FestivalCalendarView } from "../components/FestivalCalendarView";
  * Container component handling interactive festival calendar calculations, TanStack festival & template queries,
  * user scheduled posts queue, published post mapping, and festival creation logic.
  */
-export const FestivalCalendarContainer = ({ onSelectTemplate }) => {
+export const FestivalCalendarContainer = ({ onSelectTemplate, onAddFestival }) => {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -221,16 +221,17 @@ export const FestivalCalendarContainer = ({ onSelectTemplate }) => {
 
   const handleCellClick = (cell) => {
     if (cell.isPadding) return;
-    setSelectedDayDetails(cell);
-    if (isAdmin && cell.festivals.length === 0 && cell.scheduledPosts.length === 0 && cell.publishedPosts.length === 0) {
-      setFestValue("date", cell.dateKey);
-      setIsAddModalOpen(true);
+    if (isAdmin && onAddFestival && cell.festivals.length === 0 && cell.scheduledPosts.length === 0 && cell.publishedPosts.length === 0) {
+      onAddFestival(cell.dateKey);
+      return;
     }
+    setSelectedDayDetails(cell);
   };
 
   return (
     <FestivalCalendarView
       isAdmin={isAdmin}
+      onAddFestival={onAddFestival}
       currentDate={currentDate}
       monthName={monthName}
       year={year}

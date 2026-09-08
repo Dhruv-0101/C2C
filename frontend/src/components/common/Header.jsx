@@ -40,7 +40,7 @@ export const Header = () => {
         <UserIcon className="w-4 h-4 text-slate-400" />
         <div className="text-left text-xs">
           <p className="font-semibold text-slate-200 line-clamp-1">{user?.fullName || user?.email}</p>
-          <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">SMB Account</p>
+          <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Business Account</p>
         </div>
       </>
     );

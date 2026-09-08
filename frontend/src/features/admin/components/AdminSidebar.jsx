@@ -19,12 +19,12 @@ import { useAuth } from "../../../hooks/useAuth";
 
 const ADMIN_NAVIGATION_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "templates", label: "AI Base Templates", icon: FileCode2 },
+  { id: "templates", label: "Graphic Templates", icon: FileCode2 },
   { id: "festivals", label: "Festival Calendar", icon: Calendar },
   { id: "frames", label: "Brand Frames Studio", icon: Layers },
   { id: "styles", label: "Design System & Palettes", icon: Palette },
   { id: "categories", label: "Business Categories", icon: FolderKanban },
-  { id: "users", label: "SMB User Directory", icon: Users },
+  { id: "users", label: "Business User Directory", icon: Users },
   { id: "subadmins", label: "SubAdmin Directory", icon: Shield, superAdminOnly: true },
 ];
 
@@ -58,34 +58,45 @@ export const AdminSidebar = ({ isCollapsed, onToggle }) => {
       }`}
     >
       {/* Sidebar Header Branding */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-[#2C384E] bg-[#131B2A]/50">
+      <div
+        className={`h-16 flex items-center border-b border-[#2C384E] bg-[#131B2A]/50 ${
+          isCollapsed ? "justify-center px-2" : "justify-between px-4"
+        }`}
+      >
         {!isCollapsed ? (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold">
-              <Shield className="w-4 h-4" />
+          <>
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
+                <Shield className="w-4 h-4" />
+              </div>
+              <div className="overflow-hidden">
+                <h1 className="font-heading font-extrabold text-sm text-white tracking-wide truncate">
+                  Admin Console
+                </h1>
+                <span className="text-[10px] text-amber-400 font-mono uppercase font-bold tracking-wider block truncate">
+                  {isSuperAdmin ? "SuperAdmin" : "SubAdmin Scoped"}
+                </span>
+              </div>
             </div>
-            <div>
-              <h1 className="font-heading font-extrabold text-sm text-white tracking-wide">
-                Admin Console
-              </h1>
-              <span className="text-[10px] text-amber-400 font-mono uppercase font-bold tracking-wider">
-                {isSuperAdmin ? "SuperAdmin" : "SubAdmin Scoped"}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold mx-auto">
-            <Shield className="w-4 h-4" />
-          </div>
-        )}
 
-        <button
-          onClick={onToggle}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition"
-          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
+            <button
+              onClick={onToggle}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition shrink-0"
+              title="Collapse Sidebar"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onToggle}
+            className="w-10 h-10 rounded-xl bg-[#131B2A] border border-[#2C384E] hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition flex items-center justify-center group"
+            title="Expand Sidebar"
+          >
+            <Shield className="w-4 h-4 text-amber-400 group-hover:hidden" />
+            <ChevronRight className="w-4 h-4 text-amber-400 hidden group-hover:block" />
+          </button>
+        )}
       </div>
 
       {/* Navigation Items List */}
@@ -98,7 +109,9 @@ export const AdminSidebar = ({ isCollapsed, onToggle }) => {
             <button
               key={item.id}
               onClick={() => handleSelectTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              className={`w-full flex items-center gap-3 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                isCollapsed ? "justify-center px-0" : "px-3"
+              } ${
                 isActive
                   ? "bg-amber-500 text-slate-950 shadow-glow font-extrabold"
                   : "text-slate-400 hover:text-white hover:bg-[#131B2A]"
@@ -112,17 +125,17 @@ export const AdminSidebar = ({ isCollapsed, onToggle }) => {
         })}
       </nav>
 
-      {/* Switch Back to SMB Workspace Footer */}
+      {/* Switch Back to Brand Workspace Footer */}
       <div className="p-3 border-t border-[#2C384E] bg-[#131B2A]/40 space-y-2">
         <button
           onClick={() => navigate("/dashboard")}
-          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition ${
-            isCollapsed ? "justify-center" : ""
+          className={`w-full flex items-center gap-2.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition ${
+            isCollapsed ? "justify-center px-0" : "px-3"
           }`}
-          title="Switch to SMB User Workspace"
+          title="Switch to Brand Workspace"
         >
           <ArrowLeft className="w-4 h-4 text-slate-400 shrink-0" />
-          {!isCollapsed && <span>SMB Workspace</span>}
+          {!isCollapsed && <span>Brand Workspace</span>}
         </button>
       </div>
     </aside>

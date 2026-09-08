@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 
 /**
  * Reusable Custom Hook for Triggering Feedback Modals (DRY Principle)
- * Standardizes operation popups across all Admin and SMB modules.
+ * Standardizes operation popups across all Admin and Business modules.
  */
 export const useFeedbackModal = () => {
   const [modalState, setModalState] = useState({

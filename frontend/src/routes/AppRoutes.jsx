@@ -144,7 +144,7 @@ export const AppRoutes = () => {
           </Route>
         </Route>
 
-        {/* Protected Shared Workspace Routes (SuperAdmin, SubAdmin, SMB Users) */}
+        {/* Protected Shared Workspace Routes (SuperAdmin, SubAdmin, Business Users) */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />

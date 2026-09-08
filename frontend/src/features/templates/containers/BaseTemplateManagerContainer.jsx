@@ -5,6 +5,7 @@ import { festivalApi } from "../../../services/festival.api";
 import { useTemplates } from "../../../hooks/useTemplates";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
+import { useCategories } from "../../../hooks/useCategories";
 import { readImageAsBase64 } from "../../../utils/file.utils";
 import { BaseTemplateManagerView } from "../components/BaseTemplateManagerView";
 
@@ -58,8 +59,24 @@ export const BaseTemplateManagerContainer = () => {
     queryFn: () => templateApi.getTemplateCategories(),
   });
 
+  const { categories: masterCategories } = useCategories({ limit: 100 });
+
   const festivals = festivalResponse?.data?.festivals || [];
-  const categoriesList = categoryResponse?.data?.categories || [];
+  const rawTemplateCategories = categoryResponse?.data?.categories || [];
+
+  // Merge master business categories and template categories cleanly
+  const combinedMap = new Map();
+  masterCategories.forEach((c) => {
+    if (c?.name) combinedMap.set(c.name, c);
+  });
+  rawTemplateCategories.forEach((c) => {
+    const name = typeof c === "string" ? c : c?.name;
+    if (name && !combinedMap.has(name)) {
+      combinedMap.set(name, typeof c === "object" ? c : { id: name, name });
+    }
+  });
+
+  const categoriesList = Array.from(combinedMap.values());
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -84,7 +101,7 @@ export const BaseTemplateManagerContainer = () => {
       resetForm();
       showSuccess(
         "Base Template Published! 🎨",
-        `Graphic background blueprint "${variables.title}" uploaded to Cloudinary and saved to database.`,
+        `Graphic background template "${variables.title}" uploaded to Cloudinary and saved to database.`,
       );
     },
     onError: (err) => {
@@ -102,7 +119,7 @@ export const BaseTemplateManagerContainer = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
       showSuccess(
         "Template Deleted 🗑️",
-        "Base graphic blueprint removed from database.",
+        "Base graphic template removed from database.",
       );
     },
     onError: (err) => {

@@ -152,20 +152,21 @@ export const FrameManagerContainer = () => {
           return;
         } else if (
           el.dynamicSlot === "AVATAR_CIRCLE" ||
-          (el.slotCategory === "IMAGE_SLOT" && el.type === "CIRCLE")
+          el.dynamicSlot === "LOGO_BOX" ||
+          el.slotCategory === "IMAGE_SLOT" ||
+          el.type === "IMAGE_SLOT"
         ) {
-          const radius = el.width / 2;
-          const cx = el.x + radius;
-          const cy = el.y + radius;
           ctx.globalCompositeOperation = "destination-out";
-          ctx.beginPath();
-          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.save();
+          drawVectorShapePath(ctx, el);
           ctx.fill();
+          ctx.restore();
           ctx.globalCompositeOperation = "source-over";
 
           if (el.borderWidth > 0) {
             ctx.strokeStyle = el.borderColor || "#EAB308";
             ctx.lineWidth = el.borderWidth;
+            drawVectorShapePath(ctx, el);
             ctx.stroke();
           }
         } else {

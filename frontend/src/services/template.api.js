@@ -70,4 +70,8 @@ export const templateApi = {
   getCategories: async () => {
     return api.get(API_ENDPOINTS.TEMPLATES.CATEGORIES);
   },
+
+  getTemplateCategories: async () => {
+    return api.get(API_ENDPOINTS.TEMPLATES.CATEGORIES);
+  },
 };

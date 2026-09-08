@@ -30,6 +30,7 @@ import { PostStudioModal } from "./PostStudioModal";
  */
 export const FestivalCalendarView = ({
   isAdmin,
+  onAddFestival,
   currentDate,
   monthName,
   year,
@@ -194,11 +195,17 @@ export const FestivalCalendarView = ({
             const hasPublished = cell.publishedPosts && cell.publishedPosts.length > 0;
             const hasEvents = hasFestivals || hasScheduled || hasPublished;
 
+            // Find festival with cover banner image if uploaded by Admin
+            const festivalWithBanner = hasFestivals
+              ? cell.festivals.find((f) => f.bannerUrl)
+              : null;
+            const bannerUrl = festivalWithBanner?.bannerUrl;
+
             return (
               <div
                 key={cell.key}
                 onClick={() => handleCellClick(cell)}
-                className={`min-h-[90px] sm:min-h-[115px] p-2 rounded-xl border transition-all duration-200 flex flex-col justify-between cursor-pointer group ${
+                className={`relative min-h-[90px] sm:min-h-[115px] p-2 rounded-xl border transition-all duration-200 flex flex-col justify-between cursor-pointer group overflow-hidden ${
                   cell.isToday
                     ? "bg-amber-500/10 border-amber-500/60 shadow-lg shadow-amber-500/10"
                     : hasEvents
@@ -206,38 +213,52 @@ export const FestivalCalendarView = ({
                       : "bg-[#0B0F17]/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/40"
                 }`}
               >
+                {/* Festival Cover Banner Background Overlay */}
+                {bannerUrl && (
+                  <>
+                    <img
+                      src={bannerUrl}
+                      alt={festivalWithBanner.name || "Festival Cover"}
+                      className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:opacity-50 group-hover:scale-105 transition duration-300 pointer-events-none"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/75 to-black/60 pointer-events-none" />
+                  </>
+                )}
+
                 {/* Cell Top Header */}
-                <div className="flex items-center justify-between">
+                <div className="relative z-10 flex items-center justify-between">
                   <span
                     className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-extrabold ${
                       cell.isToday
                         ? "bg-amber-500 text-slate-950"
-                        : "text-slate-300 group-hover:text-amber-400"
+                        : bannerUrl
+                          ? "text-white bg-black/60 backdrop-blur-md border border-white/10 group-hover:text-amber-400"
+                          : "text-slate-300 group-hover:text-amber-400"
                     }`}
                   >
                     {cell.dayNum}
                   </span>
 
                   {cell.isToday && (
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-tighter">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-tighter bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-full border border-amber-500/30">
                       Today
                     </span>
                   )}
                 </div>
 
                 {/* Event & Post Badges Container */}
-                <div className="space-y-1 my-1 flex-1 flex flex-col justify-end">
+                <div className="relative z-10 space-y-1 my-1 flex-1 flex flex-col justify-end">
                   {/* Scheduled Posts Badges */}
                   {hasScheduled &&
                     cell.scheduledPosts.slice(0, 2).map((item) => (
                       <div
                         key={item.id}
-                        className="px-2 py-0.5 rounded-lg bg-teal-500/20 border border-teal-500/40 text-teal-300 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate"
+                        className="px-2 py-0.5 rounded-lg bg-teal-500/30 backdrop-blur-md border border-teal-500/50 text-teal-200 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-sm"
                       >
                         <span className="truncate">
                           ⏰ {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
-                        <Clock className="w-3 h-3 text-teal-400 shrink-0" />
+                        <Clock className="w-3 h-3 text-teal-300 shrink-0" />
                       </div>
                     ))}
 
@@ -246,10 +267,10 @@ export const FestivalCalendarView = ({
                     cell.publishedPosts.slice(0, 1).map((post) => (
                       <div
                         key={post.id}
-                        className="px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-semibold flex items-center justify-between gap-1 truncate"
+                        className="px-2 py-0.5 rounded-lg bg-emerald-500/30 backdrop-blur-md border border-emerald-500/50 text-emerald-200 text-[10px] font-semibold flex items-center justify-between gap-1 truncate shadow-sm"
                       >
                         <span className="truncate">🚀 Live</span>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-300 shrink-0" />
                       </div>
                     ))}
 
@@ -259,15 +280,14 @@ export const FestivalCalendarView = ({
                       const templateCount = fest.templates?.length || 0;
                       return (
                         <div key={fest.id} className="space-y-1">
-                          <div className="px-2 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-semibold flex items-center justify-between gap-1 truncate">
+                          <div className="px-2 py-0.5 rounded-lg bg-amber-500/30 backdrop-blur-md border border-amber-500/50 text-amber-200 text-[10px] font-bold flex items-center justify-between gap-1 truncate shadow-sm">
                             <span className="truncate">{fest.name}</span>
-                            <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
                           </div>
 
                           {templateCount > 0 && (
-                            <div className="px-2 py-0.5 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-glow">
+                            <div className="px-2 py-0.5 rounded-lg bg-purple-500/30 backdrop-blur-md border border-purple-500/50 text-purple-200 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-glow">
                               <span className="truncate">🎨 {templateCount} {templateCount === 1 ? 'Template' : 'Templates'}</span>
-                              <ImageIcon className="w-3 h-3 text-purple-400 shrink-0" />
+                              <ImageIcon className="w-3 h-3 text-purple-300 shrink-0" />
                             </div>
                           )}
                         </div>
@@ -293,85 +313,6 @@ export const FestivalCalendarView = ({
         </div>
       </Card>
 
-      {/* SuperAdmin Add Festival Modal */}
-      {isAddModalOpen &&
-        createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-            <Card className="max-w-md w-full p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="font-heading font-extrabold text-lg text-white">
-                  Add Festival Day
-                </h3>
-                <button
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="text-slate-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {addFestError && (
-                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
-                  {addFestError}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmitFest(handleAddFestivalSubmit)} className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-300">Festival Title *</label>
-                  <Input
-                    {...registerFest("name")}
-                    placeholder="e.g. Diwali Celebration"
-                    className="mt-1"
-                  />
-                  {festErrors.name && (
-                    <p className="text-[11px] text-rose-400 mt-1">{festErrors.name.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-300">Festival Date *</label>
-                  <Input
-                    type="date"
-                    {...registerFest("date")}
-                    className="mt-1"
-                  />
-                  {festErrors.date && (
-                    <p className="text-[11px] text-rose-400 mt-1">{festErrors.date.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-300">Description</label>
-                  <Input
-                    {...registerFest("description")}
-                    placeholder="Optional details..."
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setIsAddModalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    isLoading={isSubmittingFest}
-                  >
-                    Save Festival
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          </div>,
-          document.body,
-        )}
-
       {/* Selected Day Details & Scheduled Queue Drawer Modal */}
       {selectedDayDetails &&
         createPortal(
@@ -393,12 +334,28 @@ export const FestivalCalendarView = ({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setSelectedDayDetails(null)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {isAdmin && onAddFestival && (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      icon={Plus}
+                      onClick={() => {
+                        onAddFestival(selectedDayDetails.dateKey);
+                        setSelectedDayDetails(null);
+                      }}
+                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-1.5"
+                    >
+                      Add Festival
+                    </Button>
+                  )}
+                  <button
+                    onClick={() => setSelectedDayDetails(null)}
+                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Drawer Body Scroll Container */}

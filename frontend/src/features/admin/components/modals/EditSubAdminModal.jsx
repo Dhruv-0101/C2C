@@ -71,12 +71,12 @@ export const EditSubAdminModal = ({ subAdmin, onClose, updateSubAdminMutation })
 
             <div className="grid grid-cols-2 gap-2 pt-2">
               {[
-                { id: "templates", label: "AI Base Templates" },
+                { id: "templates", label: "Graphic Templates" },
                 { id: "festivals", label: "Festival Calendar" },
                 { id: "frames", label: "Brand Frames Studio" },
                 { id: "styles", label: "Design System & Palettes" },
                 { id: "categories", label: "Business Categories" },
-                { id: "users", label: "SMB User Directory" },
+                { id: "users", label: "Business User Directory" },
               ].map((tab) => {
                 const isChecked = editTabs.includes(tab.id);
                 return (

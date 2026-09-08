@@ -195,7 +195,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
             {isRegister ? `Hey ${userName}, Welcome Aboard!` : `Welcome Back, ${userName}!`}
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            Here are the upcoming festivals added by Admin starting from today onwards. Prepare your posts in 1-click:
+            Here are upcoming festivals added by Admin starting from today onwards. Explore your festival calendar in 1-click:
           </p>
         </div>
 
@@ -218,6 +218,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                     src={
                       item.bannerUrl ||
                       item.imageUrl ||
+                      item.banner ||
                       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop"
                     }
                     alt={item.name || item.title || "Festival"}
@@ -232,20 +233,13 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                 </div>
 
                 {/* Content Details */}
-                <div className="p-3 space-y-1 text-left flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-heading font-extrabold text-xs text-white group-hover:text-amber-300 transition-colors line-clamp-1">
-                      {item.name || item.title || "Upcoming Festival"}
-                    </h4>
-                    <p className="text-[10px] text-slate-400 line-clamp-1">
-                      {item.description || "Festival Templates & Custom Overlay"}
-                    </p>
-                  </div>
-
-                  <div className="pt-2 text-[10px] font-bold text-amber-400 flex items-center justify-between border-t border-[#2C384E]/60">
-                    <span>Create Festival Post</span>
-                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                  </div>
+                <div className="p-3 space-y-1 text-left flex-1">
+                  <h4 className="font-heading font-extrabold text-xs text-white group-hover:text-amber-300 transition-colors line-clamp-1">
+                    {item.name || item.title || "Upcoming Festival"}
+                  </h4>
+                  <p className="text-[10px] text-slate-400 line-clamp-1">
+                    {item.description || "Festival Templates & Custom Overlay"}
+                  </p>
                 </div>
               </div>
             ))
@@ -253,7 +247,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
         </div>
 
         {/* Modal Bottom Actions */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 pt-2 border-t border-[#2C384E]">
+        <div className="pt-2 border-t border-[#2C384E]">
           <Button
             variant="primary"
             size="lg"
@@ -262,21 +256,9 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
               onClose();
               navigate("/calendar");
             }}
-            className="w-full sm:w-auto flex-1 font-extrabold shadow-lg shadow-amber-500/20"
+            className="w-full font-extrabold shadow-lg shadow-amber-500/20 text-sm py-3"
           >
             Explore 365-Day Festival Calendar
-          </Button>
-
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => {
-              onClose();
-              navigate("/create-post");
-            }}
-            className="w-full sm:w-auto text-xs border-[#2C384E] text-slate-300 hover:text-white"
-          >
-            Custom Post Studio
           </Button>
         </div>
       </div>

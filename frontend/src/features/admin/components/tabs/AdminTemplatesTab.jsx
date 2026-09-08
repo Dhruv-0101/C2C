@@ -3,7 +3,7 @@ import { BaseTemplateManagerContainer } from "../../../templates/containers/Base
 
 /**
  * AdminTemplatesTab Component
- * Tab viewport rendering AI Base Templates Manager.
+ * Tab viewport rendering Graphic Templates Manager.
  */
 export const AdminTemplatesTab = () => {
   return (

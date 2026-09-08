@@ -47,6 +47,7 @@ export const RegisterContainer = () => {
 
   const handleGoogleSuccess = (credentialResponse) => {
     if (credentialResponse.credential) {
+      sessionStorage.setItem("just_authenticated", "register");
       googleAuth({ idToken: credentialResponse.credential });
     }
   };

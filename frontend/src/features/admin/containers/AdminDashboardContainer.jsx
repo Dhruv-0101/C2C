@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -12,6 +12,7 @@ import { categoryApi } from "../../../services/category.api";
 import { subAdminSchema } from "../../../validations/auth.validation";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
 import { AdminDashboardView } from "../components/AdminDashboardView";
+import { CelebrationWelcomeModal } from "../../../components/common/CelebrationWelcomeModal";
 
 /**
  * AdminDashboardContainer
@@ -40,6 +41,18 @@ export const AdminDashboardContainer = () => {
   };
 
   const { modalProps, showSuccess, showError } = useFeedbackModal();
+
+  const [welcomeAuthType, setWelcomeAuthType] = useState(null);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+
+  useEffect(() => {
+    const justAuth = sessionStorage.getItem("just_authenticated");
+    if (justAuth) {
+      setWelcomeAuthType(justAuth);
+      setIsWelcomeModalOpen(true);
+      sessionStorage.removeItem("just_authenticated");
+    }
+  }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubAdmin, setEditingSubAdmin] = useState(null);
@@ -230,7 +243,8 @@ export const AdminDashboardContainer = () => {
   };
 
   return (
-    <AdminDashboardView
+    <>
+      <AdminDashboardView
       user={user}
       activeTab={activeTab}
       handleTabChange={handleTabChange}
@@ -291,5 +305,12 @@ export const AdminDashboardContainer = () => {
       queryClient={queryClient}
       showSuccess={showSuccess}
     />
+    <CelebrationWelcomeModal
+      isOpen={isWelcomeModalOpen}
+      onClose={() => setIsWelcomeModalOpen(false)}
+      authType={welcomeAuthType}
+      user={user}
+    />
+    </>
   );
 };

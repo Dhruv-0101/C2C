@@ -28,6 +28,9 @@ export const useLogin = () => {
         return;
       }
 
+      // Always set just_authenticated so Welcome Modal triggers on dashboard
+      sessionStorage.setItem("just_authenticated", "login");
+
       // 1. Show Green Success Banner FIRST without updating Redux state yet
       setSuccessMessage('🎉 Logged in successfully! Preparing your brand workspace...');
 

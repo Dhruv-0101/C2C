@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
-import { ConflictError, UnauthorizedError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
+import { ConflictError, UnauthorizedError, NotFoundError, BadRequestError, ForbiddenError } from '../../common/errors/custom-errors.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import {
   generateAccessToken,
@@ -532,6 +532,11 @@ export async function requestPasswordReset({ email }) {
   // Return generic success message to prevent user enumeration attacks
   if (!user) {
     return { message: 'If an account exists with this email, a password reset link has been sent.' };
+  }
+
+  // Option 1: Restrict Sub-Admin accounts from self-service email password reset
+  if (user.role === 'SUB_ADMIN' || user.isSubAdmin) {
+    throw new ForbiddenError('Sub-Admin accounts cannot reset passwords via email. Please contact your Super Admin to reset your password.');
   }
 
   // Generate 64-character random hex token

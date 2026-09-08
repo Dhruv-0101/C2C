@@ -45,7 +45,7 @@ function loadGoogleFont(fontFamily) {
 
 export const DesignStylesManagerContainer = () => {
   const queryClient = useQueryClient();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [displayMode, setDisplayMode] = useState("list"); // "list" | "form"
   const [errorMsg, setErrorMsg] = useState("");
 
   const [page, setPage] = useState(1);
@@ -118,7 +118,7 @@ export const DesignStylesManagerContainer = () => {
     mutationFn: (data) => designStyleApi.createDesignStyle(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DESIGN_STYLES.ALL });
-      setIsModalOpen(false);
+      setDisplayMode("list");
       resetForm();
     },
     onError: (err) => {
@@ -195,10 +195,22 @@ export const DesignStylesManagerContainer = () => {
     createDesignStyleMutation.mutate(payload);
   };
 
+  const handleOpenCreate = () => {
+    resetForm();
+    setDisplayMode("form");
+  };
+
+  const handleCancel = () => {
+    resetForm();
+    setDisplayMode("list");
+  };
+
   return (
     <DesignStylesManagerView
-      isModalOpen={isModalOpen}
-      setIsModalOpen={setIsModalOpen}
+      displayMode={displayMode}
+      setDisplayMode={setDisplayMode}
+      handleOpenCreate={handleOpenCreate}
+      handleCancel={handleCancel}
       errorMsg={errorMsg}
       gradientAngle={gradientAngle}
       setGradientAngle={setGradientAngle}

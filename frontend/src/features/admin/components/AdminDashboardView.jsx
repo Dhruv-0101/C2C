@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Activity,
   Sparkles,
   ArrowRight,
   FileCode2,
@@ -136,10 +135,6 @@ export const AdminDashboardView = ({
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 text-xs font-mono shrink-0">
-                <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span>System Status: <strong className="text-emerald-400">Healthy</strong></span>
-              </div>
             </div>
 
             {/* Interactive Real-Time Statistics Header Cards */}
@@ -165,8 +160,8 @@ export const AdminDashboardView = ({
                 {[
                   {
                     id: "templates",
-                    label: "AI Base Templates",
-                    desc: "Manage master prompt templates & graphic bases",
+                    label: "Graphic Templates",
+                    desc: "Upload & manage graphic background templates",
                     icon: FileCode2,
                     color: "text-amber-400",
                     borderColor: "hover:border-amber-500/50",
@@ -182,7 +177,7 @@ export const AdminDashboardView = ({
                   {
                     id: "frames",
                     label: "Brand Frames Studio",
-                    desc: "Custom frame overlays & PNG mask assets",
+                    desc: "Design & manage custom brand frame overlays",
                     icon: Layers,
                     color: "text-indigo-400",
                     borderColor: "hover:border-indigo-500/50",
@@ -205,7 +200,7 @@ export const AdminDashboardView = ({
                   },
                   {
                     id: "users",
-                    label: "SMB User Directory",
+                    label: "Business User Directory",
                     desc: "Registered business accounts & tenant monitoring",
                     icon: Users,
                     color: "text-emerald-400",
@@ -247,7 +242,7 @@ export const AdminDashboardView = ({
           <AdminFestivalsTab />
         )}
 
-        {/* 3. Canva Vector Frames Studio Tab */}
+        {/* 3. Brand Frames Studio Tab */}
         {activeTab === "frames" && <AdminFramesTab />}
 
         {/* 4. Design System & Color Tokens Tab */}
@@ -291,7 +286,7 @@ export const AdminDashboardView = ({
           />
         )}
 
-        {/* 7. SMB User Directory Tab */}
+        {/* 7. Business User Directory Tab */}
         {activeTab === "users" && (
           <AdminUsersTab
             users={users}

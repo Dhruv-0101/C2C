@@ -77,7 +77,7 @@ export const SubAdminDashboardView = ({
             <p className="text-xs text-slate-400">Active tenant monitoring and account status overview.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                <p className="text-xs text-slate-400">Total SMB Users</p>
+                <p className="text-xs text-slate-400">Total Business Users</p>
                 <p className="text-2xl font-bold text-white mt-1">1,248</p>
               </div>
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">

@@ -137,40 +137,40 @@ export function renderWelcomeEmail({ fullName, loginUrl }) {
         <div class="logo-badge">
           Brand<span class="logo-highlight">Flow</span> ✨
         </div>
-        <h1 class="hero-title">Welcome to the Future of AI Social Management</h1>
+        <h1 class="hero-title">Create Branded Social Posts</h1>
       </div>
 
       <!-- Main Body -->
       <div class="content-body">
         <p class="greeting">Hello ${fullName || 'Creator'} 👋</p>
         <p class="paragraph">
-          Thank you for joining <strong>BrandFlow</strong>! Your brand engine is officially initialized and ready to supercharge your social media workflow across all major channels.
+          Turn your business offers, festival greetings, and promotions into professional, on-brand social media graphics with instant multi-platform scheduling.
         </p>
 
         <p class="paragraph" style="margin-bottom: 12px; font-weight: 700; color: #E2E8F0;">
-          Here is what you get access to inside your BrandFlow workspace:
+          Built for Modern Small Businesses:
         </p>
 
         <!-- Feature Cards -->
         <div class="feature-grid">
           <div class="feature-card">
-            <h3 class="feature-title">🤖 AI Brand Kit Engine</h3>
-            <p class="feature-desc">Automatic brand style guide, logo vault, and voice adaptation for consistent posting.</p>
+            <h3 class="feature-title">🏢 Master BrandKit</h3>
+            <p class="feature-desc">Save your business logo, contact details, and handles once for automatic placement.</p>
           </div>
 
           <div class="feature-card">
-            <h3 class="feature-title">✍️ Viral Copy & Caption Generator</h3>
-            <p class="feature-desc">Instant AI captions tailored for high engagement on Instagram, LinkedIn, X, and Facebook.</p>
+            <h3 class="feature-title">🖼️ Brand Frame Studio</h3>
+            <p class="feature-desc">Overlay custom brand frames with photo rings, badges, and logo containers dynamically in real-time.</p>
           </div>
 
           <div class="feature-card">
-            <h3 class="feature-title">📅 Multi-Platform Smart Scheduler</h3>
-            <p class="feature-desc">Schedule, draft, and auto-publish content at peak engagement hours effortlessly.</p>
+            <h3 class="feature-title">📅 Festival Calendar</h3>
+            <p class="feature-desc">Never miss key dates with automated festival prompts for holidays and national celebrations.</p>
           </div>
 
           <div class="feature-card">
-            <h3 class="feature-title">🔐 Advanced 2FA Security</h3>
-            <p class="feature-desc">Protect your workspace with Google Authenticator / Authy app TOTP 2FA security.</p>
+            <h3 class="feature-title">⏱️ Multi-Channel Queue</h3>
+            <p class="feature-desc">Queue and schedule posts for peak audience engagement across Instagram, Facebook, and LinkedIn.</p>
           </div>
         </div>
 
@@ -182,7 +182,7 @@ export function renderWelcomeEmail({ fullName, loginUrl }) {
 
       <!-- Footer -->
       <div class="footer">
-        <p style="margin: 0 0 6px 0;">© ${year} BrandFlow Platform. Enterprise AI Social Management.</p>
+        <p style="margin: 0 0 6px 0;">© ${year} BrandFlow Platform. Autonomous Social Media Manager.</p>
         <p style="margin: 0;">If you have any questions, reply to this email or reach out to support@brandflow.ai</p>
       </div>
     </div>

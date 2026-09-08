@@ -90,12 +90,12 @@ export const CreateSubAdminScreen = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                 {[
                   { id: "dashboard", label: "Dashboard Overview" },
-                  { id: "templates", label: "AI Base Templates" },
+                  { id: "templates", label: "Graphic Templates" },
                   { id: "festivals", label: "Festival Calendar" },
                   { id: "frames", label: "Brand Frames Studio" },
                   { id: "styles", label: "Design System & Palettes" },
                   { id: "categories", label: "Business Categories" },
-                  { id: "users", label: "SMB User Directory" },
+                  { id: "users", label: "Business User Directory" },
                 ].map((tab) => {
                   const isChecked = selectedTabs.includes(tab.id);
                   return (

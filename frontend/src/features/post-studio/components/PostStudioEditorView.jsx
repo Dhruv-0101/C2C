@@ -101,7 +101,7 @@ export const PostStudioEditorView = ({
 
   const steps = [
     { num: 1, title: "Select Base Graphic" },
-    { num: 2, title: "Choose Canva Frame" },
+    { num: 2, title: "Choose Brand Frame" },
     { num: 3, title: "BrandKit Details" },
     { num: 4, title: "Publish & Export" },
   ];
@@ -451,7 +451,7 @@ export const PostStudioEditorView = ({
                       <img
                         src={t.baseImageUrl || t.imageUrl || t.fileUrl}
                         alt={t.title}
-                        className="w-full h-full object-contain group-hover:scale-105 transition bg-[#0B0F17]"
+                        className="w-full h-full object-cover group-hover:scale-105 transition bg-[#0B0F17]"
                       />
                       <div className="absolute inset-x-0 bottom-0 bg-black/75 p-1.5 truncate">
                         <p className="text-[10px] font-bold text-white truncate">{t.title}</p>
@@ -478,14 +478,14 @@ export const PostStudioEditorView = ({
 
               <div className="flex justify-end pt-3 border-t border-[#2C384E]">
                 <Button variant="primary" onClick={() => setCurrentStep(2)}>
-                  <span>Next: Choose Canva Frame</span>
+                  <span>Next: Choose Brand Frame</span>
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </Card>
           )}
 
-          {/* STEP 2: CHOOSE CANVA FRAME */}
+          {/* STEP 2: CHOOSE BRAND FRAME */}
           {currentStep === 2 && (
             <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
               <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
@@ -698,7 +698,7 @@ export const PostStudioEditorView = ({
                   <span className="text-white font-bold">{currentTemplate?.title || "Custom Graphic"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400 font-semibold">Active Canva Frame:</span>
+                  <span className="text-slate-400 font-semibold">Active Brand Frame:</span>
                   <span className="text-amber-400 font-bold">{selectedFrame?.title || "Default Overlay"}</span>
                 </div>
                 <div className="flex justify-between">

@@ -60,7 +60,7 @@ export const AdminLayout = () => {
               className="px-3 py-1.5 rounded-xl border border-[#2C384E] bg-[#0B0F17] hover:border-amber-500/50 text-xs font-semibold text-slate-300 hover:text-white transition flex items-center gap-2"
             >
               <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">SMB Workspace</span>
+              <span className="hidden sm:inline">Brand Workspace</span>
             </button>
 
             <div className="h-4 w-[1px] bg-[#2C384E]" />

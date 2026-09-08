@@ -165,34 +165,20 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
                 ctx.translate(-cx, -cy);
               }
 
-              const isCircle = slot.type === 'CIRCLE' || slot.dynamicSlot === 'AVATAR_CIRCLE';
               const targetH = slot.height || slot.width;
-              if (isCircle) {
-                const radius = slot.width / 2;
-                const cx = slot.x + radius;
-                const cy = slot.y + radius;
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
-                ctx.closePath();
-                ctx.clip();
-                drawImageAspectCover(ctx, slotImg, slot.x, slot.y, slot.width, targetH);
-                ctx.restore();
+              ctx.save();
+              drawVectorShapePath(ctx, slot);
+              ctx.clip();
+              drawImageAspectCover(ctx, slotImg, slot.x, slot.y, slot.width, targetH);
+              ctx.restore();
 
-                if (slot.borderWidth > 0 || slot.borderColor) {
-                  ctx.beginPath();
-                  ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
-                  ctx.lineWidth = slot.borderWidth || 4;
-                  ctx.strokeStyle = slot.borderColor || '#EAB308';
-                  ctx.stroke();
-                }
-              } else {
-                drawImageAspectCover(ctx, slotImg, slot.x, slot.y, slot.width, targetH);
-                if (slot.borderWidth > 0) {
-                  ctx.strokeStyle = slot.borderColor || '#FFFFFF';
-                  ctx.lineWidth = slot.borderWidth;
-                  ctx.strokeRect(slot.x, slot.y, slot.width, targetH);
-                }
+              if (slot.borderWidth > 0 || slot.borderColor) {
+                ctx.save();
+                drawVectorShapePath(ctx, slot);
+                ctx.lineWidth = slot.borderWidth || 4;
+                ctx.strokeStyle = slot.borderColor || '#EAB308';
+                ctx.stroke();
+                ctx.restore();
               }
 
               if (rotation) ctx.restore();
@@ -247,9 +233,9 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         }
 
         // If Admin configured vector text elements in configJson, render each dynamically
-        if (frameConfigElements && frameConfigElements.some((el) => el.type === 'TEXT')) {
+        if (frameConfigElements && frameConfigElements.some((el) => el.type === 'TEXT' || el.slotCategory === 'TEXT_INPUT')) {
           frameConfigElements
-            .filter((el) => el.type === 'TEXT')
+            .filter((el) => el.type === 'TEXT' || el.slotCategory === 'TEXT_INPUT')
             .forEach((textSlot) => {
               let textVal = '';
               const fieldKey = textSlot.fieldKey || textSlot.dynamicSlot || textSlot.id;
@@ -289,8 +275,10 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
 
               if (textVal) {
                 const rotation = textSlot.rotation || 0;
+                const isShape = textSlot.type !== 'TEXT';
+                const elH = isShape ? textSlot.height || textSlot.width : (textSlot.fontSize || 24) + 6;
+
                 if (rotation) {
-                  const elH = (textSlot.fontSize || 24) + 6;
                   const cx = textSlot.x + textSlot.width / 2;
                   const cy = textSlot.y + elH / 2;
                   ctx.save();
@@ -299,23 +287,37 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
                   ctx.translate(-cx, -cy);
                 }
 
+                ctx.save();
+                if (isShape) {
+                  drawVectorShapePath(ctx, textSlot);
+                  ctx.clip();
+                }
+
                 const fontFamily = textSlot.fontFamily || 'Space Grotesk';
                 const fontWeight = textSlot.fontWeight || 'bold';
-                const fontSize = textSlot.fontSize || 24;
-                ctx.fillStyle = textSlot.fontColor || textSlot.fillColor || '#FFFFFF';
+                const fontSize = textSlot.fontSize || (isShape ? Math.min(24, Math.max(12, Math.floor(elH * 0.28))) : 24);
+                ctx.fillStyle = textSlot.fontColor || textSlot.textColor || (isShape ? '#FFFFFF' : textSlot.fillColor || '#FFFFFF');
                 ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
-                ctx.textAlign = textSlot.textAlign || 'left';
-                ctx.textBaseline = 'top';
 
-                const tx =
-                  textSlot.textAlign === 'center'
-                    ? textSlot.x + textSlot.width / 2
-                    : textSlot.textAlign === 'right'
-                    ? textSlot.x + textSlot.width
-                    : textSlot.x;
+                if (isShape) {
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  const tx = textSlot.x + textSlot.width / 2;
+                  const ty = textSlot.y + elH / 2;
+                  ctx.fillText(textVal, tx, ty, textSlot.width * 0.85);
+                } else {
+                  ctx.textAlign = textSlot.textAlign || 'left';
+                  ctx.textBaseline = 'top';
+                  const tx =
+                    textSlot.textAlign === 'center'
+                      ? textSlot.x + textSlot.width / 2
+                      : textSlot.textAlign === 'right'
+                      ? textSlot.x + textSlot.width
+                      : textSlot.x;
+                  ctx.fillText(textVal, tx, textSlot.y);
+                }
 
-                ctx.fillText(textVal, tx, textSlot.y);
-
+                ctx.restore();
                 if (rotation) ctx.restore();
               }
             });

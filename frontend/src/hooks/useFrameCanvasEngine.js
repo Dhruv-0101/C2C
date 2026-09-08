@@ -292,26 +292,43 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
           ctx.setLineDash([]);
         }
 
-        // Draw Dynamic Slot Labels & Icons
+        // Draw Dynamic Slot Labels, Icons, & Inside-Shape Text
         if (
+          el.slotCategory === 'IMAGE_SLOT' ||
+          el.type === 'IMAGE_SLOT' ||
           el.dynamicSlot === 'LOGO_BOX' ||
-          el.type === 'IMAGE_SLOT'
+          el.dynamicSlot === 'AVATAR_CIRCLE'
         ) {
           ctx.fillStyle =
             el.fillColor === '#FFFFFF' || !el.fillColor ? '#0B0F17' : '#FFFFFF';
-          ctx.font = 'bold 18px "Space Grotesk", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('🖼️ IMAGE SLOT', el.x + el.width / 2, el.y + el.height / 2);
-        } else if (
-          el.dynamicSlot === 'AVATAR_CIRCLE' ||
-          (el.slotCategory === 'IMAGE_SLOT' && el.type === 'CIRCLE')
-        ) {
-          ctx.fillStyle = '#FFFFFF';
           ctx.font = 'bold 16px "Space Grotesk", sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('👤 PHOTO', el.x + el.width / 2, el.y + el.height / 2);
+          const label = el.dynamicSlot === 'AVATAR_CIRCLE' ? '👤 PHOTO' : '🖼️ IMAGE SLOT';
+          ctx.fillText(label, el.x + el.width / 2, el.y + (el.height || el.width) / 2);
+        } else if (el.slotCategory === 'TEXT_INPUT' || el.text) {
+          ctx.save();
+          // Clip text path to shape bounds so text never spills outside the circle or shape
+          drawVectorShapePath(ctx, el);
+          ctx.clip();
+
+          const fontFamily = el.fontFamily || 'Space Grotesk';
+          const fontWeight = el.fontWeight || 'bold';
+          const fontSize = el.fontSize || Math.min(24, Math.max(12, Math.floor((el.height || el.width) * 0.28)));
+
+          // High contrast contrast color if font color is default
+          ctx.fillStyle = el.fontColor || el.textColor || '#FFFFFF';
+          ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const textVal = el.text || el.customLabel || el.name || 'Sample Text';
+          const cx = el.x + el.width / 2;
+          const cy = el.y + (el.height || el.width) / 2;
+
+          // Render text centered inside shape with max width limit
+          ctx.fillText(textVal, cx, cy, el.width * 0.82);
+          ctx.restore();
         }
       }
 

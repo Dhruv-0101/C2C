@@ -59,7 +59,7 @@ export async function sendWelcomeEmail({ email, fullName }) {
   const mailOptions = {
     from: `"BrandFlow Team" <${env.FROM_EMAIL}>`,
     to: email,
-    subject: 'Welcome to BrandFlow ✨ Your AI Social Media Engine is Ready!',
+    subject: 'Welcome to BrandFlow ✨ Create Branded Social Posts!',
     html: htmlContent,
   };
 

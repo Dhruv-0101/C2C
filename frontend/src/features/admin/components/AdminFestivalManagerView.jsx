@@ -27,6 +27,7 @@ import { useFestivals } from "../../../hooks/useFestivals";
 import { FeedbackModal } from "../../../components/common/FeedbackModal";
 import { FestivalCalendarContainer } from "../../calendar/containers/FestivalCalendarContainer";
 import { readImageAsBase64 } from "../../../utils/file.utils";
+import { FestivalCreateView } from "./FestivalCreateView";
 
 /**
  * AdminFestivalManagerView
@@ -44,7 +45,7 @@ export const AdminFestivalManagerView = () => {
     isDeleting,
   } = useFestivals();
 
-  // Mode View: "list" (Table Management) vs "calendar" (Monthly Grid)
+  // Mode View: "list" (Table Management) vs "calendar" (Monthly Grid) vs "form" (Create/Edit Page)
   const [displayMode, setDisplayMode] = useState("list");
 
   // Search & Pagination State
@@ -53,7 +54,6 @@ export const AdminFestivalManagerView = () => {
   const [limit, setLimit] = useState(8);
 
   // Modals & Feedback State
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingFestival, setEditingFestival] = useState(null); // null = Create, object = Edit
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [feedback, setFeedback] = useState({ isOpen: false, type: "success", title: "", message: "" });
@@ -84,12 +84,16 @@ export const AdminFestivalManagerView = () => {
     }
   };
 
-  // Open Create Modal
-  const handleOpenCreate = () => {
+  // Open Create Page View (accepts optional dateStr from calendar cell click)
+  const handleOpenCreate = (dateStr) => {
     setEditingFestival(null);
+    const initialDate = typeof dateStr === "string" && dateStr.trim()
+      ? dateStr.trim()
+      : new Date().toISOString().split("T")[0];
+
     setFormData({
       name: "",
-      date: new Date().toISOString().split("T")[0],
+      date: initialDate,
       description: "",
       targetRegion: "India",
       bannerUrl: "",
@@ -98,10 +102,10 @@ export const AdminFestivalManagerView = () => {
     setBase64Banner("");
     setBannerPreview("");
     setFormError("");
-    setIsFormModalOpen(true);
+    setDisplayMode("form");
   };
 
-  // Open Edit Modal
+  // Open Edit Page View
   const handleOpenEdit = (fest) => {
     setEditingFestival(fest);
     const dateFormatted = fest.date
@@ -119,12 +123,12 @@ export const AdminFestivalManagerView = () => {
     setBase64Banner("");
     setBannerPreview(fest.bannerUrl || "");
     setFormError("");
-    setIsFormModalOpen(true);
+    setDisplayMode("form");
   };
 
   // Save (Create or Update) Handler
   const handleSaveSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setFormError("");
 
     if (!formData.name.trim()) {
@@ -167,7 +171,7 @@ export const AdminFestivalManagerView = () => {
           message: `"${formData.name}" added to system calendar.`,
         });
       }
-      setIsFormModalOpen(false);
+      setDisplayMode("list");
     } catch (err) {
       setFormError(err.response?.data?.message || err.message || "Operation failed.");
     }
@@ -204,6 +208,25 @@ export const AdminFestivalManagerView = () => {
   const totalFiltered = filteredFestivals.length;
   const totalPages = Math.ceil(totalFiltered / limit) || 1;
   const paginatedFestivals = filteredFestivals.slice((page - 1) * limit, page * limit);
+
+  if (displayMode === "form") {
+    return (
+      <FestivalCreateView
+        onBack={() => setDisplayMode("list")}
+        formData={formData}
+        setFormData={setFormData}
+        editingFestival={editingFestival}
+        handleSaveSubmit={handleSaveSubmit}
+        handleBannerFileChange={handleBannerFileChange}
+        base64Banner={base64Banner}
+        setBase64Banner={setBase64Banner}
+        bannerPreview={bannerPreview}
+        setBannerPreview={setBannerPreview}
+        isSubmitting={isCreating || isUpdating}
+        formError={formError}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -253,7 +276,7 @@ export const AdminFestivalManagerView = () => {
             </button>
           </div>
 
-          <Button variant="primary" icon={Plus} onClick={handleOpenCreate}>
+          <Button variant="primary" icon={Plus} onClick={() => handleOpenCreate()}>
             <span>Add Festival</span>
           </Button>
         </div>
@@ -261,7 +284,7 @@ export const AdminFestivalManagerView = () => {
 
       {/* Render Mode 1: Calendar Grid View */}
       {displayMode === "calendar" ? (
-        <FestivalCalendarContainer isAdmin={true} />
+        <FestivalCalendarContainer isAdmin={true} onAddFestival={handleOpenCreate} />
       ) : (
         /* Render Mode 2: Table / Card Management List */
         <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
@@ -325,19 +348,14 @@ export const AdminFestivalManagerView = () => {
                     <div className="p-4 space-y-3">
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                              <Sparkles className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <h3 className="font-heading font-bold text-sm text-white truncate max-w-[140px]">
-                                {fest.name}
-                              </h3>
-                              <p className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                <span>{formattedDate}</span>
-                              </p>
-                            </div>
+                          <div>
+                            <h3 className="font-heading font-bold text-sm text-white truncate max-w-[160px]">
+                              {fest.name}
+                            </h3>
+                            <p className="text-[11px] text-amber-400 font-medium flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3" />
+                              <span>{formattedDate}</span>
+                            </p>
                           </div>
 
                           <span
@@ -406,192 +424,7 @@ export const AdminFestivalManagerView = () => {
         </Card>
       )}
 
-      {/* CREATE / EDIT FESTIVAL FORM MODAL */}
-      {isFormModalOpen &&
-        createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg rounded-2xl bg-[#131B2A] border border-[#2C384E] p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">
-                <h3 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-amber-400" />
-                  <span>{editingFestival ? "Edit Festival Event" : "Add New Festival Event"}</span>
-                </h3>
-                <button
-                  onClick={() => setIsFormModalOpen(false)}
-                  className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
 
-              {formError && <Alert variant="error" message={formError} />}
-
-              <form onSubmit={handleSaveSubmit} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">
-                    Festival Name <span className="text-amber-400">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="e.g. Diwali / Republic Day"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-300">
-                      Event Date <span className="text-amber-400">*</span>
-                    </label>
-                    <Input
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-300">Target Region</label>
-                    <Input
-                      type="text"
-                      placeholder="e.g. India / International"
-                      value={formData.targetRegion}
-                      onChange={(e) => setFormData({ ...formData, targetRegion: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">Description</label>
-                  <textarea
-                    rows={2}
-                    placeholder="Brief details or background about this special day..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-500 resize-none"
-                  />
-                </div>
-
-                {/* Festival Banner Image Upload Section */}
-                <div className="space-y-2 p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
-                  <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Festival Banner Image (Cloudinary brandflow/festivals)</span>
-                    </span>
-                    {bannerPreview && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBase64Banner("");
-                          setBannerPreview("");
-                          setFormData({ ...formData, bannerUrl: "" });
-                        }}
-                        className="text-[10px] text-red-400 hover:underline"
-                      >
-                        Remove Banner
-                      </button>
-                    )}
-                  </label>
-
-                  {/* Banner Preview if uploaded or provided */}
-                  {bannerPreview ? (
-                    <div className="relative h-32 w-full rounded-lg overflow-hidden border border-[#2C384E] bg-slate-900 group">
-                      <img
-                        src={bannerPreview}
-                        alt="Banner Preview"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold shadow-lg flex items-center gap-1.5">
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>Change Image</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleBannerFileChange}
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  ) : (
-                    <label className="border-2 border-dashed border-[#2C384E] hover:border-amber-500/50 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition bg-[#131B2A]/50 hover:bg-[#131B2A]">
-                      <Upload className="w-6 h-6 text-amber-400 mb-1" />
-                      <span className="text-xs font-semibold text-slate-200">
-                        Click to Upload Festival Cover Banner
-                      </span>
-                      <span className="text-[10px] text-slate-500 mt-0.5">
-                        PNG, JPG, WEBP up to 5MB (Saved to Cloudinary)
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleBannerFileChange}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-
-                  {/* Or Direct Image URL input */}
-                  <div className="pt-1.5">
-                    <input
-                      type="text"
-                      placeholder="Or paste direct image URL (https://...)"
-                      value={formData.bannerUrl}
-                      onChange={(e) => {
-                        setFormData({ ...formData, bannerUrl: e.target.value });
-                        if (e.target.value) setBannerPreview(e.target.value);
-                      }}
-                      className="w-full px-3 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
-                  <div>
-                    <h4 className="text-xs font-bold text-white">Active Status</h4>
-                    <p className="text-[11px] text-slate-400">Make visible in templates & post studio</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4 accent-amber-500 cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-3 pt-3 border-t border-[#2C384E]">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setIsFormModalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={isCreating || isUpdating}
-                  >
-                    {isCreating || isUpdating
-                      ? "Saving..."
-                      : editingFestival
-                      ? "Update Festival"
-                      : "Create Festival"}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>,
-          document.body
-        )}
 
       {/* CONFIRM DELETE MODAL */}
       {deleteConfirmId &&

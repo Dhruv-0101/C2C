@@ -6,7 +6,7 @@ import Pagination from "../../../../components/common/Pagination";
 
 /**
  * AdminUsersTab Component
- * SMB User Directory tab displaying all registered business tenants and their BrandKit status.
+ * Business User Directory tab displaying all registered business tenants and their BrandKit status.
  */
 export const AdminUsersTab = ({
   users = [],
@@ -21,13 +21,13 @@ export const AdminUsersTab = ({
 }) => {
   return (
     <div className="animate-in fade-in duration-200 space-y-4">
-      {/* SMB User Directory Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
-        <div>
-          <h3 className="font-heading font-extrabold text-xl text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-400" />
-            <span>SMB User Directory</span>
-          </h3>
+      {/* Business User Directory Header */}
+      <div className="flex items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <Users className="w-5 h-5 text-indigo-400" />
+            <span>Business User Directory</span>
+          </h2>
           <p className="text-xs text-slate-400 mt-1">
             Directory of registered small business tenants operating with active BrandKits.
           </p>

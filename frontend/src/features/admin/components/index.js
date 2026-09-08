@@ -14,6 +14,9 @@ export { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
 export { AdminUsersTab } from "./tabs/AdminUsersTab";
 export { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
 
+export { FestivalCreateView } from "./FestivalCreateView";
+
 // Screens (Full-Screen Inline Views)
 export { CreateSubAdminScreen } from "./screens/CreateSubAdminScreen";
 export { EditSubAdminScreen } from "./screens/EditSubAdminScreen";
+
