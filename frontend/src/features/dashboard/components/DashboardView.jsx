@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Sparkles,
   Calendar,
@@ -7,6 +8,15 @@ import {
   Plus,
   CheckCircle,
   Zap,
+  Building2,
+  Layers,
+  Palette,
+  FolderKanban,
+  ArrowRight,
+  Shield,
+  Activity,
+  Archive,
+  Wand2,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
@@ -14,7 +24,8 @@ import { FestivalCalendarContainer } from "../../../features/calendar/containers
 
 /**
  * DashboardView
- * Pure Presentational Component rendering workspace metrics, full interactive content calendar, and recent campaigns.
+ * Presentational Component rendering admin-style statistics boxes, quick feature access modules,
+ * interactive content calendar, and recent AI campaigns audit list.
  */
 export const DashboardView = ({
   user,
@@ -23,87 +34,198 @@ export const DashboardView = ({
   scheduledCount = 0,
   recentPosts = [],
 }) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 w-full">
       {/* Welcome Banner */}
-      <div className="glass-panel p-6 sm:p-8 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-transparent to-teal-500/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="p-6 sm:p-8 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17] flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>SMB Workspace</span>
+            <span>SMB Workspace Dashboard</span>
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
-            Welcome back, <span className="text-gradient">{user?.fullName || "Creator"}</span>!
+            Welcome back, <span className="text-amber-400">{user?.fullName || "Creator"}</span>!
           </h1>
-          <p className="text-sm text-slate-400 max-w-xl">
+          <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
             Your BrandKit & Canva Frame Compositor engine is active. Ready to create your next multi-platform post?
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
           <Button variant="primary" icon={Plus} onClick={() => handleOpenNewPost(null)}>
-            New Post
+            New Post Studio
           </Button>
-          <Button variant="outline" icon={Zap} onClick={() => (window.location.href = "/brandkit")}>
+          <Button variant="outline" icon={Zap} onClick={() => navigate("/brandkit")}>
             Master BrandKit
           </Button>
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Generated Posts</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-              <Sparkles className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="font-heading text-3xl font-extrabold text-white">{totalPostsCount}</p>
-          <p className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
-            <TrendingUp className="w-3.5 h-3.5" /> Total Portfolio
-          </p>
-        </Card>
+      {/* Admin-Style Interactive Statistics Header Cards (Boxes) */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <Activity className="w-4 h-4 text-amber-400" />
+          <span>Workspace Performance Metrics</span>
+        </h2>
 
-        <Card className="p-5 border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Scheduled Queue</span>
-            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
-              <Calendar className="w-4 h-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Box 1: Generated Posts & Portfolio */}
+          <Card
+            onClick={() => navigate("/your-posts")}
+            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-amber-500/50 hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+              <span className="group-hover:text-amber-400 transition-colors">Generated Posts</span>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                <Sparkles className="w-4 h-4" />
+              </div>
             </div>
-          </div>
-          <p className="font-heading text-3xl font-extrabold text-teal-400">{scheduledCount}</p>
-          <p className="text-xs text-teal-400 font-medium">Queued for Auto-Publish</p>
-        </Card>
+            <p className="font-heading text-3xl font-extrabold text-white">{totalPostsCount}</p>
+            <p className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
+              <span>View Post Portfolio &rarr;</span>
+            </p>
+          </Card>
 
-        <Card className="p-5 border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Social Channels</span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-              <Share2 className="w-4 h-4" />
+          {/* Box 2: Scheduled Queue & Calendar */}
+          <Card
+            onClick={() => navigate("/calendar")}
+            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-teal-500/50 hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+              <span className="group-hover:text-teal-400 transition-colors">Scheduled Queue</span>
+              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
+                <Calendar className="w-4 h-4" />
+              </div>
             </div>
-          </div>
-          <p className="font-heading text-3xl font-extrabold text-white">4</p>
-          <p className="text-xs text-slate-400 font-medium">Instagram, LinkedIn, X, FB</p>
-        </Card>
+            <p className="font-heading text-3xl font-extrabold text-teal-400">{scheduledCount}</p>
+            <p className="text-[11px] text-teal-400 font-medium">
+              <span>Manage Content Calendar &rarr;</span>
+            </p>
+          </Card>
 
-        <Card className="p-5 border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subscription</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-              <CheckCircle className="w-4 h-4" />
+          {/* Box 3: Social Channels Connection */}
+          <Card
+            onClick={() => navigate("/connections")}
+            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+              <span className="group-hover:text-indigo-400 transition-colors">Social Channels</span>
+              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                <Share2 className="w-4 h-4" />
+              </div>
             </div>
-          </div>
-          <p className="font-heading text-2xl font-extrabold text-white">Pro Plan</p>
-          <p className="text-xs text-emerald-400 font-medium">Active & Validated</p>
-        </Card>
+            <p className="font-heading text-3xl font-extrabold text-white">4 Active</p>
+            <p className="text-[11px] text-indigo-400 font-medium">
+              <span>Instagram, FB, LinkedIn, X &rarr;</span>
+            </p>
+          </Card>
+
+          {/* Box 4: Master BrandKit Setup */}
+          <Card
+            onClick={() => navigate("/brandkit")}
+            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-emerald-500/50 hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+              <span className="group-hover:text-emerald-400 transition-colors">Master BrandKit</span>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                <Building2 className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="font-heading text-2xl font-extrabold text-emerald-400">Configured</p>
+            <p className="text-[11px] text-emerald-400 font-medium">
+              <span>Manage Brand Assets &rarr;</span>
+            </p>
+          </Card>
+        </div>
       </div>
 
-      {/* Main Content Calendar (Exact Same Interactive Component) */}
-      <FestivalCalendarContainer onSelectTemplate={(tpl) => handleOpenNewPost(tpl)} />
+      {/* Quick Access Feature Modules Grid */}
+      <div className="space-y-3 pt-2">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <Shield className="w-4 h-4 text-amber-400" />
+          <span>Workspace Quick Actions & Modules</span>
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            {
+              title: "AI Post Studio",
+              desc: "Generate branded graphics & custom post copy",
+              path: "/create-post",
+              icon: Wand2,
+              color: "text-amber-400",
+              borderColor: "hover:border-amber-500/50",
+            },
+            {
+              title: "Festival Content Calendar",
+              desc: "Explore upcoming events, holidays & marketing prompts",
+              path: "/calendar",
+              icon: Calendar,
+              color: "text-teal-400",
+              borderColor: "hover:border-teal-500/50",
+            },
+            {
+              title: "Brand Frames Studio",
+              desc: "Customize photo placeholders & badge overlays",
+              path: "/frames",
+              icon: Layers,
+              color: "text-indigo-400",
+              borderColor: "hover:border-indigo-500/50",
+            },
+            {
+              title: "Design System & Palettes",
+              desc: "Adjust brand color schemes & typography presets",
+              path: "/design-styles",
+              icon: Palette,
+              color: "text-rose-400",
+              borderColor: "hover:border-rose-500/50",
+            },
+            {
+              title: "Master BrandKit Setup",
+              desc: "Update logo, contact phone, address & social tags",
+              path: "/brandkit",
+              icon: Building2,
+              color: "text-purple-400",
+              borderColor: "hover:border-purple-500/50",
+            },
+            {
+              title: "Media Asset Vault",
+              desc: "Access uploaded images & generated campaign media",
+              path: "/vault",
+              icon: Archive,
+              color: "text-emerald-400",
+              borderColor: "hover:border-emerald-500/50",
+            },
+          ].map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <Card
+                key={idx}
+                onClick={() => navigate(item.path)}
+                className={`p-5 bg-[#131B2A] border-[#2C384E] cursor-pointer transition-all duration-200 group ${item.borderColor} hover:shadow-lg`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] ${item.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                </div>
+                <h3 className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  {item.desc}
+                </p>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Recent Campaign Activity */}
-      <Card className="border-slate-800 space-y-4">
+      <Card className="border-[#2C384E] bg-[#131B2A] space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-heading font-bold text-lg text-white">Recent AI Campaigns & Graphics</h3>
           <Button variant="primary" icon={Plus} className="text-xs" onClick={() => handleOpenNewPost(null)}>
@@ -120,7 +242,7 @@ export const DashboardView = ({
             {recentPosts.map((post) => (
               <div
                 key={post.id}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-colors"
+                className="flex items-center justify-between p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   {post.finalGraphicUrl && (

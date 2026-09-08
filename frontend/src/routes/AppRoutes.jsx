@@ -2,10 +2,12 @@ import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { MainLayout } from "../layouts/MainLayout";
+import { AdminLayout } from "../layouts/AdminLayout";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PageLoader } from "../components/common/PageLoader";
 import { useAuth } from "../hooks/useAuth";
+import { getRoleRedirectPath } from "../utils/auth.util";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import {
@@ -19,7 +21,7 @@ import {
 
 // Route Code Splitting (React.lazy Dynamic Imports for Enterprise 100,000+ Scalability)
 const WelcomeSplashPage = lazy(() =>
-  import("../pages/WelcomeSplashPage").then((m) => ({
+  import("../features/welcome/pages/WelcomeSplashPage").then((m) => ({
     default: m.WelcomeSplashPage || m.default,
   }))
 );
@@ -49,58 +51,58 @@ const ResetPasswordPage = lazy(() =>
   }))
 );
 const DashboardPage = lazy(() =>
-  import("../pages/DashboardPage").then((m) => ({
+  import("../features/dashboard/pages/DashboardPage").then((m) => ({
     default: m.DashboardPage || m.default,
   }))
 );
 const CreatePostPage = lazy(() =>
-  import("../pages/CreatePostPage").then((m) => ({
+  import("../features/post-studio/pages/CreatePostPage").then((m) => ({
     default: m.CreatePostPage || m.default,
   }))
 );
 const YourPostsPage = lazy(() =>
-  import("../pages/YourPostsPage").then((m) => ({
+  import("../features/your-posts/pages/YourPostsPage").then((m) => ({
     default: m.YourPostsPage || m.default,
   }))
 );
 const CalendarPage = lazy(() =>
-  import("../pages/CalendarPage").then((m) => ({
+  import("../features/calendar/pages/CalendarPage").then((m) => ({
     default: m.CalendarPage || m.default,
   }))
 );
 const FramesPage = lazy(() =>
-  import("../pages/FramesPage").then((m) => ({
+  import("../features/frames/pages/FramesPage").then((m) => ({
     default: m.FramesPage || m.default,
   }))
 );
 const DesignStylesPage = lazy(() =>
-  import("../pages/DesignStylesPage").then((m) => ({
+  import("../features/design-styles/pages/DesignStylesPage").then((m) => ({
     default: m.DesignStylesPage || m.default,
   }))
 );
 const AdminDashboardPage = lazy(() =>
-  import("../pages/AdminDashboardPage").then((m) => ({
+  import("../features/admin/pages/AdminDashboardPage").then((m) => ({
     default: m.AdminDashboardPage || m.default,
   }))
 );
 const SubAdminDashboardPage = lazy(() =>
-  import("../pages/SubAdminDashboardPage").then((m) => ({
+  import("../features/admin/pages/SubAdminDashboardPage").then((m) => ({
     default: m.SubAdminDashboardPage || m.default,
   }))
 );
 const BrandKitPage = lazy(() =>
-  import("../pages/BrandKitPage").then((m) => ({
+  import("../features/brandkit/pages/BrandKitPage").then((m) => ({
     default: m.BrandKitPage || m.default,
   }))
 );
 const VaultPage = lazy(() =>
-  import("../pages/VaultPage").then((m) => ({
+  import("../features/vault/pages/VaultPage").then((m) => ({
     default: m.VaultPage || m.default,
   }))
 );
-const SocialAccountsManager = lazy(() =>
-  import("../features/social/components/SocialAccountsManager").then((m) => ({
-    default: m.SocialAccountsManager || m.default,
+const SocialConnectionsPage = lazy(() =>
+  import("../features/social/pages/SocialConnectionsPage").then((m) => ({
+    default: m.SocialConnectionsPage || m.default,
   }))
 );
 
@@ -115,12 +117,11 @@ const GenericPage = ({ title, icon: Icon, description }) => (
 );
 
 export const AppRoutes = () => {
-  const { isAuthenticated, isSuperAdmin, isSubAdmin } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const getHomeRedirect = () => {
     if (!isAuthenticated) return "/welcome";
-    if (isSuperAdmin || isSubAdmin) return "/admin?tab=templates";
-    return "/dashboard";
+    return getRoleRedirectPath(user);
   };
 
   return (
@@ -155,7 +156,7 @@ export const AppRoutes = () => {
             <Route path="/design-styles" element={<DesignStylesPage />} />
             <Route path="/brand-kit" element={<BrandKitPage />} />
             <Route path="/brandkit" element={<BrandKitPage />} />
-            <Route path="/connections" element={<SocialAccountsManager />} />
+            <Route path="/connections" element={<SocialConnectionsPage />} />
             <Route path="/vault" element={<VaultPage />} />
             <Route
               path="/analytics"
@@ -182,7 +183,7 @@ export const AppRoutes = () => {
 
         {/* Protected Admin Routes (SuperAdmin & SubAdmin Allowed) */}
         <Route element={<ProtectedRoute requireAdmin />}>
-          <Route element={<MainLayout />}>
+          <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
             <Route path="/subadmin/dashboard" element={<AdminDashboardPage />} />

@@ -13,7 +13,6 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
-import { SocialAccountsManager } from "../../social/components/SocialAccountsManager";
 
 /**
  * BrandKitView
@@ -58,9 +57,6 @@ export const BrandKitView = ({
           </p>
         </div>
       </div>
-
-      {/* Social Accounts Management Section */}
-      <SocialAccountsManager />
 
       {isLoadingBrandKit ? (
         <div className="p-16 text-center text-slate-400">

@@ -8,6 +8,7 @@ export const USER_ROLES = {
 };
 
 export const ADMIN_TABS = [
+  { id: 'dashboard', label: 'Dashboard', description: 'System overview and real-time statistics' },
   { id: 'templates', label: 'AI Base Templates', description: 'Manage graphic base templates' },
   { id: 'festivals', label: 'Festival Calendar', description: 'Interactive monthly festival events & special days' },
   { id: 'frames', label: 'Brand Frames Studio', description: 'Manage custom brand frames & overlays' },

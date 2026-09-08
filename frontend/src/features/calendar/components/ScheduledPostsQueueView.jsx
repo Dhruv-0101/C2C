@@ -1,36 +1,32 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Clock, Zap, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
+import { Clock, Zap, Calendar } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
-import { postApi } from "../../../services/post.api";
-import { QUERY_KEYS } from "../../../constants/queryKeys";
+import { useYourPosts } from "../../../hooks/useYourPosts";
 
 /**
  * ScheduledPostsQueueView
  * Renders user's scheduled post queue with real-time test trigger controls.
  */
 export const ScheduledPostsQueueView = () => {
-  const queryClient = useQueryClient();
   const [testResult, setTestResult] = useState(null);
+  const {
+    scheduledPosts,
+    isLoading,
+    error,
+    triggerScheduledJobs,
+    isTriggering,
+  } = useYourPosts();
 
-  const { data: responseData, isLoading, error } = useQuery({
-    queryKey: ["scheduledPosts"],
-    queryFn: () => postApi.getScheduledPosts(),
-  });
-
-  const scheduledPosts = responseData?.scheduledPosts || responseData?.data?.scheduledPosts || [];
-
-  const triggerMutation = useMutation({
-    mutationFn: () => postApi.triggerScheduledJobs(),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries(["scheduledPosts"]);
-      queryClient.invalidateQueries(QUERY_KEYS.POSTS.ALL);
-      setTestResult(res.message || `Dispatched ${res.data?.count || 0} scheduled jobs!`);
-      setTimeout(() => setTestResult(null), 5000);
-    },
-  });
+  const handleTrigger = () => {
+    triggerScheduledJobs(undefined, {
+      onSuccess: (res) => {
+        setTestResult(res?.message || "Dispatched scheduled jobs!");
+        setTimeout(() => setTestResult(null), 5000);
+      },
+    });
+  };
 
   return (
     <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-6">
@@ -53,8 +49,8 @@ export const ScheduledPostsQueueView = () => {
         <Button
           variant="primary"
           icon={Zap}
-          isLoading={triggerMutation.isPending}
-          onClick={() => triggerMutation.mutate()}
+          isLoading={isTriggering}
+          onClick={handleTrigger}
           className="bg-amber-500 text-slate-950 hover:bg-amber-400 border-0 font-bold"
         >
           ⚡ Test Trigger Now

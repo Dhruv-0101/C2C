@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "../../../validations/auth.validation";
 import { useRegister } from "../hooks/useRegister";
 import { useGoogleAuth } from "../hooks/useGoogleAuth";
-import { RegisterView } from "../components/RegisterView";
+import { RegisterForm } from "../components/RegisterForm";
 
 /**
  * RegisterContainer
@@ -55,7 +55,7 @@ export const RegisterContainer = () => {
   const isCreating = isPending || isGooglePending;
 
   return (
-    <RegisterView
+    <RegisterForm
       register={register}
       handleSubmit={handleSubmit}
       errors={errors}

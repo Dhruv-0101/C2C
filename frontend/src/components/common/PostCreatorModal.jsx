@@ -16,12 +16,8 @@ import {
   ChevronUp,
   Plus,
 } from 'lucide-react';
-import { brandKitApi } from '../../services/brandkit.api';
-import { frameApi } from '../../services/frame.api';
-import { templateApi } from '../../services/template.api';
-import { postApi } from '../../services/post.api';
 import { useCanvasCompositor } from '../../hooks/useCanvasCompositor';
-import { QUERY_KEYS } from '../../constants/queryKeys';
+import { usePostCreator } from '../../hooks/usePostCreator';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -30,38 +26,20 @@ import { Input } from '../ui/Input';
  * Features Real-time 1080x1080 Canvas Compositing with PNG Frames & Editable Details
  */
 export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) => {
-  const queryClient = useQueryClient();
   const canvasRef = useRef(null);
+  const {
+    brandKit,
+    frames,
+    templates,
+    saveSuccess,
+    savePost,
+    isSaving,
+  } = usePostCreator(isOpen);
+
   const [selectedFrame, setSelectedFrame] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplate?.id || '');
   const [customBaseImage, setCustomBaseImage] = useState(null);
-  const [saveSuccess, setSaveSuccess] = useState('');
   const [isEditingDetails, setIsEditingDetails] = useState(true);
-
-  // Fetch User's BrandKit from DB
-  const { data: brandKitResponse } = useQuery({
-    queryKey: QUERY_KEYS.BRANDKIT.MINE,
-    queryFn: () => brandKitApi.getBrandKit(),
-    enabled: isOpen,
-  });
-
-  // Fetch Available Transparent PNG Frames from DB
-  const { data: framesResponse } = useQuery({
-    queryKey: QUERY_KEYS.FRAMES.ALL,
-    queryFn: () => frameApi.getFrames(),
-    enabled: isOpen,
-  });
-
-  // Fetch Available Graphic Templates from DB
-  const { data: templatesResponse } = useQuery({
-    queryKey: QUERY_KEYS.TEMPLATES.ALL,
-    queryFn: () => templateApi.getTemplates(),
-    enabled: isOpen,
-  });
-
-  const brandKit = brandKitResponse?.data?.brandKit;
-  const frames = framesResponse?.data?.frames || [];
-  const templates = templatesResponse?.data?.templates || [];
 
   // Sync selectedTemplateId whenever modal opens or initialTemplate changes
   useEffect(() => {
@@ -165,23 +143,10 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     customDetails
   );
 
-  // Save Generated Post Mutation
-  const savePostMutation = useMutation({
-    mutationFn: (postData) => postApi.createPost(postData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
-      setSaveSuccess('🎉 Final composited post saved to Cloudinary, DB & Vault!');
-      setTimeout(() => setSaveSuccess(''), 4000);
-    },
-  });
-
-  if (!isOpen) return null;
-
   // Handle Save Post to DB
   const handleSaveToDb = () => {
     if (!dataUrl) return;
-    savePostMutation.mutate({
+    savePost({
       templateId: currentTemplate?.id || null,
       festivalId: currentTemplate?.festivalId || null,
       frameId: selectedFrame?.id || null,
@@ -603,7 +568,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
               size="lg"
               icon={BookmarkCheck}
               onClick={handleSaveToDb}
-              isLoading={savePostMutation.isPending}
+              isLoading={isSaving}
               disabled={!dataUrl || isRendering}
               className="w-full sm:w-auto text-xs"
             >

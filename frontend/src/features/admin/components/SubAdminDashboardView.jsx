@@ -8,8 +8,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
-import { FestivalCalendarView } from "../../../components/admin/FestivalCalendarView";
-import { BaseTemplateManager } from "../../../components/admin/BaseTemplateManager";
+import { FestivalCalendarContainer } from "../../calendar/containers/FestivalCalendarContainer";
+import { BaseTemplateManagerContainer } from "../../templates/containers/BaseTemplateManagerContainer";
 
 /**
  * SubAdminDashboardView
@@ -107,8 +107,8 @@ export const SubAdminDashboardView = ({
 
         {activeTab === "templates" && (
           <div className="space-y-6">
-            <BaseTemplateManager />
-            <FestivalCalendarView />
+            <BaseTemplateManagerContainer />
+            <FestivalCalendarContainer />
           </div>
         )}
 

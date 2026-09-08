@@ -47,9 +47,20 @@ export const { setCredentials, updateUser, logoutState } = authSlice.actions;
 export const selectCurrentUser = (state) => state.auth.user;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectAccessToken = (state) => state.auth.accessToken;
-export const selectIsAdmin = (state) => Boolean(state.auth.user?.isAdmin || state.auth.user?.role === 'ADMIN' || state.auth.user?.role === 'SUB_ADMIN');
-export const selectIsSuperAdmin = (state) => Boolean(state.auth.user?.isSuperAdmin);
-export const selectIsSubAdmin = (state) => Boolean(state.auth.user?.isSubAdmin);
+export const selectIsSuperAdmin = (state) =>
+  Boolean(
+    state.auth.user?.isSuperAdmin ||
+    state.auth.user?.role === "ADMIN" ||
+    state.auth.user?.role === "SUPER_ADMIN"
+  );
+export const selectIsSubAdmin = (state) =>
+  Boolean(
+    state.auth.user?.isSubAdmin ||
+    state.auth.user?.role === "SUBADMIN" ||
+    state.auth.user?.role === "SUB_ADMIN"
+  );
+export const selectIsAdmin = (state) =>
+  selectIsSuperAdmin(state) || selectIsSubAdmin(state) || Boolean(state.auth.user?.isAdmin);
 export const selectAllowedTabs = (state) => state.auth.user?.allowedTabs || [];
 
 export default authSlice.reducer;

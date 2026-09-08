@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   Download,
@@ -17,23 +16,25 @@ import {
   Plus,
   Share2,
 } from 'lucide-react';
-import { brandKitApi } from '../../../services/brandkit.api';
-import { frameApi } from '../../../services/frame.api';
-import { templateApi } from '../../../services/template.api';
-import { postApi } from '../../../services/post.api';
 import { useCanvasCompositor } from '../../../hooks/useCanvasCompositor';
-import { QUERY_KEYS } from '../../../constants/queryKeys';
+import { usePostCreator } from '../../../hooks/usePostCreator';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { SocialPublisherModal } from '../../post-studio/components/SocialPublisherModal';
 
 export const PostStudioModal = ({ isOpen, onClose, template }) => {
-  const queryClient = useQueryClient();
   const canvasRef = useRef(null);
+  const {
+    brandKit,
+    frames,
+    templates,
+    saveSuccess,
+    savePost,
+    isSaving,
+  } = usePostCreator(isOpen);
 
   const [selectedFrame, setSelectedFrame] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(template || null);
-  const [saveSuccess, setSaveSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'frames' | 'details'
   const [isPublisherOpen, setIsPublisherOpen] = useState(false);
 
@@ -41,31 +42,6 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
   useEffect(() => {
     if (template) setSelectedTemplate(template);
   }, [template]);
-
-  // Fetch BrandKit from API
-  const { data: brandKitResponse, isLoading: isLoadingBrandKit } = useQuery({
-    queryKey: ['brandKit'],
-    queryFn: () => brandKitApi.getBrandKit(),
-    enabled: isOpen,
-  });
-
-  // Fetch Templates from API
-  const { data: templatesResponse, isLoading: isLoadingTemplates } = useQuery({
-    queryKey: ['templates'],
-    queryFn: () => templateApi.getTemplates(),
-    enabled: isOpen,
-  });
-
-  // Fetch Canva Vector Frames from API
-  const { data: framesResponse, isLoading: isLoadingFrames } = useQuery({
-    queryKey: ['frames'],
-    queryFn: () => frameApi.getFrames(),
-    enabled: isOpen,
-  });
-
-  const brandKit = brandKitResponse?.data?.brandKit;
-  const templates = templatesResponse?.data?.templates || [];
-  const frames = framesResponse?.data?.frames || [];
 
   // Default select first template & frame if none selected
   useEffect(() => {
@@ -130,22 +106,9 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     customDetails
   );
 
-  // Save Generated Post Mutation
-  const savePostMutation = useMutation({
-    mutationFn: (postData) => postApi.createPost(postData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
-      setSaveSuccess('🎉 Final post saved to Cloudinary, DB & Vault!');
-      setTimeout(() => setSaveSuccess(''), 4000);
-    },
-  });
-
-  if (!isOpen) return null;
-
   const handleSaveToDb = () => {
     if (!dataUrl) return;
-    savePostMutation.mutate({
+    savePost({
       templateId: selectedTemplate?.id || null,
       festivalId: selectedTemplate?.festivalId || null,
       frameId: selectedFrame?.id || null,
@@ -172,6 +135,8 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     customText: customDetails?.tagline || customDetails?.businessName,
     userConfigJson: customDetails,
   };
+
+  if (!isOpen) return null;
 
   return createPortal(
     <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in overflow-y-auto font-sans">
@@ -414,7 +379,7 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
                   size="sm"
                   icon={BookmarkCheck}
                   onClick={handleSaveToDb}
-                  isLoading={savePostMutation.isPending}
+                  isLoading={isSaving}
                   disabled={!dataUrl || isRendering}
                   className="w-full text-[11px]"
                 >
@@ -441,10 +406,7 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
         isOpen={isPublisherOpen}
         onClose={() => setIsPublisherOpen(false)}
         postData={publisherPayload}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
-        }}
+        onSuccess={() => setIsPublisherOpen(false)}
       />
     </div>,
     document.body

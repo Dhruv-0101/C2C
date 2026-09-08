@@ -48,6 +48,7 @@ export const Sidebar = () => {
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'AI BrandKit Manager', path: '/brandkit', icon: Building2 },
+    { label: 'Social Integrations', path: '/connections', icon: Share2 },
     { label: 'Post Creator Studio', path: '/create-post', icon: Sparkles },
     { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
     { label: 'Festival Calendar', path: '/calendar', icon: Calendar },

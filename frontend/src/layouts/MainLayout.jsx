@@ -25,7 +25,7 @@ export const MainLayout = () => {
       <main
         className={`flex-1 transition-all duration-300 ease-in-out ${
           isCollapsed ? 'md:ml-20' : 'md:ml-64'
-        } p-4 sm:p-6 lg:p-8 min-h-screen max-w-7xl mx-auto overflow-y-auto`}
+        } p-4 sm:p-6 lg:p-8 min-h-screen w-full overflow-y-auto`}
       >
         <Outlet />
       </main>

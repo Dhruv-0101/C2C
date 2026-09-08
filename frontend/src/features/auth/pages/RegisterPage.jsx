@@ -1,8 +1,8 @@
 import React from 'react';
-import { RegisterForm } from '../components/RegisterForm';
+import { RegisterContainer } from '../containers/RegisterContainer';
 
 export const RegisterPage = () => {
-  return <RegisterForm />;
+  return <RegisterContainer />;
 };
 
 export default RegisterPage;

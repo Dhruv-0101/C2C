@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
-import { postApi } from "../../../services/post.api";
+import { usePostPublisher } from "../../../hooks/usePostPublisher";
 
 const SOCIAL_PLATFORMS = [
   { id: "INSTAGRAM", name: "Instagram", icon: "📸", color: "from-pink-500 to-rose-600" },
@@ -58,9 +58,12 @@ export const SocialPublisherModal = ({
   const defaultFutureDate = new Date(Date.now() + 15 * 60 * 1000);
   const [scheduledAt, setScheduledAt] = useState(toDatetimeLocal(defaultFutureDate));
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [publishResult, setPublishResult] = useState(null);
+  const {
+    isSubmitting,
+    errorMsg,
+    publishResult,
+    handlePublishOrSchedule: onSubmitPublish,
+  } = usePostPublisher(onSuccess);
 
   if (!isOpen) return null;
 
@@ -85,45 +88,14 @@ export const SocialPublisherModal = ({
     setScheduledAt(toDatetimeLocal(target));
   };
 
-  const handlePublishOrSchedule = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setErrorMsg("");
-
-    if (publishMode === "SCHEDULE") {
-      if (!scheduledAt) {
-        setErrorMsg("Please select a valid future date and time for scheduling.");
-        return;
-      }
-      const chosenTime = new Date(scheduledAt).getTime();
-      if (chosenTime <= Date.now()) {
-        setErrorMsg("Scheduled time must be in the future!");
-        return;
-      }
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const payload = {
-        ...postData,
-        targetPlatforms: selectedPlatforms,
-        scheduledAt: publishMode === "SCHEDULE" ? new Date(scheduledAt).toISOString() : undefined,
-      };
-
-      if (publishMode === "NOW") {
-        const response = await postApi.publishNow(payload);
-        setPublishResult(response.data?.publishResult || response.publishResult);
-        if (onSuccess) onSuccess(response);
-      } else {
-        const response = await postApi.schedulePost(payload);
-        setPublishResult({ scheduled: true, scheduledAt });
-        if (onSuccess) onSuccess(response);
-      }
-    } catch (err) {
-      setErrorMsg(err.message || "Failed to process post execution.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmitPublish({
+      postData,
+      selectedPlatforms,
+      publishMode,
+      scheduledAt,
+    });
   };
 
   return createPortal(
@@ -221,7 +193,7 @@ export const SocialPublisherModal = ({
             </Button>
           </div>
         ) : (
-          <form onSubmit={handlePublishOrSchedule} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Target Platforms Selector */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">

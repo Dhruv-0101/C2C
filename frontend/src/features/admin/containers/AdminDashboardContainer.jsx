@@ -27,13 +27,13 @@ export const AdminDashboardContainer = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Enforce SubAdmin RBAC tab access: if requested tab is unpermitted, auto-select first allowed tab
-  const requestedTab = searchParams.get("tab") || "templates";
+  const requestedTab = searchParams.get("tab") || "dashboard";
   const activeTab =
     isSuperAdmin
       ? requestedTab
       : userAllowedTabs.length > 0 && userAllowedTabs.includes(requestedTab)
       ? requestedTab
-      : userAllowedTabs[0] || "templates";
+      : userAllowedTabs[0] || "dashboard";
 
   const handleTabChange = (tabId) => {
     setSearchParams({ tab: tabId });
@@ -198,7 +198,7 @@ export const AdminDashboardContainer = () => {
       fullName: "",
       email: "",
       password: "",
-      allowedTabs: ["templates", "festivals", "frames", "styles", "categories", "users"],
+      allowedTabs: ["dashboard", "templates", "festivals", "frames", "styles", "categories", "users"],
     },
   });
 

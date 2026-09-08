@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../../services/auth.api';
 import { setCredentials } from '../../../store/slices/authSlice';
+import { getRoleRedirectPath } from '../../../utils/auth.util';
 
 /**
  * Custom hook for User Login supporting 2FA challenge redirect & 2.5s success notification delay
@@ -35,13 +36,8 @@ export const useLogin = () => {
         // Dispatch credentials to Redux & Navigate
         dispatch(setCredentials({ user, accessToken }));
 
-        if (user?.isSuperAdmin) {
-          navigate('/admin/dashboard', { replace: true });
-        } else if (user?.isSubAdmin) {
-          navigate('/subadmin/dashboard', { replace: true });
-        } else {
-          navigate('/dashboard', { replace: true });
-        }
+        const redirectPath = getRoleRedirectPath(user);
+        navigate(redirectPath, { replace: true });
       }, 2500);
     },
   });

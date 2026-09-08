@@ -1,59 +1,35 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
-import { socialApi } from '../../../services/social.api';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
 import Pagination from '../../../components/common/Pagination';
-import { QUERY_KEYS } from '../../../constants/queryKeys';
+import { useSocialAccounts } from '../../../hooks/useSocialAccounts';
 
 export const SocialAccountsManager = () => {
-  const queryClient = useQueryClient();
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const {
+    accountsMeta,
+    instagramAccount,
+    facebookAccount,
+    linkedinAccount,
+    page,
+    setPage,
+    setLimit,
+    isLoadingAccounts,
+    isLoadingAuthUrl,
+    authUrlData,
+    isMetaConfigured,
+    errorMsg,
+    setErrorMsg,
+    successMsg,
+    refetch,
+    connectManual,
+    isConnectingManual,
+    disconnect,
+    isDisconnecting,
+    getLinkedinAuthUrl,
+  } = useSocialAccounts();
+
   const [showConfigGuide, setShowConfigGuide] = useState(false);
-
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-
-  // Handle Meta OAuth Redirect Success / Error query parameters
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const socialSuccess = urlParams.get('social_success');
-    const account = urlParams.get('account');
-    const error = urlParams.get('error');
-
-    if (socialSuccess === 'true' && account) {
-      setSuccessMsg(`🎉 Social Account ${account} connected successfully! Live post publishing is ready.`);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SOCIAL.ALL });
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (error) {
-      setErrorMsg(`Connection Error: ${error}`);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [queryClient]);
-
-  // Fetch Connected Social Accounts
-  const { data: accountsResponse, isLoading, refetch } = useQuery({
-    queryKey: [...QUERY_KEYS.SOCIAL.ALL, page, limit],
-    queryFn: () => socialApi.getAccounts({ page, limit }),
-  });
-
-  const accounts = accountsResponse?.data?.accounts || [];
-  const accountsMeta = accountsResponse?.data?.meta || accountsResponse?.meta;
-  const instagramAccount = accounts.find((a) => a.platform === 'INSTAGRAM');
-  const facebookAccount = accounts.find((a) => a.platform === 'FACEBOOK');
-  const linkedinAccount = accounts.find((a) => a.platform === 'LINKEDIN');
-
-  // Fetch Instagram/Meta Auth URL
-  const { data: authUrlResponse, isLoading: isLoadingAuthUrl } = useQuery({
-    queryKey: QUERY_KEYS.SOCIAL.AUTH_URL,
-    queryFn: () => socialApi.getInstagramAuthUrl(),
-  });
-
-  const authUrlData = authUrlResponse?.data;
-  const isMetaConfigured = authUrlData?.configured ?? true;
-
   const [manualHandle, setManualHandle] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
 
@@ -63,35 +39,6 @@ export const SocialAccountsManager = () => {
   const [manualLiHandle, setManualLiHandle] = useState('');
   const [showManualLiInput, setShowManualLiInput] = useState(false);
   const [isLoadingLiAuthUrl, setIsLoadingLiAuthUrl] = useState(false);
-
-  // Manual Handle Connect Mutation
-  const manualConnectMutation = useMutation({
-    mutationFn: ({ handle, platform }) => socialApi.connectManualHandle(handle, platform),
-    onSuccess: (res) => {
-      const name = res.data?.data?.account?.accountName || 'Social Account';
-      setSuccessMsg(`🎉 ${name} connected successfully!`);
-      setShowManualInput(false);
-      setShowManualFbInput(false);
-      setManualHandle('');
-      setManualFbHandle('');
-      queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
-    },
-    onError: (err) => {
-      setErrorMsg(err.message || 'Failed to connect account.');
-    },
-  });
-
-  // Disconnect Account Mutation
-  const disconnectMutation = useMutation({
-    mutationFn: (platform) => socialApi.disconnectAccount(platform),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
-      setSuccessMsg('');
-    },
-    onError: (err) => {
-      setErrorMsg(err.message || 'Failed to disconnect account.');
-    },
-  });
 
   const handleConnectMeta = () => {
     if (!isMetaConfigured) {
@@ -188,8 +135,8 @@ export const SocialAccountsManager = () => {
             <Button
               variant="outline"
               className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
-              isLoading={disconnectMutation.isPending}
-              onClick={() => disconnectMutation.mutate('INSTAGRAM')}
+              isLoading={isDisconnecting}
+              onClick={() => disconnect('INSTAGRAM')}
               icon={Unlink}
             >
               Disconnect Instagram
@@ -238,8 +185,12 @@ export const SocialAccountsManager = () => {
             <Button
               variant="primary"
               size="sm"
-              isLoading={manualConnectMutation.isPending}
-              onClick={() => manualConnectMutation.mutate({ handle: manualHandle, platform: 'INSTAGRAM' })}
+              isLoading={isConnectingManual}
+              onClick={() => {
+                connectManual({ handle: manualHandle, platform: 'INSTAGRAM' });
+                setShowManualInput(false);
+                setManualHandle('');
+              }}
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
             >
               Connect Username
@@ -272,7 +223,7 @@ export const SocialAccountsManager = () => {
             </div>
 
             {facebookAccount?.isConnected ? (
-              <div className="space-y-0.5 text-xs text-slate-300">
+              <div className="space-y-0.5 text-xs text-[#2C384E]">
                 <a
                   href={(() => {
                     const id = facebookAccount.platformUserId;
@@ -308,8 +259,8 @@ export const SocialAccountsManager = () => {
             <Button
               variant="outline"
               className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
-              isLoading={disconnectMutation.isPending}
-              onClick={() => disconnectMutation.mutate('FACEBOOK')}
+              isLoading={isDisconnecting}
+              onClick={() => disconnect('FACEBOOK')}
               icon={Unlink}
             >
               Disconnect Facebook
@@ -358,8 +309,12 @@ export const SocialAccountsManager = () => {
             <Button
               variant="primary"
               size="sm"
-              isLoading={manualConnectMutation.isPending}
-              onClick={() => manualConnectMutation.mutate({ handle: manualFbHandle, platform: 'FACEBOOK' })}
+              isLoading={isConnectingManual}
+              onClick={() => {
+                connectManual({ handle: manualFbHandle, platform: 'FACEBOOK' });
+                setShowManualFbInput(false);
+                setManualFbHandle('');
+              }}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
             >
               Connect Facebook Page
@@ -430,8 +385,8 @@ export const SocialAccountsManager = () => {
             <Button
               variant="outline"
               className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
-              isLoading={disconnectMutation.isPending}
-              onClick={() => disconnectMutation.mutate('LINKEDIN')}
+              isLoading={isDisconnecting}
+              onClick={() => disconnect('LINKEDIN')}
               icon={Unlink}
             >
               Disconnect LinkedIn
@@ -446,8 +401,7 @@ export const SocialAccountsManager = () => {
                   try {
                     setIsLoadingLiAuthUrl(true);
                     setErrorMsg('');
-                    const res = await socialApi.getLinkedinAuthUrl();
-                    const authUrl = res.data?.authUrl || res.authUrl;
+                    const authUrl = await getLinkedinAuthUrl();
                     if (authUrl) {
                       window.location.href = authUrl;
                     } else {
@@ -496,8 +450,12 @@ export const SocialAccountsManager = () => {
             <Button
               variant="primary"
               size="sm"
-              isLoading={manualConnectMutation.isPending}
-              onClick={() => manualConnectMutation.mutate({ handle: manualLiHandle, platform: 'LINKEDIN' })}
+              isLoading={isConnectingManual}
+              onClick={() => {
+                connectManual({ handle: manualLiHandle, platform: 'LINKEDIN' });
+                setShowManualLiInput(false);
+                setManualLiHandle('');
+              }}
               className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs"
             >
               Connect LinkedIn Account

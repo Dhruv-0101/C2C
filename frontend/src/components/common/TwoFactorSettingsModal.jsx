@@ -1,108 +1,33 @@
-import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useDispatch } from 'react-redux';
-import { ShieldCheck, QrCode, Key, Copy, Check, Lock, AlertTriangle, RefreshCw, Download } from 'lucide-react';
-import { authApi } from '../../services/auth.api';
-import { updateUser } from '../../store/slices/authSlice';
-import { useAuth } from '../../hooks/useAuth';
-import { Card } from '../ui/Card';
+import React from 'react';
+import { ShieldCheck, QrCode, Copy, Check, Lock, AlertTriangle, Download } from 'lucide-react';
+import { useTwoFactor } from '../../hooks/useTwoFactor';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 
 export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
-  const dispatch = useDispatch();
-
-  const [step, setStep] = useState(1); // 1: Setup QR, 2: Backup Codes, 3: Success/Status
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const [secret, setSecret] = useState('');
-  const [verifyCode, setVerifyCode] = useState('');
-  const [backupCodes, setBackupCodes] = useState([]);
-  const [copied, setCopied] = useState(false);
-
-  // Setup 2FA Mutation
-  const setupMutation = useMutation({
-    mutationFn: () => authApi.setup2FA(),
-    onSuccess: (res) => {
-      setQrCodeUrl(res.data.qrCodeUrl);
-      setSecret(res.data.secret);
-      setStep(1);
-    },
-  });
-
-  // Enable 2FA Mutation
-  const enableMutation = useMutation({
-    mutationFn: (code) => authApi.enable2FA({ code }),
-    onSuccess: (res) => {
-      setBackupCodes(res.data.backupCodes || []);
-      setStep(2); // Transition to Backup Codes screen first before updating active status
-    },
-  });
-
-  // Disable 2FA Mutation
-  const disableMutation = useMutation({
-    mutationFn: () => authApi.disable2FA(),
-    onSuccess: () => {
-      dispatch(updateUser({ isTwoFactorEnabled: false }));
-      setStep(1);
-      setQrCodeUrl('');
-      setVerifyCode('');
-      setBackupCodes([]);
-      onClose();
-    },
-  });
-
-  const handleStartSetup = () => {
-    setupMutation.mutate();
-  };
-
-  const handleConfirmEnable = (e) => {
-    e.preventDefault();
-    if (!verifyCode) return;
-    enableMutation.mutate(verifyCode);
-  };
-
-  const handleFinishSetup = () => {
-    dispatch(updateUser({ isTwoFactorEnabled: true }));
-    setStep(1);
-    setQrCodeUrl('');
-    setVerifyCode('');
-    setBackupCodes([]);
-    onClose();
-  };
-
-  const handleCopyBackupCodes = () => {
-    navigator.clipboard.writeText(backupCodes.join('\n'));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleDownloadBackupCodes = () => {
-    const textContent =
-      `==========================================\n` +
-      `BRANDFLOW 2FA EMERGENCY BACKUP CODES\n` +
-      `==========================================\n` +
-      `Generated: ${new Date().toLocaleString()}\n` +
-      `User Email: ${user?.email || 'Account'}\n\n` +
-      `RECOVERY CODES:\n` +
-      backupCodes.map((code, i) => `${i + 1}. ${code}`).join('\n') +
-      `\n\n` +
-      `⚠️ WARNING:\n` +
-      `If you lose your phone, change devices, or lose access to your authenticator app,\n` +
-      `these single-use backup codes are the ONLY way to log into your account.\n` +
-      `Keep this file safe and secure.\n`;
-
-    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `brandflow-backup-codes-${user?.email || 'user'}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const {
+    user,
+    step,
+    qrCodeUrl,
+    secret,
+    verifyCode,
+    setVerifyCode,
+    backupCodes,
+    copied,
+    isSettingUp,
+    setupError,
+    isEnabling,
+    enableError,
+    isDisabling,
+    disableError,
+    handleStartSetup,
+    handleConfirmEnable,
+    handleFinishSetup,
+    handleCopyBackupCodes,
+    handleDownloadBackupCodes,
+    disable2FA,
+  } = useTwoFactor(onClose);
 
   if (!isOpen) return null;
 
@@ -187,8 +112,8 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            {disableMutation.error && (
-              <Alert variant="error" message={disableMutation.error.message} />
+            {disableError && (
+              <Alert variant="error" message={disableError.message} />
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -197,8 +122,8 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
               </Button>
               <Button
                 variant="danger"
-                isLoading={disableMutation.isPending}
-                onClick={() => disableMutation.mutate()}
+                isLoading={isDisabling}
+                onClick={() => disable2FA()}
               >
                 Disable 2FA Security
               </Button>
@@ -218,13 +143,13 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
                     Protect your brand assets and account credentials by linking an Authenticator app (Google Authenticator, Authy, or 1Password).
                   </p>
                 </div>
-                {setupMutation.error && (
-                  <Alert variant="error" message={setupMutation.error.message} />
+                {setupError && (
+                  <Alert variant="error" message={setupError.message} />
                 )}
                 <Button
                   variant="primary"
                   size="lg"
-                  isLoading={setupMutation.isPending}
+                  isLoading={isSettingUp}
                   icon={QrCode}
                   onClick={handleStartSetup}
                   className="w-full"
@@ -257,7 +182,7 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
                     value={verifyCode}
                     onChange={(e) => setVerifyCode(e.target.value)}
                     maxLength={6}
-                    error={enableMutation.error?.message}
+                    error={enableError?.message}
                   />
 
                   <div className="flex items-center justify-end gap-3 pt-1">
@@ -267,7 +192,7 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
                     <Button
                       type="submit"
                       variant="primary"
-                      isLoading={enableMutation.isPending}
+                      isLoading={isEnabling}
                       isDisabled={verifyCode.length < 6}
                       icon={ShieldCheck}
                     >

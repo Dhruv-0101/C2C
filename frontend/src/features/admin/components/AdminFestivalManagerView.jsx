@@ -25,7 +25,7 @@ import { Alert } from "../../../components/ui/Alert";
 import Pagination from "../../../components/common/Pagination";
 import { useFestivals } from "../../../hooks/useFestivals";
 import { FeedbackModal } from "../../../components/common/FeedbackModal";
-import { FestivalCalendarView } from "../../../components/admin/FestivalCalendarView";
+import { FestivalCalendarContainer } from "../../calendar/containers/FestivalCalendarContainer";
 import { readImageAsBase64 } from "../../../utils/file.utils";
 
 /**
@@ -261,7 +261,7 @@ export const AdminFestivalManagerView = () => {
 
       {/* Render Mode 1: Calendar Grid View */}
       {displayMode === "calendar" ? (
-        <FestivalCalendarView isAdmin={true} />
+        <FestivalCalendarContainer isAdmin={true} />
       ) : (
         /* Render Mode 2: Table / Card Management List */
         <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">

@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
 import { authApi } from "../../../services/auth.api";
 import { setCredentials } from "../../../store/slices/authSlice";
+import { getRoleRedirectPath } from "../../../utils/auth.util";
 import { TwoFactorVerifyView } from "../components/TwoFactorVerifyView";
 
 /**
@@ -34,13 +35,8 @@ export const TwoFactorVerifyContainer = () => {
       const { user, accessToken } = response.data;
       dispatch(setCredentials({ user, accessToken }));
 
-      if (user?.isSuperAdmin) {
-        navigate("/admin/dashboard", { replace: true });
-      } else if (user?.isSubAdmin) {
-        navigate("/subadmin/dashboard", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      const redirectPath = getRoleRedirectPath(user);
+      navigate(redirectPath, { replace: true });
     },
   });
 

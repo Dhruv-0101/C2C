@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../../../validations/auth.validation";
 import { useLogin } from "../hooks/useLogin";
 import { useGoogleAuth } from "../hooks/useGoogleAuth";
-import { LoginView } from "../components/LoginView";
+import { LoginForm } from "../components/LoginForm";
 
 /**
  * LoginContainer
@@ -17,6 +17,7 @@ export const LoginContainer = () => {
     error: apiError,
     successMessage: loginSuccess,
   } = useLogin();
+
   const {
     mutate: googleAuth,
     isPending: isGooglePending,
@@ -61,7 +62,7 @@ export const LoginContainer = () => {
   const isAuthenticating = isPending || isGooglePending;
 
   return (
-    <LoginView
+    <LoginForm
       register={register}
       handleSubmit={handleSubmit}
       errors={errors}
