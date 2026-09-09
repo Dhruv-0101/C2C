@@ -145,25 +145,25 @@ ENABLE_RATE_LIMITER="true"
 
 # POSTGRESQL RELATIONAL DATABASE CONFIGURATION
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgrespassword2026
+POSTGRES_PASSWORD=your_secure_postgres_password
 POSTGRES_DB=brandflow_db
 POSTGRES_PORT=5432
 
-# PRISMA ORM DATABASE CONNECTION URL (Docker internal DNS 'postgres')
-DATABASE_URL="postgresql://postgres:postgrespassword2026@postgres:5432/brandflow_db?schema=public"
+# PRISMA ORM DATABASE CONNECTION URL (Docker internal DNS 'brandflow-postgres' or 'postgres')
+DATABASE_URL="postgresql://postgres:your_secure_postgres_password@brandflow-postgres:5432/brandflow_db?schema=public"
 
 # REDIS IN-MEMORY STORE & BULLMQ QUEUE CONFIGURATION
-REDIS_HOST=redis
+REDIS_HOST=brandflow-redis
 REDIS_PORT=6379
 
 # INITIAL SUPERADMIN BOOTSTRAP CREDENTIALS
-INITIAL_ADMIN_EMAIL=admin@brandflow.com
-INITIAL_ADMIN_PASSWORD=Admin@123456
+INITIAL_ADMIN_EMAIL=admin@yourdomain.com
+INITIAL_ADMIN_PASSWORD=YourSecureAdminPassword123!
 INITIAL_ADMIN_NAME="Super Admin"
 
 # JWT AUTHENTICATION SECRETS & KEYS
-JWT_ACCESS_SECRET=super_secret_access_key_brandflow_2026
-JWT_REFRESH_SECRET=super_secret_refresh_key_brandflow_2026
+JWT_ACCESS_SECRET=your_jwt_access_secret_key_min_16_chars
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_min_16_chars
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 
@@ -172,34 +172,40 @@ CLIENT_URL=http://<YOUR_EC2_PUBLIC_IP>
 VITE_API_BASE_URL=http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1
 
 # GOOGLE OAUTH 2.0 CREDENTIALS
-GOOGLE_CLIENT_ID="your_google_client_id_here"
+GOOGLE_CLIENT_ID="your_google_client_id_here.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your_google_client_secret_here"
 
 # NODEMAILER / GMAIL SMTP EMAIL CONFIGURATION
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your_email@gmail.com"
-SMTP_PASS="your_smtp_app_password"
+SMTP_PASS="your_gmail_app_password_here"
 FROM_EMAIL="your_email@gmail.com"
 
 # CLOUDINARY MEDIA STORAGE CONFIGURATION
-CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name"
-CLOUDINARY_API_KEY="your_cloudinary_api_key"
-CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
+CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name_here"
+CLOUDINARY_API_KEY="your_cloudinary_api_key_here"
+CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"
 
 # META / INSTAGRAM GRAPH API CONFIGURATION
-META_APP_ID="your_meta_app_id"
-META_APP_SECRET="your_meta_app_secret"
+META_APP_ID="your_meta_app_id_here"
+META_APP_SECRET="your_meta_app_secret_here"
 META_REDIRECT_URI="http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1/social/meta/callback"
 
 # LINKEDIN OAUTH 2.0 CONFIGURATION
-LINKEDIN_CLIENT_ID="your_linkedin_client_id"
-LINKEDIN_CLIENT_SECRET="your_linkedin_client_secret"
+LINKEDIN_CLIENT_ID="your_linkedin_client_id_here"
+LINKEDIN_CLIENT_SECRET="your_linkedin_client_secret_here"
 LINKEDIN_REDIRECT_URI="http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1/social/linkedin/callback"
 
 # SOCIAL PUBLISHER & ENCRYPTION
-SOCIAL_TOKEN_ENCRYPTION_KEY="brandflow_social_encryption_secret_key_32b"
+SOCIAL_TOKEN_ENCRYPTION_KEY="your_32_character_encryption_key_here"
 SOCIAL_PUBLISHER_MODE="LIVE"
+
+# DUAL PAYMENT GATEWAYS (RAZORPAY & STRIPE DIRECT API)
+RAZORPAY_KEY_ID="your_razorpay_key_id_here"
+RAZORPAY_KEY_SECRET="your_razorpay_key_secret_here"
+STRIPE_PUBLISHABLE_KEY="your_stripe_publishable_key_here"
+STRIPE_SECRET_KEY="your_stripe_secret_key_here"
 ```
 
 4. **Save & Exit `nano`**:
@@ -219,39 +225,43 @@ PORT=5000
 VITE_PORT=5173
 ENABLE_RATE_LIMITER="true"
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgrespassword2026
+POSTGRES_PASSWORD=your_secure_postgres_password
 POSTGRES_DB=brandflow_db
 POSTGRES_PORT=5432
-DATABASE_URL="postgresql://postgres:postgrespassword2026@postgres:5432/brandflow_db?schema=public"
-REDIS_HOST=redis
+DATABASE_URL="postgresql://postgres:your_secure_postgres_password@brandflow-postgres:5432/brandflow_db?schema=public"
+REDIS_HOST=brandflow-redis
 REDIS_PORT=6379
-INITIAL_ADMIN_EMAIL=admin@brandflow.com
-INITIAL_ADMIN_PASSWORD=Admin@123456
+INITIAL_ADMIN_EMAIL=admin@yourdomain.com
+INITIAL_ADMIN_PASSWORD=YourSecureAdminPassword123!
 INITIAL_ADMIN_NAME="Super Admin"
-JWT_ACCESS_SECRET=super_secret_access_key_brandflow_2026
-JWT_REFRESH_SECRET=super_secret_refresh_key_brandflow_2026
+JWT_ACCESS_SECRET=your_jwt_access_secret_key_min_16_chars
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_min_16_chars
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 CLIENT_URL=http://<YOUR_EC2_PUBLIC_IP>
 VITE_API_BASE_URL=http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1
-GOOGLE_CLIENT_ID="your_google_client_id_here"
+GOOGLE_CLIENT_ID="your_google_client_id_here.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your_google_client_secret_here"
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your_email@gmail.com"
-SMTP_PASS="your_smtp_app_password"
+SMTP_PASS="your_gmail_app_password_here"
 FROM_EMAIL="your_email@gmail.com"
-CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name"
-CLOUDINARY_API_KEY="your_cloudinary_api_key"
-CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
-META_APP_ID="your_meta_app_id"
-META_APP_SECRET="your_meta_app_secret"
+CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name_here"
+CLOUDINARY_API_KEY="your_cloudinary_api_key_here"
+CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"
+META_APP_ID="your_meta_app_id_here"
+META_APP_SECRET="your_meta_app_secret_here"
 META_REDIRECT_URI="http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1/social/meta/callback"
-LINKEDIN_CLIENT_ID="your_linkedin_client_id"
-LINKEDIN_CLIENT_SECRET="your_linkedin_client_secret"
+LINKEDIN_CLIENT_ID="your_linkedin_client_id_here"
+LINKEDIN_CLIENT_SECRET="your_linkedin_client_secret_here"
 LINKEDIN_REDIRECT_URI="http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1/social/linkedin/callback"
-SOCIAL_TOKEN_ENCRYPTION_KEY="brandflow_social_encryption_secret_key_32b"
+SOCIAL_TOKEN_ENCRYPTION_KEY="your_32_character_encryption_key_here"
 SOCIAL_PUBLISHER_MODE="LIVE"
+RAZORPAY_KEY_ID="your_razorpay_key_id_here"
+RAZORPAY_KEY_SECRET="your_razorpay_key_secret_here"
+STRIPE_PUBLISHABLE_KEY="your_stripe_publishable_key_here"
+STRIPE_SECRET_KEY="your_stripe_secret_key_here"
 EOF
 ```
 

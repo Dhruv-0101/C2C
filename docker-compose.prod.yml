@@ -24,6 +24,11 @@ services:
     volumes:
       # Persistent host volume to preserve database data across container upgrades
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      default:
+        aliases:
+          - postgres
+          - brandflow-postgres
     healthcheck:
       # Verifies PostgreSQL instance is ready to serve queries
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
@@ -44,6 +49,11 @@ services:
     volumes:
       # Persistent host volume for queue state & cache snapshots
       - redis_data:/data
+    networks:
+      default:
+        aliases:
+          - redis
+          - brandflow-redis
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

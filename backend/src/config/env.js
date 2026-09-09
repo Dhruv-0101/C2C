@@ -27,7 +27,7 @@ if (activeClientUrl) {
 
 // 3. Dynamic Redis Connection Configuration
 const activeRedisHost = process.env.REDIS_HOST || (isProd
-  ? process.env.REDIS_HOST_PROD || '127.0.0.1'
+  ? process.env.REDIS_HOST_PROD || 'brandflow-redis'
   : process.env.REDIS_HOST_DEV || '127.0.0.1');
 
 const activeRedisPort = process.env.REDIS_PORT || (isProd
@@ -47,11 +47,11 @@ const activeRedisUrl = process.env.REDIS_URL || (isProd
   : process.env.REDIS_URL_DEV);
 
 const activeMetaRedirectUri = process.env.META_REDIRECT_URI || (isProd
-  ? process.env.META_REDIRECT_URI_PROD || 'https://c2c-negk.onrender.com/api/v1/social/meta/callback'
+  ? process.env.META_REDIRECT_URI_PROD || 'http://localhost:5000/api/v1/social/meta/callback'
   : process.env.META_REDIRECT_URI_DEV || 'http://localhost:5000/api/v1/social/meta/callback');
 
 const activeLinkedinRedirectUri = process.env.LINKEDIN_REDIRECT_URI || (isProd
-  ? process.env.LINKEDIN_REDIRECT_URI_PROD || 'https://c2c-negk.onrender.com/api/v1/social/linkedin/callback'
+  ? process.env.LINKEDIN_REDIRECT_URI_PROD || 'http://localhost:5000/api/v1/social/linkedin/callback'
   : process.env.LINKEDIN_REDIRECT_URI_DEV || 'http://localhost:5000/api/v1/social/linkedin/callback');
 
 
@@ -80,7 +80,7 @@ const envSchema = z.object({
   SMTP_PORT: z.string().optional().default('587'),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  FROM_EMAIL: z.string().optional().default('welcome@brandflow.ai'),
+  FROM_EMAIL: z.string().optional().default('welcome@brandflow.in'),
 
   // Redis Config
   REDIS_HOST: z.string().default('127.0.0.1'),
@@ -111,12 +111,19 @@ const envSchema = z.object({
   // LinkedIn OAuth Credentials
   LINKEDIN_CLIENT_ID: z.string().optional().default('862ua0tj5ebtmp'),
   LINKEDIN_CLIENT_SECRET: z.string().optional().default(''),
-  LINKEDIN_REDIRECT_URI: z.string().optional().default('https://c2c-negk.onrender.com/api/v1/social/linkedin/callback'),
+  LINKEDIN_REDIRECT_URI: z.string().optional().default('http://localhost:5000/api/v1/social/linkedin/callback'),
 
   // Social Encryption & Publisher Mode ('LIVE' | 'MOCK')
   SOCIAL_TOKEN_ENCRYPTION_KEY: z.string().optional().default('brandflow_social_encryption_secret_key_32b'),
   SOCIAL_PUBLISHER_MODE: z.enum(['LIVE', 'MOCK']).optional().default('MOCK'),
+
+  // Payment Gateways
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
 });
+
 
 const _env = envSchema.safeParse({
   ...process.env,
