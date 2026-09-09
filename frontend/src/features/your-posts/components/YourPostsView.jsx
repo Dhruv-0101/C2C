@@ -276,6 +276,17 @@ export const YourPostsView = ({
                   >
                     {item.status}
                   </span>
+
+                  {/* Delete / Cancel Scheduled Post Action */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 p-2 border border-rose-500/20"
+                    title="Cancel & Delete Scheduled Post"
+                    onClick={() => onDeletePost(item.postId || item.post?.id || item.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </Card>
             ))}

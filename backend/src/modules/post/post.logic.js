@@ -157,5 +157,59 @@ export const postLogic = {
     }
     return postRepository.delete(id, userId);
   },
+
+  /**
+   * Auto-Sync user's pending scheduled & draft posts when BrandKit details are updated
+   */
+  syncPendingPostsWithBrandKit: async (userId, updatedBrandKit) => {
+    const pendingPosts = await postRepository.findPendingPostsByUserId(userId);
+    let updatedCount = 0;
+
+    for (const post of pendingPosts) {
+      let config = post.userConfigJson || {};
+      if (typeof config === 'string') {
+        try {
+          config = JSON.parse(config);
+        } catch (e) {}
+      }
+
+      // Update brand details inside userConfigJson
+      config.brandKit = {
+        businessName: updatedBrandKit.businessName,
+        phone: updatedBrandKit.phone,
+        whatsapp: updatedBrandKit.whatsapp,
+        address: updatedBrandKit.address,
+        city: updatedBrandKit.city,
+        logoUrl: updatedBrandKit.logoUrl,
+        avatarUrl: updatedBrandKit.avatarUrl,
+        websiteUrl: updatedBrandKit.websiteUrl,
+        tagline: updatedBrandKit.tagline,
+      };
+
+      // Also update dynamicText and dynamicImages overrides inside userConfigJson if present
+      if (config.dynamicText) {
+        if (updatedBrandKit.phone && config.dynamicText.phone !== undefined) {
+          config.dynamicText.phone = updatedBrandKit.phone;
+        }
+        if (updatedBrandKit.address && config.dynamicText.address !== undefined) {
+          config.dynamicText.address = updatedBrandKit.address;
+        }
+        if (updatedBrandKit.businessName && config.dynamicText.businessName !== undefined) {
+          config.dynamicText.businessName = updatedBrandKit.businessName;
+        }
+      }
+
+      if (config.dynamicImages && updatedBrandKit.logoUrl) {
+        if (config.dynamicImages.logo !== undefined) {
+          config.dynamicImages.logo = updatedBrandKit.logoUrl;
+        }
+      }
+
+      await postRepository.updatePostConfigAndGraphic(post.id, config, null);
+      updatedCount++;
+    }
+
+    return { updatedCount };
+  },
 };
 

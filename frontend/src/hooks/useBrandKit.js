@@ -19,8 +19,10 @@ export const useBrandKit = () => {
 
   const saveBrandKitMutation = useMutation({
     mutationFn: (data) => brandKitApi.updateBrandKit(data),
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.BRANDKIT.MINE });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
     },
   });
 

@@ -1,5 +1,6 @@
 import { brandKitRepository } from './brandkit.repository.js';
 import { uploadLogoBuffer, uploadAvatarBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
+import { postLogic } from '../post/post.logic.js';
 
 export const brandKitLogic = {
   /**
@@ -30,6 +31,7 @@ export const brandKitLogic = {
    * - Brand Logos -> Cloudinary 'brandflow/logos'
    * - User Avatars -> Cloudinary 'brandflow/avatars'
    * - Automatically deletes previous logo/avatar from Cloudinary storage upon replacement
+   * - Automatically syncs pending scheduled & draft posts with updated brand details
    */
   updateBrandKit: async (userId, payload, fileBuffer) => {
     // Fetch existing BrandKit to check for previous logo/avatar for clean deletion
@@ -95,6 +97,18 @@ export const brandKitLogic = {
       tagline: payload.tagline || null,
     };
 
-    return brandKitRepository.upsertByUserId(userId, dataToSave);
+    const updatedBrandKit = await brandKitRepository.upsertByUserId(userId, dataToSave);
+
+    // Auto-Sync pending draft & scheduled posts with updated BrandKit details
+    try {
+      const syncResult = await postLogic.syncPendingPostsWithBrandKit(userId, updatedBrandKit);
+      return {
+        ...updatedBrandKit,
+        syncedPendingPostsCount: syncResult.updatedCount,
+      };
+    } catch (syncErr) {
+      console.warn(`⚠️ Failed to auto-sync pending posts with updated BrandKit: ${syncErr.message}`);
+      return updatedBrandKit;
+    }
   },
 };

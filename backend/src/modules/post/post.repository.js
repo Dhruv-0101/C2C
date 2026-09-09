@@ -240,6 +240,47 @@ export const postRepository = {
   },
 
   /**
+   * Find all pending draft/scheduled posts belonging to a user for BrandKit re-sync
+   */
+  findPendingPostsByUserId: async (userId) => {
+    return prisma.post.findMany({
+      where: {
+        userId,
+        status: {
+          in: ['DRAFT', 'SCHEDULED'],
+        },
+      },
+      include: {
+        scheduledPosts: true,
+        vaultItems: true,
+      },
+    });
+  },
+
+  /**
+   * Update post config JSON and optional graphic URL
+   */
+  updatePostConfigAndGraphic: async (postId, userConfigJson, finalGraphicUrl) => {
+    const data = { userConfigJson };
+    if (finalGraphicUrl) {
+      data.finalGraphicUrl = finalGraphicUrl;
+    }
+    const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data,
+    });
+
+    if (finalGraphicUrl) {
+      await prisma.vaultItem.updateMany({
+        where: { postId },
+        data: { graphicUrl: finalGraphicUrl },
+      });
+    }
+
+    return updatedPost;
+  },
+
+  /**
    * Delete post by ID
    */
   delete: async (id, userId) => {

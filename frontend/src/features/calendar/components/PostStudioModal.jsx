@@ -28,6 +28,8 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     brandKit,
     frames,
     templates,
+    isLoadingTemplates,
+    isLoadingFrames,
     saveSuccess,
     savePost,
     isSaving,
