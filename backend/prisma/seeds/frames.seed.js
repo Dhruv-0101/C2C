@@ -1,14 +1,43 @@
 /**
- * Helper to generate valid transparent SVG overlay Data URIs for frame seeds
+ * Helper to generate 100% exact transparent SVG overlay Data URIs matching configJson elements
  */
-const createSvgOverlayUri = ({
-  barFill = '#0F172A',
-  barBorder = '#EAB308',
-  barY = 920,
-  barHeight = 160,
-  isCapsule = false,
-  hasAvatarRing = true,
-}) => {
+const createSvgOverlayUri = (elementsOrConfig) => {
+  let elements = [];
+  if (Array.isArray(elementsOrConfig)) {
+    elements = elementsOrConfig;
+  } else if (elementsOrConfig?.elements && Array.isArray(elementsOrConfig.elements)) {
+    elements = elementsOrConfig.elements;
+  }
+
+  if (elements.length > 0) {
+    const svgShapes = elements
+      .filter((el) => el.slotCategory === 'STATIC_SHAPE' || el.dynamicSlot === 'NONE' || el.dynamicSlot === 'AVATAR_CIRCLE' || el.type === 'CIRCLE')
+      .map((el) => {
+        const fill = encodeURIComponent(el.fillColor || 'none');
+        const stroke = encodeURIComponent(el.borderColor || 'transparent');
+        const strokeWidth = el.borderWidth || 0;
+
+        if (el.type === 'CAPSULE') {
+          const rx = el.height / 2;
+          return `<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`;
+        } else if (el.type === 'CIRCLE') {
+          const cx = el.x + el.width / 2;
+          const cy = el.y + (el.height || el.width) / 2;
+          const r = el.width / 2;
+          const circleFill = el.dynamicSlot === 'AVATAR_CIRCLE' ? 'none' : fill;
+          return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${circleFill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`;
+        } else {
+          return `<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`;
+        }
+      })
+      .join('');
+
+    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">${svgShapes}</svg>`;
+    return `data:image/svg+xml;utf8,${svgStr}`;
+  }
+
+  // Fallback for legacy parameters
+  const { barFill = '#0F172A', barBorder = '#EAB308', barY = 920, barHeight = 160, isCapsule = false, hasAvatarRing = true } = elementsOrConfig || {};
   const encFill = encodeURIComponent(barFill);
   const encBorder = encodeURIComponent(barBorder);
 
@@ -24,16 +53,53 @@ const createSvgOverlayUri = ({
   return `data:image/svg+xml;utf8,${svgStr}`;
 };
 
-const createSvgPreviewUri = ({
-  barFill = '#0F172A',
-  barBorder = '#EAB308',
-  barY = 920,
-  barHeight = 160,
-  isCapsule = false,
-  hasAvatarRing = true,
-  sampleName = 'Sample Business Name',
-  samplePhone = '📞 +91 98765 43210',
-}) => {
+const createSvgPreviewUri = (elementsOrConfig) => {
+  let elements = [];
+  if (Array.isArray(elementsOrConfig)) {
+    elements = elementsOrConfig;
+  } else if (elementsOrConfig?.elements && Array.isArray(elementsOrConfig.elements)) {
+    elements = elementsOrConfig.elements;
+  }
+
+  if (elements.length > 0) {
+    const svgShapes = elements
+      .map((el) => {
+        const fill = encodeURIComponent(el.fillColor || 'none');
+        const stroke = encodeURIComponent(el.borderColor || 'transparent');
+        const strokeWidth = el.borderWidth || 0;
+
+        if (el.type === 'TEXT' || el.slotCategory === 'TEXT_INPUT') {
+          const fontColor = encodeURIComponent(el.fontColor || el.fillColor || '#FFFFFF');
+          const fontFamily = el.fontFamily || 'sans-serif';
+          const fontSize = el.fontSize || 24;
+          const fontWeight = el.fontWeight || 'bold';
+          const textVal = encodeURIComponent((el.iconPrefix ? `${el.iconPrefix} ` : '') + (el.text || el.defaultText || 'Sample Text'));
+          const textAnchor = el.textAlign === 'center' ? 'middle' : el.textAlign === 'right' ? 'end' : 'start';
+          const tx = el.textAlign === 'center' ? el.x + el.width / 2 : el.textAlign === 'right' ? el.x + el.width : el.x;
+          const ty = el.y + fontSize;
+
+          return `<text x="${tx}" y="${ty}" text-anchor="${textAnchor}" fill="${fontColor}" font-family="${fontFamily}" font-size="${fontSize}" font-weight="${fontWeight}">${textVal}</text>`;
+        } else if (el.type === 'CAPSULE') {
+          const rx = el.height / 2;
+          return `<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`;
+        } else if (el.type === 'CIRCLE') {
+          const cx = el.x + el.width / 2;
+          const cy = el.y + (el.height || el.width) / 2;
+          const r = el.width / 2;
+          const circleFill = el.dynamicSlot === 'AVATAR_CIRCLE' ? '%23475569' : fill;
+          return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${circleFill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`;
+        } else {
+          return `<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>`;
+        }
+      })
+      .join('');
+
+    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">${svgShapes}</svg>`;
+    return `data:image/svg+xml;utf8,${svgStr}`;
+  }
+
+  // Fallback for legacy parameters
+  const { barFill = '#0F172A', barBorder = '#EAB308', barY = 920, barHeight = 160, isCapsule = false, hasAvatarRing = true, sampleName = 'Sample Business Name', samplePhone = '📞 +91 98765 43210' } = elementsOrConfig || {};
   const encFill = encodeURIComponent(barFill);
   const encBorder = encodeURIComponent(barBorder);
 
@@ -68,15 +134,17 @@ export async function seedFrames(prisma) {
       id: 'frame-gold-border-png',
       title: 'Gold Luxury Border Frame',
       description: 'Elegant golden transparent border overlay suitable for premium business posts.',
-      overlayPngUrl: createSvgOverlayUri({ barFill: '#1E1B4B', barBorder: '#EAB308', isCapsule: true, barY: 920, barHeight: 120 }),
+      overlayPngUrl: createSvgOverlayUri({ barFill: '#0B0F17', barBorder: '#EAB308', isCapsule: false, barY: 940, barHeight: 140 }),
       isSystem: true,
       isActive: true,
       configJson: {
         elements: [
-          { id: 'shape_gold_bar', type: 'CAPSULE', slotCategory: 'STATIC_SHAPE', x: 140, y: 920, width: 800, height: 120, fillColor: '#EAB308', borderColor: '#FFFFFF', borderWidth: 3 },
-          { id: 'avatar_gold_circle', type: 'CIRCLE', slotCategory: 'IMAGE_SLOT', dynamicSlot: 'AVATAR_CIRCLE', customLabel: 'Profile Photo', x: 160, y: 930, width: 100, height: 100, borderColor: '#EAB308', borderWidth: 4 },
-          { id: 'text_gold_biz_name', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'BUSINESS_NAME', text: 'Sunrise Real Estate', x: 280, y: 940, width: 600, height: 40, fontSize: 26, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#FFFFFF', textAlign: 'left' },
-          { id: 'text_gold_phone', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'PHONE', iconPrefix: '📞', text: '+91 98765 43210', x: 280, y: 980, width: 600, height: 35, fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#FEF08A', textAlign: 'left' },
+          { id: 'el-footer-bg', type: 'RECTANGLE', slotCategory: 'STATIC_SHAPE', x: 0, y: 940, width: 1080, height: 140, fillColor: '#0B0F17', borderColor: '#EAB308', borderWidth: 3, dynamicSlot: 'NONE' },
+          { id: 'el-logo-box', type: 'RECTANGLE', slotCategory: 'IMAGE_SLOT', x: 35, y: 35, width: 120, height: 120, fillColor: '#FFFFFF', borderColor: '#CBD5E1', borderWidth: 2, borderRadius: 16, dynamicSlot: 'LOGO_BOX' },
+          { id: 'el-avatar-circle', type: 'CIRCLE', slotCategory: 'IMAGE_SLOT', dynamicSlot: 'AVATAR_CIRCLE', customLabel: 'Profile Photo', x: 35, y: 890, width: 130, height: 130, fillColor: '#1E293B', borderColor: '#EAB308', borderWidth: 5 },
+          { id: 'el-business-name', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'BUSINESS_NAME', text: 'SUNRISE REAL ESTATE', x: 185, y: 965, width: 450, height: 40, fontSize: 28, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#FFFFFF', textAlign: 'left' },
+          { id: 'el-phone-badge', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'PHONE', text: '+91 98765 43210', x: 700, y: 965, width: 340, height: 40, fontSize: 22, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#EAB308', textAlign: 'right' },
+          { id: 'el-address-text', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'ADDRESS', text: 'Business Park, MG Road, Mumbai', x: 700, y: 1010, width: 340, height: 30, fontSize: 15, fontFamily: 'Plus Jakarta Sans', fontWeight: 'normal', fontColor: '#CBD5E1', textAlign: 'right' },
         ],
       },
     },
@@ -91,10 +159,12 @@ export async function seedFrames(prisma) {
       isActive: true,
       configJson: {
         elements: [
-          { id: 'shape_corp_footer', type: 'RECTANGLE', slotCategory: 'STATIC_SHAPE', x: 0, y: 940, width: 1080, height: 140, fillColor: '#0F172A', borderColor: '#38BDF8', borderWidth: 2 },
-          { id: 'avatar_corp_circle', type: 'CIRCLE', slotCategory: 'IMAGE_SLOT', dynamicSlot: 'AVATAR_CIRCLE', x: 40, y: 955, width: 110, height: 110, borderColor: '#38BDF8', borderWidth: 3 },
-          { id: 'text_corp_biz_name', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'BUSINESS_NAME', text: 'Apex Financial Services', x: 180, y: 960, width: 500, height: 40, fontSize: 28, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#FFFFFF', textAlign: 'left' },
-          { id: 'text_corp_phone', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'PHONE', iconPrefix: '📞', text: '+91 99999 88888', x: 180, y: 1005, width: 400, height: 35, fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#38BDF8', textAlign: 'left' },
+          { id: 'shape_corp_footer', type: 'RECTANGLE', slotCategory: 'STATIC_SHAPE', x: 0, y: 940, width: 1080, height: 140, fillColor: '#0F172A', borderColor: '#38BDF8', borderWidth: 2, dynamicSlot: 'NONE' },
+          { id: 'el-logo-box-corp', type: 'RECTANGLE', slotCategory: 'IMAGE_SLOT', x: 35, y: 35, width: 120, height: 120, fillColor: '#FFFFFF', borderColor: '#CBD5E1', borderWidth: 2, borderRadius: 16, dynamicSlot: 'LOGO_BOX' },
+          { id: 'avatar_corp_circle', type: 'CIRCLE', slotCategory: 'IMAGE_SLOT', dynamicSlot: 'AVATAR_CIRCLE', x: 35, y: 890, width: 130, height: 130, fillColor: '#1E293B', borderColor: '#38BDF8', borderWidth: 4 },
+          { id: 'text_corp_biz_name', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'BUSINESS_NAME', text: 'Apex Financial Services', x: 185, y: 965, width: 450, height: 40, fontSize: 28, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#FFFFFF', textAlign: 'left' },
+          { id: 'text_corp_phone', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'PHONE', text: '+91 99999 88888', x: 700, y: 965, width: 340, height: 40, fontSize: 22, fontFamily: 'Space Grotesk', fontWeight: 'bold', fontColor: '#38BDF8', textAlign: 'right' },
+          { id: 'text_corp_address', type: 'TEXT', slotCategory: 'TEXT_INPUT', dynamicSlot: 'ADDRESS', text: 'Corporate Heights, Bandra, Mumbai', x: 700, y: 1010, width: 340, height: 30, fontSize: 15, fontFamily: 'Plus Jakarta Sans', fontWeight: 'normal', fontColor: '#94A3B8', textAlign: 'right' },
         ],
       },
     },
@@ -600,11 +670,10 @@ export async function seedFrames(prisma) {
   ];
 
   for (const frame of masterFrames) {
-    if (!frame.previewUrl) {
-      frame.previewUrl = createSvgPreviewUri({
-        sampleName: frame.title || 'Sample Business Name',
-        samplePhone: '📞 +91 98765 43210',
-      });
+    const elements = frame.configJson?.elements || [];
+    if (elements.length > 0) {
+      frame.overlayPngUrl = createSvgOverlayUri(elements);
+      frame.previewUrl = createSvgPreviewUri(elements);
     }
     await prisma.frame.upsert({
       where: { id: frame.id },

@@ -47,13 +47,13 @@ export const BrandKitView = ({
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Master Brand Identity Engine</span>
+            <span>Brand Identity Setup</span>
           </div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
-            Configure Your <span className="text-gradient">Master BrandKit</span>
+            Configure Your <span className="text-gradient">BrandKit</span>
           </h1>
           <p className="text-sm text-slate-400 max-w-2xl">
-            Save your business details, phone, logo, website, and social handles once. BrandFlow will automatically embed them into all generated social graphics!
+            Save your business logo, contact info, website, and social details once to automatically brand all your social posts.
           </p>
         </div>
       </div>
@@ -61,7 +61,7 @@ export const BrandKitView = ({
       {isLoadingBrandKit ? (
         <div className="p-16 text-center text-slate-400">
           <div className="inline-block animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full mb-3" />
-          <p className="text-sm">Loading your Master BrandKit profile...</p>
+          <p className="text-sm">Loading your BrandKit profile...</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="max-w-4xl space-y-6" noValidate>
@@ -302,7 +302,7 @@ export const BrandKitView = ({
               icon={Sparkles}
               isLoading={isSaving}
             >
-              Save AI BrandKit
+              Save BrandKit
             </Button>
           </div>
         </form>

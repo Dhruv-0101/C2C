@@ -156,22 +156,42 @@ export const PostStudioContainer = () => {
     showAddress: true,
   });
 
+  const extractSampleText = (frame, slotName) => {
+    if (!frame) return "";
+    let rawConfig = frame.configJson || frame.blueprint || frame.layoutConfig || frame.jsonConfig || frame.config;
+    if (typeof rawConfig === "string") {
+      try {
+        rawConfig = JSON.parse(rawConfig);
+      } catch (e) {}
+    }
+    const elements = Array.isArray(rawConfig)
+      ? rawConfig
+      : (rawConfig?.elements && Array.isArray(rawConfig.elements) ? rawConfig.elements : []);
+    const match = elements.find((el) => el.dynamicSlot === slotName);
+    return match?.text || match?.defaultText || "";
+  };
+
   // Populate customDetails whenever brandKit or selectedFrame loads
   useEffect(() => {
+    const frameBizName = extractSampleText(selectedFrame, "BUSINESS_NAME");
+    const framePhone = extractSampleText(selectedFrame, "PHONE");
+    const frameAddress = extractSampleText(selectedFrame, "ADDRESS");
+    const frameTagline = extractSampleText(selectedFrame, "TAGLINE");
+
     setCustomDetails((prev) => ({
       ...prev,
-      businessName: prev.businessName || brandKit?.businessName || "Sunrise Real Estate",
-      phone: prev.phone || brandKit?.phone || brandKit?.whatsapp || "+91 98765 43210",
-      whatsapp: prev.whatsapp || brandKit?.whatsapp || "+91 98765 43210",
-      email: prev.email || brandKit?.email || "contact@sunriserealestate.com",
-      instagramHandle: prev.instagramHandle || brandKit?.instagramHandle || "@sunriserealestate",
-      facebookHandle: prev.facebookHandle || brandKit?.facebookHandle || "sunriserealestate",
-      address: prev.address || brandKit?.address || "Business Park, MG Road, Mumbai",
-      city: prev.city || brandKit?.city || "Mumbai",
-      state: prev.state || brandKit?.state || "Maharashtra",
-      country: prev.country || brandKit?.country || "India",
-      websiteUrl: prev.websiteUrl || brandKit?.websiteUrl || "https://sunriserealestate.com",
-      tagline: prev.tagline || brandKit?.tagline || "Premium Luxury Homes & Commercial Spaces",
+      businessName: brandKit?.businessName || frameBizName || "Sunrise Real Estate",
+      phone: brandKit?.phone || brandKit?.whatsapp || framePhone || "+91 98765 43210",
+      whatsapp: brandKit?.whatsapp || framePhone || "+91 98765 43210",
+      email: brandKit?.email || "contact@business.com",
+      instagramHandle: brandKit?.instagramHandle || "@yourbrand",
+      facebookHandle: brandKit?.facebookHandle || "yourbrand",
+      address: brandKit?.address || frameAddress || "Business Park, MG Road, Mumbai",
+      city: brandKit?.city || "Mumbai",
+      state: brandKit?.state || "Maharashtra",
+      country: brandKit?.country || "India",
+      websiteUrl: brandKit?.websiteUrl || "https://yourbusiness.com",
+      tagline: brandKit?.tagline || frameTagline || "Premium Luxury Homes & Commercial Spaces",
     }));
   }, [brandKit, selectedFrame]);
 

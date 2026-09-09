@@ -354,8 +354,8 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
 
                       {/* PNG Frame Thumbnail Image */}
                       <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-950/80 border border-slate-800 p-1">
-                        {f.overlayPngUrl ? (
-                          <img src={f.overlayPngUrl} alt={f.title} className="w-full h-full object-contain" />
+                        {(f.previewUrl || f.overlayPngUrl) ? (
+                          <img src={f.previewUrl || f.overlayPngUrl} alt={f.title} className="w-full h-full object-contain" />
                         ) : (
                           <span className="text-[10px] text-slate-500">PNG</span>
                         )}

@@ -114,10 +114,10 @@ export const BrandKitContainer = () => {
         base64Logo: base64Logo || undefined,
         base64Avatar: base64Avatar || undefined,
       });
-      setSuccessMsg("🎉 AI BrandKit saved successfully! All future posts will be branded automatically.");
+      setSuccessMsg("🎉 BrandKit saved successfully! All future posts will be branded automatically.");
       setTimeout(() => setSuccessMsg(""), 5000);
     } catch (err) {
-      setErrorMsg(err?.message || saveError?.message || "Failed to save AI BrandKit.");
+      setErrorMsg(err?.message || saveError?.message || "Failed to save BrandKit.");
     }
   };
 

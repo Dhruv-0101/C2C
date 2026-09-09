@@ -313,7 +313,7 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
                         }`}
                       >
                         <img
-                          src={frame.overlayPngUrl}
+                          src={frame.previewUrl || frame.overlayPngUrl}
                           alt={frame.title}
                           className="w-full h-full object-contain group-hover:scale-105 transition"
                         />

@@ -56,10 +56,10 @@ export const DashboardView = ({
 
         <div className="flex items-center gap-3 shrink-0">
           <Button variant="primary" icon={Plus} onClick={() => handleOpenNewPost(null)}>
-            New Post Studio
+            New Post
           </Button>
           <Button variant="outline" icon={Zap} onClick={() => navigate("/brandkit")}>
-            Master BrandKit
+            Configure BrandKit
           </Button>
         </div>
       </div>
@@ -134,7 +134,7 @@ export const DashboardView = ({
                 <Building2 className="w-4 h-4" />
               </div>
             </div>
-            <p className="font-heading text-2xl font-extrabold text-emerald-400">Configured</p>
+            <p className="font-heading text-2xl font-extrabold text-emerald-400">Brand Profile</p>
             <p className="text-[11px] text-emerald-400 font-medium">
               <span>Manage Brand Assets &rarr;</span>
             </p>
@@ -152,8 +152,8 @@ export const DashboardView = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             {
-              title: "AI Post Studio",
-              desc: "Generate branded graphics & custom post copy",
+              title: "Post Studio",
+              desc: "Create and design branded social posts",
               path: "/create-post",
               icon: Wand2,
               color: "text-amber-400",
@@ -161,7 +161,7 @@ export const DashboardView = ({
             },
             {
               title: "Festival Content Calendar",
-              desc: "Explore upcoming events, holidays & marketing prompts",
+              desc: "View upcoming events, holidays & celebrations",
               path: "/calendar",
               icon: Calendar,
               color: "text-teal-400",
@@ -169,7 +169,7 @@ export const DashboardView = ({
             },
             {
               title: "Brand Frames Studio",
-              desc: "Customize photo placeholders & badge overlays",
+              desc: "Customize frames, photo slots & logo layouts",
               path: "/frames",
               icon: Layers,
               color: "text-indigo-400",
@@ -177,23 +177,23 @@ export const DashboardView = ({
             },
             {
               title: "Design System & Palettes",
-              desc: "Adjust brand color schemes & typography presets",
+              desc: "Choose brand color themes & visual styles",
               path: "/design-styles",
               icon: Palette,
               color: "text-rose-400",
               borderColor: "hover:border-rose-500/50",
             },
             {
-              title: "Master BrandKit Setup",
-              desc: "Update logo, contact phone, address & social tags",
+              title: "BrandKit Setup",
+              desc: "Update business logo, phone number & details",
               path: "/brandkit",
               icon: Building2,
               color: "text-purple-400",
               borderColor: "hover:border-purple-500/50",
             },
             {
-              title: "Media Asset Vault",
-              desc: "Access uploaded images & generated campaign media",
+              title: "Graphic Vault",
+              desc: "Access uploaded images & saved graphics",
               path: "/vault",
               icon: Archive,
               color: "text-emerald-400",
@@ -225,18 +225,18 @@ export const DashboardView = ({
         </div>
       </div>
 
-      {/* Recent Campaign Activity */}
+      {/* Recent Posts Activity */}
       <Card className="border-[#2C384E] bg-[#131B2A] space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-heading font-bold text-lg text-white">Recent AI Campaigns & Graphics</h3>
+          <h3 className="font-heading font-bold text-lg text-white">Recent Posts & Graphics</h3>
           <Button variant="primary" icon={Plus} className="text-xs" onClick={() => handleOpenNewPost(null)}>
-            Create New Campaign
+            Create New Post
           </Button>
         </div>
 
         {recentPosts.length === 0 ? (
           <p className="text-xs text-slate-400 py-4 text-center">
-            No recent graphics yet. Click "Create New Campaign" to start!
+            No recent graphics yet. Click "Create New Post" to start!
           </p>
         ) : (
           <div className="space-y-3">

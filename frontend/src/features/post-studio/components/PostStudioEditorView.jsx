@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   Sparkles,
@@ -18,6 +18,7 @@ import {
   ZoomIn,
   Maximize2,
   X,
+  Trash2,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -69,6 +70,8 @@ export const PostStudioEditorView = ({
   handleDownloadHD,
   onOpenPublisherModal,
 }) => {
+  const customFileInputRef = useRef(null);
+
   // Step 1 Category Pagination (5 per page) & Search State
   const [catSearch, setCatSearch] = useState("");
   const [catPage, setCatPage] = useState(1);
@@ -99,6 +102,21 @@ export const PostStudioEditorView = ({
   // Zoomed Frame Lightbox Modal State
   const [zoomedFrame, setZoomedFrame] = useState(null);
 
+  // Lock body & document scroll completely when Zoom Lightbox Modal is open
+  useEffect(() => {
+    if (zoomedFrame) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [zoomedFrame]);
+
   const steps = [
     { num: 1, title: "Select Base Graphic" },
     { num: 2, title: "Choose Brand Frame" },
@@ -113,10 +131,10 @@ export const PostStudioEditorView = ({
         <div>
           <h1 className="font-heading font-extrabold text-2xl text-white flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-amber-400" />
-            <span>AI Post Studio & Brand Frame Engine</span>
+            <span>Post Studio & Brand Frame Engine</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Combine master graphic backgrounds with custom brand frames & your AI BrandKit.
+            Combine master graphic backgrounds with custom brand frames & your BrandKit.
           </p>
         </div>
 
@@ -165,11 +183,30 @@ export const PostStudioEditorView = ({
 
               {/* Custom Base Image File Upload Option */}
               <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2">
-                <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Upload className="w-4 h-4 text-amber-400" />
-                  <span>Or Upload Custom 1080x1080 Background Image</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Upload className="w-4 h-4 text-amber-400" />
+                    <span>Or Upload Custom 1080x1080 Background Image</span>
+                  </label>
+                  {customBaseImage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomBaseImage(null);
+                        if (customFileInputRef.current) {
+                          customFileInputRef.current.value = "";
+                        }
+                      }}
+                      className="text-xs text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/30 transition cursor-pointer"
+                      title="Remove custom uploaded image"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove Custom Image</span>
+                    </button>
+                  )}
+                </div>
                 <input
+                  ref={customFileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={(e) => {
@@ -233,7 +270,7 @@ export const PostStudioEditorView = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5 pt-0.5 custom-scrollbar [::-webkit-scrollbar]:h-1.5 [::-webkit-scrollbar-thumb]:bg-[#2C384E] [::-webkit-scrollbar-thumb]:rounded-full [::-webkit-scrollbar-track]:bg-transparent">
                   <button
                     type="button"
                     onClick={() => {
@@ -322,7 +359,7 @@ export const PostStudioEditorView = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5 pt-0.5 custom-scrollbar [::-webkit-scrollbar]:h-1.5 [::-webkit-scrollbar-thumb]:bg-[#2C384E] [::-webkit-scrollbar-thumb]:rounded-full [::-webkit-scrollbar-track]:bg-transparent">
                   <button
                     type="button"
                     onClick={() => {
@@ -390,7 +427,7 @@ export const PostStudioEditorView = ({
                             setSelectedCategory("");
                             setTemplatePage(1);
                           }}
-                          className="hover:text-white font-bold ml-0.5"
+                          className="hover:text-white"
                         >
                           ×
                         </button>
@@ -405,59 +442,58 @@ export const PostStudioEditorView = ({
                             setSelectedFestival("");
                             setTemplatePage(1);
                           }}
-                          className="hover:text-white font-bold ml-0.5"
+                          className="hover:text-white"
                         >
                           ×
                         </button>
                       </span>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategory("");
-                        setSelectedFestival("");
-                        setTemplatePage(1);
-                      }}
-                      className="text-[11px] text-amber-400 hover:underline font-semibold ml-1"
-                    >
-                      Clear All
-                    </button>
                   </div>
                 )}
               </div>
 
-              {/* Clean 6-Item Grid */}
+              {/* 4. Grid of Graphic Background Templates */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[220px]">
                 {isLoadingTemplates ? (
-                  <div className="col-span-3 p-12 text-center text-slate-400 text-xs">Loading base templates...</div>
+                  <div className="col-span-3 p-12 text-center text-slate-400 text-xs">Loading templates...</div>
                 ) : templates.length === 0 ? (
                   <div className="col-span-3 p-8 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
-                    No matching templates found.
+                    No templates found for selected category/filter.
                   </div>
                 ) : (
-                  templates.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        setSelectedTemplateId(t.id);
-                        setCustomBaseImage(null);
-                      }}
-                      className={`relative aspect-square rounded-xl border overflow-hidden transition group ${
-                        selectedTemplateId === t.id && !customBaseImage
-                          ? "border-amber-500 ring-2 ring-amber-500/40"
-                          : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
-                      }`}
-                    >
-                      <img
-                        src={t.baseImageUrl || t.imageUrl || t.fileUrl}
-                        alt={t.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition bg-[#0B0F17]"
-                      />
-                      <div className="absolute inset-x-0 bottom-0 bg-black/75 p-1.5 truncate">
-                        <p className="text-[10px] font-bold text-white truncate">{t.title}</p>
-                      </div>
-                    </button>
-                  ))
+                  templates.map((tpl) => {
+                    const isSelected = selectedTemplateId === tpl.id && !customBaseImage;
+                    const imgUrl = tpl.imageUrl || tpl.baseImageUrl || tpl.fileUrl || tpl.bannerUrl;
+                    return (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTemplateId(tpl.id);
+                          setCustomBaseImage(null);
+                        }}
+                        className={`relative aspect-square rounded-xl border p-1.5 overflow-hidden transition group text-left ${
+                          isSelected
+                            ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50 shadow-glow"
+                            : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
+                        }`}
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={tpl.title}
+                          className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition duration-200"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                          <p className="text-[11px] font-bold text-white truncate">{tpl.title}</p>
+                        </div>
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 p-1 rounded-full bg-amber-500 text-slate-950 font-bold shadow-lg">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })
                 )}
               </div>
 
@@ -505,63 +541,46 @@ export const PostStudioEditorView = ({
                   </div>
                 ) : (
                   frames.map((frame) => (
-                    <button
-                      key={frame.id}
-                      onClick={() => setSelectedFrame(frame)}
-                      className={`relative aspect-square rounded-xl border p-2 overflow-hidden transition group flex flex-col justify-between text-left ${
-                        selectedFrame?.id === frame.id
-                          ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50"
-                          : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
-                      }`}
-                    >
-                      {/* Background Frame Preview Overlay (Renders previewUrl WITH sample text) */}
-                      <div className="absolute inset-0 bg-[#0B0F17] overflow-hidden pointer-events-none p-1">
-                        {(frame.previewUrl || frame.overlayPngUrl) && (
-                          <img
-                            src={frame.previewUrl || frame.overlayPngUrl}
-                            alt={frame.title}
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                            }}
-                            className="w-full h-full object-contain relative z-10 opacity-100"
-                          />
-                        )}
-                      </div>
-
-                      {/* Top Header Row with Badge & Zoom Button */}
-                      <div className="relative z-20 w-full flex items-center justify-between pointer-events-auto">
-                        <div className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[9px] font-extrabold uppercase backdrop-blur-md">
-                          {frame.isSystem ? "✨ Brand Frame" : "Custom"}
+                    <div key={frame.id} className="flex flex-col gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedFrame(frame);
+                          setZoomedFrame(frame);
+                        }}
+                        className={`relative aspect-square rounded-xl border p-1.5 overflow-hidden transition group flex flex-col items-center justify-center ${
+                          selectedFrame?.id === frame.id
+                            ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50 shadow-glow"
+                            : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
+                        }`}
+                        title="Click to select and preview frame"
+                      >
+                        {/* Frame Image ONLY - 100% clean without any badges or text overlays */}
+                        <div className="w-full h-full bg-[#0B0F17] overflow-hidden rounded-lg flex items-center justify-center">
+                          {(frame.previewUrl || frame.overlayPngUrl) ? (
+                            <img
+                              src={frame.previewUrl || frame.overlayPngUrl}
+                              alt={frame.title}
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                              className="w-full h-full object-contain transition-transform duration-200 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400">
+                              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-sm shadow-md">
+                                {frame.title?.substring(0, 2).toUpperCase() || "FR"}
+                              </div>
+                            </div>
+                          )}
                         </div>
+                      </button>
 
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setZoomedFrame(frame);
-                          }}
-                          className="p-1 rounded-lg bg-black/70 hover:bg-amber-500 text-slate-300 hover:text-slate-950 border border-slate-700/60 shadow-lg backdrop-blur-md transition group-hover:scale-110"
-                          title="Zoom / Preview Frame in Fullscreen"
-                        >
-                          <ZoomIn className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* Center Decorative Initials (Fallback ONLY if no image exists) */}
-                      {!frame.previewUrl && !frame.overlayPngUrl && (
-                        <div className="relative z-20 self-center my-auto flex flex-col items-center gap-1 text-slate-300 group-hover:scale-110 transition-transform">
-                          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-sm shadow-md">
-                            {frame.title?.substring(0, 2).toUpperCase() || "FR"}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Bottom Overlay Label */}
-                      <div className="relative z-20 w-full bg-black/85 backdrop-blur-sm p-1.5 rounded-lg border border-[#2C384E] text-left">
-                        <p className="text-[11px] font-extrabold text-white truncate">{frame.title}</p>
-                        <p className="text-[9px] text-slate-400 truncate">{frame.description || "Custom Brand Frame"}</p>
-                      </div>
-                    </button>
+                      {/* ONLY Frame Title BELOW the frame image box (frame ke niche) */}
+                      <p className="text-xs font-bold text-slate-200 truncate text-center px-1">
+                        {frame.title}
+                      </p>
+                    </div>
                   ))
                 )}
               </div>
@@ -592,94 +611,238 @@ export const PostStudioEditorView = ({
             </Card>
           )}
 
-          {/* STEP 3: BRANDKIT OVERRIDES */}
-          {currentStep === 3 && (
-            <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
-              <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
-                <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-amber-400" />
-                  <span>Step 3: Business & Contact Details Overrides</span>
-                </h3>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCustomDetails((prev) => ({
-                      ...prev,
-                      businessName: brandKit?.businessName || "Sunrise Real Estate",
-                      phone: brandKit?.phone || brandKit?.whatsapp || "+91 98765 43210",
-                      address: brandKit?.address || "Business Park, MG Road, Mumbai",
-                      tagline: brandKit?.tagline || "Premium Luxury Homes & Commercial Spaces",
-                    }))
+          {/* STEP 3: BRANDKIT OVERRIDES (100% DYNAMIC BASED ON FRAME CONFIGJSON) */}
+          {currentStep === 3 && (() => {
+            // Dynamically extract text input fields and image slot toggles configured in selectedFrame
+            const getDynamicFrameFields = (frame) => {
+              let rawConfig = frame?.configJson || frame?.blueprint || frame?.layoutConfig || frame?.jsonConfig || frame?.config;
+              if (typeof rawConfig === "string") {
+                try {
+                  rawConfig = JSON.parse(rawConfig);
+                } catch (e) {}
+              }
+              let elements = Array.isArray(rawConfig)
+                ? rawConfig
+                : (rawConfig?.elements && Array.isArray(rawConfig.elements) ? rawConfig.elements : []);
+
+              if (!elements || elements.length === 0) {
+                elements = [
+                  { id: "el-logo-box", type: "RECTANGLE", slotCategory: "IMAGE_SLOT", dynamicSlot: "LOGO_BOX", name: "Brand Logo" },
+                  { id: "el-avatar-circle", type: "CIRCLE", slotCategory: "IMAGE_SLOT", dynamicSlot: "AVATAR_CIRCLE", customLabel: "Profile Photo", name: "Profile Photo" },
+                  { id: "el-business-name", type: "TEXT", slotCategory: "TEXT_INPUT", dynamicSlot: "BUSINESS_NAME", name: "Business Name", text: "SUNRISE REAL ESTATE" },
+                  { id: "el-phone-badge", type: "TEXT", slotCategory: "TEXT_INPUT", dynamicSlot: "PHONE", name: "Phone Number", text: "+91 98765 43210" },
+                  { id: "el-address-text", type: "TEXT", slotCategory: "TEXT_INPUT", dynamicSlot: "ADDRESS", name: "Address / Location", text: "Business Park, MG Road, Mumbai" },
+                ];
+              }
+
+              const textFields = [];
+              const imageToggles = [];
+              const seenKeys = new Set();
+
+              elements.forEach((el) => {
+                const slot = el.dynamicSlot;
+
+                if (
+                  el.slotCategory === "IMAGE_SLOT" ||
+                  el.type === "IMAGE_SLOT" ||
+                  slot === "LOGO_BOX" ||
+                  slot === "AVATAR_CIRCLE" ||
+                  slot === "CUSTOM_IMAGE"
+                ) {
+                  let key = "showLogo";
+                  let label = "Render Brand Logo";
+                  let type = "LOGO";
+                  let fieldKey = "showLogo";
+
+                  if (slot === "AVATAR_CIRCLE") {
+                    key = "showAvatar";
+                    label = el.customLabel || el.name || "Render Profile / Doctor Photo";
+                    type = "AVATAR";
+                    fieldKey = "showAvatar";
+                  } else if (slot === "LOGO_BOX") {
+                    key = "showLogo";
+                    label = el.customLabel || el.name || "Render Brand Logo";
+                    type = "LOGO";
+                    fieldKey = "showLogo";
+                  } else {
+                    key = el.id || el.fieldKey || "custom_image";
+                    label = el.customLabel || el.name || "Custom Image Overlay";
+                    type = "CUSTOM";
+                    fieldKey = key;
                   }
-                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition flex items-center gap-1"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Auto-Fill AI BrandKit</span>
-                </button>
-              </div>
 
-              <div className="space-y-4">
-                <Input
-                  label="Business Name"
-                  value={customDetails.businessName}
-                  onChange={(e) => setCustomDetails({ ...customDetails, businessName: e.target.value })}
-                />
-                <Input
-                  label="Phone / WhatsApp Number"
-                  value={customDetails.phone}
-                  onChange={(e) => setCustomDetails({ ...customDetails, phone: e.target.value })}
-                />
-                <Input
-                  label="Address / Location"
-                  value={customDetails.address}
-                  onChange={(e) => setCustomDetails({ ...customDetails, address: e.target.value })}
-                />
-                <Input
-                  label="Tagline / Offer Message"
-                  value={customDetails.tagline}
-                  onChange={(e) => setCustomDetails({ ...customDetails, tagline: e.target.value })}
-                />
-              </div>
+                  if (!seenKeys.has(fieldKey)) {
+                    seenKeys.add(fieldKey);
+                    imageToggles.push({ id: el.id, key, label, type, fieldKey, rawElement: el });
+                  }
+                } else if (
+                  el.type === "TEXT" ||
+                  el.slotCategory === "TEXT_INPUT" ||
+                  (slot && slot !== "NONE")
+                ) {
+                  let fieldKey = "businessName";
+                  let label = "Business Name";
 
-              {/* Toggles for Canvas Visibility */}
-              <div className="space-y-2 pt-2">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Live Canvas Element Toggles
-                </label>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={customDetails.showLogo}
-                      onChange={(e) => setCustomDetails({ ...customDetails, showLogo: e.target.checked })}
-                      className="rounded accent-amber-500"
-                    />
-                    <span>Render Brand Logo</span>
-                  </label>
+                  if (slot === "BUSINESS_NAME") {
+                    fieldKey = "businessName";
+                    label = "Business Name";
+                  } else if (slot === "PHONE") {
+                    fieldKey = "phone";
+                    label = "Phone / WhatsApp Number";
+                  } else if (slot === "WHATSAPP") {
+                    fieldKey = "whatsapp";
+                    label = "WhatsApp Number";
+                  } else if (slot === "ADDRESS") {
+                    fieldKey = "address";
+                    label = "Address / Location";
+                  } else if (slot === "TAGLINE") {
+                    fieldKey = "tagline";
+                    label = "Tagline / Offer Message";
+                  } else if (slot === "EMAIL") {
+                    fieldKey = "email";
+                    label = "Email Address";
+                  } else if (slot === "WEBSITE") {
+                    fieldKey = "websiteUrl";
+                    label = "Website URL";
+                  } else if (slot === "INSTAGRAM") {
+                    fieldKey = "instagramHandle";
+                    label = "Instagram Handle";
+                  } else if (slot === "FACEBOOK") {
+                    fieldKey = "facebookHandle";
+                    label = "Facebook Handle";
+                  } else if (slot === "CITY") {
+                    fieldKey = "city";
+                    label = "City";
+                  } else if (slot === "STATE") {
+                    fieldKey = "state";
+                    label = "State";
+                  } else if (slot === "COUNTRY") {
+                    fieldKey = "country";
+                    label = "Country";
+                  } else {
+                    fieldKey = el.fieldKey || el.id || (el.name ? el.name.toLowerCase().replace(/[^a-z0-9]/g, "_") : "customText");
+                    label = el.customLabel || el.name || el.text || "Custom Text Field";
+                  }
 
-                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={customDetails.showAvatar}
-                      onChange={(e) => setCustomDetails({ ...customDetails, showAvatar: e.target.checked })}
-                      className="rounded accent-amber-500"
-                    />
-                    <span>Render Doctor Photo</span>
-                  </label>
+                  if (!seenKeys.has(fieldKey)) {
+                    seenKeys.add(fieldKey);
+                    textFields.push({ id: el.id, fieldKey, label, placeholder: el.text || el.defaultText || "", rawElement: el });
+                  }
+                }
+              });
+
+              return { textFields, imageToggles };
+            };
+
+            const { textFields, imageToggles } = getDynamicFrameFields(selectedFrame);
+
+            return (
+              <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
+                <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+                  <div>
+                    <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-amber-400" />
+                      <span>Step 3: Business & Contact Details Overrides</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Dynamically loaded from frame blueprint ({selectedFrame?.title || "Default Frame"}).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...customDetails };
+                      textFields.forEach((tf) => {
+                        const fk = tf.fieldKey;
+                        if (fk === "businessName") updated.businessName = brandKit?.businessName || tf.placeholder || "Sunrise Real Estate";
+                        else if (fk === "phone") updated.phone = brandKit?.phone || brandKit?.whatsapp || tf.placeholder || "+91 98765 43210";
+                        else if (fk === "whatsapp") updated.whatsapp = brandKit?.whatsapp || tf.placeholder || "+91 98765 43210";
+                        else if (fk === "address") updated.address = brandKit?.address || tf.placeholder || "Business Park, MG Road, Mumbai";
+                        else if (fk === "tagline") updated.tagline = brandKit?.tagline || tf.placeholder || "Premium Luxury Homes & Commercial Spaces";
+                        else if (fk === "email") updated.email = brandKit?.email || tf.placeholder || "contact@business.com";
+                        else if (fk === "websiteUrl") updated.websiteUrl = brandKit?.websiteUrl || tf.placeholder || "https://yourbusiness.com";
+                        else if (fk === "instagramHandle") updated.instagramHandle = brandKit?.instagramHandle || tf.placeholder || "@yourbrand";
+                        else if (fk === "facebookHandle") updated.facebookHandle = brandKit?.facebookHandle || tf.placeholder || "yourbrand";
+                        else if (fk === "city") updated.city = brandKit?.city || tf.placeholder || "Mumbai";
+                        else if (fk === "state") updated.state = brandKit?.state || tf.placeholder || "Maharashtra";
+                        else if (fk === "country") updated.country = brandKit?.country || tf.placeholder || "India";
+                        else if (tf.placeholder) updated[fk] = tf.placeholder;
+                      });
+                      setCustomDetails(updated);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition flex items-center gap-1 shrink-0"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Auto-Fill AI BrandKit</span>
+                  </button>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-[#2C384E]">
-                <Button variant="outline" onClick={() => setCurrentStep(2)}>
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
-                </Button>
-                <Button variant="primary" onClick={() => setCurrentStep(4)}>
-                  <span>Next: Publish & Export</span>
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-            </Card>
-          )}
+                {/* DYNAMIC TEXT INPUT FIELDS BASED ON FRAME CONFIGJSON */}
+                <div className="space-y-4">
+                  {textFields.length === 0 ? (
+                    <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-400 text-xs text-center font-medium">
+                      This frame has no dynamic text elements configured.
+                    </div>
+                  ) : (
+                    textFields.map((tf) => (
+                      <Input
+                        key={tf.fieldKey}
+                        label={tf.label}
+                        placeholder={tf.placeholder}
+                        value={customDetails[tf.fieldKey] !== undefined ? customDetails[tf.fieldKey] : tf.placeholder}
+                        onChange={(e) =>
+                          setCustomDetails((prev) => ({
+                            ...prev,
+                            [tf.fieldKey]: e.target.value,
+                          }))
+                        }
+                      />
+                    ))
+                  )}
+                </div>
+
+                {/* DYNAMIC IMAGE TOGGLES & CUSTOM UPLOADERS BASED ON FRAME CONFIGJSON */}
+                {imageToggles.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-[#2C384E]">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Live Canvas Image & Badge Toggles
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {imageToggles.map((it) => (
+                        <label
+                          key={it.fieldKey}
+                          className="flex items-center gap-2 p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 cursor-pointer hover:border-slate-500 transition"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={customDetails[it.fieldKey] !== undefined ? customDetails[it.fieldKey] : true}
+                            onChange={(e) =>
+                              setCustomDetails((prev) => ({
+                                ...prev,
+                                [it.fieldKey]: e.target.checked,
+                              }))
+                            }
+                            className="rounded accent-amber-500"
+                          />
+                          <span className="font-semibold">{it.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-3 border-t border-[#2C384E]">
+                  <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                    <ChevronLeft className="w-4 h-4 mr-1" /> Back
+                  </Button>
+                  <Button variant="primary" onClick={() => setCurrentStep(4)}>
+                    <span>Next: Publish & Export</span>
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
+              </Card>
+            );
+          })()}
 
           {/* STEP 4: EXPORT & PUBLISH */}
           {currentStep === 4 && (
@@ -752,7 +915,7 @@ export const PostStudioEditorView = ({
         </div>
 
         {/* RIGHT COLUMN (6 Cols): Persistent Live Real-Time Preview Stage */}
-        <div className="lg:col-span-6 bg-[#0B0F17] border border-[#2C384E] p-6 rounded-2xl flex flex-col items-center justify-center relative shadow-2xl min-h-[520px]">
+        <div className="lg:col-span-6 bg-[#0B0F17] border border-[#2C384E] p-6 rounded-2xl flex flex-col items-center justify-center relative shadow-2xl min-h-[520px] lg:sticky lg:top-6 self-start">
           <div className="absolute top-4 left-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 text-xs font-extrabold shadow-lg">
             <Zap className="w-4 h-4 fill-amber-400" />
             <span>✨ What's Cooking: Live Real-Time Preview</span>
@@ -781,59 +944,60 @@ export const PostStudioEditorView = ({
         createPortal(
           <div
             onClick={() => setZoomedFrame(null)}
-            className="fixed inset-0 w-screen h-screen z-[99999] flex flex-col items-center justify-center p-4 sm:p-8 bg-black/95 backdrop-blur-lg animate-in fade-in duration-200 select-none cursor-zoom-out"
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            className="fixed inset-0 w-full h-full z-[99999] flex flex-col items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-lg animate-in fade-in duration-200 select-none overflow-hidden touch-none cursor-zoom-out"
           >
-            {/* Center High-Res Frame Image */}
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-2xl max-h-[68vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/40 bg-[#0B0F17] flex items-center justify-center my-auto mb-20 cursor-default p-2"
-            >
-              <img
-                src={zoomedFrame.previewUrl || zoomedFrame.overlayPngUrl}
-                alt={zoomedFrame.title}
-                className="w-full h-full object-contain rounded-xl"
-              />
-            </div>
-
-            {/* Lightbox Bottom Details Bar */}
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="absolute bottom-5 left-4 right-4 max-w-2xl mx-auto flex items-center justify-between z-10 bg-[#131B2A]/95 backdrop-blur-xl px-6 py-4 rounded-2xl border border-[#2C384E] shadow-2xl"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                  <Maximize2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-extrabold text-base text-white truncate max-w-xs">
-                    {zoomedFrame.title}
-                  </h3>
-                  <p className="text-xs text-slate-400 truncate">
-                    {zoomedFrame.description || "Custom Brand Frame with sample text details"}
-                  </p>
-                </div>
+            <div className="flex flex-col items-center justify-center w-full max-w-[520px] gap-4 max-h-[90vh] overflow-hidden">
+              {/* Center High-Res Frame Image */}
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-h-[58vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/40 bg-[#0B0F17] flex items-center justify-center cursor-default p-2"
+              >
+                <img
+                  src={zoomedFrame.previewUrl || zoomedFrame.overlayPngUrl}
+                  alt={zoomedFrame.title}
+                  className="max-w-full max-h-full object-contain rounded-xl"
+                />
               </div>
 
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="primary"
-                  icon={Sparkles}
-                  onClick={() => {
-                    setSelectedFrame(zoomedFrame);
-                    setZoomedFrame(null);
-                  }}
-                  className="py-2 text-xs font-extrabold bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950 border-0 shadow-lg"
-                >
-                  ⚡ Select & Apply Frame
-                </Button>
+              {/* Lightbox Bottom Details Bar */}
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full flex items-center justify-between gap-3 sm:gap-4 z-10 bg-[#131B2A]/95 backdrop-blur-xl px-4 py-3 sm:px-6 sm:py-3.5 rounded-2xl border border-[#2C384E] shadow-2xl overflow-hidden shrink-0"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
+                    <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-heading font-extrabold text-sm sm:text-base text-white truncate">
+                      {zoomedFrame.title}
+                    </h3>
+                  </div>
+                </div>
 
-                <button
-                  onClick={() => setZoomedFrame(null)}
-                  className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer border border-[#2C384E]"
-                  title="Close Zoom Preview"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <Button
+                    variant="primary"
+                    icon={Sparkles}
+                    onClick={() => {
+                      setSelectedFrame(zoomedFrame);
+                      setZoomedFrame(null);
+                    }}
+                    className="px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-extrabold bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950 border-0 shadow-lg shrink-0 whitespace-nowrap"
+                  >
+                    Select & Apply Frame
+                  </Button>
+
+                  <button
+                    onClick={() => setZoomedFrame(null)}
+                    className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer border border-[#2C384E] shrink-0"
+                    title="Close Zoom Preview"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>,

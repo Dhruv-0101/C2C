@@ -28,8 +28,18 @@ import { useLogout } from '../../features/auth/hooks/useLogout';
 import { TwoFactorSettingsModal } from './TwoFactorSettingsModal';
 import { ThemeToggle } from './ThemeToggle';
 
-export const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
+  const [localCollapsed, setLocalCollapsed] = useState(false);
+  const isCollapsed = propCollapsed !== undefined ? propCollapsed : localCollapsed;
+
+  const handleToggle = () => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setLocalCollapsed((prev) => !prev);
+    }
+  };
+
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
   const [isAdminConsoleExpanded, setIsAdminConsoleExpanded] = useState(true);
@@ -47,9 +57,9 @@ export const Sidebar = () => {
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'AI BrandKit Manager', path: '/brandkit', icon: Building2 },
+    { label: 'BrandKit', path: '/brandkit', icon: Building2 },
     { label: 'Social Integrations', path: '/connections', icon: Share2 },
-    { label: 'Post Creator Studio', path: '/create-post', icon: Sparkles },
+    { label: 'Post Studio', path: '/create-post', icon: Sparkles },
     { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
     { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
     { label: 'Brand Frames Studio', path: '/frames', icon: Layers },
@@ -136,13 +146,13 @@ export const Sidebar = () => {
                   Brand<span className="text-amber-400">Flow</span>
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium tracking-wider uppercase mt-1">
-                  AI Social Manager
+                  Social Media Manager
                 </span>
               </div>
 
               {/* Desktop Collapse Toggle */}
               <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
+                onClick={handleToggle}
                 className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
                 title="Collapse Sidebar"
               >
@@ -151,7 +161,7 @@ export const Sidebar = () => {
             </>
           ) : (
             <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
+              onClick={handleToggle}
               className="hidden lg:flex w-10 h-10 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition items-center justify-center group"
               title="Expand Sidebar"
             >

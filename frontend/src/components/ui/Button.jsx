@@ -17,7 +17,7 @@ export const Button = ({
   onClick,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-semibold transition-all duration-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none active:scale-[0.98]';
+  const baseStyles = 'inline-flex items-center justify-center whitespace-nowrap font-semibold transition-all duration-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none active:scale-[0.98]';
 
   const variants = {
     primary: 'bg-gradient-to-r from-amber-500 to-teal-500 hover:from-amber-400 hover:to-teal-400 text-slate-950 shadow-glow font-bold',
@@ -49,7 +49,7 @@ export const Button = ({
       ) : (
         <>
           {Icon && <Icon className="w-4 h-4 shrink-0" />}
-          <span>{children}</span>
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">{children}</span>
         </>
       )}
     </button>

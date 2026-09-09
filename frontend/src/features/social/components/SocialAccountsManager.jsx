@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw, Share2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
 import Pagination from '../../../components/common/Pagination';
@@ -57,25 +57,27 @@ export const SocialAccountsManager = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 via-pink-500/20 to-purple-600/20 border border-blue-500/30 text-blue-400">
-            <Facebook className="w-6 h-6" />
+          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 via-teal-500/20 to-indigo-600/20 border border-amber-500/30 text-amber-400">
+            <Share2 className="w-6 h-6" />
           </div>
           <div>
             <h3 className="font-heading font-extrabold text-lg text-white">
-              Meta Social Integrations (Instagram & Facebook Page)
+              Social Media Integrations
             </h3>
             <p className="text-xs text-slate-400">
-              Connect your Instagram Business/Creator account and Facebook Page for live automated publishing.
+              Connect your Instagram, Facebook, and LinkedIn accounts for live automated publishing.
             </p>
           </div>
         </div>
 
         <button
           onClick={() => refetch()}
-          className="self-start sm:self-auto p-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-400 hover:text-white transition flex items-center gap-1.5 text-xs font-medium"
+          disabled={isLoadingAccounts}
+          className="self-start sm:self-auto p-2 px-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-600 transition flex items-center gap-1.5 text-xs font-semibold"
+          title="Refresh account statuses"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoadingAccounts ? 'animate-spin text-amber-400' : ''}`} />
+          <span>{isLoadingAccounts ? 'Refreshing...' : 'Refresh'}</span>
         </button>
       </div>
 
