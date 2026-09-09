@@ -116,21 +116,24 @@ export async function uploadToCloudinaryBuffer(buffer, folder = CLOUDINARY_FOLDE
   const signatureString = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
   const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
 
-  const formData = new URLSearchParams();
-  formData.append('file', base64Data);
-  formData.append('api_key', apiKey);
-  formData.append('timestamp', timestamp.toString());
-  formData.append('signature', signature);
-  formData.append('folder', folder);
+  const payload = {
+    file: base64Data,
+    api_key: apiKey,
+    timestamp: timestamp,
+    signature: signature,
+    folder: folder,
+  };
 
   try {
     const response = await axios.post(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      formData,
+      payload,
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
       }
     );
 

@@ -62,8 +62,6 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
     { label: 'Post Studio', path: '/create-post', icon: Sparkles },
     { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
     { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
-    { label: 'Brand Frames Studio', path: '/frames', icon: Layers },
-    { label: 'Design Styles Engine', path: '/design-styles', icon: Palette },
     { label: 'Graphic Vault', path: '/vault', icon: FolderKanban },
   ];
 

@@ -149,7 +149,7 @@ export const DashboardView = ({
           <span>Workspace Quick Actions & Modules</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
               title: "Post Studio",
@@ -166,22 +166,6 @@ export const DashboardView = ({
               icon: Calendar,
               color: "text-teal-400",
               borderColor: "hover:border-teal-500/50",
-            },
-            {
-              title: "Brand Frames Studio",
-              desc: "Customize frames, photo slots & logo layouts",
-              path: "/frames",
-              icon: Layers,
-              color: "text-indigo-400",
-              borderColor: "hover:border-indigo-500/50",
-            },
-            {
-              title: "Design System & Palettes",
-              desc: "Choose brand color themes & visual styles",
-              path: "/design-styles",
-              icon: Palette,
-              color: "text-rose-400",
-              borderColor: "hover:border-rose-500/50",
             },
             {
               title: "BrandKit Setup",

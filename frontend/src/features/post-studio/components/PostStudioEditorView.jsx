@@ -42,6 +42,7 @@ export const PostStudioEditorView = ({
   customBaseImage,
   setCustomBaseImage,
   saveSuccess,
+  saveError,
   selectedCategory,
   setSelectedCategory,
   selectedFestival,
@@ -147,13 +148,12 @@ export const PostStudioEditorView = ({
               <button
                 key={step.num}
                 onClick={() => setCurrentStep(step.num)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-                  isActive
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${isActive
                     ? "bg-amber-500 text-slate-950 shadow-glow"
                     : isCompleted
-                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                    : "bg-[#0B0F17] text-slate-400 border border-[#2C384E]"
-                }`}
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                      : "bg-[#0B0F17] text-slate-400 border border-[#2C384E]"
+                  }`}
               >
                 <span className="w-5 h-5 rounded-full bg-black/20 flex items-center justify-center text-[10px] font-extrabold">
                   {isCompleted ? "✓" : step.num}
@@ -166,6 +166,7 @@ export const PostStudioEditorView = ({
       </div>
 
       {saveSuccess && <Alert variant="success" message={saveSuccess} />}
+      {saveError && <Alert variant="danger" message={saveError} />}
 
       {/* Main Studio Viewport (Left Controls, Right Live Canvas) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -277,11 +278,10 @@ export const PostStudioEditorView = ({
                       setSelectedCategory("");
                       setTemplatePage(1);
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
-                      !selectedCategory
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${!selectedCategory
                         ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
                         : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                    }`}
+                      }`}
                   >
                     <span>🎨 All</span>
                   </button>
@@ -296,11 +296,10 @@ export const PostStudioEditorView = ({
                           setSelectedCategory(cat.name);
                           setTemplatePage(1);
                         }}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
-                          isSelected
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${isSelected
                             ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
                             : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                        }`}
+                          }`}
                       >
                         <span>{cat.icon || "🎨"}</span>
                         <span>{cat.name}</span>
@@ -366,11 +365,10 @@ export const PostStudioEditorView = ({
                       setSelectedFestival("");
                       setTemplatePage(1);
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
-                      !selectedFestival
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${!selectedFestival
                         ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
                         : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                    }`}
+                      }`}
                   >
                     <span>🎉 All</span>
                   </button>
@@ -385,11 +383,10 @@ export const PostStudioEditorView = ({
                           setSelectedFestival(f.id);
                           setTemplatePage(1);
                         }}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${
-                          isSelected
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 ${isSelected
                             ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
                             : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                        }`}
+                          }`}
                       >
                         <span>🪔</span>
                         <span>{f.name}</span>
@@ -472,11 +469,10 @@ export const PostStudioEditorView = ({
                           setSelectedTemplateId(tpl.id);
                           setCustomBaseImage(null);
                         }}
-                        className={`relative aspect-square rounded-xl border p-1.5 overflow-hidden transition group text-left ${
-                          isSelected
+                        className={`relative aspect-square rounded-xl border p-1.5 overflow-hidden transition group text-left ${isSelected
                             ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50 shadow-glow"
                             : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
-                        }`}
+                          }`}
                       >
                         <img
                           src={imgUrl}
@@ -548,11 +544,10 @@ export const PostStudioEditorView = ({
                           setSelectedFrame(frame);
                           setZoomedFrame(frame);
                         }}
-                        className={`relative aspect-square rounded-xl border p-1.5 overflow-hidden transition group flex flex-col items-center justify-center ${
-                          selectedFrame?.id === frame.id
+                        className={`relative aspect-square rounded-xl border p-1.5 overflow-hidden transition group flex flex-col items-center justify-center ${selectedFrame?.id === frame.id
                             ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50 shadow-glow"
                             : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
-                        }`}
+                          }`}
                         title="Click to select and preview frame"
                       >
                         {/* Frame Image ONLY - 100% clean without any badges or text overlays */}
@@ -619,7 +614,7 @@ export const PostStudioEditorView = ({
               if (typeof rawConfig === "string") {
                 try {
                   rawConfig = JSON.parse(rawConfig);
-                } catch (e) {}
+                } catch (e) { }
               }
               let elements = Array.isArray(rawConfig)
                 ? rawConfig
@@ -865,10 +860,6 @@ export const PostStudioEditorView = ({
                   <span className="text-amber-400 font-bold">{selectedFrame?.title || "Default Overlay"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400 font-semibold">Business Name:</span>
-                  <span className="text-white font-bold">{customDetails.businessName || "N/A"}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-slate-400 font-semibold">Export Canvas Specs:</span>
                   <span className="text-emerald-400 font-bold">1080 x 1080 Square PNG (HD)</span>
                 </div>
@@ -882,7 +873,7 @@ export const PostStudioEditorView = ({
                   onClick={onOpenPublisherModal}
                   className="w-full justify-center text-sm font-extrabold py-3.5 bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950 border-0 shadow-lg"
                 >
-                  🚀 Share / Publish to Social Media
+                  🚀 Publish to Social Media
                 </Button>
 
                 <Button
@@ -918,7 +909,7 @@ export const PostStudioEditorView = ({
         <div className="lg:col-span-6 bg-[#0B0F17] border border-[#2C384E] p-6 rounded-2xl flex flex-col items-center justify-center relative shadow-2xl min-h-[520px] lg:sticky lg:top-6 self-start">
           <div className="absolute top-4 left-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 text-xs font-extrabold shadow-lg">
             <Zap className="w-4 h-4 fill-amber-400" />
-            <span>✨ What's Cooking: Live Real-Time Preview</span>
+            <span>Live Real-Time Preview</span>
           </div>
 
           <div className="relative aspect-square w-full max-w-lg rounded-2xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center mt-6">
@@ -934,7 +925,7 @@ export const PostStudioEditorView = ({
 
           <p className="text-xs text-slate-400 mt-4 text-center flex items-center gap-1.5 font-medium">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            High-Resolution 1080x1080 Square Post (Instagram & Facebook Ready)
+            High-Resolution 1080x1080 HD Square Graphic
           </p>
         </div>
       </div>

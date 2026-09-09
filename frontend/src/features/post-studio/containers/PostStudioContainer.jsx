@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { brandKitApi } from "../../../services/brandkit.api";
 import { templateApi } from "../../../services/template.api";
 import { festivalApi } from "../../../services/festival.api";
+import { postApi } from "../../../services/post.api";
 import { useTemplates } from "../../../hooks/useTemplates";
 import { useFrames } from "../../../hooks/useFrames";
 import { useCategories } from "../../../hooks/useCategories";
@@ -211,26 +212,42 @@ export const PostStudioContainer = () => {
     customDetails,
   );
 
+  const [saveError, setSaveError] = useState("");
+
   // Save Generated Post Mutation
   const savePostMutation = useMutation({
     mutationFn: (postData) => postApi.createPost(postData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
+      setSaveError("");
       setSaveSuccess(
-        "🎉 Final composited post saved to Cloudinary, DB & Vault!",
+        "🎉 Final composited post uploaded to Cloudinary, DB & Vault!",
       );
       setTimeout(() => setSaveSuccess(""), 4000);
+    },
+    onError: (err) => {
+      setSaveSuccess("");
+      setSaveError(
+        err?.response?.data?.message || err?.message || "Failed to save post to Vault."
+      );
+      setTimeout(() => setSaveError(""), 5000);
     },
   });
 
   // Handle Save Post to DB
   const handleSaveToDb = () => {
-    if (!dataUrl) return;
+    if (!dataUrl) {
+      setSaveError("Canvas graphic is still rendering. Please wait a moment and try again.");
+      setTimeout(() => setSaveError(""), 4000);
+      return;
+    }
     savePostMutation.mutate({
       templateId: currentTemplate?.id || null,
       festivalId: currentTemplate?.festivalId || null,
       frameId: selectedFrame?.id || null,
+      occasionName: currentTemplate?.title || selectedFrame?.title || "Branded Graphic Post",
+      customText: customDetails?.businessName || customDetails?.tagline || "Custom Graphic Post",
       base64Graphic: dataUrl,
       userConfigJson: customDetails,
       status: "DRAFT",
@@ -272,6 +289,7 @@ export const PostStudioContainer = () => {
         customBaseImage={customBaseImage}
         setCustomBaseImage={setCustomBaseImage}
         saveSuccess={saveSuccess}
+        saveError={saveError}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedFestival={selectedFestival}

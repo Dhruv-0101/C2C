@@ -107,16 +107,25 @@ export const postLogic = {
 
     // Upload composited post image buffer or base64 to Cloudinary brandflow/posts
     if (fileBuffer) {
-      const uploadResult = await uploadPostBuffer(fileBuffer);
-      finalGraphicUrl = uploadResult.url;
-    } else if (payload.base64Graphic || payload.base64Image) {
-      let cleanBase64 = payload.base64Graphic || payload.base64Image;
-      if (cleanBase64.includes(';base64,')) {
-        cleanBase64 = cleanBase64.split(';base64,').pop();
+      try {
+        const uploadResult = await uploadPostBuffer(fileBuffer);
+        finalGraphicUrl = uploadResult.url;
+      } catch (err) {
+        console.warn(`⚠️ Cloudinary File Buffer Upload Warning: ${err.message}`);
       }
-      const buffer = Buffer.from(cleanBase64, 'base64');
-      const uploadResult = await uploadPostBuffer(buffer);
-      finalGraphicUrl = uploadResult.url;
+    } else if (payload.base64Graphic || payload.base64Image) {
+      try {
+        let cleanBase64 = payload.base64Graphic || payload.base64Image;
+        if (cleanBase64.includes(';base64,')) {
+          cleanBase64 = cleanBase64.split(';base64,').pop();
+        }
+        const buffer = Buffer.from(cleanBase64, 'base64');
+        const uploadResult = await uploadPostBuffer(buffer);
+        finalGraphicUrl = uploadResult.url;
+      } catch (uploadErr) {
+        console.warn(`⚠️ Cloudinary Base64 Upload Warning: ${uploadErr.message}`);
+        finalGraphicUrl = payload.base64Graphic || payload.base64Image;
+      }
     }
 
     const postData = {

@@ -12,6 +12,7 @@ import {
   Calendar,
   Sparkles,
   Share2,
+  Maximize2,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -48,12 +49,16 @@ export const YourPostsView = ({
 
   // Filter posts based on search and active tab
   const filteredPosts = posts.filter((p) => {
-    const titleMatch =
-      p.occasionName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.customText?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const titleMatch =
+        (p.occasionName && p.occasionName.toLowerCase().includes(q)) ||
+        (p.customText && p.customText.toLowerCase().includes(q)) ||
+        (p.category?.name && p.category.name.toLowerCase().includes(q)) ||
+        (p.template?.title && p.template.title.toLowerCase().includes(q));
 
-    if (!titleMatch) return false;
+      if (!titleMatch) return false;
+    }
 
     if (activeTab === "PUBLISHED") return p.status === "PUBLISHED";
     if (activeTab === "DRAFT") return p.status === "DRAFT";
@@ -296,15 +301,15 @@ export const YourPostsView = ({
                 <div className="space-y-3">
                   {/* Image Preview */}
                   {post.finalGraphicUrl ? (
-                    <div className="relative aspect-square rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17]">
+                    <div className="relative aspect-square rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] group/img">
                       <img
                         src={post.finalGraphicUrl}
                         alt={post.occasionName || "Post Graphic"}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300 cursor-pointer"
-                        onClick={() => setLightboxImage(post.finalGraphicUrl)}
+                        className="w-full h-full object-cover group-hover/img:scale-105 transition duration-300 cursor-pointer"
+                        onClick={() => setLightboxImage(post)}
                       />
                       <span
-                        className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                        className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase z-10 ${
                           post.status === "PUBLISHED"
                             ? "bg-emerald-500 text-slate-950"
                             : "bg-amber-500 text-slate-950"
@@ -312,6 +317,18 @@ export const YourPostsView = ({
                       >
                         {post.status}
                       </span>
+                      {/* Hover Zoom Overlay */}
+                      <div
+                        onClick={() => setLightboxImage(post)}
+                        className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 backdrop-blur-[2px] cursor-pointer"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/30 transform scale-90 group-hover/img:scale-100 transition-transform">
+                          <Maximize2 className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-bold text-white bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-slate-700">
+                          Full Screen View
+                        </span>
+                      </div>
                     </div>
                   ) : (
                     <div className="aspect-square rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-center text-xs text-slate-500">
@@ -339,7 +356,7 @@ export const YourPostsView = ({
                     variant="ghost"
                     size="sm"
                     className="text-xs text-slate-400 hover:text-white"
-                    onClick={() => setLightboxImage(post.finalGraphicUrl)}
+                    onClick={() => setLightboxImage(post)}
                   >
                     View HD
                   </Button>
@@ -377,12 +394,11 @@ export const YourPostsView = ({
       )}
 
       {/* Image Lightbox Preview Modal */}
-      {lightboxImage && (
-        <ImageLightbox
-          imageUrl={lightboxImage}
-          onClose={() => setLightboxImage(null)}
-        />
-      )}
+      <ImageLightbox
+        isOpen={Boolean(lightboxImage)}
+        item={lightboxImage}
+        onClose={() => setLightboxImage(null)}
+      />
     </div>
   );
 };

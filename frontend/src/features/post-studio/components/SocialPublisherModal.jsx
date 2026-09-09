@@ -16,12 +16,12 @@ import {
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
 import { usePostPublisher } from "../../../hooks/usePostPublisher";
+import { useSocialAccounts } from "../../../hooks/useSocialAccounts";
 
 const SOCIAL_PLATFORMS = [
   { id: "INSTAGRAM", name: "Instagram", icon: "📸", color: "from-pink-500 to-rose-600" },
   { id: "FACEBOOK", name: "Facebook", icon: "📘", color: "from-blue-600 to-blue-800" },
   { id: "LINKEDIN", name: "LinkedIn", icon: "💼", color: "from-blue-500 to-indigo-700" },
-  { id: "TWITTER", name: "Twitter / X", icon: "🐦", color: "from-slate-700 to-slate-900" },
 ];
 
 /**
@@ -53,6 +53,28 @@ export const SocialPublisherModal = ({
     "LINKEDIN",
   ]);
   const [publishMode, setPublishMode] = useState("NOW"); // 'NOW' | 'SCHEDULE'
+  const [validationError, setValidationError] = useState("");
+
+  const {
+    instagramAccount,
+    facebookAccount,
+    linkedinAccount,
+    isLoadingAccounts,
+  } = useSocialAccounts();
+
+  const platformConnectionMap = {
+    INSTAGRAM: Boolean(instagramAccount?.isConnected),
+    FACEBOOK: Boolean(facebookAccount?.isConnected),
+    LINKEDIN: Boolean(linkedinAccount?.isConnected),
+  };
+
+  const handleNameMap = {
+    INSTAGRAM: instagramAccount?.accountName || null,
+    FACEBOOK: facebookAccount?.accountName || null,
+    LINKEDIN: linkedinAccount?.accountName || null,
+  };
+
+  const connectedCount = Object.values(platformConnectionMap).filter(Boolean).length;
   
   // Default to 15 minutes in the future for scheduling
   const defaultFutureDate = new Date(Date.now() + 15 * 60 * 1000);
@@ -68,8 +90,8 @@ export const SocialPublisherModal = ({
   if (!isOpen) return null;
 
   const togglePlatform = (id) => {
+    setValidationError("");
     if (selectedPlatforms.includes(id)) {
-      if (selectedPlatforms.length === 1) return; // Must have at least 1 platform selected
       setSelectedPlatforms(selectedPlatforms.filter((p) => p !== id));
     } else {
       setSelectedPlatforms([...selectedPlatforms, id]);
@@ -90,6 +112,46 @@ export const SocialPublisherModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setValidationError("");
+
+    if (connectedCount === 0) {
+      setValidationError(
+        "⚠️ No social media accounts connected! You cannot publish or schedule posts without connecting at least one account in Social Integrations (/connections)."
+      );
+      return;
+    }
+
+    if (selectedPlatforms.length === 0) {
+      setValidationError("⚠️ Please select at least one connected social media platform to proceed.");
+      return;
+    }
+
+    // Check if any selected platform is not connected
+    const disconnectedSelected = selectedPlatforms.filter((id) => !platformConnectionMap[id]);
+
+    if (disconnectedSelected.length > 0) {
+      const missingNames = disconnectedSelected
+        .map((id) => SOCIAL_PLATFORMS.find((p) => p.id === id)?.name)
+        .join(", ");
+
+      const connectedSelectedNames = selectedPlatforms
+        .filter((id) => platformConnectionMap[id])
+        .map((id) => SOCIAL_PLATFORMS.find((p) => p.id === id)?.name)
+        .join(" and ");
+
+      if (connectedSelectedNames) {
+        setValidationError(
+          `⚠️ ${missingNames} is not connected! Please remove ${missingNames} from your selection to publish/schedule only on ${connectedSelectedNames}, or connect ${missingNames} in Social Integrations (/connections).`
+        );
+      } else {
+        setValidationError(
+          `⚠️ ${missingNames} is not connected! Please remove ${missingNames} or connect it in Social Integrations (/connections) to proceed.`
+        );
+      }
+      return;
+    }
+
+    // All selected platforms are verified connected! Proceed with submit
     onSubmitPublish({
       postData,
       selectedPlatforms,
@@ -124,7 +186,9 @@ export const SocialPublisherModal = ({
           </button>
         </div>
 
-        {errorMsg && <Alert variant="error" message={errorMsg} />}
+        {(validationError || errorMsg) && (
+          <Alert variant="error" message={validationError || errorMsg} />
+        )}
 
         {/* Success / Publish Result State */}
         {publishResult ? (
@@ -194,29 +258,81 @@ export const SocialPublisherModal = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 0 Connected Accounts Global Warning Banner */}
+            {connectedCount === 0 && !isLoadingAccounts && (
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2 animate-in fade-in">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>No Social Media Accounts Connected</span>
+                </div>
+                <p className="text-xs text-slate-300">
+                  You must connect your Instagram, Facebook, or LinkedIn account before you can publish or schedule posts.
+                </p>
+                <a
+                  href="/connections"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-amber-400 hover:underline"
+                >
+                  <span>Go to Social Integrations Page</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+
             {/* Target Platforms Selector */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                 1. Select Target Social Platforms
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {SOCIAL_PLATFORMS.map((platform) => {
                   const isSelected = selectedPlatforms.includes(platform.id);
+                  const isConnected = platformConnectionMap[platform.id];
+                  const handleName = handleNameMap[platform.id];
+
                   return (
                     <button
                       key={platform.id}
                       type="button"
                       onClick={() => togglePlatform(platform.id)}
-                      className={`p-3 rounded-xl border text-left transition flex flex-col justify-between gap-2 ${
-                        isSelected
+                      className={`p-3.5 rounded-xl border text-left transition flex flex-col justify-between gap-2.5 relative ${
+                        isSelected && isConnected
                           ? "bg-amber-500/10 border-amber-500 text-white shadow-glow"
+                          : isSelected && !isConnected
+                          ? "bg-rose-500/10 border-rose-500/80 text-rose-200"
                           : "bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:text-white"
                       }`}
                     >
-                      <span className="text-xl">{platform.icon}</span>
-                      <span className="text-xs font-bold truncate">
-                        {platform.name}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl">{platform.icon}</span>
+                        {isConnected ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Connected
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[9px] font-bold uppercase tracking-wider">
+                            Not Connected
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <span className="text-xs font-bold block truncate">
+                          {platform.name}
+                        </span>
+                        {isConnected && handleName && (
+                          <span className="text-[10px] text-emerald-300 font-mono block truncate mt-0.5">
+                            {handleName}
+                          </span>
+                        )}
+                        {!isConnected && isSelected && (
+                          <span className="text-[10px] text-rose-400 font-semibold block mt-0.5">
+                            ⚠️ Connect or remove
+                          </span>
+                        )}
+                      </div>
                     </button>
                   );
                 })}

@@ -70,16 +70,7 @@ const CalendarPage = lazy(() =>
     default: m.CalendarPage || m.default,
   }))
 );
-const FramesPage = lazy(() =>
-  import("../features/frames/pages/FramesPage").then((m) => ({
-    default: m.FramesPage || m.default,
-  }))
-);
-const DesignStylesPage = lazy(() =>
-  import("../features/design-styles/pages/DesignStylesPage").then((m) => ({
-    default: m.DesignStylesPage || m.default,
-  }))
-);
+
 const AdminDashboardPage = lazy(() =>
   import("../features/admin/pages/AdminDashboardPage").then((m) => ({
     default: m.AdminDashboardPage || m.default,
@@ -152,8 +143,8 @@ export const AppRoutes = () => {
             <Route path="/posts" element={<YourPostsPage />} />
             <Route path="/your-posts" element={<YourPostsPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/frames" element={<FramesPage />} />
-            <Route path="/design-styles" element={<DesignStylesPage />} />
+            <Route path="/frames" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/design-styles" element={<Navigate to="/dashboard" replace />} />
             <Route path="/brand-kit" element={<BrandKitPage />} />
             <Route path="/brandkit" element={<BrandKitPage />} />
             <Route path="/connections" element={<SocialConnectionsPage />} />

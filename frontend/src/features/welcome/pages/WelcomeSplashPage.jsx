@@ -295,14 +295,13 @@ export const WelcomeSplashPage = () => {
 
               <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-teal-500/50 transition-all duration-200 space-y-2.5">
                 <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center">
-                  <Layers className="w-4.5 h-4.5" />
+                  <Wand2 className="w-4.5 h-4.5" />
                 </div>
                 <h3 className="font-heading font-extrabold text-base text-white">
-                  Brand Frame Studio
+                  Post Creator Studio
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Overlay custom brand frames with photo rings, badges, and logo
-                  containers dynamically in real-time.
+                  Design 1080x1080 high-res branded posts with dynamic business overlays in real-time.
                 </p>
               </Card>
 
