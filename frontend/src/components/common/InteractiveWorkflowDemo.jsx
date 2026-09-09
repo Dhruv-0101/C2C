@@ -113,22 +113,22 @@ export const InteractiveWorkflowDemo = () => {
       <div className="absolute -top-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Compact Top Navigation Bar */}
+      {/* Compact Top Navigation Bar - Single Line Layout */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 mb-3.5">
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 min-w-0 shrink">
           <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30 uppercase tracking-wider">
             <Sparkles className="w-3 h-3" /> Live Simulator
           </div>
-          <h3 className="font-heading font-extrabold text-xl sm:text-2xl text-white">
-            {isPlaying ? 'Auto-Simulating Post Creation...' : 'Manual Control Active'}
+          <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white truncate">
+            {isPlaying ? 'Auto-Simulating Post Creation' : 'Manual Control Active'}
           </h3>
         </div>
 
-        {/* Play/Pause Control & Presets */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Play/Pause Control & Presets - Always Single Line */}
+        <div className="flex items-center gap-2 shrink-0 overflow-x-auto custom-scrollbar max-w-full">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap shrink-0 ${
               isPlaying
                 ? 'bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-amber-500/20'
                 : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20'
@@ -147,12 +147,12 @@ export const InteractiveWorkflowDemo = () => {
             )}
           </button>
 
-          <div className="hidden sm:flex items-center gap-1.5 border-l border-[#2C384E] pl-2">
+          <div className="flex items-center gap-1.5 border-l border-[#2C384E] pl-2 shrink-0">
             {DEMO_PRESETS.map((preset) => (
               <button
                 key={preset.name}
                 onClick={() => applyPreset(preset)}
-                className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-500/50 transition-all"
+                className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-500/50 transition-all whitespace-nowrap shrink-0"
               >
                 {preset.name}
               </button>

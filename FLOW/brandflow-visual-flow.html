@@ -215,7 +215,7 @@
   <div class="hero-container">
     <span class="hero-badge">ROLE-BASED UNIFIED AUTH ARCHITECTURE · BRANDFLOW</span>
     <h1>BrandFlow — Complete Visual Product & Admin Journey</h1>
-    <p>Single login/signup page with Role Detection (End User SMB vs Admin). Explores all 9 content types, required AI Brand Kit inputs, social media handles, design style matrices, and admin management controls.</p>
+    <p>Single login/signup page with Role Detection (End User SMB vs Admin). Explores all 9 content types, required Master BrandKit inputs, social media handles, design style matrices, and admin management controls.</p>
     
     <div class="flow-tabs">
       <button class="tab-btn active" id="tab-user" onclick="switchJourney('user')">
@@ -263,7 +263,7 @@
             <span class="mockup-dot dot-yellow"></span>
             <span class="mockup-dot dot-green"></span>
           </div>
-          <span class="mockup-url" id="mockup-url">app.brandflow.ai/auth</span>
+          <span class="mockup-url" id="mockup-url">app.brandflow.in/auth</span>
           <div></div>
         </div>
         
@@ -303,14 +303,14 @@
       type: "USER INTERACTION",
       tagClass: "tag-user",
       desc: "One entry point for both SMB Users and Admins. Auth system verifies role (`ROLE: END_USER` vs `ROLE: ADMIN`) and routes to correct workspace.",
-      url: "app.brandflow.ai/login",
+      url: "app.brandflow.in/login",
       actor: "SMB Owner / Admin",
       system: "OAuth2 authentication & RBAC role detection engine",
       criteria: "Single sign-on screen with automatic role-based redirect",
       mockup: `
         <div class="ui-card-demo">
           <h3 style="margin-bottom:6px; color:#FFF;">BrandFlow Unified Access 🔑</h3>
-          <p style="color:#94A3B8; font-size:13px; margin-bottom:16px;">Sign in to manage your AI social media manager.</p>
+          <p style="color:#94A3B8; font-size:13px; margin-bottom:16px;">Sign in to manage your autonomous social media manager.</p>
           <button class="ui-button" style="width:100%; justify-content:center; background:#FFF; color:#0F172A; margin-bottom:10px;">
             <span>🌐</span> Sign in with Google (OAuth)
           </button>
@@ -323,17 +323,17 @@
     {
       id: "u2",
       stepNum: "02",
-      title: "AI Brand Kit Setup",
+      title: "Master BrandKit Setup",
       type: "USER INTERACTION",
       tagClass: "tag-user",
-      desc: "SMB User selects Business Category, Font, and Color Palette from Admin-configured options (or inputs custom hex codes / uploads logo). Captured fields power all AI generation.",
-      url: "app.brandflow.ai/onboarding/brand-kit",
+      desc: "SMB User selects Business Category, Font, and Color Palette from Admin-configured options (or inputs custom hex codes / uploads logo). Captured fields power all post creation and auto-branding.",
+      url: "app.brandflow.in/onboarding/brand-kit",
       actor: "SMB Owner",
-      system: "Brand Kit store & AI generation token injector",
+      system: "BrandKit store & post creation token injector",
       criteria: "Picks from Admin-curated Fonts, Colors & Categories",
       mockup: `
         <div class="ui-card-demo">
-          <h4 style="color:#FFF; margin-bottom:10px;">Brand Kit & AI Profile</h4>
+          <h4 style="color:#FFF; margin-bottom:10px;">Master BrandKit Profile</h4>
           <label style="font-size:11px; color:#94A3B8;">Business Category (Admin Configured)</label>
           <input class="ui-input" value="🍕 Restaurant & Fine Dining Category" readOnly />
           
@@ -351,23 +351,22 @@
     {
       id: "u3",
       stepNum: "03",
-      title: "Social Accounts OAuth",
+      title: "Social Accounts OAuth & Connection Guard",
       type: "USER INTERACTION",
       tagClass: "tag-user",
-      desc: "Connects Instagram, Facebook, LinkedIn, Twitter/X, Pinterest, Threads, and WhatsApp. Tokens are encrypted and refreshed automatically.",
-      url: "app.brandflow.ai/onboarding/social-handles",
+      desc: "Connects Instagram Business, Facebook Pages, and LinkedIn Profiles/Pages. Tokens are encrypted (AES-256) and refreshed automatically. Features real-time connection guards that prevent scheduling or publishing to un-connected platforms.",
+      url: "app.brandflow.in/connections",
       actor: "SMB Owner",
-      system: "Multi-platform OAuth token vault & auto-refresh token manager",
-      criteria: "7 supported platforms connected with silent token refresh",
+      system: "Multi-platform OAuth token vault, connection validator & auto-refresh token manager",
+      criteria: "Supported platforms connected with real-time target validation & silent token refresh",
       mockup: `
         <div class="ui-card-demo">
-          <h4 style="color:#FFF; margin-bottom:10px;">Connected Social Handles</h4>
+          <h4 style="color:#FFF; margin-bottom:10px;">Connected Social Handles & Validation Guard</h4>
           <div class="ui-pill-tags">
-            <span class="ui-pill" style="background:#0D9488; color:#FFF;">📸 Instagram Connected ✅</span>
-            <span class="ui-pill" style="background:#0D9488; color:#FFF;">📘 Facebook Connected ✅</span>
-            <span class="ui-pill" style="background:#0D9488; color:#FFF;">💼 LinkedIn Connected ✅</span>
-            <span class="ui-pill" style="background:#0D9488; color:#FFF;">🐦 Twitter/X Connected ✅</span>
-            <span class="ui-pill">💬 WhatsApp Business</span>
+            <span class="ui-pill" style="background:#0D9488; color:#FFF;">📸 Instagram Business Connected ✅</span>
+            <span class="ui-pill" style="background:#0D9488; color:#FFF;">📘 Facebook Page Connected ✅</span>
+            <span class="ui-pill" style="background:#0D9488; color:#FFF;">💼 LinkedIn Profile Connected ✅</span>
+            <span class="ui-pill" style="background:#F59E0B; color:#000;">🛡️ Target Connection Validation Active</span>
           </div>
         </div>
       `
@@ -379,7 +378,7 @@
       type: "USER INTERACTION",
       tagClass: "tag-user",
       desc: "Dashboard presents 9 supported content types: Festival, Offer, Product Spotlight, Event, Announcement, Quote, Story (9:16), Reel (Video), and Custom Design.",
-      url: "app.brandflow.ai/dashboard",
+      url: "app.brandflow.in/dashboard",
       actor: "SMB Owner",
       system: "Content intent routing & template schema matcher",
       criteria: "Supports all 9 marketing content categories",
@@ -407,9 +406,9 @@
       type: "USER INTERACTION",
       tagClass: "tag-user",
       desc: "User selects occasion (e.g. Diwali, Independence Day) and chooses design style configured by Admin (Luxury, Premium, Modern, Minimal, Traditional, Corporate).",
-      url: "app.brandflow.ai/create/festival",
+      url: "app.brandflow.in/create/festival",
       actor: "SMB Owner",
-      system: "Prompts AI engine with occasion tags & selected style rules",
+      system: "Prompts template engine with occasion tags & selected style rules",
       criteria: "Allows switching between 6 Admin-defined aesthetic styles",
       mockup: `
         <div class="ui-card-demo">
@@ -436,7 +435,7 @@
       type: "AUTOMATED SYSTEM WORK",
       tagClass: "tag-auto",
       desc: "Node.js Sharp library composites Admin Base Template with User Brand Kit (Logo, Business Name, Phone, Address, Website, Brand Colors) via SVG vector overlays & coordinate mapping in <15ms per image.",
-      url: "app.brandflow.ai/engine/sharp-composite",
+      url: "app.brandflow.in/engine/sharp-composite",
       actor: "Node.js Sharp Engine (libvips C++ Core)",
       system: "High-performance server-side image compositor & SVG vector overlay generator",
       criteria: "Sub-millisecond multi-layer rendering (Logo + SVG Text + Base Graphic) without DOM/canvas lag",
@@ -461,7 +460,7 @@
       type: "USER INTERACTION",
       tagClass: "tag-user",
       desc: "User picks variant and micro-edits. Can directly upload custom product/store photos from local system/device (PNG/JPEG/WebP). Node.js Sharp automatically auto-crops and fits it into template image frame.",
-      url: "app.brandflow.ai/create/editor",
+      url: "app.brandflow.in/create/editor",
       actor: "SMB Owner",
       system: "Single-property mutation engine & Local File Uploader (Cloudinary/S3)",
       criteria: "Supports direct system image upload + instant Sharp frame fitting without canvas complexity",
@@ -488,9 +487,9 @@
       title: "Auto Captions & Copywriting",
       type: "AUTOMATED SYSTEM WORK",
       tagClass: "tag-auto",
-      desc: "AI auto-writes network-specific copy & hashtags for Instagram, Facebook, LinkedIn, X, Threads, and WhatsApp.",
-      url: "app.brandflow.ai/create/captions",
-      actor: "AI Copywriter Engine",
+      desc: "Auto-writes network-specific copy & hashtags for Instagram, Facebook, LinkedIn, X, Threads, and WhatsApp.",
+      url: "app.brandflow.in/create/captions",
+      actor: "Smart Copywriter Engine",
       system: "LLM contextual caption generator & hashtag builder",
       criteria: "Tailored text per platform with full user editability",
       mockup: `
@@ -509,7 +508,7 @@
       type: "USER INTERACTION",
       tagClass: "tag-user",
       desc: "User selects destination social handles (Instagram, Facebook, LinkedIn, X) and posting slot (Publish Now, Tomorrow, Festival Morning, Custom Date).",
-      url: "app.brandflow.ai/create/schedule",
+      url: "app.brandflow.in/create/schedule",
       actor: "SMB Owner",
       system: "Multi-channel queue builder & scheduling cron manager",
       criteria: "Queues post to multiple handles simultaneously",
@@ -534,7 +533,7 @@
       type: "AUTOMATED SYSTEM WORK",
       tagClass: "tag-auto",
       desc: "Invisible background worker loads scheduled payload, calls platform APIs (IG Graph API, FB Graph API, LinkedIn API), and publishes content.",
-      url: "system.brandflow.ai/queue/worker",
+      url: "system.brandflow.in/queue/worker",
       actor: "Background Publishing Queue Worker",
       system: "Asynchronous task worker with automatic retry engine",
       criteria: "Automatic retries on API throttling & error alerting",
@@ -555,7 +554,7 @@
       type: "AUTOMATED SYSTEM WORK",
       tagClass: "tag-auto",
       desc: "System sends notification: '✅ Your post has been published' with direct link to View Post. Asset stored in Content Vault.",
-      url: "app.brandflow.ai/library",
+      url: "app.brandflow.in/library",
       actor: "Notification & Content Storage Vault",
       system: "Push notification gateway & searchable content repository",
       criteria: "Retains all published & draft assets in searchable vault",
@@ -580,7 +579,7 @@
       type: "ADMIN FLOW",
       tagClass: "tag-admin",
       desc: "Admin logs in via single login page. System detects `ROLE: ADMIN` and redirects to the Admin Console to manage system assets.",
-      url: "app.brandflow.ai/admin/dashboard",
+      url: "app.brandflow.in/admin/dashboard",
       actor: "System Administrator",
       system: "RBAC Security & Role Verification",
       criteria: "Detected Role: ADMIN → Full system management access",
@@ -605,7 +604,7 @@
       type: "ADMIN FLOW",
       tagClass: "tag-admin",
       desc: "Admin configures the master library of allowed Fonts (Space Grotesk, Inter, Playfair Display, Outfit, Montserrat) and curated Color Palettes/Presets that SMB users pick from during Brand Kit creation.",
-      url: "app.brandflow.ai/admin/fonts-colors",
+      url: "app.brandflow.in/admin/fonts-colors",
       actor: "System Administrator",
       system: "Typography & Color Token Registry",
       criteria: "Admin configures fonts & color presets for SMB Brand Kits",
@@ -629,7 +628,7 @@
       type: "ADMIN FLOW",
       tagClass: "tag-admin",
       desc: "Admin adds and manages industry categories (Restaurant, Gym, Salon, Medical, Jewellery, Clothing, Real Estate, School, Travel, Electronics) and configures image banks.",
-      url: "app.brandflow.ai/admin/categories",
+      url: "app.brandflow.in/admin/categories",
       actor: "System Administrator",
       system: "Domain taxonomy manager & stock image directory matcher",
       criteria: "Add/edit business domain categories with instant system propagation",
@@ -649,7 +648,7 @@
       type: "ADMIN FLOW",
       tagClass: "tag-admin",
       desc: "Admin configures upcoming festival dates (Diwali, Holi, Christmas) and national/international celebration days (Independence Day, Women's Day, New Year, Environment Day).",
-      url: "app.brandflow.ai/admin/festivals",
+      url: "app.brandflow.in/admin/festivals",
       actor: "System Administrator",
       system: "Calendar event engine & celebration day scheduler",
       criteria: "Auto-surfaces celebration days to SMB users 14 days prior",
@@ -669,7 +668,7 @@
       type: "ADMIN FLOW",
       tagClass: "tag-admin",
       desc: "Admin uploads master template (PNG/JPEG/SVG) and configures placeholder coordinate metadata (Logo position x,y,w,h, Business Title anchor, Contact Bar, CTA badge) for Node.js Sharp server-side image overlay.",
-      url: "app.brandflow.ai/admin/templates",
+      url: "app.brandflow.in/admin/templates",
       actor: "System Administrator",
       system: "Template Coordinate Mapper & Sharp Compositing Metadata Engine",
       criteria: "Sets precise placeholder zones used by Sharp to merge end-user details onto templates automatically",

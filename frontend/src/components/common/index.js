@@ -15,3 +15,4 @@ export { SearchBar } from "./SearchBar";
 export { Sidebar } from "./Sidebar";
 export { ThemeToggle } from "./ThemeToggle";
 export { TwoFactorSettingsModal } from "./TwoFactorSettingsModal";
+export { ScrollReveal } from "./ScrollReveal";
