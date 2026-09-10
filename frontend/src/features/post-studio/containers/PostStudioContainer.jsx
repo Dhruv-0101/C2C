@@ -248,14 +248,23 @@ export const PostStudioContainer = () => {
       setTimeout(() => setSaveError(""), 4000);
       return;
     }
+
+    // Sanitize userConfigJson so large image data URLs are not duplicated in request body
+    const sanitizedConfig = { ...customDetails };
+    Object.keys(sanitizedConfig).forEach((k) => {
+      if (typeof sanitizedConfig[k] === "string" && sanitizedConfig[k].startsWith("data:image/")) {
+        delete sanitizedConfig[k];
+      }
+    });
+
     savePostMutation.mutate({
       templateId: currentTemplate?.id || null,
       festivalId: currentTemplate?.festivalId || null,
       frameId: selectedFrame?.id || null,
       occasionName: currentTemplate?.title || selectedFrame?.title || "Branded Graphic Post",
-      customText: customDetails?.businessName || customDetails?.tagline || "Custom Graphic Post",
+      customText: customDetails?.tagline || customDetails?.businessName || "Custom Graphic Post",
       base64Graphic: dataUrl,
-      userConfigJson: customDetails,
+      userConfigJson: sanitizedConfig,
       status: "DRAFT",
     });
   };

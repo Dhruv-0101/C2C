@@ -111,8 +111,8 @@ app.use(
  *    - USE CASE: Reads raw HTTP 'Cookie' headers ("brandflow_refresh_token=...") & decodes them into 'req.cookies'.
  *    - WHY: Essential for JWT Refresh Token rotation (req.cookies[REFRESH_TOKEN_COOKIE_NAME]) during silent re-auth.
  */
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
 /**
