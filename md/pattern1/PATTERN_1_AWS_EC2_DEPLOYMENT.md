@@ -312,12 +312,73 @@ docker compose -f docker-compose.prod.yml exec backend npm run db:seed
 
 ---
 
+### Step 3.7: Set Up Free HTTPS (SSL Certificate) using `sslip.io` & Certbot (Option 2)
+
+To enable **HTTPS (`https://`)** for your Elastic IP (`52.87.37.2`) for **FREE** without buying a domain:
+
+#### 1. Open Port 443 in AWS EC2 Security Group
+- Navigate to **AWS EC2 Console** ➔ **Security Groups** ➔ Select your Security Group.
+- Click **Edit Inbound Rules** ➔ Add Rule:
+  - **Type**: `HTTPS` (Port `443`)
+  - **Source**: `0.0.0.0/0` (Anywhere)
+
+#### 2. Install Host Nginx & Certbot on EC2
+Run these commands in your EC2 terminal:
+
+```bash
+# Install Nginx and Certbot
+# 1. Update your .env or restart docker compose on port 8080 so Host Nginx can use port 80:
+docker compose -f docker-compose.prod.yml down
+
+# 2. Start Host Nginx service now that port 80 is free
+sudo systemctl start nginx
+
+# 3. Create Nginx config pointing to your sslip.io domain (52-87-37-2.sslip.io)
+sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/brandflow
+server {
+    listen 80;
+    server_name 52-87-37-2.sslip.io;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF'
+
+# 4. Enable site and test Nginx
+sudo ln -sf /etc/nginx/sites-available/brandflow /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl reload nginx
+
+# 5. Generate Free Let's Encrypt SSL Certificate
+sudo certbot --nginx -d 52-87-37-2.sslip.io
+
+# 6. Restart Docker stack on port 8080
+docker compose -f docker-compose.prod.yml up -d
+```
+
+---
+
 ## 🌐 4. Live Verification & Testing
 
 Open your browser and test the live application:
 
-* **Frontend Web App (Nginx)**: `http://<EC2_PUBLIC_IP>`
-* **Backend API Health Check**: `http://<EC2_PUBLIC_IP>:5000/health`
+* **Frontend Web App (HTTPS)**: `https://52-87-37-2.sslip.io`
+* **Frontend Web App (HTTP)**: `http://52.87.37.2`
+* **Backend API Health Check**: `https://52-87-37-2.sslip.io/api/v1/health`
 * **Default SuperAdmin Credentials**:
   - **Email**: `admin@brandflow.com`
   - **Password**: `Admin@123456`
