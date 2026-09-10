@@ -47,11 +47,11 @@ const activeRedisUrl = process.env.REDIS_URL || (isProd
   : process.env.REDIS_URL_DEV);
 
 const activeMetaRedirectUri = process.env.META_REDIRECT_URI || (isProd
-  ? process.env.META_REDIRECT_URI_PROD || 'http://localhost:5000/api/v1/social/meta/callback'
+  ? process.env.META_REDIRECT_URI_AWS || process.env.META_REDIRECT_URI_PROD || 'https://52-87-37-2.sslip.io/api/v1/social/meta/callback'
   : process.env.META_REDIRECT_URI_DEV || 'http://localhost:5000/api/v1/social/meta/callback');
 
 const activeLinkedinRedirectUri = process.env.LINKEDIN_REDIRECT_URI || (isProd
-  ? process.env.LINKEDIN_REDIRECT_URI_PROD || 'http://localhost:5000/api/v1/social/linkedin/callback'
+  ? process.env.LINKEDIN_REDIRECT_URI_AWS || process.env.LINKEDIN_REDIRECT_URI_PROD || 'https://52-87-37-2.sslip.io/api/v1/social/linkedin/callback'
   : process.env.LINKEDIN_REDIRECT_URI_DEV || 'http://localhost:5000/api/v1/social/linkedin/callback');
 
 

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw, Share2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
-import Pagination from '../../../components/common/Pagination';
 import { useSocialAccounts } from '../../../hooks/useSocialAccounts';
+import { API_BASE_URL } from '../../../constants/api.constants';
 
 export const SocialAccountsManager = () => {
   const {
@@ -490,7 +490,7 @@ export const SocialAccountsManager = () => {
             <p className="text-slate-500"># backend/.env</p>
             <p><span className="text-amber-400">META_APP_ID</span>="your_facebook_app_id"</p>
             <p><span className="text-amber-400">META_APP_SECRET</span>="your_facebook_app_secret"</p>
-            <p><span className="text-amber-400">META_REDIRECT_URI</span>="http://localhost:5000/api/v1/social/meta/callback"</p>
+            <p><span className="text-amber-400">META_REDIRECT_URI</span>="{`${API_BASE_URL}/social/meta/callback`}"</p>
             <p><span className="text-teal-400">SOCIAL_PUBLISHER_MODE</span>="LIVE"</p>
           </div>
 
