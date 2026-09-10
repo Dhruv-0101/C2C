@@ -304,10 +304,10 @@ Initialize your production PostgreSQL database and seed the default SuperAdmin u
 
 ```bash
 # 1. Sync Prisma schema directly with database:
-docker compose -f docker-compose.prod.yml exec backend npx prisma db push
+docker compose -f docker-compose.prod.yml exec brandflow-backend npx prisma db push
 
 # 2. Seed initial SuperAdmin & Master Data:
-docker compose -f docker-compose.prod.yml exec backend npm run db:seed
+docker compose -f docker-compose.prod.yml exec brandflow-backend npm run db:seed
 ```
 
 ---
