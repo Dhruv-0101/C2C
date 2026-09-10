@@ -372,16 +372,19 @@ docker compose -f docker-compose.prod.yml up -d
 
 ---
 
-## 🌐 4. Live Verification & Testing
+## 🌐 4. Multi-Environment Live Verification & URL Matrix
 
-Open your browser and test the live application:
+The application codebase is fully configured for dynamic multi-environment resolution:
 
-* **Frontend Web App (HTTPS)**: `https://52-87-37-2.sslip.io`
-* **Frontend Web App (HTTP)**: `http://52.87.37.2`
-* **Backend API Health Check**: `https://52-87-37-2.sslip.io/api/v1/health`
-* **Default SuperAdmin Credentials**:
-  - **Email**: `admin@brandflow.com`
-  - **Password**: `Admin@123456`
+| Deployment Environment | Frontend Web App URL | Backend API Base URL | Reverse Proxy / Host |
+| :--- | :--- | :--- | :--- |
+| 🟢 **1. Local Development** | `http://localhost:5173` | `http://localhost:5000/api/v1` | Direct Vite Dev Server |
+| 🚀 **2. AWS EC2 Production (HTTPS)** | `https://52-87-37-2.sslip.io` | `https://52-87-37-2.sslip.io/api/v1` | Host Nginx Reverse Proxy (Port 80/443 -> Docker 8080/5000) |
+| ⚡ **3. Vercel + Render Production** | `https://c2-c-puce.vercel.app` | `https://c2c-negk.onrender.com/api/v1` | Vercel Edge CDN + Render Cloud |
+
+### 🔐 Default SuperAdmin Login Credentials:
+- **Email**: `admin@brandflow.com` (or `admin1@gmail.com`)
+- **Password**: `Admin@123456` (or `admin1`)
 
 ---
 

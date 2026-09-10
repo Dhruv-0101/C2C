@@ -4,12 +4,11 @@
  */
 
 /**
- * Resolves the target API base URL dynamically based on environment configuration.
+ * Resolves the target API base URL dynamically based on environment configuration & browser hostname.
  * Priority Order:
- * 1. .env variable: VITE_API_BASE_URL (Primary env override)
- * 2. .env variable: VITE_API_BASE_URL_PROD (in Production) or VITE_API_BASE_URL_DEV (in Development)
- * 3. Render cloud production fallback (https://c2c-negk.onrender.com/api/v1)
- * 4. Localhost development fallback (http://localhost:5000/api/v1)
+ * 1. .env variable: VITE_API_BASE_URL (Primary explicit override)
+ * 2. .env variable: VITE_API_BASE_URL_AWS, VITE_API_BASE_URL_PROD, VITE_API_BASE_URL_DEV
+ * 3. Dynamic Browser Hostname Resolution (AWS EC2 vs Vercel/Render vs Localhost)
  *
  * @returns {string} Fully qualified API base URL
  */
@@ -30,21 +29,41 @@ const getApiBaseUrl = () => {
     return envUrl.trim();
   }
 
-  // Determine mode (Production vs Development)
+  // Determine execution mode
   const isProduction = import.meta.env.PROD || import.meta.env.VITE_APP_ENV === 'production';
 
-  // 2. Second Priority: Check environment-specific .env variable
+  // 2. Second Priority: Check environment-specific .env variables
   const envSpecificUrl = isProduction
-    ? import.meta.env.VITE_API_BASE_URL_PROD
+    ? import.meta.env.VITE_API_BASE_URL_AWS || import.meta.env.VITE_API_BASE_URL_PROD
     : import.meta.env.VITE_API_BASE_URL_DEV;
 
   if (isValidUrl(envSpecificUrl)) {
     return envSpecificUrl.trim();
   }
 
-  // 3. Third Priority: Fallbacks (Render for Production, Localhost for Development)
+  // 3. Third Priority: Dynamic Hostname Auto-Detection (AWS EC2 vs Vercel/Render vs Localhost)
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+
+    // AWS EC2 Environment (sslip.io domain or Elastic IP)
+    if (hostname.includes('sslip.io') || hostname === '52.87.37.2') {
+      return 'https://52-87-37-2.sslip.io/api/v1';
+    }
+
+    // Vercel Production Environment -> Render Backend API
+    if (hostname.includes('vercel.app')) {
+      return 'https://c2c-negk.onrender.com/api/v1';
+    }
+
+    // Localhost Development / Docker Environment
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:5000/api/v1';
+    }
+  }
+
+  // 4. Default Fallbacks
   if (isProduction) {
-    return 'https://c2c-negk.onrender.com/api/v1';
+    return 'https://52-87-37-2.sslip.io/api/v1';
   }
 
   return 'http://localhost:5000/api/v1';

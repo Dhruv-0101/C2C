@@ -16,9 +16,9 @@ if (activeDbUrl) {
   process.env.DATABASE_URL = activeDbUrl;
 }
 
-// 2. Dynamic Client Application URL
+// 2. Dynamic Client Application URL (Supports AWS EC2, Vercel, Localhost)
 const activeClientUrl = process.env.CLIENT_URL || (isProd
-  ? process.env.CLIENT_URL_PROD || 'https://c2-c-puce.vercel.app'
+  ? process.env.CLIENT_URL_AWS || process.env.CLIENT_URL_PROD || 'https://52-87-37-2.sslip.io'
   : process.env.CLIENT_URL_DEV || 'http://localhost:5173');
 
 if (activeClientUrl) {
