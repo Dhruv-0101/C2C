@@ -288,9 +288,13 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
       const imageSlots = frameConfigElements?.filter(
         (el) =>
           el.slotCategory === 'IMAGE_SLOT' ||
+          el.slotCategory === 'DYNAMIC_IMAGE' ||
           el.type === 'IMAGE_SLOT' ||
+          el.type === 'IMAGE' ||
           el.dynamicSlot === 'LOGO_BOX' ||
-          el.dynamicSlot === 'AVATAR_CIRCLE'
+          el.dynamicSlot === 'AVATAR_CIRCLE' ||
+          el.dynamicSlot === 'CUSTOM_IMAGE' ||
+          el.dynamicSlot === 'MANUAL_INPUT'
       ) || [];
 
       let hasRenderedAvatarSlot = false;
@@ -299,17 +303,19 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         for (const slot of imageSlots) {
           const slotKey = slot.id || slot.fieldKey || slot.dynamicSlot;
           const slotUrl =
-            customDetails[slotKey] ||
+            (typeof customDetails[slotKey] === 'string' ? customDetails[slotKey] : null) ||
+            (typeof customDetails[slot.fieldKey] === 'string' ? customDetails[slot.fieldKey] : null) ||
+            (typeof customDetails[slot.id] === 'string' ? customDetails[slot.id] : null) ||
             (slot.dynamicSlot === 'AVATAR_CIRCLE'
               ? (showAvatar ? activeAvatarUrl : null)
               : slot.dynamicSlot === 'LOGO_BOX'
               ? (showLogo ? activeLogoUrl : null)
-              : customDetails[slot.fieldKey]);
+              : (typeof slot.src === 'string' ? slot.src : (typeof slot.url === 'string' ? slot.url : null)));
 
           const slotImg = slotUrl ? await loadImageCached(slotUrl) : null;
 
           if (slotImg) {
-            hasRenderedAvatarSlot = true;
+            if (slot.dynamicSlot === 'AVATAR_CIRCLE') hasRenderedAvatarSlot = true;
             const rotation = slot.rotation || 0;
             if (rotation) {
               const cx = slot.x + slot.width / 2;
@@ -339,51 +345,70 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             if (rotation) ctx.restore();
           } else if (slot.dynamicSlot === 'AVATAR_CIRCLE') {
             hasRenderedAvatarSlot = true;
-            // Render clean default avatar placeholder inside avatar slot when user has not uploaded photo yet
-            const cx = slot.x + slot.width / 2;
-            const cy = slot.y + (slot.height || slot.width) / 2;
-            const r = slot.width / 2;
+            if (showAvatar) {
+              // Render clean default avatar placeholder inside avatar slot when user has not uploaded photo yet
+              const cx = slot.x + slot.width / 2;
+              const cy = slot.y + (slot.height || slot.width) / 2;
+              const r = slot.width / 2;
 
-            ctx.save();
-            ctx.fillStyle = slot.fillColor || '#1E293B';
-            ctx.beginPath();
-            ctx.arc(cx, cy, r, 0, Math.PI * 2);
-            ctx.fill();
+              ctx.save();
+              ctx.fillStyle = slot.fillColor || '#1E293B';
+              ctx.beginPath();
+              ctx.arc(cx, cy, r, 0, Math.PI * 2);
+              ctx.fill();
 
-            ctx.fillStyle = '#94A3B8';
-            ctx.beginPath();
-            ctx.arc(cx, cy - r * 0.2, r * 0.35, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(cx, cy + r * 0.7, r * 0.6, Math.PI, 0);
-            ctx.fill();
+              ctx.fillStyle = '#94A3B8';
+              ctx.beginPath();
+              ctx.arc(cx, cy - r * 0.2, r * 0.35, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(cx, cy + r * 0.7, r * 0.6, Math.PI, 0);
+              ctx.fill();
 
-            if (slot.borderWidth || slot.borderColor) {
-              ctx.lineWidth = slot.borderWidth || 5;
-              ctx.strokeStyle = slot.borderColor || '#EAB308';
-              ctx.stroke();
+              if (slot.borderWidth || slot.borderColor) {
+                ctx.lineWidth = slot.borderWidth || 5;
+                ctx.strokeStyle = slot.borderColor || '#EAB308';
+                ctx.stroke();
+              }
+              ctx.restore();
             }
-            ctx.restore();
           } else if (slot.dynamicSlot === 'LOGO_BOX') {
-            // Render clean default logo placeholder box when user has not uploaded logo yet
-            ctx.save();
-            ctx.fillStyle = slot.fillColor || '#FFFFFF';
-            drawVectorShapePath(ctx, slot);
-            ctx.fill();
+            if (showLogo) {
+              // Render clean default logo placeholder box when user has not uploaded logo yet
+              ctx.save();
+              ctx.fillStyle = slot.fillColor || '#FFFFFF';
+              drawVectorShapePath(ctx, slot);
+              ctx.fill();
 
+              if (slot.borderWidth || slot.borderColor) {
+                ctx.lineWidth = slot.borderWidth || 2;
+                ctx.strokeStyle = slot.borderColor || '#CBD5E1';
+                ctx.stroke();
+              }
+
+              ctx.fillStyle = '#64748B';
+              ctx.font = 'bold 12px "Space Grotesk", sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              const cx = slot.x + slot.width / 2;
+              const cy = slot.y + (slot.height || slot.width) / 2;
+              ctx.fillText('🖼️ LOGO SLOT', cx, cy);
+              ctx.restore();
+            }
+          } else {
+            // Render vector shape (e.g. Star, Polygon) directly if no custom image file uploaded
+            ctx.save();
+            if (slot.fillColor && slot.fillColor !== 'transparent') {
+              ctx.fillStyle = slot.fillColor;
+              drawVectorShapePath(ctx, slot);
+              ctx.fill();
+            }
             if (slot.borderWidth || slot.borderColor) {
               ctx.lineWidth = slot.borderWidth || 2;
-              ctx.strokeStyle = slot.borderColor || '#CBD5E1';
+              ctx.strokeStyle = slot.borderColor || '#EAB308';
+              drawVectorShapePath(ctx, slot);
               ctx.stroke();
             }
-
-            ctx.fillStyle = '#64748B';
-            ctx.font = 'bold 12px "Space Grotesk", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const cx = slot.x + slot.width / 2;
-            const cy = slot.y + (slot.height || slot.width) / 2;
-            ctx.fillText('🖼️ IMAGE SLOT', cx, cy);
             ctx.restore();
           }
         }
@@ -439,13 +464,12 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
       // 4. LAYER 4: Dynamic Text Details & Elements Overlay
       const textElementsInConfig = frameConfigElements?.filter(
         (el) =>
-          el.type === 'TEXT' ||
-          el.slotCategory === 'TEXT_INPUT' ||
-          (el.dynamicSlot &&
-            el.dynamicSlot !== 'NONE' &&
-            el.dynamicSlot !== 'AVATAR_CIRCLE' &&
-            el.dynamicSlot !== 'LOGO_BOX' &&
-            el.dynamicSlot !== 'CUSTOM_IMAGE')
+          (el.type === 'TEXT' || el.type === 'DYNAMIC_TEXT' || el.slotCategory === 'TEXT_INPUT' || (el.dynamicSlot && el.dynamicSlot !== 'NONE' && el.dynamicSlot !== 'STATIC')) &&
+          el.slotCategory !== 'IMAGE_SLOT' &&
+          el.slotCategory !== 'DYNAMIC_IMAGE' &&
+          el.dynamicSlot !== 'LOGO_BOX' &&
+          el.dynamicSlot !== 'AVATAR_CIRCLE' &&
+          el.dynamicSlot !== 'CUSTOM_IMAGE'
       ) || [];
 
       if (textElementsInConfig.length > 0) {
@@ -453,7 +477,6 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
           let textVal = '';
           const fieldKey = textSlot.fieldKey || textSlot.dynamicSlot || textSlot.id;
           const icon = textSlot.iconPrefix ? `${textSlot.iconPrefix} ` : '';
-
           const frameText = textSlot.text || textSlot.defaultText || '';
 
           if (textSlot.dynamicSlot === 'BUSINESS_NAME') {
@@ -482,11 +505,19 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             textVal = customDetails.country || brandKit?.country || frameText || 'India';
           } else if (textSlot.dynamicSlot === 'WEBSITE') {
             textVal = customDetails.websiteUrl || brandKit?.websiteUrl || frameText || 'www.yourbusiness.com';
-          } else if (textSlot.dynamicSlot === 'TAGLINE') {
-            textVal = customDetails.tagline || brandKit?.tagline || frameText || 'Luxury Homes & Commercial Spaces';
+          } else if (textSlot.dynamicSlot === 'TAGLINE' || textSlot.dynamicSlot === 'SLOGAN' || textSlot.text?.toLowerCase().includes('slogan')) {
+            textVal = customDetails.tagline || customDetails.slogan || brandKit?.tagline || brandKit?.slogan || frameText || 'Luxury Homes & Commercial Spaces';
           } else {
-            const customVal = (customDetails[fieldKey] && customDetails[fieldKey] !== '') ? customDetails[fieldKey] : ((customDetails[textSlot.customLabel] && customDetails[textSlot.customLabel] !== '') ? customDetails[textSlot.customLabel] : '');
-            textVal = customVal || frameText || textSlot.label || '';
+            const customVal = customDetails[fieldKey] !== undefined && customDetails[fieldKey] !== ''
+              ? customDetails[fieldKey]
+              : (customDetails[textSlot.id] !== undefined && customDetails[textSlot.id] !== ''
+              ? customDetails[textSlot.id]
+              : (customDetails[textSlot.customLabel] !== undefined && customDetails[textSlot.customLabel] !== ''
+              ? customDetails[textSlot.customLabel]
+              : (customDetails[textSlot.name] !== undefined && customDetails[textSlot.name] !== ''
+              ? customDetails[textSlot.name]
+              : '')));
+            textVal = customVal || frameText || textSlot.label || textSlot.name || '';
           }
 
           if (textVal) {
@@ -495,7 +526,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             }
 
             const rotation = textSlot.rotation || 0;
-            const isShape = textSlot.type !== 'TEXT';
+            const isShape = textSlot.type !== 'TEXT' && textSlot.type !== 'DYNAMIC_TEXT';
             const elH = isShape ? textSlot.height || textSlot.width : (textSlot.fontSize || 24) + 6;
 
             if (rotation) {
@@ -509,6 +540,18 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
 
             ctx.save();
             if (isShape) {
+              if (textSlot.fillColor && textSlot.fillColor !== 'transparent') {
+                ctx.save();
+                drawVectorShapePath(ctx, textSlot);
+                ctx.fillStyle = textSlot.fillColor;
+                ctx.fill();
+                if (textSlot.borderWidth > 0) {
+                  ctx.strokeStyle = textSlot.borderColor || '#EAB308';
+                  ctx.lineWidth = textSlot.borderWidth;
+                  ctx.stroke();
+                }
+                ctx.restore();
+              }
               drawVectorShapePath(ctx, textSlot);
               ctx.clip();
             }
@@ -516,7 +559,18 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             const fontFamily = textSlot.fontFamily || 'Space Grotesk';
             const fontWeight = textSlot.fontWeight || 'bold';
             const fontSize = textSlot.fontSize || (isShape ? Math.min(24, Math.max(12, Math.floor(elH * 0.28))) : 24);
-            ctx.fillStyle = textSlot.fontColor || textSlot.textColor || (isShape ? '#FFFFFF' : textSlot.fillColor || '#FFFFFF');
+
+            // Determine text color properly: check fontColor, textColor, color, and fallback to fillColor or black
+            let textColor = textSlot.fontColor || textSlot.textColor || textSlot.color;
+            if (!textColor) {
+              if (textSlot.fillColor && textSlot.fillColor !== 'transparent') {
+                textColor = textSlot.fillColor;
+              } else {
+                textColor = '#000000'; // Default to black text if unspecified on canvas background
+              }
+            }
+
+            ctx.fillStyle = textColor;
             ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
 
             if (isShape) {

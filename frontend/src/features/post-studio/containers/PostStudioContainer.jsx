@@ -168,7 +168,12 @@ export const PostStudioContainer = () => {
     const elements = Array.isArray(rawConfig)
       ? rawConfig
       : (rawConfig?.elements && Array.isArray(rawConfig.elements) ? rawConfig.elements : []);
-    const match = elements.find((el) => el.dynamicSlot === slotName);
+    const match = elements.find(
+      (el) =>
+        el.dynamicSlot === slotName ||
+        (slotName === "TAGLINE" &&
+          (el.dynamicSlot === "SLOGAN" || el.text?.toLowerCase().includes("slogan") || el.name?.toLowerCase().includes("slogan")))
+    );
     return match?.text || match?.defaultText || "";
   };
 
@@ -192,7 +197,8 @@ export const PostStudioContainer = () => {
       state: brandKit?.state || "Maharashtra",
       country: brandKit?.country || "India",
       websiteUrl: brandKit?.websiteUrl || "https://yourbusiness.com",
-      tagline: brandKit?.tagline || frameTagline || "Premium Luxury Homes & Commercial Spaces",
+      tagline: brandKit?.tagline || brandKit?.slogan || frameTagline || "Premium Luxury Homes & Commercial Spaces",
+      slogan: brandKit?.slogan || brandKit?.tagline || frameTagline || "Premium Luxury Homes & Commercial Spaces",
     }));
   }, [brandKit, selectedFrame]);
 

@@ -195,6 +195,7 @@ export const FrameManagerContainer = () => {
         base64Overlay: transparentBase64,
         base64Image: previewBase64,
         blueprint: elements,
+        configJson: { elements },
       });
     } catch (err) {
       setErrorMsg("Failed to export Canva frame to PNG.");

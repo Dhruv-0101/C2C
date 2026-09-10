@@ -82,7 +82,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     // 2. Map sample text from selectedFrame.configJson.elements if field is still empty
     if (selectedFrame?.configJson?.elements) {
       selectedFrame.configJson.elements
-        .filter((el) => el.type === 'TEXT')
+        .filter((el) => el.type === 'TEXT' || el.slotCategory === 'TEXT_INPUT')
         .forEach((el) => {
           const key = el.fieldKey || el.dynamicSlot || el.id;
           const valKey =
@@ -92,11 +92,11 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
               ? 'phone'
               : el.dynamicSlot === 'ADDRESS'
               ? 'address'
-              : el.dynamicSlot === 'TAGLINE'
+              : (el.dynamicSlot === 'TAGLINE' || el.dynamicSlot === 'SLOGAN')
               ? 'tagline'
               : key;
 
-          const sampleVal = el.text || el.customLabel || '';
+          const sampleVal = el.text || el.customLabel || el.name || '';
 
           if (!newDetails[valKey] && sampleVal) {
             newDetails[valKey] = sampleVal;
@@ -392,7 +392,13 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
                 <div className="space-y-3 pt-2 border-t border-[#2C384E]">
                   {/* Dynamic Image Upload Slots defined by Admin */}
                   {selectedFrame?.configJson?.elements?.some(
-                    (el) => el.slotCategory === 'IMAGE_SLOT' || el.dynamicSlot === 'LOGO_BOX' || el.dynamicSlot === 'AVATAR_CIRCLE'
+                    (el) =>
+                      el.slotCategory === 'IMAGE_SLOT' ||
+                      el.slotCategory === 'DYNAMIC_IMAGE' ||
+                      el.dynamicSlot === 'LOGO_BOX' ||
+                      el.dynamicSlot === 'AVATAR_CIRCLE' ||
+                      el.dynamicSlot === 'CUSTOM_IMAGE' ||
+                      el.dynamicSlot === 'MANUAL_INPUT'
                   ) && (
                     <div className="space-y-3 pt-2 border-t border-[#2C384E]">
                       <p className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
@@ -401,25 +407,34 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
                       </p>
                       {selectedFrame.configJson.elements
                         .filter(
-                          (el) => el.slotCategory === 'IMAGE_SLOT' || el.dynamicSlot === 'LOGO_BOX' || el.dynamicSlot === 'AVATAR_CIRCLE'
+                          (el) =>
+                            el.slotCategory === 'IMAGE_SLOT' ||
+                            el.slotCategory === 'DYNAMIC_IMAGE' ||
+                            el.dynamicSlot === 'LOGO_BOX' ||
+                            el.dynamicSlot === 'AVATAR_CIRCLE' ||
+                            el.dynamicSlot === 'CUSTOM_IMAGE' ||
+                            el.dynamicSlot === 'MANUAL_INPUT'
                         )
                         .map((el) => {
                           const slotKey = el.id || el.fieldKey || el.dynamicSlot;
                           const isAvatar = el.dynamicSlot === 'AVATAR_CIRCLE' || el.type === 'CIRCLE';
-                          const label = el.customLabel || el.name || (isAvatar ? 'Profile Headshot Photo' : 'Business Logo Box');
+                          const isLogo = el.dynamicSlot === 'LOGO_BOX';
+                          const label = el.customLabel || el.name || (isAvatar ? 'Profile Headshot Photo' : isLogo ? 'Business Logo Box' : 'Custom Image / Photo Slot');
 
                           const activeUrl =
                             customDetails[slotKey] ||
-                            (isAvatar ? customDetails.avatarUrl || brandKit?.avatarUrl : customDetails.logoUrl || brandKit?.logoUrl);
+                            customDetails[el.fieldKey] ||
+                            customDetails[el.id] ||
+                            (isAvatar ? customDetails.avatarUrl || brandKit?.avatarUrl : isLogo ? customDetails.logoUrl || brandKit?.logoUrl : null);
 
                           return (
                             <div key={el.id} className="p-3 rounded-xl bg-[#131B2A] border border-[#2C384E] space-y-2 text-xs">
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-white flex items-center gap-1.5">
-                                  {isAvatar ? '👤' : '🏢'} {label}
+                                  {isAvatar ? '👤' : isLogo ? '🏢' : '🖼️'} {label}
                                 </span>
                                 <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                                  {isAvatar ? 'Circle Ring' : 'Logo Box'}
+                                  {isAvatar ? 'Circle Ring' : isLogo ? 'Logo Box' : 'Image Slot'}
                                 </span>
                               </div>
 
@@ -446,8 +461,10 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
                                         setCustomDetails((prev) => ({
                                           ...prev,
                                           [slotKey]: reader.result,
-                                          ...(el.dynamicSlot === 'AVATAR_CIRCLE' ? { avatarUrl: reader.result } : {}),
-                                          ...(el.dynamicSlot === 'LOGO_BOX' ? { logoUrl: reader.result } : {}),
+                                          [el.id]: reader.result,
+                                          ...(el.fieldKey ? { [el.fieldKey]: reader.result } : {}),
+                                          ...(isAvatar ? { avatarUrl: reader.result } : {}),
+                                          ...(isLogo ? { logoUrl: reader.result } : {}),
                                         }));
                                       };
                                       reader.readAsDataURL(file);
@@ -463,16 +480,21 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
 
                   {/* Render EXACT Dynamic Text Input Fields Configured by Admin */}
                   {selectedFrame?.configJson?.elements
-                    ?.filter((el) => (el.slotCategory === 'TEXT_INPUT' || el.type === 'TEXT') && el.dynamicSlot !== 'NONE')
+                    ?.filter((el) => 
+                      (el.slotCategory === 'TEXT_INPUT' || el.type === 'TEXT') && 
+                      el.dynamicSlot !== 'NONE' &&
+                      el.slotCategory !== 'IMAGE_SLOT' &&
+                      el.slotCategory !== 'DYNAMIC_IMAGE'
+                    )
                     .map((el) => {
-                      let key = el.fieldKey || el.dynamicSlot;
+                      let key = el.fieldKey || el.dynamicSlot || el.id;
                       let label = el.customLabel || el.name || 'Text Field';
                       let valKey = key;
 
                       if (el.dynamicSlot === 'BUSINESS_NAME') { label = 'Business Name'; valKey = 'businessName'; }
                       else if (el.dynamicSlot === 'PHONE') { label = 'Phone / WhatsApp'; valKey = 'phone'; }
                       else if (el.dynamicSlot === 'ADDRESS') { label = 'Address / Location'; valKey = 'address'; }
-                      else if (el.dynamicSlot === 'TAGLINE') { label = 'Tagline / Designation'; valKey = 'tagline'; }
+                      else if (el.dynamicSlot === 'TAGLINE' || el.dynamicSlot === 'SLOGAN') { label = 'Tagline / Slogan'; valKey = 'tagline'; }
 
                       return (
                         <Input

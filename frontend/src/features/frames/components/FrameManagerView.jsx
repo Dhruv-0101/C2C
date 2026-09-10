@@ -665,15 +665,17 @@ export const FrameManagerView = ({
                           dynamicSlot:
                             selectedElement.dynamicSlot === "AVATAR_CIRCLE"
                               ? "AVATAR_CIRCLE"
-                              : "LOGO_BOX",
+                              : selectedElement.dynamicSlot === "LOGO_BOX"
+                              ? "LOGO_BOX"
+                              : "CUSTOM_IMAGE",
                           customLabel:
                             selectedElement.customLabel ||
                             selectedElement.name ||
-                            "Image Slot",
+                            "Custom Image Slot",
                           name:
                             selectedElement.customLabel ||
                             selectedElement.name ||
-                            "Image Slot",
+                            "Custom Image Slot",
                           fieldKey:
                             selectedElement.fieldKey || `img_${Date.now()}`,
                         });
@@ -733,7 +735,7 @@ export const FrameManagerView = ({
                         Image Slot Auto-Fill
                       </label>
                       <select
-                        value={selectedElement.dynamicSlot || "LOGO_BOX"}
+                        value={selectedElement.dynamicSlot || "CUSTOM_IMAGE"}
                         onChange={(e) => {
                           const slot = e.target.value;
                           updateSelectedElement({
@@ -746,9 +748,9 @@ export const FrameManagerView = ({
                         }}
                         className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs"
                       >
+                        <option value="CUSTOM_IMAGE">Custom Photo Slot</option>
                         <option value="LOGO_BOX">Business Logo Box</option>
                         <option value="AVATAR_CIRCLE">Profile Headshot Ring</option>
-                        <option value="CUSTOM_IMAGE">Custom Photo Slot</option>
                       </select>
                     </div>
                   )}

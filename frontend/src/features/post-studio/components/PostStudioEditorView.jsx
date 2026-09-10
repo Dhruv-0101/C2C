@@ -632,48 +632,48 @@ export const PostStudioEditorView = ({
 
               const textFields = [];
               const imageToggles = [];
+              const customImageSlots = [];
               const seenKeys = new Set();
 
               elements.forEach((el) => {
                 const slot = el.dynamicSlot;
+                const isImageCategory = el.slotCategory === "IMAGE_SLOT" || el.slotCategory === "DYNAMIC_IMAGE" || el.type === "IMAGE_SLOT";
 
                 if (
-                  el.slotCategory === "IMAGE_SLOT" ||
-                  el.type === "IMAGE_SLOT" ||
+                  isImageCategory ||
                   slot === "LOGO_BOX" ||
                   slot === "AVATAR_CIRCLE" ||
-                  slot === "CUSTOM_IMAGE"
+                  slot === "CUSTOM_IMAGE" ||
+                  slot === "MANUAL_INPUT"
                 ) {
-                  let key = "showLogo";
-                  let label = "Render Brand Logo";
-                  let type = "LOGO";
-                  let fieldKey = "showLogo";
+                  const isPrimaryAvatar = slot === "AVATAR_CIRCLE" && (el.id === "el-avatar-circle" || el.name === "Profile Photo");
+                  const isPrimaryLogo = slot === "LOGO_BOX" && (el.id === "el-logo-box" || el.name === "Brand Logo");
 
-                  if (slot === "AVATAR_CIRCLE") {
-                    key = "showAvatar";
-                    label = el.customLabel || el.name || "Render Profile / Doctor Photo";
-                    type = "AVATAR";
-                    fieldKey = "showAvatar";
-                  } else if (slot === "LOGO_BOX") {
-                    key = "showLogo";
-                    label = el.customLabel || el.name || "Render Brand Logo";
-                    type = "LOGO";
-                    fieldKey = "showLogo";
+                  if (isPrimaryAvatar) {
+                    const fieldKey = "showAvatar";
+                    if (!seenKeys.has(fieldKey)) {
+                      seenKeys.add(fieldKey);
+                      imageToggles.push({ id: el.id, key: "showAvatar", label: el.customLabel || el.name || "Render Profile Photo", type: "AVATAR", fieldKey, rawElement: el });
+                    }
+                  } else if (isPrimaryLogo) {
+                    const fieldKey = "showLogo";
+                    if (!seenKeys.has(fieldKey)) {
+                      seenKeys.add(fieldKey);
+                      imageToggles.push({ id: el.id, key: "showLogo", label: el.customLabel || el.name || "Render Brand Logo", type: "LOGO", fieldKey, rawElement: el });
+                    }
                   } else {
-                    key = el.id || el.fieldKey || "custom_image";
-                    label = el.customLabel || el.name || "Custom Image Overlay";
-                    type = "CUSTOM";
-                    fieldKey = key;
-                  }
-
-                  if (!seenKeys.has(fieldKey)) {
-                    seenKeys.add(fieldKey);
-                    imageToggles.push({ id: el.id, key, label, type, fieldKey, rawElement: el });
+                    const fieldKey = el.fieldKey || el.id || `custom_img_${el.type || 'slot'}`;
+                    const label = el.customLabel || el.name || `Upload Image for ${el.type || 'Shape'} Slot`;
+                    if (!seenKeys.has(fieldKey)) {
+                      seenKeys.add(fieldKey);
+                      customImageSlots.push({ id: el.id, key: fieldKey, label, type: "CUSTOM", fieldKey, rawElement: el });
+                    }
                   }
                 } else if (
                   el.type === "TEXT" ||
+                  el.type === "DYNAMIC_TEXT" ||
                   el.slotCategory === "TEXT_INPUT" ||
-                  (slot && slot !== "NONE")
+                  (slot && slot !== "NONE" && slot !== "STATIC")
                 ) {
                   let fieldKey = "businessName";
                   let label = "Business Name";
@@ -690,9 +690,14 @@ export const PostStudioEditorView = ({
                   } else if (slot === "ADDRESS") {
                     fieldKey = "address";
                     label = "Address / Location";
-                  } else if (slot === "TAGLINE") {
+                  } else if (
+                    slot === "TAGLINE" ||
+                    slot === "SLOGAN" ||
+                    el.text?.toLowerCase().includes("slogan") ||
+                    el.name?.toLowerCase().includes("slogan")
+                  ) {
                     fieldKey = "tagline";
-                    label = "Tagline / Offer Message";
+                    label = "Tagline / Slogan";
                   } else if (slot === "EMAIL") {
                     fieldKey = "email";
                     label = "Email Address";
@@ -726,10 +731,10 @@ export const PostStudioEditorView = ({
                 }
               });
 
-              return { textFields, imageToggles };
+              return { textFields, imageToggles, customImageSlots };
             };
 
-            const { textFields, imageToggles } = getDynamicFrameFields(selectedFrame);
+            const { textFields, imageToggles, customImageSlots } = getDynamicFrameFields(selectedFrame);
 
             return (
               <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
@@ -753,7 +758,10 @@ export const PostStudioEditorView = ({
                         else if (fk === "phone") updated.phone = brandKit?.phone || brandKit?.whatsapp || tf.placeholder || "+91 98765 43210";
                         else if (fk === "whatsapp") updated.whatsapp = brandKit?.whatsapp || tf.placeholder || "+91 98765 43210";
                         else if (fk === "address") updated.address = brandKit?.address || tf.placeholder || "Business Park, MG Road, Mumbai";
-                        else if (fk === "tagline") updated.tagline = brandKit?.tagline || tf.placeholder || "Premium Luxury Homes & Commercial Spaces";
+                        else if (fk === "tagline") {
+                          updated.tagline = brandKit?.tagline || brandKit?.slogan || tf.placeholder || "Premium Luxury Homes & Commercial Spaces";
+                          updated.slogan = brandKit?.slogan || brandKit?.tagline || tf.placeholder || "Premium Luxury Homes & Commercial Spaces";
+                        }
                         else if (fk === "email") updated.email = brandKit?.email || tf.placeholder || "contact@business.com";
                         else if (fk === "websiteUrl") updated.websiteUrl = brandKit?.websiteUrl || tf.placeholder || "https://yourbusiness.com";
                         else if (fk === "instagramHandle") updated.instagramHandle = brandKit?.instagramHandle || tf.placeholder || "@yourbrand";
@@ -761,14 +769,14 @@ export const PostStudioEditorView = ({
                         else if (fk === "city") updated.city = brandKit?.city || tf.placeholder || "Mumbai";
                         else if (fk === "state") updated.state = brandKit?.state || tf.placeholder || "Maharashtra";
                         else if (fk === "country") updated.country = brandKit?.country || tf.placeholder || "India";
-                        else if (tf.placeholder) updated[fk] = tf.placeholder;
+                        else updated[fk] = brandKit?.[fk] || tf.placeholder || "Sample Text";
                       });
                       setCustomDetails(updated);
                     }}
                     className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition flex items-center gap-1 shrink-0"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Auto-Fill AI BrandKit</span>
+                    <span>Fill Brandkit</span>
                   </button>
                 </div>
 
@@ -823,6 +831,62 @@ export const PostStudioEditorView = ({
                         </label>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* CUSTOM IMAGE SLOT UPLOADERS (e.g. Star Shape Image Slot or Custom Photo Slot) */}
+                {customImageSlots.length > 0 && (
+                  <div className="space-y-3 pt-3 border-t border-[#2C384E]">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                      Custom Image Slots (Upload Graphic for Shapes / Frame Slots)
+                    </label>
+                    {customImageSlots.map((cis) => (
+                      <div key={cis.fieldKey} className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2">
+                        <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+                          <span>{cis.label}</span>
+                          {customDetails[cis.fieldKey] && (
+                            <button
+                              type="button"
+                              onClick={() => setCustomDetails((prev) => ({ ...prev, [cis.fieldKey]: null }))}
+                              className="text-[10px] text-red-400 hover:underline"
+                            >
+                              Clear Image
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {customDetails[cis.fieldKey] ? (
+                            <img
+                              src={customDetails[cis.fieldKey]}
+                              alt={cis.label}
+                              className="w-12 h-12 rounded-lg object-cover border border-[#2C384E]"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-[#131B2A] border border-dashed border-[#2C384E] flex items-center justify-center text-slate-500 text-xs">
+                              🖼️
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (evt) => {
+                                  setCustomDetails((prev) => ({
+                                    ...prev,
+                                    [cis.fieldKey]: evt.target.result,
+                                  }));
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500/20 file:text-amber-400 hover:file:bg-amber-500/30 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
 
