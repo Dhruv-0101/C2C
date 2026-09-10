@@ -5,8 +5,6 @@
 # Target Environment: High-Performance Production Containers (Nginx + Node.js Prod)
 # ==============================================================================
 
-version: '3.8'
-
 services:
   # ============================================================================
   # 1. PostgreSQL Production Relational Database Service
