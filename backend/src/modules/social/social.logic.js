@@ -11,7 +11,7 @@ export const socialLogic = {
   /**
    * Get Meta / Instagram OAuth Authorization URL
    */
-  getInstagramAuthUrl: async (userId) => {
+  getInstagramAuthUrl: async (userId, clientUrl) => {
     if (!env.META_APP_ID) {
       return {
         configured: false,
@@ -20,7 +20,7 @@ export const socialLogic = {
       };
     }
 
-    const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString('base64');
+    const state = Buffer.from(JSON.stringify({ userId, clientUrl, timestamp: Date.now() })).toString('base64');
     const authUrl = instagramPublisherService.getOAuthUrl(state);
 
     return {
@@ -32,7 +32,7 @@ export const socialLogic = {
   /**
    * Get LinkedIn OAuth Authorization URL
    */
-  getLinkedinAuthUrl: async (userId) => {
+  getLinkedinAuthUrl: async (userId, clientUrl) => {
     if (!env.LINKEDIN_CLIENT_ID) {
       return {
         configured: false,
@@ -41,7 +41,7 @@ export const socialLogic = {
       };
     }
 
-    const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString('base64');
+    const state = Buffer.from(JSON.stringify({ userId, clientUrl, timestamp: Date.now() })).toString('base64');
     const authUrl = linkedinPublisherService.getOAuthUrl(state);
 
     return {

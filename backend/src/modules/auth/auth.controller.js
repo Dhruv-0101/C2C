@@ -325,7 +325,15 @@ export async function getProfile(req, res, next) {
  */
 export async function forgotPassword(req, res, next) {
   try {
-    const result = await authLogic.requestPasswordReset({ email: req.body.email });
+    let clientUrl = req.get('origin');
+    if (!clientUrl && req.get('referer')) {
+      try {
+        clientUrl = new URL(req.get('referer')).origin;
+      } catch (e) {
+        // Fallback to null if unparseable
+      }
+    }
+    const result = await authLogic.requestPasswordReset({ email: req.body.email, clientUrl });
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: result.message,

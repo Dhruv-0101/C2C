@@ -5,9 +5,34 @@ export const socialController = {
   /**
    * GET /api/v1/social/auth-url/instagram
    */
+  /**
+   * Helper to resolve target frontend client URL from request or encoded state
+   */
+  _getClientUrl: (req, state) => {
+    if (state) {
+      try {
+        const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+        if (decoded.clientUrl && typeof decoded.clientUrl === 'string' && decoded.clientUrl.startsWith('http')) {
+          return decoded.clientUrl.replace(/\/$/, '');
+        }
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+    const origin = req?.get('origin');
+    if (origin && typeof origin === 'string' && origin.startsWith('http')) {
+      return origin.replace(/\/$/, '');
+    }
+    return env.CLIENT_URL;
+  },
+
+  /**
+   * GET /api/v1/social/auth-url/instagram
+   */
   getInstagramAuthUrl: async (req, res, next) => {
     try {
-      const result = await socialLogic.getInstagramAuthUrl(req.user.id);
+      const clientUrl = req.get('origin') || (req.get('referer') ? new URL(req.get('referer')).origin : null);
+      const result = await socialLogic.getInstagramAuthUrl(req.user.id, clientUrl);
       return res.status(200).json({
         success: true,
         message: result.configured
@@ -25,7 +50,8 @@ export const socialController = {
    */
   getLinkedinAuthUrl: async (req, res, next) => {
     try {
-      const result = await socialLogic.getLinkedinAuthUrl(req.user.id);
+      const clientUrl = req.get('origin') || (req.get('referer') ? new URL(req.get('referer')).origin : null);
+      const result = await socialLogic.getLinkedinAuthUrl(req.user.id, clientUrl);
       return res.status(200).json({
         success: true,
         message: result.configured
@@ -42,11 +68,12 @@ export const socialController = {
    * GET /api/v1/social/linkedin/callback
    */
   handleLinkedinCallback: async (req, res, next) => {
-    try {
-      const { code, state, error, error_description } = req.query;
+    const { code, state, error, error_description } = req.query;
+    const clientUrl = socialController._getClientUrl(req, state);
 
+    try {
       if (error) {
-        return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
+        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
       }
 
       let userId = req.user?.id;
@@ -69,9 +96,9 @@ export const socialController = {
 
       const result = await socialLogic.handleLinkedinCallback(code, userId);
 
-      return res.redirect(`${env.CLIENT_URL}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
+      return res.redirect(`${clientUrl}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
     } catch (err) {
-      return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect LinkedIn account')}`);
+      return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect LinkedIn account')}`);
     }
   },
 
@@ -79,11 +106,12 @@ export const socialController = {
    * GET /api/v1/social/meta/callback
    */
   handleMetaCallback: async (req, res, next) => {
-    try {
-      const { code, state, error, error_description } = req.query;
+    const { code, state, error, error_description } = req.query;
+    const clientUrl = socialController._getClientUrl(req, state);
 
+    try {
       if (error) {
-        return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
+        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
       }
 
       let userId = req.user?.id;
@@ -107,9 +135,9 @@ export const socialController = {
       const result = await socialLogic.handleMetaCallback(code, userId);
 
       // Redirect back to frontend settings page with success indicator
-      return res.redirect(`${env.CLIENT_URL}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
+      return res.redirect(`${clientUrl}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
     } catch (err) {
-      return res.redirect(`${env.CLIENT_URL}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect Instagram account')}`);
+      return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect Instagram account')}`);
     }
   },
 

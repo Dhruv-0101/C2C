@@ -525,7 +525,7 @@ export async function getUserProfile(userId) {
  * Request Password Reset link
  * Generates a 64-char crypto token, stores tokenHash in DB (1-hour expiry), and dispatches reset email job
  */
-export async function requestPasswordReset({ email }) {
+export async function requestPasswordReset({ email, clientUrl }) {
   const normalizedEmail = email.toLowerCase().trim();
   const user = await authRepository.findUserByEmail(normalizedEmail);
 
@@ -552,7 +552,11 @@ export async function requestPasswordReset({ email }) {
     expiresAt,
   });
 
-  const resetUrl = `${env.CLIENT_URL}/reset-password?token=${rawToken}`;
+  const baseUrl = (clientUrl && typeof clientUrl === 'string' && clientUrl.startsWith('http')) 
+    ? clientUrl.replace(/\/$/, '') 
+    : env.CLIENT_URL;
+
+  const resetUrl = `${baseUrl}/reset-password?token=${rawToken}`;
 
   // Dispatch password reset email job to BullMQ queue
   await addPasswordResetEmailJob({
