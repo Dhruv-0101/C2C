@@ -184,6 +184,12 @@ export async function loginUser({ email, password }) {
     throw new UnauthorizedError('Your account has been deactivated. Please contact support.');
   }
 
+  if (!user.passwordHash || typeof user.passwordHash !== 'string') {
+    throw new UnauthorizedError(
+      'This account was created using Google Sign-In. Please sign in with Google, or click "Forgot Password" to set a password.'
+    );
+  }
+
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
   if (!isPasswordValid) {
     throw new UnauthorizedError('Invalid email address or password.');
