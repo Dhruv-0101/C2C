@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw, Share2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
+import Pagination from '../../../components/common/Pagination';
 import { useSocialAccounts } from '../../../hooks/useSocialAccounts';
 import { API_BASE_URL } from '../../../constants/api.constants';
 
