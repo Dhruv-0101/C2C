@@ -1,10 +1,11 @@
-import { UnauthorizedError } from '../errors/custom-errors.js';
+import { UnauthorizedError, ForbiddenError } from '../errors/custom-errors.js';
 import { verifyAccessToken } from '../helpers/token.helper.js';
+import { findUserById } from '../../modules/auth/auth.repository.js';
 
 /**
  * Middleware to authenticate requests via JWT Bearer Token
  */
-export function authenticate(req, res, next) {
+export async function authenticate(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -19,6 +20,12 @@ export function authenticate(req, res, next) {
       throw new UnauthorizedError('Two-factor authentication code required before access.');
     }
 
+    const dbUser = await findUserById(decoded.userId).catch(() => null);
+
+    if (dbUser && dbUser.isActive === false) {
+      throw new ForbiddenError('Your account has been deactivated by an admin due to policy violations.');
+    }
+
     req.user = {
       id: decoded.userId,
       email: decoded.email,
@@ -26,6 +33,7 @@ export function authenticate(req, res, next) {
       isAdmin: Boolean(decoded.isAdmin),
       isSuperAdmin: Boolean(decoded.isSuperAdmin),
       isSubAdmin: Boolean(decoded.isSubAdmin),
+      isActive: dbUser ? dbUser.isActive : true,
     };
 
     next();

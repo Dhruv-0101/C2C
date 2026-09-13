@@ -8,15 +8,20 @@ import { postApi } from "../../../services/post.api";
 import { useTemplates } from "../../../hooks/useTemplates";
 import { useFrames } from "../../../hooks/useFrames";
 import { useCategories } from "../../../hooks/useCategories";
+import { useFestivals } from "../../../hooks/useFestivals";
+import { useBrandKit } from "../../../hooks/useBrandKit";
 import { useCanvasCompositor } from "../../../hooks/useCanvasCompositor";
+import { useSubscription } from "../../../hooks/useSubscription";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
 import { PostStudioEditorView } from "../components/PostStudioEditorView";
 import { SocialPublisherModal } from "../components/SocialPublisherModal";
+import PlanSelectionModal from "../../billing/components/PlanSelectionModal";
+import PaymentSuccessModal from "../../billing/components/PaymentSuccessModal";
 
 /**
  * PostStudioContainer
  * Container component managing wizard state, template/frame query hooks,
- * canvas compositor integration, post publishing/scheduling modal, and post saving/downloading logic.
+ * canvas compositor integration, post publishing/scheduling modal, subscription quotas, and post saving/downloading logic.
  */
 export const PostStudioContainer = () => {
   const queryClient = useQueryClient();
@@ -24,6 +29,19 @@ export const PostStudioContainer = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const canvasRef = useRef(null);
+
+  // Subscription Hook for Quota Enforcement
+  const {
+    subscription,
+    postsRemaining,
+    isExpired,
+    planName,
+    isPlanModalOpen,
+    openPlanModal,
+    closePlanModal,
+    successData,
+    setSuccessData,
+  } = useSubscription();
 
   const passedTemplate = location.state?.template;
   const templateIdParam = searchParams.get("templateId");
@@ -62,42 +80,11 @@ export const PostStudioContainer = () => {
     page: templatePage,
     limit: templateLimit,
     search: templateSearch,
-    category: selectedCategory,
+    categoryId: selectedCategory,
     festivalId: selectedFestival,
   });
 
-  // Master Festivals Query
-  const { data: festivalResponse } = useQuery({
-    queryKey: QUERY_KEYS.FESTIVALS.ALL,
-    queryFn: () => festivalApi.getFestivals(),
-  });
-
-  // Master Categories Query
-  const { data: categoryResponse } = useQuery({
-    queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES,
-    queryFn: () => templateApi.getTemplateCategories(),
-  });
-
-  const { categories: masterCategories } = useCategories({ limit: 100 });
-
-  const festivals = festivalResponse?.data?.festivals || [];
-  const rawTemplateCategories = categoryResponse?.data?.categories || [];
-
-  // Merge master business categories and template categories cleanly
-  const combinedMap = new Map();
-  (masterCategories || []).forEach((c) => {
-    if (c?.name) combinedMap.set(c.name, c);
-  });
-  rawTemplateCategories.forEach((c) => {
-    const name = typeof c === "string" ? c : c?.name;
-    if (name && !combinedMap.has(name)) {
-      combinedMap.set(name, typeof c === "object" ? c : { id: name, name });
-    }
-  });
-
-  const categoriesList = Array.from(combinedMap.values());
-
-  // Modular Hook for Canva Frames
+  // Modular Hook for Frames (Search + Pagination)
   const {
     frames,
     meta: framesMeta,
@@ -108,13 +95,14 @@ export const PostStudioContainer = () => {
     search: frameSearch,
   });
 
-  // Fetch User's BrandKit from DB
-  const { data: brandKitResponse } = useQuery({
-    queryKey: ["brandKit"],
-    queryFn: () => brandKitApi.getBrandKit(),
-  });
+  // Fetch Categories List for Filter Bar
+  const { categories: categoriesList } = useCategories();
 
-  const brandKit = brandKitResponse?.data?.brandKit;
+  // Fetch Upcoming Festivals List for Filter Bar
+  const { festivals = [] } = useFestivals();
+
+  // Fetch Active User BrandKit Details
+  const { brandKit } = useBrandKit();
 
   // Determine current active base template
   const currentTemplate =
@@ -226,6 +214,7 @@ export const PostStudioContainer = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
+      queryClient.invalidateQueries({ queryKey: ['subscription', 'status'] });
       setSaveError("");
       setSaveSuccess(
         "🎉 Final composited post uploaded to Cloudinary, DB & Vault!",
@@ -234,6 +223,9 @@ export const PostStudioContainer = () => {
     },
     onError: (err) => {
       setSaveSuccess("");
+      if (err?.response?.data?.code === "PLAN_EXPIRED" || err?.response?.status === 403) {
+        openPlanModal();
+      }
       setSaveError(
         err?.response?.data?.message || err?.message || "Failed to save post to Vault."
       );
@@ -243,6 +235,11 @@ export const PostStudioContainer = () => {
 
   // Handle Save Post to DB
   const handleSaveToDb = () => {
+    if (isExpired || postsRemaining <= 0) {
+      openPlanModal();
+      return;
+    }
+
     if (!dataUrl) {
       setSaveError("Canvas graphic is still rendering. Please wait a moment and try again.");
       setTimeout(() => setSaveError(""), 4000);
@@ -271,6 +268,11 @@ export const PostStudioContainer = () => {
 
   // Handle Download HD PNG & Save to Cloud/DB
   const handleDownloadHD = () => {
+    if (isExpired || postsRemaining <= 0) {
+      openPlanModal();
+      return;
+    }
+
     if (!dataUrl) return;
 
     const link = document.createElement("a");
@@ -279,6 +281,14 @@ export const PostStudioContainer = () => {
     link.click();
 
     handleSaveToDb();
+  };
+
+  const handleOpenPublisher = () => {
+    if (isExpired || postsRemaining <= 0) {
+      openPlanModal();
+      return;
+    }
+    setIsPublisherModalOpen(true);
   };
 
   const publisherPayload = {
@@ -331,7 +341,12 @@ export const PostStudioContainer = () => {
         savePostMutation={savePostMutation}
         handleSaveToDb={handleSaveToDb}
         handleDownloadHD={handleDownloadHD}
-        onOpenPublisherModal={() => setIsPublisherModalOpen(true)}
+        onOpenPublisherModal={handleOpenPublisher}
+        subscription={subscription}
+        postsRemaining={postsRemaining}
+        isExpired={isExpired}
+        planName={planName}
+        openPlanModal={openPlanModal}
       />
 
       <SocialPublisherModal
@@ -341,7 +356,25 @@ export const PostStudioContainer = () => {
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
+          queryClient.invalidateQueries({ queryKey: ['subscription', 'status'] });
         }}
+      />
+
+      <PlanSelectionModal
+        isOpen={isPlanModalOpen}
+        onClose={closePlanModal}
+        currentPlan={planName}
+        postsRemaining={postsRemaining}
+        onSuccess={(data) => {
+          setSuccessData(data);
+          queryClient.invalidateQueries({ queryKey: ['subscription', 'status'] });
+        }}
+      />
+
+      <PaymentSuccessModal
+        isOpen={!!successData}
+        onClose={() => setSuccessData(null)}
+        data={successData}
       />
     </>
   );

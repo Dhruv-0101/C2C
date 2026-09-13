@@ -10,3 +10,5 @@ export { postApi } from "./post.api";
 export { socialApi } from "./social.api";
 export { templateApi } from "./template.api";
 export { vaultApi } from "./vault.api";
+export { billingApi } from "./billing.api";
+

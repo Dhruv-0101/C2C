@@ -33,6 +33,33 @@ export const processPostJob = async (jobData) => {
   }
 
   try {
+    // Check if user account has been deactivated by admin
+    if (userId) {
+      const userRecord = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { isActive: true },
+      });
+      if (userRecord && userRecord.isActive === false) {
+        logger.warn(`🚫 [PostWorker] Account ${userId} is deactivated. Blocking publishing execution.`);
+        if (scheduledPostId) {
+          await prisma.scheduledPost.update({
+            where: { id: scheduledPostId },
+            data: {
+              status: "FAILED",
+              errorMessage: "Account deactivated by admin due to policy violation",
+            },
+          }).catch(() => {});
+        }
+        if (postId) {
+          await prisma.post.update({
+            where: { id: postId },
+            data: { status: "FAILED" },
+          }).catch(() => {});
+        }
+        throw new Error("Account deactivated by admin due to policy violation.");
+      }
+    }
+
     // 2. Call Live Social Publisher Service (with Instagram Meta Graph API support)
     const publishResult = await liveSocialPublisherService.publishToPlatforms({
       postId: postId || scheduledPostId,

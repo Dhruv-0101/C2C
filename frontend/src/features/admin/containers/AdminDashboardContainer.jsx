@@ -197,6 +197,25 @@ export const AdminDashboardContainer = () => {
     },
   });
 
+  // Toggle User Active Account Status Mutation
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: ({ userId, isActive }) => authApi.toggleUserStatus(userId, isActive),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries(["users"]);
+      if (variables.isActive) {
+        showSuccess("Account Activated! 🟢", "User account has been activated successfully.");
+      } else {
+        showSuccess(
+          "Account Deactivated! 🚫",
+          "User account deactivated. All post creation & publishing capabilities have been blocked for this user.",
+        );
+      }
+    },
+    onError: (err) => {
+      showError("Action Failed ⚠️", err.message || "Failed to update user account status.");
+    },
+  });
+
   // React Hook Form for SubAdmin Creation
   const {
     register,
@@ -295,6 +314,7 @@ export const AdminDashboardContainer = () => {
       createSubAdminMutation={createSubAdminMutation}
       updateSubAdminMutation={updateSubAdminMutation}
       deleteSubAdminMutation={deleteSubAdminMutation}
+      toggleUserStatusMutation={toggleUserStatusMutation}
       register={register}
       handleSubmit={handleSubmit}
       errors={errors}

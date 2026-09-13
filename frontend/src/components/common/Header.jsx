@@ -3,14 +3,31 @@ import { Link } from 'react-router-dom';
 import { Sparkles, LogOut, ShieldCheck, User as UserIcon, ShieldAlert, Lock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLogout } from '../../features/auth/hooks/useLogout';
+import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../ui/Button';
 import { TwoFactorSettingsModal } from './TwoFactorSettingsModal';
 import { ThemeToggle } from './ThemeToggle';
+import PlanSelectionModal from '../../features/billing/components/PlanSelectionModal';
+import PaymentSuccessModal from '../../features/billing/components/PaymentSuccessModal';
+import { Zap } from 'lucide-react';
+
 
 export const Header = () => {
   const { isAuthenticated, user, isSuperAdmin, isSubAdmin } = useAuth();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
+
+  const {
+    postsRemaining,
+    isExpired,
+    hasPlan,
+    planName,
+    isPlanModalOpen,
+    openPlanModal,
+    closePlanModal,
+    successData,
+    setSuccessData,
+  } = useSubscription();
 
   const getRoleBadge = () => {
     if (isSuperAdmin) {
@@ -64,6 +81,37 @@ export const Header = () => {
 
             {isAuthenticated ? (
               <div className="flex items-center gap-2 sm:gap-3">
+                {/* Subscription Plan Badge & Modal Trigger */}
+                <button
+                  type="button"
+                  onClick={openPlanModal}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md ${
+                    !hasPlan
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/60 hover:bg-amber-500/30 animate-pulse'
+                      : isExpired
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/60 hover:bg-rose-500/30'
+                      : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/25'
+                  }`}
+                  title="Manage Subscription Plan"
+                >
+                  {!hasPlan ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>🔒 Select Plan</span>
+                    </>
+                  ) : isExpired ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-rose-400" />
+                      <span>🔒 Plan Expired (0 Posts)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                      <span>{planName}: {postsRemaining} Posts left</span>
+                    </>
+                  )}
+                </button>
+
                 {/* 2FA Security Modal Trigger */}
                 <button
                   onClick={() => setIs2FAModalOpen(true)}
@@ -118,6 +166,21 @@ export const Header = () => {
       <TwoFactorSettingsModal
         isOpen={is2FAModalOpen}
         onClose={() => setIs2FAModalOpen(false)}
+      />
+
+      {/* Subscription & Payment Modals */}
+      <PlanSelectionModal
+        isOpen={isPlanModalOpen}
+        onClose={closePlanModal}
+        currentPlan={planName}
+        postsRemaining={postsRemaining}
+        onSuccess={(resData) => setSuccessData(resData)}
+      />
+
+      <PaymentSuccessModal
+        isOpen={!!successData}
+        onClose={() => setSuccessData(null)}
+        data={successData}
       />
     </>
   );

@@ -35,8 +35,8 @@ async function startServer() {
     initWorkers();
 
     const PORT = env.PORT || 5000;
-    server = app.listen(PORT, () => {
-      logger.info(`🚀 BrandFlow Backend Server running on http://localhost:${PORT} [${env.NODE_ENV}]`);
+    server = app.listen(PORT, '0.0.0.0', () => {
+      logger.info(`🚀 BrandFlow Backend Server running on http://0.0.0.0:${PORT} [${env.NODE_ENV}]`);
     });
   } catch (error) {
     logger.error('❌ Failed to start backend server:', error);

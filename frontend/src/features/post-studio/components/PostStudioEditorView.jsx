@@ -19,6 +19,7 @@ import {
   Maximize2,
   X,
   Trash2,
+  Lock,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -70,6 +71,11 @@ export const PostStudioEditorView = ({
   handleSaveToDb,
   handleDownloadHD,
   onOpenPublisherModal,
+  subscription,
+  postsRemaining = 0,
+  isExpired = false,
+  planName = "FREE",
+  openPlanModal,
 }) => {
   const customFileInputRef = useRef(null);
 
@@ -914,6 +920,38 @@ export const PostStudioEditorView = ({
                 <span className="text-xs font-semibold text-emerald-400 font-mono">4 / 4</span>
               </div>
 
+              {/* Active Plan Quota Box */}
+              <div className={`p-4 rounded-xl border space-y-2 text-xs ${
+                isExpired
+                  ? "bg-red-500/10 border-red-500/40 text-red-300"
+                  : "bg-[#0B0F17] border-[#2C384E]"
+              }`}>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 font-semibold">Active Plan:</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-extrabold text-[10px] uppercase">
+                    {planName} PLAN
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 font-semibold">Posts Quota Remaining:</span>
+                  <span className={`font-mono font-extrabold ${isExpired ? "text-red-400" : "text-emerald-400"}`}>
+                    {postsRemaining} Posts Left
+                  </span>
+                </div>
+                {isExpired && (
+                  <div className="pt-2 border-t border-red-500/30 flex items-center justify-between">
+                    <span className="text-[11px] text-red-400 font-bold">⚠️ Plan Quota Exhausted</span>
+                    <button
+                      type="button"
+                      onClick={openPlanModal}
+                      className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold hover:bg-amber-400 transition"
+                    >
+                      Purchase Plan
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-semibold">Active Base Graphic:</span>
@@ -933,30 +971,34 @@ export const PostStudioEditorView = ({
                 {/* 🚀 Social Publisher Button */}
                 <Button
                   variant="primary"
-                  icon={Share2}
+                  icon={isExpired ? Lock : Share2}
                   onClick={onOpenPublisherModal}
-                  className="w-full justify-center text-sm font-extrabold py-3.5 bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950 border-0 shadow-lg"
+                  className={`w-full justify-center text-sm font-extrabold py-3.5 border-0 shadow-lg ${
+                    isExpired
+                      ? "bg-slate-800 text-slate-400"
+                      : "bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950"
+                  }`}
                 >
-                  🚀 Publish to Social Media
+                  {isExpired ? "🔒 Lock: Purchase Plan to Publish" : "🚀 Publish to Social Media"}
                 </Button>
 
                 <Button
                   variant="outline"
-                  icon={Download}
+                  icon={isExpired ? Lock : Download}
                   onClick={handleDownloadHD}
                   className="w-full justify-center text-xs font-bold py-2.5"
                 >
-                  Download 1080x1080 HD PNG
+                  {isExpired ? "🔒 Lock: Purchase Plan to Download" : "Download 1080x1080 HD PNG"}
                 </Button>
 
                 <Button
                   variant="outline"
-                  icon={BookmarkCheck}
+                  icon={isExpired ? Lock : BookmarkCheck}
                   onClick={handleSaveToDb}
                   isLoading={savePostMutation.isPending}
                   className="w-full justify-center border-[#2C384E] text-slate-300 hover:text-white text-xs"
                 >
-                  Save Post Draft to Vault
+                  {isExpired ? "🔒 Lock: Purchase Plan to Save" : "Save Post Draft to Vault"}
                 </Button>
               </div>
 

@@ -18,8 +18,11 @@ import {
 } from 'lucide-react';
 import { useCanvasCompositor } from '../../hooks/useCanvasCompositor';
 import { usePostCreator } from '../../hooks/usePostCreator';
+import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import PlanSelectionModal from '../../features/billing/components/PlanSelectionModal';
+import PaymentSuccessModal from '../../features/billing/components/PaymentSuccessModal';
 
 /**
  * Interactive Enterprise Post Studio & Creator Modal for End-Users
@@ -35,6 +38,17 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     savePost,
     isSaving,
   } = usePostCreator(isOpen);
+
+  const {
+    postsRemaining,
+    isExpired,
+    planName,
+    isPlanModalOpen,
+    openPlanModal,
+    closePlanModal,
+    successData,
+    setSuccessData,
+  } = useSubscription();
 
   const [selectedFrame, setSelectedFrame] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplate?.id || '');
@@ -145,6 +159,10 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
 
   // Handle Save Post to DB
   const handleSaveToDb = () => {
+    if (isExpired || postsRemaining <= 0) {
+      openPlanModal();
+      return;
+    }
     if (!dataUrl) return;
     savePost({
       templateId: currentTemplate?.id || null,
@@ -158,6 +176,10 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
 
   // Handle Download HD PNG & Save to Cloud/DB
   const handleDownloadHD = () => {
+    if (isExpired || postsRemaining <= 0) {
+      openPlanModal();
+      return;
+    }
     if (!dataUrl) return;
 
     // 1. Trigger client browser file download
@@ -173,50 +195,58 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 w-screen h-screen z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]">
-        {/* Left Column: Live Canvas Preview */}
-        <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">
-          <div className="relative aspect-square w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center">
-            {isRendering && (
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
-                <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full" />
-                <span>Compositing HD Canvas...</span>
-              </div>
-            )}
-
-            {/* 60 FPS Ultra-Fast Direct HTML5 1080x1080 Canvas */}
-            <canvas ref={canvasRef} className="w-full h-full object-contain" />
-          </div>
-          <p className="text-[11px] text-slate-400 mt-3 text-center">
-            High-Resolution 1080x1080 Square Post (Instagram & Facebook Ready)
-          </p>
-        </div>
-
-        {/* Right Column: Template, Frame Chooser & Custom Details */}
-        <div className="md:w-1/2 p-6 flex flex-col justify-between space-y-6 overflow-y-auto max-h-[85vh]">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
-              <div className="space-y-0.5">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold">
-                  <Sparkles className="w-3 h-3" /> Post Studio Customizer
+    <>
+      <div className="fixed inset-0 w-screen h-screen z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+        <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]">
+          {/* Left Column: Live Canvas Preview */}
+          <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">
+            <div className="relative aspect-square w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center">
+              {isRendering && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
+                  <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full" />
+                  <span>Compositing 1080x1080 HD Graphic...</span>
                 </div>
-                <h3 className="font-heading font-extrabold text-lg text-white">
-                  {currentTemplate?.title || 'Create New Post'}
-                </h3>
+              )}
+              <canvas ref={canvasRef} className="w-full h-full object-contain" />
+            </div>
+
+            {isExpired || postsRemaining <= 0 ? (
+              <button
+                type="button"
+                onClick={openPlanModal}
+                className="text-xs text-rose-400 hover:text-rose-300 mt-4 text-center flex items-center justify-center gap-1 font-bold bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/30 transition cursor-pointer"
+              >
+                <Lock className="w-3.5 h-3.5 text-rose-400" />
+                <span>🔒 Plan Required ({postsRemaining} Posts Left) - Click to Unlock</span>
+              </button>
+            ) : (
+              <p className="text-xs text-slate-400 mt-4 text-center flex items-center gap-1 font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                1080x1080 HD Square Post Graphic ({postsRemaining} Posts Remaining)
+              </p>
+            )}
+          </div>
+
+          {/* Right Column: Customization Controls */}
+          <div className="md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto space-y-5">
+            <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+              <div>
+                <h3 className="font-heading font-extrabold text-lg text-white">Create Custom Graphic Post</h3>
+                <p className="text-xs text-slate-400">Customize template & details for instant export.</p>
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition"
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {saveSuccess && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{saveSuccess}</span>
+              <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-semibold flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" /> Post saved to database successfully!
+                </span>
               </div>
             )}
 
@@ -610,7 +640,22 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
           </div>
         </div>
       </div>
-    </div>,
+
+      {/* Subscription & Payment Modals */}
+      <PlanSelectionModal
+        isOpen={isPlanModalOpen}
+        onClose={closePlanModal}
+        currentPlan={planName}
+        postsRemaining={postsRemaining}
+        onSuccess={(resData) => setSuccessData(resData)}
+      />
+
+      <PaymentSuccessModal
+        isOpen={!!successData}
+        onClose={() => setSuccessData(null)}
+        data={successData}
+      />
+    </>,
     document.body
   );
 };

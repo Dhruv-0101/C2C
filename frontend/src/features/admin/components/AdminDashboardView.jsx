@@ -77,6 +77,7 @@ export const AdminDashboardView = ({
   createSubAdminMutation,
   updateSubAdminMutation,
   deleteSubAdminMutation,
+  toggleUserStatusMutation,
   register,
   handleSubmit,
   errors,
@@ -298,6 +299,7 @@ export const AdminDashboardView = ({
             userPage={userPage}
             setUserPage={setUserPage}
             setUserLimit={setUserLimit}
+            toggleUserStatusMutation={toggleUserStatusMutation}
           />
         )}
       </div>

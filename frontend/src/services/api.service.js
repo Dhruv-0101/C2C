@@ -63,10 +63,13 @@ api.interceptors.response.use(
 
     // 2. User-Friendly Error Formatting
     const rawMsg = error.response?.data?.message || error.message;
-    const formattedMessage =
-      !error.response || error.code === "ERR_NETWORK" || rawMsg === "Network Error"
-        ? "Unable to connect to server. Please check your network connection or try again."
-        : rawMsg || "An unexpected error occurred";
+    let formattedMessage = rawMsg || "An unexpected error occurred";
+
+    if (!error.response || error.code === "ERR_NETWORK" || rawMsg === "Network Error") {
+      formattedMessage = "Unable to connect to server. Please check your network connection or try again.";
+    } else if (error.response?.status === 401) {
+      formattedMessage = rawMsg || "Session expired or authentication failed. Please log in again.";
+    }
 
     const formattedError = {
       message: formattedMessage,

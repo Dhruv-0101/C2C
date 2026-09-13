@@ -425,6 +425,25 @@ export async function getUsers(queryParams = {}) {
 }
 
 /**
+ * Toggle User Account Active/Deactivated Status (Admin Privilege)
+ */
+export async function toggleUserActiveStatus(userId, isActive) {
+  const user = await authRepository.findUserById(userId);
+  if (!user) {
+    throw new NotFoundError('User account not found.');
+  }
+
+  const updatedUser = await authRepository.updateUserActiveStatus(userId, isActive);
+
+  if (!isActive) {
+    // Revoke all active refresh sessions for deactivated user
+    await authRepository.revokeAllUserTokens(userId).catch(() => {});
+  }
+
+  return updatedUser;
+}
+
+/**
  * Delete SubAdmin account
  */
 export async function removeSubAdmin(id) {

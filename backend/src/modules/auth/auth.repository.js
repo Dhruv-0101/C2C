@@ -113,6 +113,19 @@ export async function updateUserProfile(userId, data) {
   });
 }
 
+export async function updateUserActiveStatus(userId, isActive) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { isActive },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      isActive: true,
+    },
+  });
+}
+
 export async function createSubAdminUser({ email, passwordHash, fullName, allowedTabs = [] }) {
   return prisma.user.create({
     data: {
@@ -243,6 +256,21 @@ export async function findPaginatedUsers({ skip, take, search, sortBy = 'created
         phone: true,
         city: true,
         country: true,
+      },
+    },
+    subscription: {
+      select: {
+        id: true,
+        plan: true,
+        status: true,
+        totalPostsAllowed: true,
+        postsUsed: true,
+        pricePaid: true,
+        currency: true,
+        paymentGateway: true,
+        paymentId: true,
+        orderId: true,
+        updatedAt: true,
       },
     },
   };

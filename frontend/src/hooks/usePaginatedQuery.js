@@ -24,8 +24,10 @@ export function usePaginatedQuery({ queryKey, queryFn, params = {}, queryOptions
     ...queryOptions,
   });
 
-  const responseData = query.data?.data || null;
-  const meta = query.data?.meta || {
+  // Extract inner payload from Axios response envelope ({ success: true, message: '...', data: { data: [...], meta: {...} } })
+  const rawPayload = query.data?.data || query.data || null;
+
+  const meta = rawPayload?.meta || query.data?.meta || {
     page: sanitizedParams.page,
     limit: sanitizedParams.limit,
     totalItems: 0,
@@ -36,7 +38,7 @@ export function usePaginatedQuery({ queryKey, queryFn, params = {}, queryOptions
 
   return {
     ...query,
-    data: responseData,
+    data: rawPayload,
     meta,
     page: meta.page,
     limit: meta.limit,

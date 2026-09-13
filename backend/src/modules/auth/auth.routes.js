@@ -43,5 +43,6 @@ router.get('/subadmins', authenticate, requireSuperAdmin, validate(getSubAdminsQ
 router.put('/subadmin/:id', authenticate, requireSuperAdmin, validate(updateSubAdminSchema), authController.updateSubAdmin);
 router.delete('/subadmin/:id', authenticate, requireSuperAdmin, authController.deleteSubAdmin);
 router.get('/users', authenticate, requireAdmin, validate(getUsersQuerySchema), authController.getUsers);
+router.patch('/users/:userId/status', authenticate, requireAdmin, authController.toggleUserStatus);
 
 export default router;

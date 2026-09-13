@@ -15,7 +15,7 @@ export async function seedTemplates(prisma) {
       description: 'Vibrant Lord Ganesha celebration template for festive greetings & offers.',
       category: 'FESTIVAL',
       festivalId: festivalMap.get('ganesh-chaturthi-2026') || null,
-      baseImageUrl: 'https://images.unsplash.com/photo-1631548674996-5e04cb2a7bc7?q=80&w=800&auto=format&fit=crop',
+      baseImageUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop',
       isCustomUpload: false,
       isActive: true,
     },

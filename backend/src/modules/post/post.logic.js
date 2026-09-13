@@ -2,6 +2,7 @@ import { postRepository } from './post.repository.js';
 import { uploadPostBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
 import { processPostJob, triggerScheduledPostsNow } from '../../jobs/index.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
+import { billingRepository } from '../billing/billing.repository.js';
 
 export const postLogic = {
   /**
@@ -58,7 +59,7 @@ export const postLogic = {
       postId: post.id,
       userId,
       targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'],
-      postContent: payload.customText || payload.occasionName || 'Branded Graphic Post',
+      postContent: payload.caption || payload.customText || payload.occasionName || 'Branded Graphic Post',
       graphicUrl: post.finalGraphicUrl,
     };
 
@@ -132,17 +133,25 @@ export const postLogic = {
       userId,
       templateId: payload.templateId || null,
       festivalId: payload.festivalId || null,
-      customText: payload.customText || null,
+      customText: payload.caption || payload.customText || null,
       offerText: payload.offerText || null,
       finalGraphicUrl: finalGraphicUrl,
       userConfigJson: payload.userConfigJson || null,
       status: payload.status || 'DRAFT',
     };
 
-    return postRepository.createWithVault(postData, {
+    const createdPost = await postRepository.createWithVault(postData, {
       occasionName: payload.occasionName,
       categoryName: payload.categoryName,
+      targetPlatforms: payload.targetPlatforms,
     });
+
+    // Increment user's post usage counter and check for plan quota expiry
+    billingRepository.incrementPostsUsed(userId).catch((err) => {
+      console.warn(`⚠️ Failed to increment post quota for user ${userId}: ${err.message}`);
+    });
+
+    return createdPost;
   },
 
   /**

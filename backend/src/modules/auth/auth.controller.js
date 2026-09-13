@@ -226,6 +226,25 @@ export async function getUsers(req, res, next) {
 }
 
 /**
+ * Toggle user account active/deactivated status (Admin & SubAdmin Privilege)
+ */
+export async function toggleUserStatus(req, res, next) {
+  try {
+    const { userId } = req.params;
+    const { isActive } = req.body;
+    const user = await authLogic.toggleUserActiveStatus(userId, Boolean(isActive));
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: `User account has been ${user.isActive ? 'activated' : 'deactivated'} successfully.`,
+      data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Delete a SubAdmin account by ID (SuperAdmin only)
  */
 export async function deleteSubAdmin(req, res, next) {

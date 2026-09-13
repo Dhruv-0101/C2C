@@ -17,8 +17,12 @@ export function useVault(params = {}, queryOptions = {}) {
     queryOptions,
   });
 
+  const vaultItems = Array.isArray(result.data?.data)
+    ? result.data.data
+    : (Array.isArray(result.data) ? result.data : []);
+
   return {
     ...result,
-    vaultItems: result.data?.data || [],
+    vaultItems,
   };
 }

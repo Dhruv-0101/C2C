@@ -151,6 +151,17 @@ export const authApi = {
   getUsers: (params = {}) => api.get(API_ENDPOINTS.AUTH.USERS, { params }),
 
   /**
+   * PATCH /api/v1/auth/users/:userId/status
+   * Admin: Toggles user account active/deactivated status (isActive: true / false).
+   *
+   * @param {string} userId - User UUID
+   * @param {boolean} isActive - Target active state
+   * @returns {Promise<Object>} Updated user record
+   */
+  toggleUserStatus: (userId, isActive) =>
+    api.patch(`/auth/users/${userId}/status`, { isActive }),
+
+  /**
    * DELETE /api/v1/auth/subadmin/:id
    * SuperAdmin: Deletes a SubAdmin account record from database by ID.
    *

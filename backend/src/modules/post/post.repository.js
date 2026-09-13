@@ -40,7 +40,21 @@ export const postRepository = {
                 occasionName: vaultMetaData.occasionName || newPost.festival?.name || 'Social Graphic',
                 categoryName: vaultMetaData.categoryName || newPost.category?.name || 'General',
               },
-            });
+            }).catch(() => {});
+          }
+
+          if (postData.customText) {
+            const platforms = vaultMetaData.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
+            for (const platform of platforms) {
+              await tx.caption.create({
+                data: {
+                  postId: newPost.id,
+                  platform,
+                  captionText: postData.customText,
+                  hashtags: [],
+                },
+              }).catch(() => {});
+            }
           }
 
           return newPost;
@@ -70,6 +84,22 @@ export const postRepository = {
             },
           })
           .catch(() => {});
+      }
+
+      if (postData.customText) {
+        const platforms = vaultMetaData.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
+        for (const platform of platforms) {
+          prisma.caption
+            .create({
+              data: {
+                postId: newPost.id,
+                platform,
+                captionText: postData.customText,
+                hashtags: [],
+              },
+            })
+            .catch(() => {});
+        }
       }
 
       return newPost;

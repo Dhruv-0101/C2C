@@ -46,3 +46,6 @@ export const Alert = ({ variant = 'error', message, title, className = '' }) => 
     </div>
   );
 };
+
+export default Alert;
+

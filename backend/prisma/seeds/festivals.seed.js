@@ -4,7 +4,7 @@ export const DEFAULT_FESTIVALS = [
     slug: 'ganesh-chaturthi-2026',
     date: '2026-09-14',
     description: 'Lord Ganesha festive greetings and special promotional offers.',
-    bannerUrl: 'https://images.unsplash.com/photo-1631548674996-5e04cb2a7bc7?q=80&w=800&auto=format&fit=crop',
+    bannerUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop',
   },
   {
     name: 'Gandhi Jayanti',

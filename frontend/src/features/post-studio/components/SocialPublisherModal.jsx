@@ -17,6 +17,7 @@ import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
 import { usePostPublisher } from "../../../hooks/usePostPublisher";
 import { useSocialAccounts } from "../../../hooks/useSocialAccounts";
+import { AiCaptionGeneratorModal } from "./AiCaptionGeneratorModal";
 
 const SOCIAL_PLATFORMS = [
   { id: "INSTAGRAM", name: "Instagram", icon: "📸", color: "from-pink-500 to-rose-600" },
@@ -54,6 +55,10 @@ export const SocialPublisherModal = ({
   ]);
   const [publishMode, setPublishMode] = useState("NOW"); // 'NOW' | 'SCHEDULE'
   const [validationError, setValidationError] = useState("");
+  const [captionText, setCaptionText] = useState(
+    postData?.caption || postData?.customText || ""
+  );
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const {
     instagramAccount,
@@ -153,7 +158,10 @@ export const SocialPublisherModal = ({
 
     // All selected platforms are verified connected! Proceed with submit
     onSubmitPublish({
-      postData,
+      postData: {
+        ...postData,
+        caption: captionText,
+      },
       selectedPlatforms,
       publishMode,
       scheduledAt,
@@ -339,10 +347,35 @@ export const SocialPublisherModal = ({
               </div>
             </div>
 
+            {/* Caption & Hashtags Section */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  2. Caption & Hashtags
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsAiModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 to-indigo-500/20 border border-amber-500/40 text-amber-300 hover:text-white font-bold text-xs shadow-sm cursor-pointer transition hover:scale-105"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                  <span>Generate with AI ✨</span>
+                </button>
+              </div>
+
+              <textarea
+                rows={4}
+                value={captionText}
+                onChange={(e) => setCaptionText(e.target.value)}
+                placeholder="Write your post caption here or click 'Generate with AI ✨' to auto-create engaging copy & hashtags..."
+                className="w-full px-3.5 py-2.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-white text-xs font-sans placeholder-slate-500 focus:outline-none focus:border-amber-500 leading-relaxed resize-y"
+              />
+            </div>
+
             {/* Mode Selection: Publish Now vs Schedule */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                2. Choose Execution Mode
+                3. Choose Execution Mode
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -477,6 +510,13 @@ export const SocialPublisherModal = ({
             </div>
           </form>
         )}
+
+        <AiCaptionGeneratorModal
+          isOpen={isAiModalOpen}
+          onClose={() => setIsAiModalOpen(false)}
+          initialTopic={postData?.occasionName || postData?.customText || ""}
+          onSelectCaption={(generatedText) => setCaptionText(generatedText)}
+        />
       </div>
     </div>,
     document.body,
