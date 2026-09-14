@@ -8,7 +8,7 @@ export const vaultController = {
    */
   getVaultItems: async (req, res, next) => {
     try {
-      const userId = req.user.userId;
+      const userId = req.user.id || req.user.userId;
       const result = await vaultLogic.getVaultItems(userId, req.query);
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
@@ -25,7 +25,7 @@ export const vaultController = {
    */
   getVaultItemById: async (req, res, next) => {
     try {
-      const userId = req.user.userId;
+      const userId = req.user.id || req.user.userId;
       const item = await vaultLogic.getVaultItemById(req.params.id, userId);
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
@@ -42,7 +42,7 @@ export const vaultController = {
    */
   updateVaultItem: async (req, res, next) => {
     try {
-      const userId = req.user.userId;
+      const userId = req.user.id || req.user.userId;
       const updatedItem = await vaultLogic.updateVaultItem(req.params.id, userId, req.body);
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
@@ -59,12 +59,30 @@ export const vaultController = {
    */
   deleteVaultItem: async (req, res, next) => {
     try {
-      const userId = req.user.userId;
+      const userId = req.user.id || req.user.userId;
       await vaultLogic.deleteVaultItem(req.params.id, userId);
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
         message: 'Vault item deleted successfully',
         data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * POST /api/v1/vault/bulk-delete - Bulk delete vault items
+   */
+  bulkDeleteVaultItems: async (req, res, next) => {
+    try {
+      const userId = req.user.id || req.user.userId;
+      const { ids } = req.body;
+      const result = await vaultLogic.bulkDeleteVaultItems(ids, userId);
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
+        message: `Successfully deleted ${result.count || ids.length} vault items`,
+        data: result,
       });
     } catch (error) {
       next(error);

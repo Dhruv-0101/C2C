@@ -56,6 +56,47 @@ export const billingApi = {
     });
     return response.data;
   },
+
+  /**
+   * Admin Top-Up: Grant bonus post quota to a business user
+   */
+  adminTopUpQuota: async (userId, bonusPosts = 10) => {
+    const response = await api.put(`/billing/admin/topup/${userId}`, { bonusPosts });
+    return response.data;
+  },
+
+  /**
+   * Get paginated billing transactions history
+   */
+  getHistory: async ({ page = 1, limit = 10 } = {}) => {
+    const response = await api.get('/billing/history', {
+      params: { page, limit },
+    });
+    return response;
+  },
+
+  /**
+   * Download PDF Invoice for a billing transaction
+   */
+  downloadInvoice: async (transactionId) => {
+    const responseData = await api.get(`/billing/invoice/${transactionId}/download`, {
+      responseType: 'blob',
+    });
+
+    // Axios response interceptor returns response.data directly (which is the Blob object itself)
+    const blob = responseData instanceof Blob
+      ? responseData
+      : new Blob([responseData], { type: 'application/pdf' });
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `BrandFlow_Invoice_${transactionId.substring(0, 8)}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  },
 };
 
 export default billingApi;

@@ -126,4 +126,16 @@ export const vaultRepository = {
       where: { id, userId },
     });
   },
+
+  /**
+   * Bulk delete vault items by IDs
+   */
+  deleteManyByIds: async (ids, userId) => {
+    return prisma.vaultItem.deleteMany({
+      where: {
+        id: { in: ids },
+        userId,
+      },
+    });
+  },
 };

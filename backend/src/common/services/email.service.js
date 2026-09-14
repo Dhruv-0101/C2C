@@ -132,3 +132,68 @@ export async function sendPostPublishedEmail({ email, fullName, postTitle, targe
     logger.error(`❌ Failed to send post published email notification to ${email}:`, error.message);
   }
 }
+
+/**
+ * Send Invoice Email Notification with PDF attachment asynchronously
+ * @param {{ userId: string, transactionId: string }} params
+ */
+export async function sendInvoiceEmail({ userId, transactionId }) {
+  try {
+    const { billingRepository } = await import('../../modules/billing/billing.repository.js');
+    const { buildInvoicePdfBuffer } = await import('../../modules/billing/billing.pdf.js');
+    const { renderInvoiceEmail } = await import('../templates/invoice-email.template.js');
+
+    const tx = await billingRepository.findTransactionById(transactionId);
+    if (!tx || !tx.user?.email) {
+      logger.warn(`⚠️ [sendInvoiceEmail] Transaction or user email not found for txId ${transactionId}`);
+      return;
+    }
+
+    const pdfBuffer = await buildInvoicePdfBuffer(tx, tx.user, tx.user?.brandKit || {});
+
+    let planName = 'Free Starter Plan';
+    if (tx.transactionType === 'ADMIN_BONUS' || tx.paymentGateway === 'ADMIN_BONUS') {
+      planName = 'Admin Bonus Quota Top-Up';
+    } else if (tx.plan === 'PRO') {
+      planName = `Pro Plan (${tx.postCount} Posts)`;
+    }
+
+    const invoiceNum = `INV-${new Date(tx.createdAt || Date.now()).toISOString().slice(0, 10).replace(/-/g, '')}-${tx.id.substring(0, 6).toUpperCase()}`;
+
+    const htmlContent = renderInvoiceEmail({
+      fullName: tx.user.fullName,
+      planName,
+      postCount: tx.postCount || 5,
+      pricePaid: tx.pricePaid || 0,
+      currency: tx.currency || 'INR',
+      paymentGateway: tx.paymentGateway || 'FREE',
+      invoiceNum,
+      dashboardUrl: `${env.CLIENT_URL}/profile`,
+    });
+
+    const fileName = `BrandFlow_Invoice_${tx.id.substring(0, 8)}.pdf`;
+
+    const mailOptions = {
+      from: `"BrandFlow Billing" <${env.FROM_EMAIL}>`,
+      to: tx.user.email,
+      subject: `🧾 Your BrandFlow Invoice - ${planName} (${invoiceNum})`,
+      html: htmlContent,
+      attachments: [
+        {
+          filename: fileName,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        },
+      ],
+    };
+
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      logger.success(`✉️ Invoice PDF email successfully sent to ${tx.user.email} (MessageId: ${info.messageId})`);
+    } else {
+      logger.info(`✉️ [SMTP Simulation] Invoice PDF email generated for ${tx.user.email} with PDF attachment (${pdfBuffer.length} bytes).`);
+    }
+  } catch (error) {
+    logger.error(`❌ Failed to send invoice email for transaction ${transactionId}:`, error.message);
+  }
+}

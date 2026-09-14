@@ -2,12 +2,15 @@ import { Router } from 'express';
 import { vaultController } from './vault.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { updateVaultItemSchema } from './vault.validator.js';
+import { updateVaultItemSchema, bulkDeleteVaultItemsSchema } from './vault.validator.js';
 
 const router = Router();
 
 // All Vault endpoints require authentication
 router.use(authenticate);
+
+// POST /api/v1/vault/bulk-delete
+router.post('/bulk-delete', validate(bulkDeleteVaultItemsSchema), vaultController.bulkDeleteVaultItems);
 
 // GET /api/v1/vault
 router.get('/', vaultController.getVaultItems);

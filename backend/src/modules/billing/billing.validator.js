@@ -27,3 +27,13 @@ export const verifyStripeSchema = z.object({
     postCount: z.number().min(10).max(100).default(15),
   }),
 });
+
+export const adminTopUpSchema = z.object({
+  params: z.object({
+    userId: z.string().uuid({ message: 'Invalid target user ID' }),
+  }),
+  body: z.object({
+    bonusPosts: z.number().int().min(1).max(1000).optional().default(10),
+  }),
+});
+

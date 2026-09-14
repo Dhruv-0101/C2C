@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
+import { requireAdmin } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import { billingController } from './billing.controller.js';
 import {
@@ -7,6 +8,7 @@ import {
   createStripeIntentSchema,
   verifyRazorpaySchema,
   verifyStripeSchema,
+  adminTopUpSchema,
 } from './billing.validator.js';
 
 const router = Router();
@@ -15,6 +17,8 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/status', billingController.getStatus);
+router.get('/history', billingController.getHistory);
+router.get('/invoice/:transactionId/download', billingController.downloadInvoice);
 router.post('/free/activate', billingController.activateFreePlan);
 
 router.post(
@@ -37,6 +41,14 @@ router.post(
   '/stripe/verify',
   validate(verifyStripeSchema),
   billingController.verifyStripePayment
+);
+
+// Admin-only quota top-up route
+router.put(
+  '/admin/topup/:userId',
+  requireAdmin,
+  validate(adminTopUpSchema),
+  billingController.adminTopUpQuota
 );
 
 export default router;

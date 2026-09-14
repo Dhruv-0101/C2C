@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Users, CreditCard, Zap, CheckCircle2, AlertCircle, Clock, Copy, Check, ShieldAlert } from "lucide-react";
+import { Users, CreditCard, Zap, CheckCircle2, AlertCircle, Clock, Copy, Check, ShieldAlert, Plus } from "lucide-react";
 import { Alert } from "../../../../components/ui/Alert";
 import { SearchBar } from "../../../../components/common/SearchBar";
 import Pagination from "../../../../components/common/Pagination";
@@ -8,7 +8,7 @@ import Pagination from "../../../../components/common/Pagination";
  * AdminUsersTab Component
  * Business User & Subscription Billing Directory displaying all registered business tenants,
  * active plan subscription details, payment gateway, post quota usage, transaction IDs,
- * and interactive Account Status deactivation toggle switches.
+ * instant +10 Bonus Post Quota top-ups, and interactive Account Status deactivation toggle switches.
  */
 export const AdminUsersTab = ({
   users = [],
@@ -21,6 +21,7 @@ export const AdminUsersTab = ({
   setUserPage,
   setUserLimit,
   toggleUserStatusMutation,
+  topUpUserQuotaMutation,
 }) => {
   const [copiedId, setCopiedId] = useState(null);
 
@@ -97,14 +98,25 @@ export const AdminUsersTab = ({
               <tbody className="divide-y divide-[#2C384E]">
                 {users.map((u) => {
                   const sub = u.subscription;
-                  const hasSub = Boolean(sub && sub.plan);
-                  const isPro = sub?.plan === "PRO";
-                  const isFree = sub?.plan === "FREE";
                   const price = sub?.pricePaid || 0;
+
+                  const planTotal = sub?.totalPostsAllowed || 0;
+                  const planUsed = sub?.postsUsed || 0;
+                  const planRemaining = Math.max(0, planTotal - planUsed);
+
+                  const bonusTotal = sub?.bonusPostsAllowed || 0;
+                  const bonusUsed = sub?.bonusPostsUsed || 0;
+                  const bonusRemaining = Math.max(0, bonusTotal - bonusUsed);
+
+                  const totalRemaining = planRemaining + bonusRemaining;
+                  const hasPlan = planTotal > 0 || (sub?.plan === "PRO" && price > 0);
+                  const hasBonus = bonusTotal > 0;
+                  const hasSub = hasPlan || hasBonus;
+
+                  const isPro = sub?.plan === "PRO" && price > 0;
+                  const isFree = sub?.plan === "FREE" && planTotal > 0;
+
                   const currencySym = sub?.currency === "USD" ? "$" : "₹";
-                  const totalAllowed = sub?.totalPostsAllowed || 0;
-                  const used = sub?.postsUsed || 0;
-                  const percentUsed = totalAllowed > 0 ? Math.min(100, Math.round((used / totalAllowed) * 100)) : 0;
                   const refId = sub?.paymentId || sub?.orderId || null;
                   const isActive = u.isActive !== false;
 
@@ -146,12 +158,16 @@ export const AdminUsersTab = ({
                             NO PLAN ACTIVATED
                           </span>
                         ) : isPro ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-[10px] uppercase">
-                            <Zap className="w-3 h-3 fill-amber-400" /> PRO PLAN
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-bold text-[10px] uppercase">
+                            <Zap className="w-3 h-3 fill-indigo-400" /> PRO PLAN
+                          </span>
+                        ) : isFree ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-bold text-[10px] uppercase">
+                            FREE PLAN
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 font-bold text-[10px] uppercase">
-                            FREE PLAN
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-[10px] uppercase shadow-xs">
+                            <Zap className="w-3 h-3 text-amber-400" /> BONUS ONLY
                           </span>
                         )}
                       </td>
@@ -166,6 +182,8 @@ export const AdminUsersTab = ({
                               ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
                               : sub.paymentGateway === "RAZORPAY"
                               ? "bg-teal-500/20 text-teal-300 border-teal-500/40"
+                              : sub.paymentGateway === "ADMIN_BONUS"
+                              ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
                               : "bg-slate-800 text-slate-400 border-slate-700"
                           }`}>
                             {sub.paymentGateway}
@@ -177,39 +195,52 @@ export const AdminUsersTab = ({
                       <td className="py-3.5 px-4 font-mono font-bold text-white">
                         {!hasSub ? (
                           <span className="text-slate-500 text-[11px]">—</span>
-                        ) : price > 0 ? (
+                        ) : isPro ? (
                           <span className="text-emerald-400 font-extrabold">
                             {currencySym} {price} {sub.currency || "INR"}
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-[11px]">₹0 (Free Trial)</span>
+                          <span className="text-slate-400 text-[11px]">Free / Bonus ($0)</span>
                         )}
                       </td>
 
-                      {/* Quota Progress Bar */}
-                      <td className="py-3.5 px-4 min-w-[140px]">
-                        {!hasSub ? (
-                          <span className="text-slate-500 text-[11px] italic">0 Posts Allowed</span>
-                        ) : (
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[11px] font-bold">
-                              <span className="text-white font-mono">{used} / {totalAllowed} Posts</span>
-                              <span className="text-slate-400">{percentUsed}%</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
-                              <div
-                                className={`h-full transition-all duration-300 ${
-                                  percentUsed >= 100
-                                    ? "bg-red-500"
-                                    : percentUsed >= 75
-                                    ? "bg-amber-500"
-                                    : "bg-emerald-400"
-                                }`}
-                                style={{ width: `${percentUsed}%` }}
-                              />
-                            </div>
+                      {/* Quota Progress & Top-Up Button */}
+                      <td className="py-3.5 px-4 min-w-[170px]">
+                        <div className="space-y-1">
+                          <div className="text-[11px] font-mono flex flex-col gap-0.5">
+                            {hasPlan && (
+                              <div className="flex justify-between text-slate-300">
+                                <span>Plan:</span>
+                                <span className="font-bold text-white">{planUsed}/{planTotal}</span>
+                              </div>
+                            )}
+                            {hasBonus && (
+                              <div className="flex justify-between text-amber-300 font-bold">
+                                <span>Bonus:</span>
+                                <span>{bonusUsed}/{bonusTotal}</span>
+                              </div>
+                            )}
+                            {!hasPlan && !hasBonus && (
+                              <span className="text-slate-500 italic text-[10px]">0 Posts Available</span>
+                            )}
                           </div>
-                        )}
+
+                          <div className="pt-1 flex items-center justify-between gap-2">
+                            <span className="text-[10px] text-emerald-400 font-bold font-mono">
+                              Rem: {totalRemaining}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={topUpUserQuotaMutation?.isPending}
+                              onClick={() => topUpUserQuotaMutation?.mutate({ userId: u.id, bonusPosts: 10 })}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 text-[10px] font-bold transition shadow-sm cursor-pointer"
+                              title="Grant +10 Bonus Posts to this user"
+                            >
+                              <Plus className="w-2.5 h-2.5" />
+                              <span>+10 Bonus</span>
+                            </button>
+                          </div>
+                        </div>
                       </td>
 
                       {/* Transaction / Reference ID */}
@@ -239,7 +270,7 @@ export const AdminUsersTab = ({
                           <span className="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
                             <Clock className="w-3.5 h-3.5" /> NO PLAN
                           </span>
-                        ) : sub.status === "EXPIRED" || used >= totalAllowed ? (
+                        ) : totalRemaining <= 0 ? (
                           <span className="inline-flex items-center gap-1 text-red-400 font-bold text-[11px]">
                             <AlertCircle className="w-3.5 h-3.5" /> EXPIRED
                           </span>

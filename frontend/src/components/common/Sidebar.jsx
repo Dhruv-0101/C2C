@@ -22,6 +22,7 @@ import {
   FileCode,
   Users,
   Share2,
+  User,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLogout } from '../../features/auth/hooks/useLogout';
@@ -63,6 +64,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
     { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
     { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
     { label: 'Graphic Vault', path: '/vault', icon: FolderKanban },
+    { label: 'My Profile', path: '/profile', icon: User },
   ];
 
   const adminConsoleAllSubItems = [
@@ -274,13 +276,18 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
         <div className="p-3 border-t border-[#2C384E] space-y-2 shrink-0 bg-[#0B0F17]">
           {/* User Profile Summary */}
           {(!isCollapsed || isMobileOpen) && (
-            <div className="p-2.5 rounded-xl bg-[#131B2A] border border-[#2C384E] flex items-center justify-between">
+            <NavLink
+              to="/profile"
+              onClick={() => setIsMobileOpen(false)}
+              className="p-2.5 rounded-xl bg-[#131B2A] hover:bg-slate-800/80 border border-[#2C384E] hover:border-amber-500/40 flex items-center justify-between transition cursor-pointer group"
+              title="View & Manage User Profile"
+            >
               <div className="flex items-center gap-2 overflow-hidden">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-xs shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-xs shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition">
                   {user?.fullName?.charAt(0) || 'U'}
                 </div>
                 <div className="flex flex-col overflow-hidden">
-                  <span className="text-xs font-bold text-slate-100 truncate">
+                  <span className="text-xs font-bold text-slate-100 group-hover:text-amber-400 truncate transition">
                     {user?.fullName || 'Business Account'}
                   </span>
                   <span className="text-[10px] text-slate-400 truncate">
@@ -288,7 +295,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
                   </span>
                 </div>
               </div>
-            </div>
+            </NavLink>
           )}
 
           {/* Theme Toggle Button */}

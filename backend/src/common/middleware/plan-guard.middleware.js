@@ -31,18 +31,22 @@ export const enforceActivePlanQuota = async (req, res, next) => {
       });
     }
 
-    const postsRemaining = Math.max(0, sub.totalPostsAllowed - sub.postsUsed);
+    const planRemaining = Math.max(0, sub.totalPostsAllowed - sub.postsUsed);
+    const bonusRemaining = Math.max(0, sub.bonusPostsAllowed - sub.bonusPostsUsed);
+    const postsRemaining = planRemaining + bonusRemaining;
 
     if (sub.status === 'EXPIRED' || postsRemaining <= 0) {
       return res.status(403).json({
         success: false,
         code: 'PLAN_EXPIRED',
-        message: 'Your plan post quota has been exhausted. Please purchase a plan to continue creating or scheduling posts.',
+        message: 'Your post quota has been exhausted. Please purchase a plan or contact support to continue creating or scheduling posts.',
         data: {
           plan: sub.plan,
           status: 'EXPIRED',
           totalPostsAllowed: sub.totalPostsAllowed,
           postsUsed: sub.postsUsed,
+          bonusPostsAllowed: sub.bonusPostsAllowed,
+          bonusPostsUsed: sub.bonusPostsUsed,
           postsRemaining: 0,
         },
       });

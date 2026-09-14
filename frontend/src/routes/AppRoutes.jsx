@@ -96,6 +96,11 @@ const SocialConnectionsPage = lazy(() =>
     default: m.SocialConnectionsPage || m.default,
   }))
 );
+const ProfilePage = lazy(() =>
+  import("../features/profile/pages/ProfilePage").then((m) => ({
+    default: m.ProfilePage || m.default,
+  }))
+);
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -149,6 +154,7 @@ export const AppRoutes = () => {
             <Route path="/brandkit" element={<BrandKitPage />} />
             <Route path="/connections" element={<SocialConnectionsPage />} />
             <Route path="/vault" element={<VaultPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route
               path="/analytics"
               element={

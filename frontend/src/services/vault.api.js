@@ -56,4 +56,15 @@ export const vaultApi = {
   deleteVaultItem: async (id) => {
     return api.delete(API_ENDPOINTS.VAULT.BY_ID(id));
   },
+
+  /**
+   * POST /api/v1/vault/bulk-delete
+   * Bulk deletes multiple graphic media asset records from the user's Vault.
+   *
+   * @param {Array<string>} ids - List of Vault item UUIDs to delete
+   * @returns {Promise<Object>} Success bulk deletion confirmation payload
+   */
+  bulkDeleteVaultItems: async (ids) => {
+    return api.post('/vault/bulk-delete', { ids });
+  },
 };

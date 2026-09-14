@@ -1,5 +1,5 @@
 import React from "react";
-import { Maximize2, Download, Edit, Trash2, Calendar } from "lucide-react";
+import { Maximize2, Download, Edit, Trash2, Calendar, Check } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 
@@ -15,6 +15,7 @@ import { Button } from "../ui/Button";
  * @param {Function} [props.onPreview] - Callback triggered when clicking card image for full screen lightbox.
  * @param {Function} [props.onDownload] - Callback triggered when clicking download button.
  * @param {Function} [props.onEdit] - Callback triggered when clicking edit button.
+ * @param {Function} [props.onReuse] - Callback triggered when clicking Re-use & Edit button.
  * @param {Function} [props.onDelete] - Callback triggered when clicking delete button.
  * @param {boolean} [props.isDeleting=false] - Whether delete mutation is currently loading.
  */
@@ -27,10 +28,14 @@ export const GraphicCard = ({
   onDownload,
   onEdit,
   onDelete,
+  isSelected = false,
+  onToggleSelect,
   isDeleting = false,
 }) => {
   return (
-    <Card className="p-3 bg-[#0B0F17] border-[#2C384E] hover:border-amber-500/50 transition group space-y-3 flex flex-col justify-between">
+    <Card className={`p-3 bg-[#0B0F17] border-[#2C384E] transition group space-y-3 flex flex-col justify-between relative ${
+      isSelected ? "ring-2 ring-amber-500 border-amber-500 bg-amber-500/5" : "hover:border-amber-500/50"
+    }`}>
       {/* Aspect Ratio Image Container */}
       <div
         onClick={onPreview}
@@ -42,6 +47,25 @@ export const GraphicCard = ({
           alt={title}
           className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300 bg-[#0B0F17]"
         />
+
+        {/* Selection Checkbox Badge */}
+        {onToggleSelect && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect();
+            }}
+            className={`absolute top-2 right-2 z-20 w-6 h-6 rounded-lg flex items-center justify-center transition border shadow-md cursor-pointer ${
+              isSelected
+                ? "bg-amber-500 text-slate-950 border-amber-400 font-bold scale-110"
+                : "bg-slate-950/75 text-slate-400 border-slate-700 hover:border-amber-400 hover:text-white backdrop-blur-xs"
+            }`}
+            title={isSelected ? "Deselect item" : "Select item for bulk delete"}
+          >
+            <Check className={`w-3.5 h-3.5 ${isSelected ? "stroke-[3]" : "opacity-40"}`} />
+          </button>
+        )}
 
         {/* Hover Zoom Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 backdrop-blur-[2px]">
@@ -83,10 +107,10 @@ export const GraphicCard = ({
               <Button
                 variant="outline"
                 onClick={() => onDownload(imageUrl, title)}
-                className="flex-1 justify-center py-1.5 text-xs text-amber-400 border-[#2C384E] hover:bg-amber-500/10"
+                className="py-1.5 px-2.5 text-xs text-amber-400 border-[#2C384E] hover:bg-amber-500/10"
                 title="Download HD PNG"
               >
-                <Download className="w-3.5 h-3.5 mr-1" /> HD
+                <Download className="w-3.5 h-3.5" />
               </Button>
             )}
             {onEdit && (

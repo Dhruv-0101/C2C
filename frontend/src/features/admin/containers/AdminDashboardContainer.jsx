@@ -9,6 +9,7 @@ import { useSubAdmins } from "../../../hooks/useSubAdmins";
 import { useUsers } from "../../../hooks/useUsers";
 import { authApi } from "../../../services/auth.api";
 import { categoryApi } from "../../../services/category.api";
+import { billingApi } from "../../../services/billing.api";
 import { subAdminSchema } from "../../../validations/auth.validation";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
 import { AdminDashboardView } from "../components/AdminDashboardView";
@@ -216,6 +217,22 @@ export const AdminDashboardContainer = () => {
     },
   });
 
+  // Admin Quota Top-Up Mutation
+  const topUpUserQuotaMutation = useMutation({
+    mutationFn: ({ userId, bonusPosts }) => billingApi.adminTopUpQuota(userId, bonusPosts),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries(["users"]);
+      queryClient.invalidateQueries(["subscription"]);
+      showSuccess(
+        "Quota Top-Up Granted! 🎉",
+        `Successfully granted +${variables.bonusPosts || 10} bonus post quota to user.`,
+      );
+    },
+    onError: (err) => {
+      showError("Top-Up Failed ⚠️", err.message || "Failed to grant bonus post quota.");
+    },
+  });
+
   // React Hook Form for SubAdmin Creation
   const {
     register,
@@ -315,6 +332,7 @@ export const AdminDashboardContainer = () => {
       updateSubAdminMutation={updateSubAdminMutation}
       deleteSubAdminMutation={deleteSubAdminMutation}
       toggleUserStatusMutation={toggleUserStatusMutation}
+      topUpUserQuotaMutation={topUpUserQuotaMutation}
       register={register}
       handleSubmit={handleSubmit}
       errors={errors}

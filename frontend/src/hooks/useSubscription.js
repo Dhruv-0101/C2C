@@ -28,10 +28,12 @@ export const useSubscription = () => {
   const closePlanModal = useCallback(() => setIsPlanModalOpen(false), []);
 
   const postsRemaining = subscription?.postsRemaining !== undefined ? subscription.postsRemaining : 0;
+  const planRemaining = subscription?.planRemaining !== undefined ? subscription.planRemaining : 0;
+  const bonusRemaining = subscription?.bonusRemaining !== undefined ? subscription.bonusRemaining : 0;
   const hasPlan = !!subscription?.hasPlan;
-  const isExpired = !hasPlan || subscription?.isExpired || postsRemaining <= 0;
+  const isExpired = subscription?.isExpired || postsRemaining <= 0;
   const planName = subscription?.plan || null;
-  const canCreatePost = hasPlan && !isExpired && postsRemaining > 0;
+  const canCreatePost = postsRemaining > 0;
 
 
   // Activate Free Plan Mutation
@@ -69,6 +71,8 @@ export const useSubscription = () => {
     isError,
     refetchSubscription: refetch,
     postsRemaining,
+    planRemaining,
+    bonusRemaining,
     isExpired,
     hasPlan,
     canCreatePost,

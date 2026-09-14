@@ -93,20 +93,73 @@ html.light .text-amber-700 {
 
 /* Background Card Overrides for Light Mode */
 html.light [class*="bg-[#0B0F17]"],
+html.light [class*="bg-[#0b0f17]"],
+html.light [class*="bg-[#0A0D14]"],
+html.light [class*="bg-[#0a0d14]"],
 html.light [class*="bg-slate-950"],
-html.light [class*="bg-slate-900"] {
+html.light [class*="bg-slate-900"],
+html.light [class*="bg-slate-800"] {
   background-color: #F1F5F9 !important;
 }
 
 html.light [class*="bg-[#131B2A]"],
+html.light [class*="bg-[#131b2a]"],
+html.light [class*="bg-[#1A2538]"],
+html.light [class*="bg-[#1a2538]"],
 html.light [class*="bg-[#1A2335]"],
-html.light [class*="bg-slate-900/80"],
-html.light [class*="bg-slate-900/50"] {
+html.light [class*="bg-[#1a2335]"],
+html.light [class*="bg-[#0F172A]"],
+html.light [class*="bg-[#0f172a]"],
+html.light [class*="bg-[#1E293B]"],
+html.light [class*="bg-[#1e293b]"],
+html.light [class*="bg-slate-900/"],
+html.light [class*="bg-slate-950/"],
+html.light [class*="bg-slate-800/"] {
   background-color: #FFFFFF !important;
 }
 
+/* Fix for Dark Gradient Cards/Banners in Light Mode */
+html.light [class*="from-[#131B2A]"],
+html.light [class*="from-[#131b2a]"],
+html.light [class*="from-[#1A2538]"],
+html.light [class*="from-[#1a2538]"],
+html.light [class*="from-[#0B0F17]"],
+html.light [class*="from-[#0b0f17]"],
+html.light [class*="from-[#0F172A]"],
+html.light [class*="from-[#0f172a]"],
+html.light [class*="from-slate-950"],
+html.light [class*="from-slate-900"],
+html.light [class*="from-slate-800"] {
+  background-image: linear-gradient(to right, #FFFFFF, #F8FAFC, #F1F5F9) !important;
+  background-color: #FFFFFF !important;
+}
+
+html.light [class*="via-[#131B2A]"],
+html.light [class*="via-[#131b2a]"],
+html.light [class*="via-[#1A2538]"],
+html.light [class*="via-[#1a2538]"],
+html.light [class*="via-[#0B0F17]"],
+html.light [class*="via-[#0b0f17]"],
+html.light [class*="via-slate-950"],
+html.light [class*="via-slate-900"] {
+  --tw-gradient-via: #F8FAFC !important;
+}
+
+html.light [class*="to-[#0B0F17]"],
+html.light [class*="to-[#0b0f17]"],
+html.light [class*="to-[#131B2A]"],
+html.light [class*="to-[#131b2a]"],
+html.light [class*="to-slate-950"],
+html.light [class*="to-slate-900"] {
+  --tw-gradient-to: #F1F5F9 !important;
+}
+
+/* Border Overrides for Dark Border Classes in Light Mode */
 html.light [class*="border-[#2C384E]"],
-html.light [class*="border-slate-800"] {
+html.light [class*="border-[#2c384e]"],
+html.light [class*="border-slate-800"],
+html.light [class*="border-slate-900"],
+html.light [class*="border-slate-700"] {
   border-color: #CBD5E1 !important;
 }
 

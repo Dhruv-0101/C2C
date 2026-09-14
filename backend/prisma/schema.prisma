@@ -98,6 +98,7 @@ model User {
   posts               Post[]
   vaultItems          VaultItem[]
   subscription        Subscription?
+  billingTransactions BillingTransaction[]
   notifications       Notification[]
   templatesCreated    Template[]           @relation("TemplateCreator")
 
@@ -376,9 +377,11 @@ model Subscription {
   status             String    @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
   totalPostsAllowed  Int       @default(5)
   postsUsed          Int       @default(0)
+  bonusPostsAllowed  Int       @default(0)
+  bonusPostsUsed     Int       @default(0)
   pricePaid          Float     @default(0)
   currency           String    @default("INR")
-  paymentGateway     String?   // RAZORPAY, STRIPE, FREE
+  paymentGateway     String?   // RAZORPAY, STRIPE, FREE, ADMIN_BONUS
   paymentId          String?
   orderId            String?
   currentPeriodStart DateTime  @default(now())
@@ -398,4 +401,23 @@ model Notification {
   createdAt DateTime         @default(now())
 
   @@index([userId, isRead])
+}
+
+model BillingTransaction {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            PlanType @default(FREE)
+  transactionType String   @default("PLAN_ACTIVATION") // PLAN_ACTIVATION, PLAN_PURCHASE, ADMIN_BONUS
+  paymentGateway  String   // FREE, RAZORPAY, STRIPE, ADMIN_BONUS
+  pricePaid       Float    @default(0)
+  currency        String   @default("INR")
+  postCount       Int      @default(0)
+  paymentId       String?
+  orderId         String?
+  status          String   @default("COMPLETED")
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

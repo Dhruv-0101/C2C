@@ -44,6 +44,7 @@ export const PostStudioContainer = () => {
   } = useSubscription();
 
   const passedTemplate = location.state?.template;
+  const reusePost = location.state?.reusePost;
   const templateIdParam = searchParams.get("templateId");
 
   // Wizard Active Step State (1: Template, 2: Frame, 3: Details, 4: Export)
@@ -206,6 +207,26 @@ export const PostStudioContainer = () => {
     customDetails,
   );
 
+  useEffect(() => {
+    if (reusePost) {
+      const reuseImg = reusePost.graphicUrl || reusePost.finalGraphicUrl || reusePost.post?.finalGraphicUrl;
+      if (reuseImg) {
+        setCustomBaseImage(reuseImg);
+      }
+    }
+  }, [reusePost]);
+
+  const publisherPayload = {
+    templateId: currentTemplate?.id || reusePost?.templateId || null,
+    festivalId: currentTemplate?.festivalId || reusePost?.festivalId || null,
+    base64Graphic: dataUrl,
+    finalGraphicUrl: customBaseImage || reusePost?.graphicUrl || reusePost?.finalGraphicUrl || null,
+    occasionName: reusePost?.occasionName || reusePost?.post?.occasionName || currentTemplate?.title || "Branded Graphic Post",
+    customText: reusePost?.customText || reusePost?.post?.customText || customDetails?.tagline || customDetails?.businessName,
+    caption: reusePost?.customText || reusePost?.post?.customText || "",
+    userConfigJson: customDetails,
+  };
+
   const [saveError, setSaveError] = useState("");
 
   // Save Generated Post Mutation
@@ -289,15 +310,6 @@ export const PostStudioContainer = () => {
       return;
     }
     setIsPublisherModalOpen(true);
-  };
-
-  const publisherPayload = {
-    templateId: currentTemplate?.id || null,
-    festivalId: currentTemplate?.festivalId || null,
-    base64Graphic: dataUrl,
-    occasionName: currentTemplate?.title || "Branded Graphic Post",
-    customText: customDetails?.tagline || customDetails?.businessName,
-    userConfigJson: customDetails,
   };
 
   return (

@@ -8,7 +8,7 @@ export const EMAIL_QUEUE_NAME = 'email-queue';
 export const EMAIL_JOB_NAMES = {
   WELCOME_EMAIL: 'SEND_WELCOME_EMAIL',
   PASSWORD_RESET: 'SEND_PASSWORD_RESET',
-  // TWO_FACTOR_CODE: 'SEND_2FA_CODE',
+  INVOICE_EMAIL: 'SEND_INVOICE_EMAIL',
 };
 
 // Initialize Email BullMQ Queue only if Redis is configured
@@ -58,6 +58,7 @@ export async function addWelcomeEmailJob({ email, fullName }) {
   } catch (error) {
     logger.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendWelcomeEmail for ${email}...`);
     // Fallback: Send email directly if Redis queue is offline
+    const { sendWelcomeEmail } = await import('../common/services/email.service.js');
     sendWelcomeEmail({ email, fullName }).catch((e) => {
       logger.error('Failed direct fallback email send:', e.message);
     });
@@ -81,8 +82,34 @@ export async function addPasswordResetEmailJob({ email, fullName, resetUrl }) {
   } catch (error) {
     logger.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendPasswordResetEmail for ${email}...`);
     // Fallback: Send email directly if Redis queue is offline
+    const { sendPasswordResetEmail } = await import('../common/services/email.service.js');
     sendPasswordResetEmail({ email, fullName, resetUrl }).catch((e) => {
       logger.error('Failed direct fallback password reset email send:', e.message);
+    });
+  }
+}
+
+/**
+ * Producer: Add Invoice Email Job to BullMQ Queue
+ * @param {{ userId: string, transactionId: string }} data
+ */
+export async function addInvoiceEmailJob({ userId, transactionId }) {
+  try {
+    if (emailQueue) {
+      const job = await emailQueue.add(EMAIL_JOB_NAMES.INVOICE_EMAIL, {
+        userId,
+        transactionId,
+        createdAt: new Date().toISOString(),
+      });
+      logger.info(`🚀 [BullMQ Producer] Invoice Email Job #${job.id} dispatched for txId ${transactionId}`);
+      return job;
+    }
+    throw new Error('Redis Queue unavailable');
+  } catch (error) {
+    logger.warn(`⚠️ [BullMQ Fallback] Redis unavailable (${error.message}). Executing fallback sendInvoiceEmail for txId ${transactionId}...`);
+    const { sendInvoiceEmail } = await import('../common/services/email.service.js');
+    sendInvoiceEmail({ userId, transactionId }).catch((e) => {
+      logger.error('Failed direct fallback invoice email send:', e.message);
     });
   }
 }

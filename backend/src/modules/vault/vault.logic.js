@@ -7,9 +7,6 @@ export const vaultLogic = {
    * Fetch user vault items with pagination & search
    */
   getVaultItems: async (userId, queryParams) => {
-    // Auto-sync any existing post graphics into VaultItems if missing
-    await vaultRepository.syncUserPostsToVault(userId);
-
     const { page, limit, skip, take, search } = parsePaginationParams(queryParams);
     const { vaultItems, totalCount } = await vaultRepository.findPaginatedByUserId(userId, { skip, take, search });
     
@@ -59,5 +56,15 @@ export const vaultLogic = {
       throw new NotFoundError('Vault item not found or unauthorized');
     }
     return vaultRepository.delete(id, userId);
+  },
+
+  /**
+   * Bulk delete items from Vault
+   */
+  bulkDeleteVaultItems: async (ids, userId) => {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return { count: 0 };
+    }
+    return vaultRepository.deleteManyByIds(ids, userId);
   },
 };
