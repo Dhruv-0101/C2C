@@ -23,6 +23,7 @@ import {
   Users,
   Share2,
   User,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLogout } from '../../features/auth/hooks/useLogout';
@@ -58,6 +59,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Analytics & Insights', path: '/analytics', icon: BarChart3 },
     { label: 'BrandKit', path: '/brandkit', icon: Building2 },
     { label: 'Social Integrations', path: '/connections', icon: Share2 },
     { label: 'Post Studio', path: '/create-post', icon: Sparkles },

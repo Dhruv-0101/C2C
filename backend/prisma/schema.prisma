@@ -101,6 +101,7 @@ model User {
   billingTransactions BillingTransaction[]
   notifications       Notification[]
   templatesCreated    Template[]           @relation("TemplateCreator")
+  postAnalytics       PostAnalytics[]
 
   @@index([email])
   @@index([googleId])
@@ -317,6 +318,7 @@ model Post {
   captions       Caption[]
   scheduledPosts ScheduledPost[]
   vaultItems     VaultItem[]
+  postAnalytics  PostAnalytics[]
 
   @@index([userId])
   @@index([status])
@@ -419,5 +421,31 @@ model BillingTransaction {
   createdAt       DateTime @default(now())
 
   @@index([userId])
+  @@index([createdAt])
+}
+
+model PostAnalytics {
+  id             String         @id @default(uuid())
+  postId         String
+  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform       SocialPlatform
+  platformPostId String?
+
+  impressions    Int            @default(0)
+  reach          Int            @default(0)
+  likes          Int            @default(0)
+  comments       Int            @default(0)
+  shares         Int            @default(0)
+  clicks         Int            @default(0)
+  engagementRate Float          @default(0.0)
+
+  lastSyncedAt   DateTime       @default(now())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([postId, platform])
+  @@index([userId, platform])
   @@index([createdAt])
 }

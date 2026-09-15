@@ -101,6 +101,11 @@ const ProfilePage = lazy(() =>
     default: m.ProfilePage || m.default,
   }))
 );
+const AnalyticsPage = lazy(() =>
+  import("../features/analytics/AnalyticsPage").then((m) => ({
+    default: m.AnalyticsPage || m.default,
+  }))
+);
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -155,16 +160,7 @@ export const AppRoutes = () => {
             <Route path="/connections" element={<SocialConnectionsPage />} />
             <Route path="/vault" element={<VaultPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route
-              path="/analytics"
-              element={
-                <GenericPage
-                  title="Growth & Analytics Engine"
-                  icon={BarChart3}
-                  description="Track post engagement, follower reach, and campaign ROI metrics."
-                />
-              }
-            />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route
               path="/settings"
               element={

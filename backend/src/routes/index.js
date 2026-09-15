@@ -11,6 +11,7 @@ import vaultRoutes from '../modules/vault/vault.routes.js';
 import socialRoutes from '../modules/social/social.routes.js';
 import billingRoutes from '../modules/billing/billing.routes.js';
 import aiRoutes from '../modules/ai/ai.routes.js';
+import analyticsRoutes from '../modules/analytics/analytics.routes.js';
 
 const router = Router();
 
@@ -36,5 +37,6 @@ router.use('/vault', vaultRoutes);
 router.use('/social', socialRoutes);
 router.use('/billing', billingRoutes);
 router.use('/ai', aiRoutes);
+router.use('/analytics', analyticsRoutes);
 
 export default router;
