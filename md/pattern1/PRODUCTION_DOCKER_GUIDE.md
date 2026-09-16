@@ -38,24 +38,113 @@ Production uses `docker-compose.prod.yml` to orchestrate 4 hardened, high-perfor
 
 ---
 
-## ⚙️ 2. Production Multi-Stage Build Architecture
+## ⚙️ 2. Production Architecture & Performance Strategy
 
-Production Dockerfiles use **Multi-Stage Targets** (`target: production`) to keep images small, secure, and fast.
+To ensure zero server freeze, minimal RAM usage, and instant deployments on cloud servers (like AWS EC2 `t2.micro` / `t3.micro`):
 
-### 🎨 Frontend Production Stage (`target: production` in `frontend/Dockerfile`)
-- **Stage 1 (Build)**: Compiles React + Vite into static HTML, CSS, and JS bundles (`/dist`).
-- **Stage 2 (Nginx Alpine Image)**: Discards Node.js and build tools completely (~1GB $\rightarrow$ **~25MB**). Serves static assets at lightning speed via Nginx with gzip compression on **Port 80**.
+### 🎨 Frontend: Ultra-Fast Pre-Built Static Serving (Nginx Alpine)
+- **Built on Local Mac (3 to 5 Seconds)**: React + Vite is compiled locally into high-performance static HTML, CSS, and JS bundles (`frontend/dist`).
+- **Served by Nginx Container (~15MB)**: On the production server, `brandflow-frontend-prod` runs pure `nginx:alpine` and mounts the pre-compiled `dist` folder.
+- **Why this matters**:
+  - Eliminates Node.js and `npm` build overhead completely from the server.
+  - Zero RAM spikes and zero risk of the server freezing during deployments.
+  - Serving static assets through Nginx with Gzip compression and browser caching.
 
-### ⚙️ Backend Production Stage (`target: production` in `backend/Dockerfile`)
-- **Deterministic Clean Dependencies**: Runs `npm ci --omit=dev` to install only production dependencies (no Nodemon, test frameworks, or dev utilities).
-- **Least Privilege Security (`USER node`)**: Switches execution user from `root` to unprivileged system user `node` to prevent container-escape vulnerabilities.
+### ⚙️ Backend: Hardened Production Stage (`target: production`)
+- **Clean Dependencies**: Runs `npm ci --omit=dev` to install strictly production dependencies (excluding dev tools like nodemon).
+- **Prisma Native Engine**: Prisma Client is pre-generated inside Alpine Linux with OpenSSL and libc compatibility.
+- **Least Privilege Security (`USER node`)**: Runs as unprivileged system user `node` to prevent container-escape vulnerabilities.
 
 ---
 
-## 🚀 3. Production Docker Commands Lifecycle
+## 🔄 3. Complete Dev-to-Prod Workflow (How to Deploy Changes While Doing Development)
+
+Follow this 5-step loop whenever you finish writing new features or bug fixes locally and want to release them to production:
+
+```
+[1. Local Development] ➔ [2. Build Frontend on Mac] ➔ [3. Push to Git] ➔ [4. Pull on EC2 & SCP Dist] ➔ [5. Restart Containers]
+```
+
+### Step 1: Work in Local Development Mode
+While coding, run your local development environment:
+```bash
+# Start local development containers (with hot-reload):
+docker compose up -d
+
+# Frontend runs at: http://localhost:5173
+# Backend runs at: http://localhost:5000/api/v1
+```
+
+---
+
+### Step 2: Compile Frontend for Production on Your Mac (3 Seconds)
+Once your changes are tested, build the production frontend bundle locally using your production Elastic IP or Domain:
+
+```bash
+cd frontend
+
+# Compile with your production API URL:
+VITE_API_BASE_URL="http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1" npm run build
+```
+*(This produces the production assets in `frontend/dist/`)*
+
+---
+
+### Step 3: Push Your Code to Git
+Commit and push your backend and configuration changes to your repository:
+
+```bash
+git add .
+git commit -m "feat: your new feature or bug fix"
+git push origin main
+```
+
+---
+
+### Step 4: Deploy to Production EC2 Server
+
+#### A. Pull updated code on EC2:
+In your **EC2 SSH terminal**:
+```bash
+cd ~/C2C
+git pull origin main
+```
+
+#### B. Upload the compiled `dist` folder from your Mac:
+In your **Mac terminal** (inside `frontend/` folder):
+```bash
+# Ensure key permissions:
+chmod 400 "path/to/brandflow-key.pem"
+
+# Upload dist directly:
+scp -i "path/to/brandflow-key.pem" -r dist ubuntu@<YOUR_EC2_PUBLIC_IP>:~/C2C/frontend/
+```
+
+---
+
+### Step 5: Apply Changes on EC2
+
+In your **EC2 SSH terminal**:
+
+1. **If you changed Backend code**:
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d --build brandflow-backend
+   ```
+
+2. **If you changed Database Schema (`schema.prisma`)**:
+   ```bash
+   docker compose -f docker-compose.prod.yml exec brandflow-backend npx prisma db push
+   ```
+
+3. **If you only changed Frontend code**:
+   - Done! Nginx immediately serves the updated `dist` files without needing any container restart.
+
+---
+
+## 🚀 4. Production Docker Commands Cheat Sheet
 
 ### A. Starting the Production Docker Stack
-Run this command to build and launch production containers in detached (background) mode:
+Launch all 4 production containers in detached (background) mode:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
@@ -63,40 +152,34 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ---
 
-### B. Checking Production Container Status & Health
-Verify that all 4 production containers are running and healthy:
-
+### B. Checking Container Status & Health
 ```bash
 docker compose -f docker-compose.prod.yml ps
 ```
 
 ---
 
-### C. Viewing Production Logs
-Inspect real-time logs for individual containers:
-
+### C. Viewing Real-Time Logs
 ```bash
-# View Backend logs
-docker compose -f docker-compose.prod.yml logs -f backend
+# View Backend logs (Ctrl + C to exit)
+docker compose -f docker-compose.prod.yml logs -f brandflow-backend
 
-# View Frontend Nginx logs
-docker compose -f docker-compose.prod.yml logs -f frontend
+# View Frontend Nginx access logs
+docker compose -f docker-compose.prod.yml logs -f brandflow-frontend
 
-# View PostgreSQL DB logs
-docker compose -f docker-compose.prod.yml logs -f postgres
+# View PostgreSQL Database logs
+docker compose -f docker-compose.prod.yml logs -f brandflow-postgres
 ```
 
 ---
 
 ### D. Applying Database Changes in Production
-Execute Prisma commands directly inside the running production backend container:
-
 ```bash
-# Push schema updates to production PostgreSQL
-docker exec brandflow-backend-prod npx prisma db push
+# Push schema updates directly to PostgreSQL
+docker compose -f docker-compose.prod.yml exec brandflow-backend npx prisma db push
 
-# Seed production defaults (Categories, Templates, Styles)
-docker exec brandflow-backend-prod npx prisma db seed
+# Seed production master data (SuperAdmin, Categories, Festivals, Frames, Templates)
+docker compose -f docker-compose.prod.yml exec brandflow-backend npm run db:seed
 ```
 
 ---
@@ -126,7 +209,7 @@ docker compose -f docker-compose.prod.yml down
 
 ---
 
-## 💾 4. Production Volume & Database Backups
+## 💾 5. Production Volume & Database Backups
 
 Database data is stored in the persistent Docker named volume `postgres_data`.
 
@@ -142,7 +225,7 @@ cat ~/backup_20260907.sql | docker exec -i brandflow-postgres-prod psql -U postg
 
 ---
 
-## 🧹 5. Disk Space Optimization
+## 🧹 6. Disk Space Optimization
 
 Over time, building new Docker images leaves unused image layers. Run this command periodically on your server to free disk space:
 
@@ -153,13 +236,14 @@ docker image prune -f
 
 ---
 
-## 📋 6. Summary Comparison: Local Dev vs Production Docker
+## 📋 7. Summary Comparison: Local Dev vs Production Docker
 
 | Feature | Local Dev (`docker-compose.yml`) | Production (`docker-compose.prod.yml`) |
 |---|---|---|
-| **Build Target** | `target: development` | `target: production` |
-| **Frontend Server** | Vite Dev Server (`port 5173`) | Nginx Web Server (`port 80`) |
-| **Code Mirroring** | Host Bind Mounts (`./backend:/app`) | None (Immutably baked into image) |
-| **Hot Reloading** | Active (HMR / Node watch) | Off (Compiled static build) |
-| **Restart Policy** | `unless-stopped` | `always` (Auto-restarts on server reboot) |
-| **Database Port** | Host `5432:5432` | Host `5432:5432` (Persistent volume) |
+| **Build Target** | `target: development` (Local watch) | `nginx:alpine` + Node prod |
+| **Frontend Server** | Vite Dev Server (`port 5173`) | Nginx Web Server (`port 8080/80`) |
+| **Frontend Compilation** | Live in-browser (HMR) | Pre-compiled on Mac in 3s (`dist`) |
+| **Code Mirroring** | Host Bind Mounts (`./backend:/app`) | Pre-built dist + Baked backend |
+| **Hot Reloading** | Active (HMR / Node watch) | Off (Compiled static bundle) |
+| **Restart Policy** | `unless-stopped` | `always` (Auto-restarts on reboot) |
+| **Database Port** | Host `5432:5432` / `5433` | Host `5432:5432` (Persistent volume) |

@@ -2,7 +2,6 @@ import { Router } from 'express';
 import authRoutes from '../modules/auth/auth.routes.js';
 import categoryRoutes from '../modules/category/category.routes.js';
 import festivalRoutes from '../modules/festival/festival.routes.js';
-import designStyleRoutes from '../modules/design-style/design-style.routes.js';
 import templateRoutes from '../modules/template/template.routes.js';
 import brandKitRoutes from '../modules/brandkit/brandkit.routes.js';
 import frameRoutes from '../modules/frame/frame.routes.js';
@@ -28,7 +27,6 @@ router.get('/health', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/festivals', festivalRoutes);
-router.use('/design-styles', designStyleRoutes);
 router.use('/templates', templateRoutes);
 router.use('/brandkit', brandKitRoutes);
 router.use('/frames', frameRoutes);

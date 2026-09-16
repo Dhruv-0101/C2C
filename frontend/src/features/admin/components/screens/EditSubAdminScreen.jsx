@@ -104,7 +104,6 @@ export const EditSubAdminScreen = ({ subAdmin, onBack, updateSubAdminMutation })
                   { id: "templates", label: "Graphic Templates" },
                   { id: "festivals", label: "Festival Calendar" },
                   { id: "frames", label: "Brand Frames Studio" },
-                  { id: "styles", label: "Design System & Palettes" },
                   { id: "categories", label: "Business Categories" },
                   { id: "users", label: "Business User Directory" },
                 ].map((tab) => {

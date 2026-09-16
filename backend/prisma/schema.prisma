@@ -235,27 +235,6 @@ model Festival {
   posts     Post[]
 }
 
-model DesignStyle {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  slug            String   @unique
-  description     String?
-  primaryColor    String   @default("#F59E0B")
-  secondaryColor  String   @default("#0D9488")
-  accentColor     String   @default("#EC4899")
-  backgroundColor String   @default("#0B0F17")
-  gradient        String?
-  fontHeader      String   @default("Space Grotesk")
-  fontBody        String   @default("Plus Jakarta Sans")
-  colors          String[] @default([])
-  rulesJson       Json?
-  isSystem        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  posts Post[]
-}
-
 model TemplateCategory {
   id          String   @id @default(uuid())
   name        String   @unique
@@ -303,8 +282,6 @@ model Post {
   category        Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   festivalId      String?
   festival        Festival?    @relation(fields: [festivalId], references: [id], onDelete: SetNull)
-  styleId         String?
-  style           DesignStyle? @relation(fields: [styleId], references: [id], onDelete: SetNull)
   occasionName    String?
   customText      String?
   offerText       String?

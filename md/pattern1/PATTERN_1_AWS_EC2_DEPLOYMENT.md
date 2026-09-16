@@ -281,12 +281,86 @@ ls -la .env
 
 ---
 
-### Step 3.5: Build & Launch Production Docker Stack
+### 📌 Exact Variables to Update in `.env` After Getting Your Elastic IP / Domain
 
-Execute the following command to build the production images (Nginx static bundle + Node production image) and start all 4 services in background:
+Whenever you allocate an **Elastic IP** (e.g. `52.87.37.2`) or assign a custom domain / HTTPS address, update these **4 specific environment variables** in your EC2 `.env` file:
+
+| Environment Variable | HTTP (Elastic IP Example) | HTTPS (Domain / sslip.io Example) | What It Does |
+| :--- | :--- | :--- | :--- |
+| `CLIENT_URL` | `http://52.87.37.2` | `https://52-87-37-2.sslip.io` | Configures CORS & secure session cookie origin for frontend |
+| `VITE_API_BASE_URL` | `http://52.87.37.2:5000/api/v1` | `https://52-87-37-2.sslip.io/api/v1` | Frontend REST API communication endpoint |
+| `META_REDIRECT_URI` | `http://52.87.37.2:5000/api/v1/social/meta/callback` | `https://52-87-37-2.sslip.io/api/v1/social/meta/callback` | Facebook / Instagram OAuth redirect endpoint |
+| `LINKEDIN_REDIRECT_URI` | `http://52.87.37.2:5000/api/v1/social/linkedin/callback` | `https://52-87-37-2.sslip.io/api/v1/social/linkedin/callback` | LinkedIn OAuth 2.0 redirect endpoint |
+
+#### How to update them on EC2:
+1. Open `.env` on your EC2 server:
+   ```bash
+   nano .env
+   ```
+2. Find and replace the IP with your new Elastic IP in those 4 lines.
+3. Save and exit (`Ctrl + O` ➔ `Enter` ➔ `Ctrl + X`).
+4. Restart the backend container to apply the changes immediately:
+   ```bash
+   docker compose -f docker-compose.prod.yml restart brandflow-backend
+   ```
+
+---
+
+### Step 3.4.1: Build Frontend Static Bundle Locally & Upload to EC2 (Ultra-Fast 3-Second Build ⚡)
+
+> [!TIP]
+> **Why build locally on your Mac?**
+> A `t2.micro` EC2 instance has only 1GB RAM and 1 CPU core, causing Vite builds on the server to freeze or take 20+ minutes. Your Mac builds the complete production bundle in **3 to 5 seconds**!
+
+Open a terminal window **on your Mac** inside your local `C2C` project folder:
 
 ```bash
-# Build and start production stack
+# 1. Navigate to frontend directory:
+cd frontend
+
+# 2. Install frontend packages (creates node_modules & vite CLI if not already installed):
+npm install
+
+# 3. Compile production bundle with your Elastic IP (Replace <YOUR_EC2_PUBLIC_IP> with your EC2 IP):
+VITE_API_BASE_URL="http://<YOUR_EC2_PUBLIC_IP>:5000/api/v1" npm run build
+
+# 4. Upload compiled 'dist' directory to EC2 server:
+
+# 👉 Option A: If you are currently INSIDE the 'frontend' folder:
+scp -i "path/to/brandflow-key.pem" -r dist ubuntu@<YOUR_EC2_PUBLIC_IP>:~/C2C/frontend/
+
+# 👉 Option B: If you return to the root 'C2C' project folder:
+cd ..
+scp -i "path/to/brandflow-key.pem" -r frontend/dist ubuntu@<YOUR_EC2_PUBLIC_IP>:~/C2C/frontend/
+```
+
+> [!WARNING]
+> #### ⚠️ Troubleshooting: `WARNING: UNPROTECTED PRIVATE KEY FILE! Permissions 0644 ... are too open`
+> If SSH or SCP aborts with:
+> ```text
+> @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+> @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+> @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+> Permissions 0644 for 'brandflow-key.pem' are too open.
+> Load key: bad permissions
+> ubuntu@<EC2_IP>: Permission denied (publickey).
+> ```
+> **Cause**: SSH and SCP strictly require `.pem` private keys to have restricted `400` permissions (read-only by the owner, not accessible by others).
+> 
+> **Fix**: Run this command on your Mac terminal to secure the key:
+> ```bash
+> chmod 400 "path/to/brandflow-key.pem"
+> ```
+> Then re-run your `scp` upload command.
+
+---
+
+### Step 3.5: Launch Production Docker Stack on EC2
+
+Now, back in your **EC2 terminal**, launch all 4 production containers. Nginx will directly mount and serve your pre-built `dist` assets in under **2 seconds**:
+
+```bash
+# Start production stack (Instantly pulls Nginx and starts all 4 services)
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 

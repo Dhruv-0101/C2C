@@ -5,7 +5,6 @@ import {
   FileCode2,
   Calendar,
   Layers,
-  Palette,
   FolderKanban,
   Users,
   Shield,
@@ -20,7 +19,6 @@ import { AdminStatsHeader } from "./AdminStatsHeader";
 import { AdminTemplatesTab } from "./tabs/AdminTemplatesTab";
 import { AdminFestivalsTab } from "./tabs/AdminFestivalsTab";
 import { AdminFramesTab } from "./tabs/AdminFramesTab";
-import { AdminStylesTab } from "./tabs/AdminStylesTab";
 import { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
 import { AdminUsersTab } from "./tabs/AdminUsersTab";
 import { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
@@ -185,14 +183,6 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-indigo-500/50",
                   },
                   {
-                    id: "styles",
-                    label: "Design System & Palettes",
-                    desc: "Brand color schemes, typography & style presets",
-                    icon: Palette,
-                    color: "text-rose-400",
-                    borderColor: "hover:border-rose-500/50",
-                  },
-                  {
                     id: "categories",
                     label: "Business Categories",
                     desc: "System-wide industry tags & classification",
@@ -247,10 +237,7 @@ export const AdminDashboardView = ({
         {/* 3. Brand Frames Studio Tab */}
         {activeTab === "frames" && <AdminFramesTab />}
 
-        {/* 4. Design System & Color Tokens Tab */}
-        {activeTab === "styles" && <AdminStylesTab />}
-
-        {/* 5. Master Business Categories Tab */}
+        {/* 4. Master Business Categories Tab */}
         {activeTab === "categories" && (
           <AdminCategoriesTab
             categories={categories}
