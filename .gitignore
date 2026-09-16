@@ -15,9 +15,11 @@ out/
 .env
 .env.*
 prod.env
-.env.example
-*.env.example
 *.pem
+
+# Allow sanitized template files
+!.env.example
+!**/.env.example
 
 # Logs
 logs
