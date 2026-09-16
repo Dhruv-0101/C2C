@@ -65,11 +65,10 @@ COPY . .
 # Generate Prisma Client binaries for production environment
 RUN npx prisma generate
 
+# Ensure non-root node user owns /app and node_modules for runtime Prisma schema pushes
+RUN chown -R node:node /app
+
 # Security & Networking Configuration:
-# - USER node   : Switch from default 'root' user to unprivileged 'node' user (Principle of Least Privilege).
-#                 Prevents container escape vulnerabilities and unauthorized filesystem access in production.
-# - EXPOSE 5000 : Documents that the Express backend server inside the container listens on port 5000.
-#                 Used by Docker networking, Nginx reverse proxy, and cloud orchestrators.
 USER node
 EXPOSE 5000
 

@@ -175,11 +175,11 @@ docker compose -f docker-compose.prod.yml logs -f brandflow-postgres
 
 ### D. Applying Database Changes in Production
 ```bash
-# Push schema updates directly to PostgreSQL
-docker compose -f docker-compose.prod.yml exec brandflow-backend npx prisma db push
+# Push schema updates directly to PostgreSQL (--user root avoids client generation permission errors)
+docker compose -f docker-compose.prod.yml exec --user root brandflow-backend npx prisma db push
 
 # Seed production master data (SuperAdmin, Categories, Festivals, Frames, Templates)
-docker compose -f docker-compose.prod.yml exec brandflow-backend npm run db:seed
+docker compose -f docker-compose.prod.yml exec --user root brandflow-backend npm run db:seed
 ```
 
 ---

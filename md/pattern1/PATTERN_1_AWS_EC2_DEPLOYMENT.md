@@ -377,11 +377,11 @@ docker compose -f docker-compose.prod.yml ps
 Initialize your production PostgreSQL database and seed the default SuperAdmin user:
 
 ```bash
-# 1. Sync Prisma schema directly with database:
-docker compose -f docker-compose.prod.yml exec brandflow-backend npx prisma db push
+# 1. Sync Prisma schema directly with database (--user root avoids permission errors):
+docker compose -f docker-compose.prod.yml exec --user root brandflow-backend npx prisma db push
 
 # 2. Seed initial SuperAdmin & Master Data:
-docker compose -f docker-compose.prod.yml exec brandflow-backend npm run db:seed
+docker compose -f docker-compose.prod.yml exec --user root brandflow-backend npm run db:seed
 ```
 
 ---
