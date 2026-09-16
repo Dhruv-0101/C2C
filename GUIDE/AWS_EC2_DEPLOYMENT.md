@@ -1,45 +1,6 @@
-# 🟢 Pattern 1: AWS EC2 All-In-One Free Tier Deployment Guide ($0/Month) 🚀
+# 🟢 AWS EC2 All-In-One Free Tier Deployment Guide ($0/Month) 🚀
 
 This is the complete, step-by-step production deployment guide for running **BrandFlow** on an **AWS EC2 Virtual Machine** using **Docker Compose** (`docker-compose.prod.yml`).
-
----
-
-## 🏗️ 1. High-Level Architecture Overview
-
-All 4 application micro-components run inside a single, free-tier AWS EC2 instance (`t2.micro` or `t3.micro`):
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          INTERNET / CLIENT BROWSER                          │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │
-                         Port 80 (HTTP) / 443 (HTTPS)
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       AWS EC2 UBUNTU VIRTUAL MACHINE                        │
-│                                                                             │
-│   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │ 1. FRONTEND SERVICE: Nginx Production Web Server (Port 80)          │   │
-│   │    - Serves compiled React + Vite static bundle (/app/dist)         │   │
-│   └──────────────────────────────────┬──────────────────────────────────┘   │
-│                                      │                                      │
-│                               API Requests (Port 5000)                      │
-│                                      │                                      │
-│   ┌──────────────────────────────────▼──────────────────────────────────┐   │
-│   │ 2. BACKEND SERVICE: Node.js / Express REST API (Port 5000)          │   │
-│   │    - Handles Authentication, Prisma ORM, BullMQ Queues              │   │
-│   └─────────────────┬─────────────────────────────────┬─────────────────┘   │
-│                     │                                 │                     │
-│         Port 5432 (Internal)                Port 6379 (Internal)            │
-│                     ▼                                 ▼                     │
-│   ┌──────────────────────────────────┐   ┌──────────────────────────────┐   │
-│   │ 3. POSTGRESQL DATABASE CONTAINER │   │ 4. REDIS QUEUE ENGINE        │   │
-│   │    - PostgreSQL 16 Alpine        │   │    - Redis 7 Alpine          │   │
-│   │    - Volume: postgres_data       │   │    - Volume: redis_data      │   │
-│   └──────────────────────────────────┘   └──────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -334,6 +295,18 @@ cd ..
 scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r frontend/dist ubuntu@13.234.177.70:~/C2C/frontend/
 ```
 
+#### 🔍 Command-by-Command Detailed Explanation:
+
+| Command | Detailed Explanation |
+| :--- | :--- |
+| **`cd frontend`** | **Directory Change**: Moves your local Mac terminal session from the root `C2C` project folder into the `frontend` directory containing the React/Vite source code and `package.json`. |
+| **`npm install`** | **Install Dependencies**: Downloads and installs all frontend packages (React, Vite, Redux, Tailwind CSS, etc.) listed in `package.json` into the local `node_modules` directory. |
+| **`VITE_API_BASE_URL="..." npm run build`** | **Compile Production Bundle**: Injects the production backend API endpoint via environment variable and compiles the entire React + Vite codebase into optimized, production-ready static HTML, CSS, and JavaScript files inside `frontend/dist`. |
+| **`scp -i "..." -r dist ubuntu@...`** | **Secure Cloud Upload**: Uses SSH Secure Copy Protocol (`scp`) authenticated with your AWS `.pem` private key to securely transfer the compiled `dist` folder from your local Mac directly to the EC2 server (`~/C2C/frontend/`). |
+| **`cd ..`** | **Return to Parent Directory**: Navigates back out of the `frontend` subfolder to the root `C2C` project directory. |
+
+
+
 > [!WARNING]
 > #### ⚠️ Troubleshooting: `WARNING: UNPROTECTED PRIVATE KEY FILE! Permissions 0644 ... are too open`
 > If SSH or SCP aborts with:
@@ -351,6 +324,8 @@ scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r frontend/dist ubuntu@13.2
 > ```bash
 > chmod 400 "/Users/mac0011/Downloads/brandflow-c2c.pem"
 > ```
+> *(**What `chmod 400` does**: `chmod` = Change Mode (file permissions). `400` sets permission to **Read-Only for Owner only** (`r--------`), blocking all access for Group and Others. SSH/SCP strictly mandates `400` so nobody else on your system can read your private AWS key.)*
+> 
 > Then re-run your `scp` upload command.
 
 ---

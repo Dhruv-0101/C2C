@@ -32,47 +32,19 @@ Choose your change scenario below to deploy to production in seconds:
 ### ⚡ Scenario A: YOU ONLY CHANGED FRONTEND (UI, React, CSS, Pages)
 *(Takes 4 to 10 seconds • Zero downtime • Nginx static serving)*
 
-#### Option 1: Direct Deploy from Mac (If you have `.pem` key file on your Mac)
-1. In your **Mac terminal**:
+1. On your **Mac terminal** inside your `C2C` project folder:
    ```bash
+   # 1. Navigate to frontend directory:
    cd frontend
-   npm run deploy:prod
-   ```
-   > 💡 *What `npm run deploy:prod` does in one shot:*
-   > 1. Builds production assets with `VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1"`
-   > 2. Secures key permissions (`chmod 400`)
-   > 3. Uploads `dist` directly to EC2 via SCP
 
-#### Option 2: Deploy without `.pem` Key File (Using Git + AWS EC2 Instance Connect)
-*Use this if you don't have the `.pem` key file on your current system!*
-
-1. **Push changes from your Mac to Git:**
-   ```bash
-   git add .
-   git commit -m "feat: frontend updates"
-   git push origin main
-   ```
-
-2. **Open AWS EC2 Browser Terminal (No `.pem` file needed):**
-   - Go to AWS Console ➔ **EC2** ➔ **Instances** ➔ Click your Instance.
-   - Click **Connect** (top right) ➔ Select **EC2 Instance Connect** ➔ Click **Connect**.
-
-3. **Build & Live inside EC2 Browser Terminal:**
-   ```bash
-   # 1. Pull latest code
-   cd ~/C2C
-   git pull origin main
-
-   # 2. Build production frontend right inside EC2
-   cd frontend
+   # 2. Build production static bundle with your API URL:
    VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1" npm run build
 
-   # 3. Restart frontend Nginx container to serve new dist
-   cd ~/C2C
-   docker compose -f docker-compose.prod.yml restart brandflow-frontend
+   # 3. Upload compiled 'dist' directory to EC2 server via SCP:
+   scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@13.234.177.70:~/C2C/frontend/
    ```
 
-4. **In your Browser**:
+2. In your **Browser**:
    - Hard refresh to purge browser cache (`Cmd + Shift + R` on Mac / `Ctrl + Shift + R` on Windows).
    - **Your frontend changes are live immediately!**
 
@@ -126,13 +98,17 @@ Choose your change scenario below to deploy to production in seconds:
 ---
 
 ### ⚡ Scenario D: YOU CHANGED BOTH FRONTEND & BACKEND
-1. **Frontend**:
+1. **Build & Upload Frontend (from Mac)**:
    ```bash
-   cd frontend && npm run deploy:prod
+   cd frontend
+   VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1" npm run build
+   scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@13.234.177.70:~/C2C/frontend/
+   cd ..
    ```
-2. **Backend**:
-   - On Mac: `git add . && git commit -m "feat: full stack update" && git push origin main`
-   - On EC2: `git pull origin main && docker compose -f docker-compose.prod.yml up -d --build brandflow-backend`
+2. **Deploy Backend (from Mac to EC2)**:
+   - On **Mac**: `git add backend/ && git commit -m "feat: full stack update" && git push origin main`
+   - On **EC2 terminal**: `cd ~/C2C && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build brandflow-backend`
+
 
 ---
 
