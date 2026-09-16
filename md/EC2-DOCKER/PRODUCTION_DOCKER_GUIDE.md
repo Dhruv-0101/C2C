@@ -4,41 +4,7 @@ This guide details everything you need to know about running **BrandFlow in Prod
 
 ---
 
-## 🏗️ 1. Production Docker Stack Architecture
-
-Production uses `docker-compose.prod.yml` to orchestrate 4 hardened, high-performance containers:
-
-```
-                                  PORT 80 (HTTP)
-                                        │
-                                        ▼
-                   ┌──────────────────────────────────────────┐
-                   │          brandflow-frontend-prod         │
-                   │  (Nginx Alpine - Static React Bundle)    │
-                   └────────────────────┬─────────────────────┘
-                                        │
-                                  PORT 5000 (API)
-                                        │
-                                        ▼
-                   ┌──────────────────────────────────────────┐
-                   │          brandflow-backend-prod          │
-                   │   (Node 20 Alpine - Production Mode)     │
-                   └────────────────────┬─────────────────────┘
-                                        │
-                   ┌────────────────────┴────────────────────┐
-                   │                                         │
-            Port 5432 (Internal)                      Port 6379 (Internal)
-                   ▼                                         ▼
-   ┌───────────────────────────────┐         ┌───────────────────────────────┐
-   │    brandflow-postgres-prod    │         │     brandflow-redis-prod      │
-   │    (PostgreSQL 16 Alpine)     │         │       (Redis 7 Alpine)        │
-   │    [Volume: postgres_data]    │         │     [Volume: redis_data]      │
-   └───────────────────────────────┘         └───────────────────────────────┘
-```
-
----
-
-## ⚙️ 2. Production Architecture & Performance Strategy
+## ⚙️ 1. Production Architecture & Performance Strategy
 
 To ensure zero server freeze, minimal RAM usage, and instant deployments on cloud servers (like AWS EC2 `t2.micro` / `t3.micro`):
 
@@ -57,7 +23,7 @@ To ensure zero server freeze, minimal RAM usage, and instant deployments on clou
 
 ---
 
-## 🔄 3. Fast Dev-to-Prod Workflow (Instant Deployments)
+## 🔄 2. Fast Dev-to-Prod Workflow (Instant Deployments)
 
 Choose your change scenario below to deploy to production in seconds:
 
@@ -186,7 +152,7 @@ Choose your change scenario below to deploy to production in seconds:
 
 ---
 
-## 🚀 4. Production Docker Commands Cheat Sheet
+## 🚀 3. Production Docker Commands Cheat Sheet
 
 ### A. Starting the Production Docker Stack
 Launch all 4 production containers in detached (background) mode:
@@ -257,7 +223,7 @@ docker compose -f docker-compose.prod.yml down
 
 ---
 
-## 💾 5. Production Volume & Database Backups
+## 💾 4. Production Volume & Database Backups
 
 Database data is stored in the persistent Docker named volume `postgres_data`.
 
@@ -273,7 +239,7 @@ cat ~/backup_20260907.sql | docker exec -i brandflow-postgres-prod psql -U postg
 
 ---
 
-## 🧹 6. Disk Space Optimization
+## 🧹 5. Disk Space Optimization
 
 Over time, building new Docker images leaves unused image layers. Run this command periodically on your server to free disk space:
 
@@ -284,7 +250,7 @@ docker image prune -f
 
 ---
 
-## 📋 7. Summary Comparison: Local Dev vs Production Docker
+## 📋 6. Summary Comparison: Local Dev vs Production Docker
 
 | Feature | Local Dev (`docker-compose.yml`) | Production (`docker-compose.prod.yml`) |
 |---|---|---|
