@@ -15,12 +15,15 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
+  Trash2,
+  Eye,
 } from 'lucide-react';
 import { useCanvasCompositor } from '../../hooks/useCanvasCompositor';
 import { usePostCreator } from '../../hooks/usePostCreator';
 import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { ImageLightbox } from './ImageLightbox';
 import PlanSelectionModal from '../../features/billing/components/PlanSelectionModal';
 import PaymentSuccessModal from '../../features/billing/components/PaymentSuccessModal';
 
@@ -53,6 +56,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
   const [selectedFrame, setSelectedFrame] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplate?.id || '');
   const [customBaseImage, setCustomBaseImage] = useState(null);
+  const [previewCustomImageModal, setPreviewCustomImageModal] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(true);
 
   // Sync selectedTemplateId whenever modal opens or initialTemplate changes
@@ -257,34 +261,74 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
                   <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
                   <span>Choose Base Graphic Template</span>
                 </label>
-                <label className="cursor-pointer text-[11px] text-amber-400 font-semibold hover:underline bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
-                  <Plus className="w-3 h-3" />
-                  <span>Custom Image</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setCustomBaseImage(reader.result);
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
-                </label>
+                <div className="flex items-center gap-1.5">
+                  {customBaseImage && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomBaseImage(null)}
+                      className="text-[11px] text-rose-400 hover:text-rose-300 font-semibold bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 flex items-center gap-1 transition cursor-pointer"
+                      title="Remove custom uploaded image"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Remove</span>
+                    </button>
+                  )}
+                  <label className="cursor-pointer text-[11px] text-amber-400 font-semibold hover:underline bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1 transition">
+                    <Plus className="w-3 h-3" />
+                    <span>Custom Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setCustomBaseImage(reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Grid of Graphic Base Templates */}
               <div className="grid grid-cols-3 gap-2.5 max-h-44 overflow-y-auto pr-1">
                 {/* Active Custom Upload Preview if selected */}
                 {customBaseImage && (
-                  <div className="p-1 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-center relative aspect-square">
+                  <div className="p-1 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-center relative aspect-square group overflow-hidden">
                     <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
                     <img src={customBaseImage} alt="Custom Background" className="w-full h-full object-cover rounded-lg" />
-                    <span className="absolute bottom-1 left-1 right-1 text-[9px] font-bold bg-black/80 text-amber-400 py-0.5 rounded text-center truncate">
+                    
+                    {/* Hover controls for preview & remove */}
+                    <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1 rounded-lg z-20">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewCustomImageModal(true);
+                        }}
+                        className="p-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow transition cursor-pointer"
+                        title="Preview custom image"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCustomBaseImage(null);
+                        }}
+                        className="p-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow transition cursor-pointer"
+                        title="Remove custom image"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <span className="absolute bottom-1 left-1 right-1 text-[9px] font-bold bg-black/80 text-amber-400 py-0.5 rounded text-center truncate z-10">
                       Custom Upload
                     </span>
                   </div>
@@ -654,6 +698,14 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
         isOpen={!!successData}
         onClose={() => setSuccessData(null)}
         data={successData}
+      />
+
+      {/* Lightbox for previewing uploaded custom graphic */}
+      <ImageLightbox
+        isOpen={Boolean(previewCustomImageModal)}
+        imageUrl={customBaseImage}
+        item={{ title: "Your Custom Uploaded Graphic", occasionName: "Master Background Graphic" }}
+        onClose={() => setPreviewCustomImageModal(false)}
       />
     </>,
     document.body

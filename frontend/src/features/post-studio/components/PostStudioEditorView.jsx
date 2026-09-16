@@ -20,12 +20,14 @@ import {
   X,
   Trash2,
   Lock,
+  Eye,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
 import Pagination from "../../../components/common/Pagination";
+import { ImageLightbox } from "../../../components/common/ImageLightbox";
 
 /**
  * PostStudioEditorView
@@ -109,6 +111,30 @@ export const PostStudioEditorView = ({
   // Zoomed Frame Lightbox Modal State
   const [zoomedFrame, setZoomedFrame] = useState(null);
 
+  // Custom Upload Lightbox Preview & Drag-and-drop State
+  const [previewLightboxUrl, setPreviewLightboxUrl] = useState(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  const handleFileUpload = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload a valid image file (PNG, JPG, WEBP).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCustomBaseImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveCustomImage = () => {
+    setCustomBaseImage(null);
+    if (customFileInputRef.current) {
+      customFileInputRef.current.value = "";
+    }
+  };
+
   // Lock body & document scroll completely when Zoom Lightbox Modal is open
   useEffect(() => {
     if (zoomedFrame) {
@@ -188,45 +214,132 @@ export const PostStudioEditorView = ({
                 <span className="text-xs font-semibold text-amber-400 font-mono">1 / 4</span>
               </div>
 
-              {/* Custom Base Image File Upload Option */}
-              <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Upload className="w-4 h-4 text-amber-400" />
-                    <span>Or Upload Custom 1080x1080 Background Image</span>
-                  </label>
-                  {customBaseImage && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCustomBaseImage(null);
-                        if (customFileInputRef.current) {
-                          customFileInputRef.current.value = "";
-                        }
-                      }}
-                      className="text-xs text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/30 transition cursor-pointer"
-                      title="Remove custom uploaded image"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Remove Custom Image</span>
-                    </button>
-                  )}
-                </div>
-                <input
-                  ref={customFileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => setCustomBaseImage(reader.result);
-                      reader.readAsDataURL(file);
-                    }
+              {/* Custom Base Image File Upload / Active Preview Section */}
+              {!customBaseImage ? (
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingOver(true);
                   }}
-                  className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer"
-                />
-              </div>
+                  onDragLeave={() => setIsDraggingOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingOver(false);
+                    const file = e.dataTransfer.files?.[0];
+                    handleFileUpload(file);
+                  }}
+                  onClick={() => customFileInputRef.current?.click()}
+                  className={`p-4 rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer text-center ${
+                    isDraggingOver
+                      ? "border-amber-400 bg-amber-500/15 scale-[1.01]"
+                      : "border-[#2C384E] hover:border-amber-500/50 bg-[#0B0F17]/80 hover:bg-[#0B0F17]"
+                  }`}
+                >
+                  <input
+                    ref={customFileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/jpg"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      handleFileUpload(file);
+                    }}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        <span className="text-xs font-bold text-white">Upload Your Own Graphic / Photo</span>
+                        <span className="text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                          Square 1080×1080
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Drag & drop your custom image here, or click to browse (PNG, JPG, WEBP)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl border-2 border-amber-500/60 bg-gradient-to-r from-amber-500/10 via-[#131B2A] to-[#0B0F17] shadow-lg">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div
+                        onClick={() => setPreviewLightboxUrl(customBaseImage)}
+                        className="relative group w-14 h-14 rounded-xl overflow-hidden border border-amber-500/50 bg-[#0B0F17] shrink-0 cursor-pointer shadow"
+                        title="Click to preview fullscreen"
+                      >
+                        <img
+                          src={customBaseImage}
+                          alt="Custom Uploaded"
+                          className="w-full h-full object-cover group-hover:scale-110 transition duration-200"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                          <Eye className="w-4 h-4 drop-shadow" />
+                        </div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                          <h4 className="text-xs font-extrabold text-white truncate">Custom Upload Active</h4>
+                        </div>
+                        <p className="text-[11px] text-slate-400 truncate">
+                          Applied as your post master background
+                        </p>
+                        <span className="text-[10px] text-amber-400/90 font-mono">
+                          Frames & brand details composite on top
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        icon={Eye}
+                        onClick={() => setPreviewLightboxUrl(customBaseImage)}
+                        className="text-xs font-bold border-amber-500/30 text-amber-300 hover:text-white hover:bg-amber-500/20"
+                      >
+                        Preview
+                      </Button>
+
+                      <input
+                        ref={customFileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          handleFileUpload(file);
+                        }}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        icon={Upload}
+                        onClick={() => customFileInputRef.current?.click()}
+                        className="text-xs font-bold border-slate-700 text-slate-300 hover:text-white"
+                      >
+                        Replace
+                      </Button>
+
+                      <button
+                        type="button"
+                        onClick={handleRemoveCustomImage}
+                        className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 hover:text-rose-300 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                        title="Remove custom uploaded image and revert to preset templates"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* 1. Categories Navigation (5 per page + Search) */}
               <div className="space-y-2.5 p-3.5 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
@@ -457,6 +570,55 @@ export const PostStudioEditorView = ({
 
               {/* 4. Grid of Graphic Background Templates */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[220px]">
+                {/* Active Custom Upload Card (Pinned First) */}
+                {customBaseImage && (
+                  <div
+                    className="relative aspect-square rounded-xl border-2 border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50 shadow-glow p-1.5 overflow-hidden group text-left cursor-pointer"
+                  >
+                    <img
+                      src={customBaseImage}
+                      alt="Your Custom Upload"
+                      className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition duration-200"
+                    />
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-extrabold text-[9px] uppercase tracking-wider shadow">
+                      Your Upload
+                    </div>
+                    <div className="absolute top-2 right-2 p-1 rounded-full bg-amber-500 text-slate-950 font-bold shadow-lg z-10">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    </div>
+
+                    {/* Hover Action Overlay */}
+                    <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2 rounded-lg z-20">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewLightboxUrl(customBaseImage);
+                        }}
+                        className="p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow-lg transition cursor-pointer"
+                        title="Preview Fullscreen"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveCustomImage();
+                        }}
+                        className="p-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-lg transition cursor-pointer"
+                        title="Remove Custom Image"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                      <p className="text-[11px] font-bold text-white truncate">Custom Uploaded Image</p>
+                    </div>
+                  </div>
+                )}
+
                 {isLoadingTemplates ? (
                   <div className="col-span-3 p-12 text-center text-slate-400 text-xs">Loading templates...</div>
                 ) : templates.length === 0 ? (
@@ -1100,6 +1262,14 @@ export const PostStudioEditorView = ({
           </div>,
           document.body,
         )}
+
+      {/* Lightbox for previewing uploaded custom graphic */}
+      <ImageLightbox
+        isOpen={Boolean(previewLightboxUrl)}
+        imageUrl={previewLightboxUrl}
+        item={{ title: "Your Custom Uploaded Graphic", occasionName: "Master Background Image" }}
+        onClose={() => setPreviewLightboxUrl(null)}
+      />
     </div>
   );
 };
