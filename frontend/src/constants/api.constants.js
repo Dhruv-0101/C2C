@@ -46,8 +46,8 @@ const getApiBaseUrl = () => {
     const hostname = window.location.hostname;
 
     // AWS EC2 Environment (sslip.io domain or Elastic IP)
-    if (hostname.includes('sslip.io') || hostname === '52.87.37.2') {
-      return 'https://52-87-37-2.sslip.io/api/v1';
+    if (hostname.includes('sslip.io') || hostname === '13.234.177.70') {
+      return 'https://13-234-177-70.sslip.io/api/v1';
     }
 
     // Vercel Production Environment -> Render Backend API
@@ -63,7 +63,7 @@ const getApiBaseUrl = () => {
 
   // 4. Default Fallbacks
   if (isProduction) {
-    return 'https://52-87-37-2.sslip.io/api/v1';
+    return 'https://13-234-177-70.sslip.io/api/v1';
   }
 
   return 'http://localhost:5000/api/v1';

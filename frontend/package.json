@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:prod": "VITE_API_BASE_URL=\"https://13-234-177-70.sslip.io/api/v1\" vite build && chmod 400 \"/Users/mac0011/Downloads/brandflow-c2c.pem\" && scp -i \"/Users/mac0011/Downloads/brandflow-c2c.pem\" -r dist ubuntu@13.234.177.70:~/C2C/frontend/"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
