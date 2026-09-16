@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('END_USER', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('END_USER', 'ADMIN', 'SUB_ADMIN');
 
 -- CreateEnum
 CREATE TYPE "SocialPlatform" AS ENUM ('INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'TWITTER', 'PINTEREST', 'THREADS', 'WHATSAPP');
@@ -23,9 +23,18 @@ CREATE TYPE "NotificationType" AS ENUM ('POST_PUBLISHED', 'POST_FAILED', 'SYSTEM
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "passwordHash" TEXT NOT NULL,
+    "passwordHash" TEXT,
     "fullName" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'END_USER',
+    "isAdmin" BOOLEAN NOT NULL DEFAULT false,
+    "isSuperAdmin" BOOLEAN NOT NULL DEFAULT false,
+    "isSubAdmin" BOOLEAN NOT NULL DEFAULT false,
+    "allowedTabs" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "isTwoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "twoFactorSecret" TEXT,
+    "backupCodes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "isGoogleRegistered" BOOLEAN NOT NULL DEFAULT false,
+    "googleId" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "avatarUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -44,6 +53,18 @@ CREATE TABLE "RefreshToken" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PasswordResetToken" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "tokenHash" TEXT NOT NULL,
+    "used" BOOLEAN NOT NULL DEFAULT false,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PasswordResetToken_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -70,13 +91,12 @@ CREATE TABLE "BrandKit" (
     "businessName" TEXT NOT NULL,
     "categoryId" TEXT,
     "logoUrl" TEXT,
-    "primaryColor" TEXT NOT NULL DEFAULT '#F59E0B',
-    "secondaryColor" TEXT NOT NULL DEFAULT '#0D9488',
-    "accentColor" TEXT,
-    "fontHeader" TEXT NOT NULL DEFAULT 'Space Grotesk',
-    "fontBody" TEXT NOT NULL DEFAULT 'Plus Jakarta Sans',
+    "avatarUrl" TEXT,
     "phone" TEXT,
     "whatsapp" TEXT,
+    "email" TEXT,
+    "instagramHandle" TEXT,
+    "facebookHandle" TEXT,
     "address" TEXT,
     "city" TEXT,
     "state" TEXT,
@@ -87,6 +107,22 @@ CREATE TABLE "BrandKit" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "BrandKit_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Frame" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "overlayPngUrl" TEXT NOT NULL,
+    "previewUrl" TEXT,
+    "configJson" JSONB,
+    "isSystem" BOOLEAN NOT NULL DEFAULT true,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Frame_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -135,17 +171,17 @@ CREATE TABLE "Festival" (
 );
 
 -- CreateTable
-CREATE TABLE "DesignStyle" (
+CREATE TABLE "TemplateCategory" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "description" TEXT,
-    "rulesJson" JSONB,
-    "isSystem" BOOLEAN NOT NULL DEFAULT true,
+    "icon" TEXT DEFAULT '🎨',
+    "isSystem" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "DesignStyle_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TemplateCategory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -153,11 +189,11 @@ CREATE TABLE "Template" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "categoryId" TEXT,
+    "category" TEXT NOT NULL DEFAULT 'GENERAL',
+    "templateCategoryId" TEXT,
     "festivalId" TEXT,
-    "styleId" TEXT,
     "baseImageUrl" TEXT NOT NULL,
-    "coordinatesJson" JSONB NOT NULL,
+    "isCustomUpload" BOOLEAN NOT NULL DEFAULT true,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -173,12 +209,12 @@ CREATE TABLE "Post" (
     "templateId" TEXT,
     "categoryId" TEXT,
     "festivalId" TEXT,
-    "styleId" TEXT,
     "occasionName" TEXT,
     "customText" TEXT,
     "offerText" TEXT,
     "customImageUrl" TEXT,
     "finalGraphicUrl" TEXT,
+    "userConfigJson" JSONB,
     "status" "PostStatus" NOT NULL DEFAULT 'DRAFT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -210,6 +246,7 @@ CREATE TABLE "ScheduledPost" (
     "errorMessage" TEXT,
     "retryCount" INTEGER NOT NULL DEFAULT 0,
     "targetPlatforms" "SocialPlatform"[],
+    "platformResults" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -235,8 +272,17 @@ CREATE TABLE "Subscription" (
     "userId" TEXT NOT NULL,
     "plan" "PlanType" NOT NULL DEFAULT 'FREE',
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "totalPostsAllowed" INTEGER NOT NULL DEFAULT 5,
+    "postsUsed" INTEGER NOT NULL DEFAULT 0,
+    "bonusPostsAllowed" INTEGER NOT NULL DEFAULT 0,
+    "bonusPostsUsed" INTEGER NOT NULL DEFAULT 0,
+    "pricePaid" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "currency" TEXT NOT NULL DEFAULT 'INR',
+    "paymentGateway" TEXT,
+    "paymentId" TEXT,
+    "orderId" TEXT,
     "currentPeriodStart" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "currentPeriodEnd" TIMESTAMP(3) NOT NULL,
+    "currentPeriodEnd" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -256,11 +302,56 @@ CREATE TABLE "Notification" (
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "BillingTransaction" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "plan" "PlanType" NOT NULL DEFAULT 'FREE',
+    "transactionType" TEXT NOT NULL DEFAULT 'PLAN_ACTIVATION',
+    "paymentGateway" TEXT NOT NULL,
+    "pricePaid" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "currency" TEXT NOT NULL DEFAULT 'INR',
+    "postCount" INTEGER NOT NULL DEFAULT 0,
+    "paymentId" TEXT,
+    "orderId" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'COMPLETED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "BillingTransaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PostAnalytics" (
+    "id" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "platform" "SocialPlatform" NOT NULL,
+    "platformPostId" TEXT,
+    "impressions" INTEGER NOT NULL DEFAULT 0,
+    "reach" INTEGER NOT NULL DEFAULT 0,
+    "likes" INTEGER NOT NULL DEFAULT 0,
+    "comments" INTEGER NOT NULL DEFAULT 0,
+    "shares" INTEGER NOT NULL DEFAULT 0,
+    "clicks" INTEGER NOT NULL DEFAULT 0,
+    "engagementRate" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    "lastSyncedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PostAnalytics_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
+
+-- CreateIndex
 CREATE INDEX "User_email_idx" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "User_googleId_idx" ON "User"("googleId");
 
 -- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
@@ -270,6 +361,15 @@ CREATE UNIQUE INDEX "RefreshToken_tokenHash_key" ON "RefreshToken"("tokenHash");
 
 -- CreateIndex
 CREATE INDEX "RefreshToken_userId_idx" ON "RefreshToken"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PasswordResetToken_tokenHash_key" ON "PasswordResetToken"("tokenHash");
+
+-- CreateIndex
+CREATE INDEX "PasswordResetToken_userId_idx" ON "PasswordResetToken"("userId");
+
+-- CreateIndex
+CREATE INDEX "PasswordResetToken_tokenHash_idx" ON "PasswordResetToken"("tokenHash");
 
 -- CreateIndex
 CREATE INDEX "SocialAccount_userId_idx" ON "SocialAccount"("userId");
@@ -296,19 +396,19 @@ CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
 CREATE UNIQUE INDEX "Festival_slug_key" ON "Festival"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DesignStyle_name_key" ON "DesignStyle"("name");
+CREATE UNIQUE INDEX "TemplateCategory_name_key" ON "TemplateCategory"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DesignStyle_slug_key" ON "DesignStyle"("slug");
-
--- CreateIndex
-CREATE INDEX "Template_categoryId_idx" ON "Template"("categoryId");
+CREATE UNIQUE INDEX "TemplateCategory_slug_key" ON "TemplateCategory"("slug");
 
 -- CreateIndex
 CREATE INDEX "Template_festivalId_idx" ON "Template"("festivalId");
 
 -- CreateIndex
-CREATE INDEX "Template_styleId_idx" ON "Template"("styleId");
+CREATE INDEX "Template_category_idx" ON "Template"("category");
+
+-- CreateIndex
+CREATE INDEX "Template_templateCategoryId_idx" ON "Template"("templateCategoryId");
 
 -- CreateIndex
 CREATE INDEX "Post_userId_idx" ON "Post"("userId");
@@ -337,8 +437,26 @@ CREATE UNIQUE INDEX "Subscription_userId_key" ON "Subscription"("userId");
 -- CreateIndex
 CREATE INDEX "Notification_userId_isRead_idx" ON "Notification"("userId", "isRead");
 
+-- CreateIndex
+CREATE INDEX "BillingTransaction_userId_idx" ON "BillingTransaction"("userId");
+
+-- CreateIndex
+CREATE INDEX "BillingTransaction_createdAt_idx" ON "BillingTransaction"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "PostAnalytics_userId_platform_idx" ON "PostAnalytics"("userId", "platform");
+
+-- CreateIndex
+CREATE INDEX "PostAnalytics_createdAt_idx" ON "PostAnalytics"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PostAnalytics_postId_platform_key" ON "PostAnalytics"("postId", "platform");
+
 -- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PasswordResetToken" ADD CONSTRAINT "PasswordResetToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SocialAccount" ADD CONSTRAINT "SocialAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -353,13 +471,10 @@ ALTER TABLE "BrandKit" ADD CONSTRAINT "BrandKit_categoryId_fkey" FOREIGN KEY ("c
 ALTER TABLE "BrandAsset" ADD CONSTRAINT "BrandAsset_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Template" ADD CONSTRAINT "Template_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Template" ADD CONSTRAINT "Template_templateCategoryId_fkey" FOREIGN KEY ("templateCategoryId") REFERENCES "TemplateCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Template" ADD CONSTRAINT "Template_festivalId_fkey" FOREIGN KEY ("festivalId") REFERENCES "Festival"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Template" ADD CONSTRAINT "Template_styleId_fkey" FOREIGN KEY ("styleId") REFERENCES "DesignStyle"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Template" ADD CONSTRAINT "Template_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -375,9 +490,6 @@ ALTER TABLE "Post" ADD CONSTRAINT "Post_categoryId_fkey" FOREIGN KEY ("categoryI
 
 -- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_festivalId_fkey" FOREIGN KEY ("festivalId") REFERENCES "Festival"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Post" ADD CONSTRAINT "Post_styleId_fkey" FOREIGN KEY ("styleId") REFERENCES "DesignStyle"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Caption" ADD CONSTRAINT "Caption_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -396,3 +508,12 @@ ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "BillingTransaction" ADD CONSTRAINT "BillingTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PostAnalytics" ADD CONSTRAINT "PostAnalytics_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PostAnalytics" ADD CONSTRAINT "PostAnalytics_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
