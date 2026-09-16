@@ -153,7 +153,7 @@ export const PostStudioEditorView = ({
   const steps = [
     { num: 1, title: "Select Base Graphic" },
     { num: 2, title: "Choose Brand Frame" },
-    { num: 3, title: "BrandKit Details" },
+    { num: 3, title: selectedFrame ? "BrandKit Details" : "BrandKit Details (Optional)" },
     { num: 4, title: "Publish & Export" },
   ];
 
@@ -697,10 +697,35 @@ export const PostStudioEditorView = ({
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[220px]">
+                {/* Option 1: No Frame (Template Only) */}
+                <div className="flex flex-col gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFrame(null)}
+                    className={`relative aspect-square rounded-xl border p-1.5 overflow-hidden transition group flex flex-col items-center justify-center ${
+                      selectedFrame === null
+                        ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50 shadow-glow"
+                        : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
+                    }`}
+                    title="No Frame (Use base graphic template only)"
+                  >
+                    {selectedFrame === null && (
+                      <div className="absolute top-2 right-2 p-1 rounded-full bg-amber-500 text-slate-950 font-bold shadow-lg z-10">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                    <X className="w-8 h-8 text-slate-500 mb-1 group-hover:scale-110 transition" />
+                    <span className="text-xs font-bold text-slate-300">No Frame</span>
+                  </button>
+                  <p className="text-xs font-bold text-slate-400 truncate text-center px-1">
+                    Template Only
+                  </p>
+                </div>
+
                 {isLoadingFrames ? (
-                  <div className="col-span-3 p-12 text-center text-slate-400 text-xs">Loading brand frames...</div>
+                  <div className="col-span-2 sm:col-span-2 p-12 text-center text-slate-400 text-xs">Loading brand frames...</div>
                 ) : frames.length === 0 ? (
-                  <div className="col-span-3 p-8 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
+                  <div className="col-span-2 sm:col-span-2 p-8 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
                     No custom brand frames created yet.
                   </div>
                 ) : (
@@ -766,8 +791,11 @@ export const PostStudioEditorView = ({
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>
                   <ChevronLeft className="w-4 h-4 mr-1" /> Back
                 </Button>
-                <Button variant="primary" onClick={() => setCurrentStep(3)}>
-                  <span>Next: BrandKit Details</span>
+                <Button
+                  variant="primary"
+                  onClick={() => setCurrentStep(selectedFrame ? 3 : 4)}
+                >
+                  <span>{selectedFrame ? "Next: BrandKit Details" : "Next: Publish & Export"}</span>
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
@@ -901,6 +929,50 @@ export const PostStudioEditorView = ({
 
               return { textFields, imageToggles, customImageSlots };
             };
+
+            if (!selectedFrame) {
+              return (
+                <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
+                  <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+                    <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-amber-400" />
+                      <span>Step 3: BrandKit Details</span>
+                    </h3>
+                    <span className="text-xs font-semibold text-amber-400 font-mono">3 / 4</span>
+                  </div>
+
+                  <div className="p-6 rounded-2xl bg-[#0B0F17] border border-[#2C384E] text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto text-xl font-bold">
+                      ✨
+                    </div>
+                    <h4 className="font-heading font-extrabold text-white text-base">No Frame Selected</h4>
+                    <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                      You are creating a post with the base graphic template only. Frame details (such as logo, phone, or location overlays) are not needed when no frame is selected.
+                    </p>
+                    <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)}>
+                        <Layers className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                        Choose a Brand Frame
+                      </Button>
+                      <Button variant="primary" size="sm" onClick={() => setCurrentStep(4)}>
+                        <span>Proceed to Publish & Export</span>
+                        <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-[#2C384E]">
+                    <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                      <ChevronLeft className="w-4 h-4 mr-1" /> Back to Frames
+                    </Button>
+                    <Button variant="primary" onClick={() => setCurrentStep(4)}>
+                      <span>Next: Publish & Export</span>
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </Card>
+              );
+            }
 
             const { textFields, imageToggles, customImageSlots } = getDynamicFrameFields(selectedFrame);
 
@@ -1121,7 +1193,7 @@ export const PostStudioEditorView = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-semibold">Active Brand Frame:</span>
-                  <span className="text-amber-400 font-bold">{selectedFrame?.title || "Default Overlay"}</span>
+                  <span className="text-amber-400 font-bold">{selectedFrame?.title || "No Frame (Template Only)"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-semibold">Export Canvas Specs:</span>

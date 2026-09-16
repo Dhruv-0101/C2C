@@ -119,12 +119,8 @@ export const PostStudioContainer = () => {
     }
   }, [templates, selectedTemplateId]);
 
-  // Default select first frame when frames load
-  useEffect(() => {
-    if (frames.length > 0 && !selectedFrame) {
-      setSelectedFrame(frames[0]);
-    }
-  }, [frames, selectedFrame]);
+  // Default selectedFrame is null (No Frame selected by default)
+
 
   // Live Overrides for Business Details
   const [customDetails, setCustomDetails] = useState({

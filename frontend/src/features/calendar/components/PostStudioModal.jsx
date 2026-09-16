@@ -52,11 +52,8 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
     }
   }, [templates, selectedTemplate]);
 
-  useEffect(() => {
-    if (!selectedFrame && frames.length > 0) {
-      setSelectedFrame(frames[0]);
-    }
-  }, [frames, selectedFrame]);
+  // Default selectedFrame is null (No Frame selected by default)
+
 
   // Editable Brand Details State
   const [customDetails, setCustomDetails] = useState({
@@ -295,6 +292,23 @@ export const PostStudioModal = ({ isOpen, onClose, template }) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
+                  {/* Option 1: No Frame */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFrame(null)}
+                    className={`relative aspect-square rounded-xl border p-2 overflow-hidden transition group flex flex-col items-center justify-center ${
+                      selectedFrame === null
+                        ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/40 text-white font-bold'
+                        : 'border-[#2C384E] bg-[#0B0F17] text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    {selectedFrame === null && (
+                      <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
+                    )}
+                    <X className="w-6 h-6 text-slate-500 mb-1" />
+                    <span className="text-[11px] leading-tight font-semibold">No Frame</span>
+                  </button>
+
                   {isLoadingFrames ? (
                     <div className="col-span-2 p-8 text-center text-slate-400 text-xs">
                       Loading brand frames...

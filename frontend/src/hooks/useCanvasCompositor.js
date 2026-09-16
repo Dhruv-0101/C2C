@@ -225,9 +225,11 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         },
       ];
 
-      const frameConfigElements = (parsedElements && parsedElements.length > 0)
-        ? parsedElements
-        : DEFAULT_FRAME_ELEMENTS;
+      const frameConfigElements = selectedFrame
+        ? (parsedElements && parsedElements.length > 0
+          ? parsedElements
+          : DEFAULT_FRAME_ELEMENTS)
+        : [];
 
       // Load cached image assets
       const [baseImg, logoImg, avatarImg, frameOverlayImg] = await Promise.all([
@@ -412,53 +414,6 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             ctx.restore();
           }
         }
-      } else if (!selectedFrame) {
-        // Fallback Default Logo & Avatar rendering ONLY when no frame is selected
-        if (logoImg && showLogo) {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.beginPath();
-          ctx.roundRect(35 - 8, 35 - 8, 110 + 16, 110 + 16, 12);
-          ctx.fill();
-          ctx.strokeStyle = '#E2E8F0';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          drawImageAspectCover(ctx, logoImg, 35, 35, 110, 110);
-        }
-
-        if (showAvatar) {
-          const avatarSize = 120;
-          const radius = avatarSize / 2;
-          const ax = radius + 35;
-          const ay = 1080 - radius - 35;
-
-          if (avatarImg) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(ax, ay, radius, 0, Math.PI * 2, true);
-            ctx.closePath();
-            ctx.clip();
-            drawImageAspectCover(ctx, avatarImg, ax - radius, ay - radius, avatarSize, avatarSize);
-            ctx.restore();
-          } else {
-            ctx.fillStyle = '#334155';
-            ctx.beginPath();
-            ctx.arc(ax, ay, radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#94A3B8';
-            ctx.beginPath();
-            ctx.arc(ax, ay - radius * 0.2, radius * 0.35, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(ax, ay + radius * 0.7, radius * 0.6, Math.PI, 0);
-            ctx.fill();
-          }
-
-          ctx.beginPath();
-          ctx.arc(ax, ay, radius, 0, Math.PI * 2, true);
-          ctx.lineWidth = 5;
-          ctx.strokeStyle = '#EAB308';
-          ctx.stroke();
-        }
       }
 
       // 4. LAYER 4: Dynamic Text Details & Elements Overlay
@@ -595,48 +550,6 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             if (rotation) ctx.restore();
           }
         });
-      } else if (!selectedFrame) {
-        // Fallback default details rendering ONLY when no frame is selected
-        const defaultBizName = activeBusinessName || 'Sunrise Real Estate';
-        const defaultPhone = showPhone ? (activePhone || '+91 98765 43210') : '';
-        const defaultAddress = showAddress ? (activeAddress || 'MG Road, Mumbai') : '';
-        const defaultTagline = activeTagline || 'Luxury Homes & Commercial Spaces';
-
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-        ctx.fillRect(0, 950, 1080, 130);
-        ctx.fillStyle = '#EAB308';
-        ctx.fillRect(0, 946, 1080, 4);
-
-        const textX = (avatarImg || showAvatar || hasRenderedAvatarSlot) ? 175 : 40;
-        const textY = 985;
-
-        if (defaultBizName) {
-          ctx.textAlign = 'left';
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = 'bold 24px "Space Grotesk", sans-serif';
-          ctx.fillText(defaultBizName, textX, textY);
-        }
-
-        if (defaultTagline) {
-          ctx.textAlign = 'left';
-          ctx.fillStyle = '#94A3B8';
-          ctx.font = '14px "Plus Jakarta Sans", sans-serif';
-          ctx.fillText(defaultTagline, textX, textY + 28);
-        }
-
-        if (defaultPhone) {
-          ctx.textAlign = 'right';
-          ctx.fillStyle = '#EAB308';
-          ctx.font = 'bold 18px "Space Grotesk", sans-serif';
-          ctx.fillText(`📞 ${defaultPhone}`, 1040, textY);
-        }
-
-        if (defaultAddress) {
-          ctx.textAlign = 'right';
-          ctx.fillStyle = '#CBD5E1';
-          ctx.font = '14px "Plus Jakarta Sans", sans-serif';
-          ctx.fillText(`📍 ${defaultAddress}`, 1040, textY + 28);
-        }
       }
 
       // Update dataURL asynchronously for export

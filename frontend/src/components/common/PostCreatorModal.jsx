@@ -143,11 +143,8 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     }
   }, [currentTemplate, selectedTemplateId]);
 
-  useEffect(() => {
-    if (frames.length > 0 && !selectedFrame) {
-      setSelectedFrame(frames[0]);
-    }
-  }, [frames, selectedFrame]);
+  // Default selectedFrame is null (No Frame selected by default)
+
 
   // Base Graphic Image URL
   const baseImageUrl = customBaseImage || currentTemplate?.baseImageUrl || currentTemplate?.imageUrl || currentTemplate?.fileUrl;
