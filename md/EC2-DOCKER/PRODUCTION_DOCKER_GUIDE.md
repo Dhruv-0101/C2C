@@ -64,10 +64,9 @@ Choose your change scenario below to deploy to production in seconds:
 ---
 
 ### ⚡ Scenario A: YOU ONLY CHANGED FRONTEND (UI, React, CSS, Pages)
-*(Takes 4 seconds • Zero downtime • No server restart needed)*
+*(Takes 4 to 10 seconds • Zero downtime • Nginx static serving)*
 
-Because the frontend is served statically by Nginx, you don't even need to touch the EC2 terminal!
-
+#### Option 1: Direct Deploy from Mac (If you have `.pem` key file on your Mac)
 1. In your **Mac terminal**:
    ```bash
    cd frontend
@@ -78,11 +77,38 @@ Because the frontend is served statically by Nginx, you don't even need to touch
    > 2. Secures key permissions (`chmod 400`)
    > 3. Uploads `dist` directly to EC2 via SCP
 
-2. **In your Browser**:
-   - Hard refresh to purge browser cache:
-     - **Mac**: `Cmd + Shift + R`
-     - **Windows**: `Ctrl + Shift + R` or `Ctrl + F5`
-   - **Your changes are live immediately!**
+#### Option 2: Deploy without `.pem` Key File (Using Git + AWS EC2 Instance Connect)
+*Use this if you don't have the `.pem` key file on your current system!*
+
+1. **Push changes from your Mac to Git:**
+   ```bash
+   git add .
+   git commit -m "feat: frontend updates"
+   git push origin main
+   ```
+
+2. **Open AWS EC2 Browser Terminal (No `.pem` file needed):**
+   - Go to AWS Console ➔ **EC2** ➔ **Instances** ➔ Click your Instance.
+   - Click **Connect** (top right) ➔ Select **EC2 Instance Connect** ➔ Click **Connect**.
+
+3. **Build & Live inside EC2 Browser Terminal:**
+   ```bash
+   # 1. Pull latest code
+   cd ~/C2C
+   git pull origin main
+
+   # 2. Build production frontend right inside EC2
+   cd frontend
+   VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1" npm run build
+
+   # 3. Restart frontend Nginx container to serve new dist
+   cd ~/C2C
+   docker compose -f docker-compose.prod.yml restart brandflow-frontend
+   ```
+
+4. **In your Browser**:
+   - Hard refresh to purge browser cache (`Cmd + Shift + R` on Mac / `Ctrl + Shift + R` on Windows).
+   - **Your frontend changes are live immediately!**
 
 ---
 
