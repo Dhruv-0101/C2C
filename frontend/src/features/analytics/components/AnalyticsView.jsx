@@ -88,31 +88,35 @@ export const AnalyticsView = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-12">
       {/* Header & Filter Controls Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#131B2A] via-[#1A2538] to-[#0B0F17] p-6 rounded-2xl border border-[#2C384E]">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="font-heading font-extrabold text-2xl text-white flex items-center gap-2">
-              <BarChart3 className="w-6 h-6 text-amber-400" />
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-[#131B2A] via-[#1A2538] to-[#0B0F17] p-4 sm:p-5 rounded-2xl border border-[#2C384E] shadow-xl">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-heading font-extrabold text-xl text-white flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-amber-400 shrink-0" />
               <span>Analytics & Insights</span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider">
-              REAL-TIME SYNC
-            </span>
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold uppercase tracking-wider shrink-0">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>Meta & LinkedIn Graph API Live Sync</span>
+            </div>
           </div>
           <p className="text-xs text-slate-400">
-            Track engagement rates, reach growth, and high-performing design templates across your social channels.
+            Real-time engagement metrics, reach growth & insights fetched directly from Meta Graph API & LinkedIn API.
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Action Controls - Single Row Alignment */}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
           {/* Range Selector */}
-          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] p-1">
+          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] p-1 shrink-0">
             {['7d', '30d', '90d'].map((r) => (
               <button
                 key={r}
                 onClick={() => onRangeChange?.(r)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer ${
                   range === r
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
@@ -124,12 +128,12 @@ export const AnalyticsView = ({
           </div>
 
           {/* Platform Filter */}
-          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2 py-1">
-            <Filter className="w-3.5 h-3.5 text-slate-400 mr-2" />
+          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2.5 py-1 shrink-0">
+            <Filter className="w-3.5 h-3.5 text-slate-400 mr-1.5 shrink-0" />
             <select
               value={platformFilter}
               onChange={(e) => onPlatformChange?.(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 font-semibold focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs text-slate-200 font-bold focus:outline-none cursor-pointer"
             >
               <option value="ALL" className="bg-[#131B2A]">All Platforms</option>
               <option value="INSTAGRAM" className="bg-[#131B2A]">Instagram</option>
@@ -143,8 +147,8 @@ export const AnalyticsView = ({
             variant="outline"
             onClick={onSeedDemo}
             isLoading={isSeeding}
-            className="py-1.5 px-3 text-xs font-bold border-[#2C384E] text-amber-400 hover:bg-amber-500/10 flex items-center gap-1.5"
-            title="Seed demo engagement analytics for local development"
+            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-amber-400 hover:bg-amber-500/10 flex items-center gap-1 shrink-0"
+            title="Seed engagement analytics for testing"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Seed Analytics</span>

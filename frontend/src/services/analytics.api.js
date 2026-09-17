@@ -4,9 +4,9 @@ export const analyticsApi = {
   /**
    * Get overview KPI summary metrics
    */
-  getOverview: async ({ range = '30d' } = {}) => {
+  getOverview: async ({ range = '30d', platform = 'ALL' } = {}) => {
     const response = await api.get('/analytics/overview', {
-      params: { range },
+      params: { range, platform },
     });
     return response.data;
   },
@@ -24,9 +24,9 @@ export const analyticsApi = {
   /**
    * Get platform distribution breakdown for donut charts
    */
-  getPlatformBreakdown: async ({ range = '30d' } = {}) => {
+  getPlatformBreakdown: async ({ range = '30d', platform = 'ALL' } = {}) => {
     const response = await api.get('/analytics/platform-breakdown', {
-      params: { range },
+      params: { range, platform },
     });
     return response.data;
   },

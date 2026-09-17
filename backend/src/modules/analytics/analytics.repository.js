@@ -4,7 +4,7 @@ export const analyticsRepository = {
   /**
    * Get overall aggregated analytics metrics for a user within a date range
    */
-  getOverviewMetrics: async (userId, startDate, priorStartDate) => {
+  getOverviewMetrics: async (userId, startDate, priorStartDate, platform = null) => {
     const currentWhere = {
       userId,
       createdAt: { gte: startDate },
@@ -14,6 +14,11 @@ export const analyticsRepository = {
       userId,
       createdAt: { gte: priorStartDate, lt: startDate },
     };
+
+    if (platform && platform !== 'ALL') {
+      currentWhere.platform = platform;
+      priorWhere.platform = platform;
+    }
 
     const [currentAgg, priorAgg, postCount] = await Promise.all([
       prisma.postAnalytics.aggregate({
@@ -101,13 +106,19 @@ export const analyticsRepository = {
   /**
    * Get platform distribution breakdown for pie/donut charts
    */
-  getPlatformBreakdown: async (userId, startDate) => {
+  getPlatformBreakdown: async (userId, startDate, platform = null) => {
+    const where = {
+      userId,
+      createdAt: { gte: startDate },
+    };
+
+    if (platform && platform !== 'ALL') {
+      where.platform = platform;
+    }
+
     const items = await prisma.postAnalytics.groupBy({
       by: ['platform'],
-      where: {
-        userId,
-        createdAt: { gte: startDate },
-      },
+      where,
       _sum: {
         impressions: true,
         reach: true,

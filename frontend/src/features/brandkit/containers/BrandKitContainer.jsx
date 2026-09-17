@@ -21,6 +21,8 @@ export const BrandKitContainer = () => {
   const [base64Logo, setBase64Logo] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [base64Avatar, setBase64Avatar] = useState(null);
+  const [upiQrPreview, setUpiQrPreview] = useState(null);
+  const [base64UpiQr, setBase64UpiQr] = useState(null);
 
   const {
     register,
@@ -47,6 +49,18 @@ export const BrandKitContainer = () => {
       country: "India",
       logoUrl: "",
       avatarUrl: "",
+      primaryFont: "Inter",
+      secondaryFont: "Roboto",
+      targetAudience: "",
+      captionLanguage: "English",
+      businessUsps: "",
+      linkedinHandle: "",
+      twitterHandle: "",
+      youtubeHandle: "",
+      gmbReviewUrl: "",
+      upiVpa: "",
+      upiQrUrl: "",
+      workingHours: "",
     },
   });
 
@@ -69,10 +83,23 @@ export const BrandKitContainer = () => {
         country: brandKit.country || "India",
         logoUrl: brandKit.logoUrl || "",
         avatarUrl: brandKit.avatarUrl || "",
+        primaryFont: brandKit.primaryFont || "Inter",
+        secondaryFont: brandKit.secondaryFont || "Roboto",
+        targetAudience: brandKit.targetAudience || "",
+        captionLanguage: brandKit.captionLanguage || "English",
+        businessUsps: brandKit.businessUsps || "",
+        linkedinHandle: brandKit.linkedinHandle || "",
+        twitterHandle: brandKit.twitterHandle || "",
+        youtubeHandle: brandKit.youtubeHandle || "",
+        gmbReviewUrl: brandKit.gmbReviewUrl || "",
+        upiVpa: brandKit.upiVpa || "",
+        upiQrUrl: brandKit.upiQrUrl || "",
+        workingHours: brandKit.workingHours || "",
       });
 
       if (brandKit.logoUrl) setLogoPreview(brandKit.logoUrl);
       if (brandKit.avatarUrl) setAvatarPreview(brandKit.avatarUrl);
+      if (brandKit.upiQrUrl) setUpiQrPreview(brandKit.upiQrUrl);
     }
   }, [brandKit, reset]);
 
@@ -106,6 +133,21 @@ export const BrandKitContainer = () => {
     }
   };
 
+  // Handle UPI QR Upload
+  const handleUpiQrChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setErrorMsg("");
+      const base64 = await readImageAsBase64(file, 5);
+      setUpiQrPreview(base64);
+      setBase64UpiQr(base64);
+    } catch (err) {
+      setErrorMsg(err.message || "Failed to read UPI QR image.");
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
       setErrorMsg("");
@@ -113,6 +155,7 @@ export const BrandKitContainer = () => {
         ...data,
         base64Logo: base64Logo || undefined,
         base64Avatar: base64Avatar || undefined,
+        base64UpiQr: base64UpiQr || undefined,
       });
       setSuccessMsg("🎉 BrandKit saved successfully! All future posts will be branded automatically.");
       setTimeout(() => setSuccessMsg(""), 5000);
@@ -137,8 +180,12 @@ export const BrandKitContainer = () => {
       avatarPreview={avatarPreview}
       setAvatarPreview={setAvatarPreview}
       setBase64Avatar={setBase64Avatar}
+      upiQrPreview={upiQrPreview}
+      setUpiQrPreview={setUpiQrPreview}
+      setBase64UpiQr={setBase64UpiQr}
       handleLogoChange={handleLogoChange}
       handleAvatarChange={handleAvatarChange}
+      handleUpiQrChange={handleUpiQrChange}
       handleSubmit={handleSubmit(onSubmit)}
       isSaving={isSaving}
     />

@@ -21,7 +21,6 @@ import {
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { PostStudioModal } from "./PostStudioModal";
 
 /**
  * FestivalCalendarView
@@ -483,9 +482,6 @@ export const FestivalCalendarView = ({
                                 onClick={() => {
                                   if (onSelectTemplate) {
                                     onSelectTemplate(template);
-                                  } else {
-                                    setStudioTemplate(template);
-                                    setIsStudioOpen(true);
                                   }
                                 }}
                               >
@@ -535,15 +531,6 @@ export const FestivalCalendarView = ({
           </div>,
           document.body,
         )}
-
-      {/* Post Studio Modal Overlay */}
-      {isStudioOpen && studioTemplate && (
-        <PostStudioModal
-          template={studioTemplate}
-          isOpen={isStudioOpen}
-          onClose={() => setIsStudioOpen(false)}
-        />
-      )}
     </div>
   );
 };

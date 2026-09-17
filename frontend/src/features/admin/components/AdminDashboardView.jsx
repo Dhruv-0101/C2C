@@ -10,12 +10,14 @@ import {
   Shield,
   Clock,
   CheckCircle2,
+  CreditCard,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { ADMIN_TABS } from "../../../constants/theme.constants";
 
 // Extracted Sub-Components & Standardized Tabs
 import { AdminStatsHeader } from "./AdminStatsHeader";
+import { AdminFinanceTab } from "./tabs/AdminFinanceTab";
 import { AdminTemplatesTab } from "./tabs/AdminTemplatesTab";
 import { AdminFestivalsTab } from "./tabs/AdminFestivalsTab";
 import { AdminFramesTab } from "./tabs/AdminFramesTab";
@@ -159,6 +161,14 @@ export const AdminDashboardView = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   {
+                    id: "finance",
+                    label: "Finance & Revenue",
+                    desc: "Executive MRR/ARR, total revenue & transaction ledger",
+                    icon: CreditCard,
+                    color: "text-emerald-400",
+                    borderColor: "hover:border-emerald-500/50",
+                  },
+                  {
                     id: "templates",
                     label: "Graphic Templates",
                     desc: "Upload & manage graphic background templates",
@@ -195,8 +205,8 @@ export const AdminDashboardView = ({
                     label: "Business User Directory",
                     desc: "Registered business accounts & tenant monitoring",
                     icon: Users,
-                    color: "text-emerald-400",
-                    borderColor: "hover:border-emerald-500/50",
+                    color: "text-blue-400",
+                    borderColor: "hover:border-blue-500/50",
                   },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -225,6 +235,9 @@ export const AdminDashboardView = ({
             </div>
           </div>
         )}
+
+        {/* Executive Finance & Revenue Management Tab */}
+        {activeTab === "finance" && <AdminFinanceTab />}
 
         {/* 1. AI Base Graphic Templates Tab */}
         {activeTab === "templates" && <AdminTemplatesTab />}

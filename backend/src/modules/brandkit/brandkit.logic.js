@@ -79,6 +79,25 @@ export const brandKitLogic = {
       );
     }
 
+    let upiQrUrl = payload.upiQrUrl || null;
+
+    // 3. Process UPI QR Image upload (Base64 string) -> Cloudinary brandflow/logos
+    if (payload.base64UpiQr) {
+      let cleanBase64 = payload.base64UpiQr;
+      if (cleanBase64.includes(';base64,')) {
+        cleanBase64 = cleanBase64.split(';base64,').pop();
+      }
+      const buffer = Buffer.from(cleanBase64, 'base64');
+      const uploadResult = await uploadLogoBuffer(buffer);
+      upiQrUrl = uploadResult.url;
+    }
+
+    if (upiQrUrl && existingBrandKit?.upiQrUrl && existingBrandKit.upiQrUrl !== upiQrUrl) {
+      deleteFromCloudinary(existingBrandKit.upiQrUrl).catch((err) =>
+        console.warn(`⚠️ Failed to cleanup old UPI QR from Cloudinary: ${err.message}`)
+      );
+    }
+
     const dataToSave = {
       businessName: payload.businessName,
       categoryId: payload.categoryId || null,
@@ -95,6 +114,18 @@ export const brandKitLogic = {
       country: payload.country || 'India',
       websiteUrl: payload.websiteUrl || null,
       tagline: payload.tagline || null,
+      primaryFont: payload.primaryFont || null,
+      secondaryFont: payload.secondaryFont || null,
+      targetAudience: payload.targetAudience || null,
+      captionLanguage: payload.captionLanguage || 'English',
+      businessUsps: payload.businessUsps || null,
+      linkedinHandle: payload.linkedinHandle || null,
+      twitterHandle: payload.twitterHandle || null,
+      youtubeHandle: payload.youtubeHandle || null,
+      gmbReviewUrl: payload.gmbReviewUrl || null,
+      upiVpa: payload.upiVpa || null,
+      upiQrUrl: upiQrUrl || payload.upiQrUrl || null,
+      workingHours: payload.workingHours || null,
     };
 
     const updatedBrandKit = await brandKitRepository.upsertByUserId(userId, dataToSave);

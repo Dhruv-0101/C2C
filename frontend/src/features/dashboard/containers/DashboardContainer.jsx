@@ -17,7 +17,7 @@ export const DashboardContainer = () => {
   const { accounts } = useSocialAccounts();
 
   const connectedCount = accounts.filter((a) => a.isConnected).length;
-  const activeChannelsCount = connectedCount > 0 ? connectedCount : 3;
+  const activeChannelsCount = connectedCount;
 
   const [welcomeAuthType, setWelcomeAuthType] = useState(null);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);

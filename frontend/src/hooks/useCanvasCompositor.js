@@ -448,6 +448,12 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             textVal = customDetails.instagramHandle || brandKit?.instagramHandle || frameText || '@yourbrand';
           } else if (textSlot.dynamicSlot === 'FACEBOOK') {
             textVal = customDetails.facebookHandle || brandKit?.facebookHandle || frameText || 'yourbrand';
+          } else if (textSlot.dynamicSlot === 'LINKEDIN') {
+            textVal = customDetails.linkedinHandle || brandKit?.linkedinHandle || frameText || 'in/yourcompany';
+          } else if (textSlot.dynamicSlot === 'TWITTER') {
+            textVal = customDetails.twitterHandle || brandKit?.twitterHandle || frameText || '@yourbrand';
+          } else if (textSlot.dynamicSlot === 'YOUTUBE') {
+            textVal = customDetails.youtubeHandle || brandKit?.youtubeHandle || frameText || '@yourchannel';
           } else if (textSlot.dynamicSlot === 'ADDRESS') {
             if (showAddress) {
               textVal = customDetails.address || (brandKit?.address ? `${brandKit.address}${brandKit.city ? `, ${brandKit.city}` : ''}` : null) || frameText || 'Business Park, MG Road, Mumbai';
@@ -462,6 +468,12 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             textVal = customDetails.websiteUrl || brandKit?.websiteUrl || frameText || 'www.yourbusiness.com';
           } else if (textSlot.dynamicSlot === 'TAGLINE' || textSlot.dynamicSlot === 'SLOGAN' || textSlot.text?.toLowerCase().includes('slogan')) {
             textVal = customDetails.tagline || customDetails.slogan || brandKit?.tagline || brandKit?.slogan || frameText || 'Luxury Homes & Commercial Spaces';
+          } else if (textSlot.dynamicSlot === 'WORKING_HOURS') {
+            textVal = customDetails.workingHours || brandKit?.workingHours || frameText || 'Mon - Sat: 10:00 AM - 9:00 PM';
+          } else if (textSlot.dynamicSlot === 'GMB_REVIEW') {
+            textVal = customDetails.gmbReviewUrl || brandKit?.gmbReviewUrl || frameText || 'https://g.page/r/review-us';
+          } else if (textSlot.dynamicSlot === 'UPI_VPA') {
+            textVal = customDetails.upiVpa || brandKit?.upiVpa || frameText || 'storename@upi';
           } else {
             const customVal = customDetails[fieldKey] !== undefined && customDetails[fieldKey] !== ''
               ? customDetails[fieldKey]

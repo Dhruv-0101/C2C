@@ -13,11 +13,13 @@ import {
   LogOut,
   Sparkles,
   ArrowLeft,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "../../../hooks/useAuth";
 
 const ADMIN_NAVIGATION_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "finance", label: "Finance & Revenue", icon: CreditCard, superAdminOnly: true },
   { id: "templates", label: "Graphic Templates", icon: FileCode2 },
   { id: "festivals", label: "Festival Calendar", icon: Calendar },
   { id: "frames", label: "Brand Frames Studio", icon: Layers },

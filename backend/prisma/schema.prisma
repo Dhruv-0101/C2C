@@ -171,6 +171,18 @@ model BrandKit {
   country         String?   @default("India")
   websiteUrl      String?
   tagline         String?
+  primaryFont     String?
+  secondaryFont   String?
+  targetAudience  String?
+  captionLanguage String?   @default("English")
+  businessUsps    String?
+  linkedinHandle  String?
+  twitterHandle   String?
+  youtubeHandle   String?
+  gmbReviewUrl    String?
+  upiVpa          String?
+  upiQrUrl        String?
+  workingHours    String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

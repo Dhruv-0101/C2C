@@ -43,6 +43,8 @@ router.post(
   billingController.verifyStripePayment
 );
 
+import { billingAdminController } from './billing.admin.controller.js';
+
 // Admin-only quota top-up route
 router.put(
   '/admin/topup/:userId',
@@ -50,5 +52,11 @@ router.put(
   validate(adminTopUpSchema),
   billingController.adminTopUpQuota
 );
+
+// Admin Finance & Executive Revenue Module Routes
+router.get('/admin/overview', requireAdmin, billingAdminController.getOverview);
+router.get('/admin/transactions', requireAdmin, billingAdminController.getTransactions);
+router.post('/admin/manual-transaction', requireAdmin, billingAdminController.recordManualTransaction);
+router.get('/admin/export', requireAdmin, billingAdminController.exportTransactionsCsv);
 
 export default router;

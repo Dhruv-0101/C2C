@@ -15,8 +15,8 @@ export const useAnalytics = ({ range = '30d', platform = 'ALL' } = {}) => {
   const queryClient = useQueryClient();
 
   const overviewQuery = useQuery({
-    queryKey: [ANALYTICS_QUERY_KEYS.OVERVIEW, range],
-    queryFn: () => analyticsApi.getOverview({ range }),
+    queryKey: [ANALYTICS_QUERY_KEYS.OVERVIEW, range, platform],
+    queryFn: () => analyticsApi.getOverview({ range, platform }),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -27,8 +27,8 @@ export const useAnalytics = ({ range = '30d', platform = 'ALL' } = {}) => {
   });
 
   const platformsQuery = useQuery({
-    queryKey: [ANALYTICS_QUERY_KEYS.PLATFORMS, range],
-    queryFn: () => analyticsApi.getPlatformBreakdown({ range }),
+    queryKey: [ANALYTICS_QUERY_KEYS.PLATFORMS, range, platform],
+    queryFn: () => analyticsApi.getPlatformBreakdown({ range, platform }),
     staleTime: 5 * 60 * 1000,
   });
 

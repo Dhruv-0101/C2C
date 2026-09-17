@@ -31,7 +31,7 @@ export const analyticsLogic = {
    */
   getOverview: async (userId, queryParams = {}) => {
     const { startDate, priorStartDate } = getDateRanges(queryParams.range);
-    const metrics = await analyticsRepository.getOverviewMetrics(userId, startDate, priorStartDate);
+    const metrics = await analyticsRepository.getOverviewMetrics(userId, startDate, priorStartDate, queryParams.platform);
 
     const impressionsGrowth = calculateGrowthPercentage(metrics.current.impressions, metrics.prior.impressions);
     const reachGrowth = calculateGrowthPercentage(metrics.current.reach, metrics.prior.reach);
@@ -100,7 +100,7 @@ export const analyticsLogic = {
    */
   getPlatformBreakdown: async (userId, queryParams = {}) => {
     const { startDate } = getDateRanges(queryParams.range);
-    const rawBreakdown = await analyticsRepository.getPlatformBreakdown(userId, startDate);
+    const rawBreakdown = await analyticsRepository.getPlatformBreakdown(userId, startDate, queryParams.platform);
 
     const breakdown = rawBreakdown.map((item) => ({
       platform: item.platform,

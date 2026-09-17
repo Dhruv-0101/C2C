@@ -59,9 +59,14 @@ export const FestivalCalendarContainer = ({ onSelectTemplate, onAddFestival }) =
     { enabled: !!activeFestivalId && !!selectedDayDetails },
   );
 
-  // Post Studio Modal State
-  const [studioTemplate, setStudioTemplate] = useState(null);
-  const [isStudioOpen, setIsStudioOpen] = useState(false);
+  // Handle Template Selection -> Direct Navigation to Post Studio
+  const handleTemplateSelect = (template) => {
+    if (onSelectTemplate) {
+      onSelectTemplate(template);
+    } else {
+      navigate("/create-post", { state: { template } });
+    }
+  };
 
   // Add Festival Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -254,10 +259,6 @@ export const FestivalCalendarContainer = ({ onSelectTemplate, onAddFestival }) =
       setFestivalTemplateLimit={setFestivalTemplateLimit}
       festivalTemplateSearch={festivalTemplateSearch}
       setFestivalTemplateSearch={setFestivalTemplateSearch}
-      studioTemplate={studioTemplate}
-      setStudioTemplate={setStudioTemplate}
-      isStudioOpen={isStudioOpen}
-      setIsStudioOpen={setIsStudioOpen}
       isAddModalOpen={isAddModalOpen}
       setIsAddModalOpen={setIsAddModalOpen}
       registerFest={registerFest}
@@ -269,7 +270,7 @@ export const FestivalCalendarContainer = ({ onSelectTemplate, onAddFestival }) =
       isSubmittingFest={isSubmittingFest}
       addFestError={addFestError}
       handleAddFestivalSubmit={handleAddFestivalSubmit}
-      onSelectTemplate={onSelectTemplate}
+      onSelectTemplate={handleTemplateSelect}
       triggerScheduledJobs={triggerScheduledJobs}
       isTriggering={isTriggering}
     />

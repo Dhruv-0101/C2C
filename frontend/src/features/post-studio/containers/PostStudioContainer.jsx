@@ -58,18 +58,82 @@ export const PostStudioContainer = () => {
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
 
+  // Multi-Slide Manual Carousel State (Default: 1 Slide)
+  const [slides, setSlides] = useState([
+    {
+      id: "slide-1",
+      title: "Main Post Headline",
+      text: "Enter your post text or caption explanation here.",
+      customBaseImage: null,
+      selectedFrame: null,
+    },
+  ]);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
+  // Carousel Handlers
+  const handleAddSlide = () => {
+    const newSlide = {
+      id: `slide-${Date.now()}`,
+      title: `Slide ${slides.length + 1} Headline`,
+      text: "Enter your slide explanation text here.",
+      customBaseImage: null,
+      selectedFrame: null,
+    };
+    setSlides((prev) => [...prev, newSlide]);
+    setActiveSlideIndex(slides.length);
+  };
+
+  const handleRemoveSlide = (indexToRemove) => {
+    if (slides.length <= 1) return;
+    setSlides((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    if (activeSlideIndex >= indexToRemove && activeSlideIndex > 0) {
+      setActiveSlideIndex(activeSlideIndex - 1);
+    }
+  };
+
+  const handleDuplicateSlide = (indexToDup) => {
+    const slideToDup = slides[indexToDup];
+    if (!slideToDup) return;
+    const duplicated = {
+      ...slideToDup,
+      id: `slide-${Date.now()}`,
+      title: `${slideToDup.title} (Copy)`,
+    };
+    const newSlides = [...slides];
+    newSlides.splice(indexToDup + 1, 0, duplicated);
+    setSlides(newSlides);
+    setActiveSlideIndex(indexToDup + 1);
+  };
+
+  const handleMoveSlide = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= slides.length) return;
+    const updated = [...slides];
+    const temp = updated[index];
+    updated[index] = updated[targetIndex];
+    updated[targetIndex] = temp;
+    setSlides(updated);
+    setActiveSlideIndex(targetIndex);
+  };
+
+  const handleUpdateActiveSlide = (key, value) => {
+    setSlides((prev) =>
+      prev.map((s, idx) => (idx === activeSlideIndex ? { ...s, [key]: value } : s))
+    );
+  };
+
   // Template Category & Festival Filter States
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedFestival, setSelectedFestival] = useState("");
 
   // Template Search & Central Pagination State
   const [templatePage, setTemplatePage] = useState(1);
-  const [templateLimit, setTemplateLimit] = useState(6);
+  const [templateLimit, setTemplateLimit] = useState(3);
   const [templateSearch, setTemplateSearch] = useState("");
 
   // Canva Frames Central Pagination State
   const [framePage, setFramePage] = useState(1);
-  const [frameLimit, setFrameLimit] = useState(6);
+  const [frameLimit, setFrameLimit] = useState(3);
   const [frameSearch, setFrameSearch] = useState("");
 
   // Modular Hook for Graphic Templates (Combined category + festival filtering)
@@ -120,6 +184,13 @@ export const PostStudioContainer = () => {
   }, [templates, selectedTemplateId]);
 
   // Default selectedFrame is null (No Frame selected by default)
+
+  // Ensure active slide defaults to Slide 1 (index 0) when entering Step 2
+  useEffect(() => {
+    if (currentStep === 2) {
+      setActiveSlideIndex(0);
+    }
+  }, [currentStep]);
 
 
   // Live Overrides for Business Details
@@ -224,17 +295,25 @@ export const PostStudioContainer = () => {
   };
 
   const [saveError, setSaveError] = useState("");
+  const [createdPostId, setCreatedPostId] = useState(null);
+
+  // Reset createdPostId session lock whenever user modifies graphic design
+  useEffect(() => {
+    setCreatedPostId(null);
+  }, [selectedTemplateId, selectedFrame?.id, customBaseImage, customDetails]);
 
   // Save Generated Post Mutation
   const savePostMutation = useMutation({
     mutationFn: (postData) => postApi.createPost(postData),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      const newId = res?.data?.id || res?.data?.post?.id || res?.id || "saved";
+      setCreatedPostId(newId);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
       queryClient.invalidateQueries({ queryKey: ['subscription', 'status'] });
       setSaveError("");
       setSaveSuccess(
-        "🎉 Final composited post uploaded to Cloudinary, DB & Vault!",
+        "🎉 Composited post saved to Cloudinary & Vault! (1 Post Quota deducted)",
       );
       setTimeout(() => setSaveSuccess(""), 4000);
     },
@@ -250,7 +329,7 @@ export const PostStudioContainer = () => {
     },
   });
 
-  // Handle Save Post to DB
+  // Handle Save Post to DB (Deducts 1 Post Quota)
   const handleSaveToDb = () => {
     if (isExpired || postsRemaining <= 0) {
       openPlanModal();
@@ -262,6 +341,15 @@ export const PostStudioContainer = () => {
       setTimeout(() => setSaveError(""), 4000);
       return;
     }
+
+    // If this graphic design was already saved in this session, show message without deducting quota again
+    if (createdPostId) {
+      setSaveSuccess("🎉 Post draft is already saved in your Vault!");
+      setTimeout(() => setSaveSuccess(""), 4000);
+      return;
+    }
+
+    if (savePostMutation.isPending) return;
 
     // Sanitize userConfigJson so large image data URLs are not duplicated in request body
     const sanitizedConfig = { ...customDetails };
@@ -283,7 +371,7 @@ export const PostStudioContainer = () => {
     });
   };
 
-  // Handle Download HD PNG & Save to Cloud/DB
+  // Handle Download HD PNG (Deducts 1 Post Quota on new graphic design)
   const handleDownloadHD = () => {
     if (isExpired || postsRemaining <= 0) {
       openPlanModal();
@@ -292,12 +380,16 @@ export const PostStudioContainer = () => {
 
     if (!dataUrl) return;
 
+    // Trigger HD PNG browser file download
     const link = document.createElement("a");
     link.download = `${currentTemplate?.title || "BrandFlow-Post"}-1080x1080.png`;
     link.href = dataUrl;
     link.click();
 
-    handleSaveToDb();
+    // Deduct 1 post quota & save to DB/Vault if this new design hasn't consumed quota yet
+    if (!createdPostId && !savePostMutation.isPending) {
+      handleSaveToDb();
+    }
   };
 
   const handleOpenPublisher = () => {
@@ -350,6 +442,14 @@ export const PostStudioContainer = () => {
         handleSaveToDb={handleSaveToDb}
         handleDownloadHD={handleDownloadHD}
         onOpenPublisherModal={handleOpenPublisher}
+        slides={slides}
+        activeSlideIndex={activeSlideIndex}
+        setActiveSlideIndex={setActiveSlideIndex}
+        onAddSlide={handleAddSlide}
+        onRemoveSlide={handleRemoveSlide}
+        onDuplicateSlide={handleDuplicateSlide}
+        onMoveSlide={handleMoveSlide}
+        onUpdateActiveSlide={handleUpdateActiveSlide}
         subscription={subscription}
         postsRemaining={postsRemaining}
         isExpired={isExpired}

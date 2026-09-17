@@ -32,59 +32,59 @@ export const DashboardView = ({
   handleOpenNewPost,
   totalPostsCount = 0,
   scheduledCount = 0,
-  activeChannelsCount = 3,
+  activeChannelsCount = 0,
   recentPosts = [],
 }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 w-full">
+    <div className="space-y-3 animate-in fade-in duration-300 w-full">
       {/* Welcome Banner */}
-      <div className="p-6 sm:p-8 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17] flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30">
-            <Sparkles className="w-3.5 h-3.5" />
+      <div className="p-3 sm:p-4 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17] flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="space-y-0.5">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-semibold border border-amber-500/30">
+            <Sparkles className="w-3 h-3" />
             <span>Brand Workspace Dashboard</span>
           </div>
-          <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
+          <h1 className="font-heading font-extrabold text-lg sm:text-xl text-white">
             Welcome back, <span className="text-amber-400">{user?.fullName || "Creator"}</span>!
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
-            Your BrandKit is active and ready. Easily create, design, and share branded posts across your social media channels!
+          <p className="text-[11px] text-slate-400 max-w-xl">
+            Your BrandKit is active. Create & share branded posts instantly across all channels!
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <Button variant="primary" icon={Plus} onClick={() => handleOpenNewPost(null)}>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="primary" icon={Plus} size="sm" onClick={() => handleOpenNewPost(null)} className="text-xs py-1.5 px-3">
             New Post
           </Button>
-          <Button variant="outline" icon={Zap} onClick={() => navigate("/brandkit")}>
+          <Button variant="outline" icon={Zap} size="sm" onClick={() => navigate("/brandkit")} className="text-xs py-1.5 px-3">
             Configure BrandKit
           </Button>
         </div>
       </div>
 
       {/* Admin-Style Interactive Statistics Header Cards (Boxes) */}
-      <div className="space-y-3">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-amber-400" />
+      <div className="space-y-1.5">
+        <h2 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+          <Activity className="w-3.5 h-3.5 text-amber-400" />
           <span>Workspace Performance Metrics</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {/* Box 1: Generated Posts & Portfolio */}
           <Card
             onClick={() => navigate("/your-posts")}
-            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-amber-500/50 hover:shadow-lg transition-all duration-200 group"
+            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-amber-500/50 hover:shadow-lg transition-all duration-200 group"
           >
-            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
               <span className="group-hover:text-amber-400 transition-colors">Generated Posts</span>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-                <Sparkles className="w-4 h-4" />
+              <div className="p-1 rounded-lg bg-amber-500/10 text-amber-400">
+                <Sparkles className="w-3.5 h-3.5" />
               </div>
             </div>
-            <p className="font-heading text-3xl font-extrabold text-white">{totalPostsCount}</p>
-            <p className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
+            <p className="font-heading text-xl font-extrabold text-white">{totalPostsCount}</p>
+            <p className="text-[10px] text-amber-400 font-medium flex items-center gap-1">
               <span>View Post Portfolio &rarr;</span>
             </p>
           </Card>
@@ -92,16 +92,16 @@ export const DashboardView = ({
           {/* Box 2: Scheduled Queue & Calendar */}
           <Card
             onClick={() => navigate("/calendar")}
-            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-teal-500/50 hover:shadow-lg transition-all duration-200 group"
+            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-teal-500/50 hover:shadow-lg transition-all duration-200 group"
           >
-            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
               <span className="group-hover:text-teal-400 transition-colors">Scheduled Queue</span>
-              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
-                <Calendar className="w-4 h-4" />
+              <div className="p-1 rounded-lg bg-teal-500/10 text-teal-400">
+                <Calendar className="w-3.5 h-3.5" />
               </div>
             </div>
-            <p className="font-heading text-3xl font-extrabold text-teal-400">{scheduledCount}</p>
-            <p className="text-[11px] text-teal-400 font-medium">
+            <p className="font-heading text-xl font-extrabold text-teal-400">{scheduledCount}</p>
+            <p className="text-[10px] text-teal-400 font-medium">
               <span>Manage Content Calendar &rarr;</span>
             </p>
           </Card>
@@ -109,33 +109,33 @@ export const DashboardView = ({
           {/* Box 3: Social Channels Connection */}
           <Card
             onClick={() => navigate("/connections")}
-            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all duration-200 group"
+            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all duration-200 group"
           >
-            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
               <span className="group-hover:text-indigo-400 transition-colors">Social Channels</span>
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-                <Share2 className="w-4 h-4" />
+              <div className="p-1 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <Share2 className="w-3.5 h-3.5" />
               </div>
             </div>
-            <p className="font-heading text-3xl font-extrabold text-white">{activeChannelsCount} Active</p>
-            <p className="text-[11px] text-indigo-400 font-medium">
-              <span>Instagram, FB, LinkedIn &rarr;</span>
+            <p className="font-heading text-xl font-extrabold text-white">{activeChannelsCount} Active</p>
+            <p className="text-[10px] text-indigo-400 font-medium">
+              <span>{activeChannelsCount > 0 ? "Manage Channels &rarr;" : "Connect Social Channels &rarr;"}</span>
             </p>
           </Card>
 
           {/* Box 4: Master BrandKit Setup */}
           <Card
             onClick={() => navigate("/brandkit")}
-            className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-emerald-500/50 hover:shadow-lg transition-all duration-200 group"
+            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-emerald-500/50 hover:shadow-lg transition-all duration-200 group"
           >
-            <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
+            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
               <span className="group-hover:text-emerald-400 transition-colors">Master BrandKit</span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-                <Building2 className="w-4 h-4" />
+              <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-400">
+                <Building2 className="w-3.5 h-3.5" />
               </div>
             </div>
-            <p className="font-heading text-2xl font-extrabold text-emerald-400">Brand Profile</p>
-            <p className="text-[11px] text-emerald-400 font-medium">
+            <p className="font-heading text-lg font-extrabold text-emerald-400">Brand Profile</p>
+            <p className="text-[10px] text-emerald-400 font-medium">
               <span>Manage Brand Assets &rarr;</span>
             </p>
           </Card>
@@ -143,13 +143,13 @@ export const DashboardView = ({
       </div>
 
       {/* Quick Access Feature Modules Grid */}
-      <div className="space-y-3 pt-2">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-amber-400" />
+      <div className="space-y-1.5 pt-0.5">
+        <h2 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+          <Shield className="w-3.5 h-3.5 text-amber-400" />
           <span>Workspace Quick Actions & Modules</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {[
             {
               title: "Post Studio",
@@ -189,18 +189,18 @@ export const DashboardView = ({
               <Card
                 key={idx}
                 onClick={() => navigate(item.path)}
-                className={`p-5 bg-[#131B2A] border-[#2C384E] cursor-pointer transition-all duration-200 group ${item.borderColor} hover:shadow-lg`}
+                className={`p-3 bg-[#131B2A] border-[#2C384E] cursor-pointer transition-all duration-200 group ${item.borderColor} hover:shadow-lg`}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] ${item.color}`}>
-                    <Icon className="w-5 h-5" />
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className={`p-1.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] ${item.color}`}>
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  <ArrowRight className="w-3 h-3 text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
                 </div>
-                <h3 className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
+                <h3 className="font-bold text-xs text-white group-hover:text-amber-400 transition-colors">
                   {item.title}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
                   {item.desc}
                 </p>
               </Card>
@@ -210,24 +210,53 @@ export const DashboardView = ({
       </div>
 
       {/* Recent Posts Activity */}
-      <Card className="border-[#2C384E] bg-[#131B2A] space-y-4">
+      <Card className="p-3.5 sm:p-4 border-[#2C384E] bg-[#131B2A] space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-heading font-bold text-lg text-white">Recent Posts & Graphics</h3>
-          <Button variant="primary" icon={Plus} className="text-xs" onClick={() => handleOpenNewPost(null)}>
-            Create New Post
-          </Button>
+          <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2">
+            <Archive className="w-4 h-4 text-amber-400" />
+            <span>Recent Posts & Graphics</span>
+          </h3>
+          {recentPosts.length > 0 && (
+            <div className="flex items-center gap-2">
+              {totalPostsCount > 4 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-bold border-[#2C384E] text-slate-300 hover:text-white py-1 px-2.5"
+                  onClick={() => navigate("/your-posts")}
+                >
+                  <span>View All ({totalPostsCount})</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              )}
+              <Button variant="primary" icon={Plus} size="sm" className="text-xs font-bold py-1.5 px-3" onClick={() => handleOpenNewPost(null)}>
+                Create New Post
+              </Button>
+            </div>
+          )}
         </div>
 
         {recentPosts.length === 0 ? (
-          <p className="text-xs text-slate-400 py-4 text-center">
-            No recent graphics yet. Click "Create New Post" to start!
-          </p>
+          <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-dashed border-[#2C384E] flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <Wand2 className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-200">No recent graphics created yet</p>
+                <p className="text-[11px] text-slate-400">Start creating branded post graphics with AI Post Studio.</p>
+              </div>
+            </div>
+            <Button variant="primary" size="sm" icon={Plus} onClick={() => handleOpenNewPost(null)} className="text-xs shrink-0 font-bold py-1.5 px-3">
+              Create First Post
+            </Button>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recentPosts.map((post) => (
               <div
                 key={post.id}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors"
+                className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   {post.finalGraphicUrl && (
@@ -238,16 +267,16 @@ export const DashboardView = ({
                     />
                   )}
                   <div>
-                    <p className="text-sm font-semibold text-slate-200">
+                    <p className="text-xs font-semibold text-slate-200">
                       {post.occasionName || post.customText || "Branded Graphic Post"}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-[11px] text-slate-400">
                       Created {new Date(post.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <span
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                     post.status === "PUBLISHED"
                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
                       : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
@@ -257,6 +286,22 @@ export const DashboardView = ({
                 </span>
               </div>
             ))}
+
+            {totalPostsCount > 4 && (
+              <div className="pt-2 border-t border-[#2C384E] flex items-center justify-between text-xs">
+                <span className="text-slate-400 text-[11px]">
+                  Showing 4 of {totalPostsCount} recent posts
+                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate("/your-posts")}
+                  className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition cursor-pointer"
+                >
+                  <span>View All Posts & Queue</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Card>

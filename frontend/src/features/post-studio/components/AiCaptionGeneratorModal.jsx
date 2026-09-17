@@ -60,11 +60,8 @@ export const AiCaptionGeneratorModal = ({
   // Local Editable State for Output
   const [editableCaption, setEditableCaption] = useState("");
   const [hashtagsList, setHashtagsList] = useState([]);
-  const [variantsList, setVariantsList] = useState([]);
   const [newHashtagInput, setNewHashtagInput] = useState("");
   const [aiSource, setAiSource] = useState("");
-
-  const [activeVariantIndex, setActiveVariantIndex] = useState(0);
   const [copied, setCopied] = useState(false);
 
   const { generateCaption, isGenerating, captionError } = useAiCaption();
@@ -83,23 +80,14 @@ export const AiCaptionGeneratorModal = ({
         platform,
       });
 
-      // API Response Envelope: resData = { success: true, message: "...", data: { source, captionText, hashtags, variants } }
+      // API Response Envelope: resData = { success: true, message: "...", data: { source, captionText, hashtags } }
       const data = resData?.data || resData;
 
       setAiSource(data?.source || "AI");
       setEditableCaption(data?.captionText || "");
       setHashtagsList(data?.hashtags || []);
-      setVariantsList(data?.variants || [data?.captionText]);
-      setActiveVariantIndex(0);
     } catch (err) {
       console.error("Failed to generate AI caption:", err);
-    }
-  };
-
-  const handleVariantSelect = (idx) => {
-    setActiveVariantIndex(idx);
-    if (variantsList[idx]) {
-      setEditableCaption(variantsList[idx]);
     }
   };
 
@@ -152,11 +140,11 @@ export const AiCaptionGeneratorModal = ({
             <div>
               <h3 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
                 <span>AI Caption & Hashtag Studio</span>
-                {aiSource && (
+                {/* {aiSource && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30 uppercase">
                     {aiSource.replace(/_/g, " ")}
                   </span>
-                )}
+                )} */}
               </h3>
               <p className="text-xs text-slate-400">
                 Craft viral, high-converting social media captions. Edit captions & manage hashtags in real-time.
@@ -211,11 +199,10 @@ export const AiCaptionGeneratorModal = ({
                     key={t.id}
                     type="button"
                     onClick={() => setTone(t.id)}
-                    className={`p-2 rounded-xl border text-left transition flex items-center gap-2 text-xs font-semibold ${
-                      tone === t.id
-                        ? "bg-amber-500/20 border-amber-500 text-amber-300 shadow-md"
-                        : "bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:border-slate-600 hover:text-white"
-                    }`}
+                    className={`p-2 rounded-xl border text-left transition flex items-center gap-2 text-xs font-semibold ${tone === t.id
+                      ? "bg-amber-500/20 border-amber-500 text-amber-300 shadow-md"
+                      : "bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:border-slate-600 hover:text-white"
+                      }`}
                   >
                     <span className="text-base">{t.icon}</span>
                     <span className="truncate">{t.label}</span>
@@ -280,31 +267,12 @@ export const AiCaptionGeneratorModal = ({
           {/* Right Column: Interactive Editor for Caption & Hashtags */}
           <div className="flex flex-col justify-between bg-[#0B0F17] border border-[#2C384E] rounded-2xl p-4 space-y-4">
             <div className="space-y-4">
-              {/* Output Bar & Variants */}
+              {/* Output Bar */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Edit3 className="w-4 h-4 text-amber-400" />
                   <span>Editable Caption Copy</span>
                 </span>
-
-                {variantsList.length > 1 && (
-                  <div className="flex items-center gap-1">
-                    {variantsList.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleVariantSelect(idx)}
-                        className={`px-2 py-0.5 text-[10px] font-bold rounded-lg border transition ${
-                          activeVariantIndex === idx
-                            ? "bg-amber-500 text-black border-amber-400"
-                            : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white"
-                        }`}
-                      >
-                        Option {idx + 1}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Editable Text Area for Caption */}

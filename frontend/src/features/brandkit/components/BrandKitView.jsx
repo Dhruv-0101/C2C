@@ -8,6 +8,11 @@ import {
   CheckCircle2,
   Image as ImageIcon,
   X,
+  Palette,
+  Bot,
+  QrCode,
+  Share2,
+  Clock,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -33,27 +38,32 @@ export const BrandKitView = ({
   avatarPreview,
   setAvatarPreview,
   setBase64Avatar,
+  upiQrPreview,
+  setUpiQrPreview,
+  setBase64UpiQr,
   handleLogoChange,
   handleAvatarChange,
+  handleUpiQrChange,
   handleSubmit,
   isSaving,
 }) => {
   const categoryIdValue = watch ? watch("categoryId") : "";
+  const captionLangValue = watch ? watch("captionLanguage") : "English";
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-6 sm:p-8 rounded-2xl">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
+      <div className="p-4 sm:p-5 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17]">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-semibold border border-amber-500/30">
+            <Sparkles className="w-3 h-3" />
             <span>Brand Identity Setup</span>
           </div>
-          <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
+          <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-white">
             Configure Your <span className="text-gradient">BrandKit</span>
           </h1>
-          <p className="text-sm text-slate-400 max-w-2xl">
-            Save your business logo, contact info, website, and social details once to automatically brand all your social posts.
+          <p className="text-xs text-slate-400 max-w-xl">
+            Set up your logo, AI profile & brand assets to auto-brand all posts.
           </p>
         </div>
       </div>
@@ -64,7 +74,7 @@ export const BrandKitView = ({
           <p className="text-sm">Loading your BrandKit profile...</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="max-w-4xl space-y-6" noValidate>
+        <form onSubmit={handleSubmit} className="w-full space-y-6" noValidate>
           {errorMsg && <Alert variant="error" message={errorMsg} />}
           {successMsg && (
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold flex items-center gap-2">
@@ -77,7 +87,7 @@ export const BrandKitView = ({
           <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
             <h3 className="font-heading font-bold text-lg text-white border-b border-[#2C384E] pb-3 flex items-center gap-2">
               <Building2 className="w-5 h-5 text-amber-400" />
-              <span>1. Business Logo & Basic Identity</span>
+              <span>1. Business Logo & Core Identity</span>
             </h3>
 
             {/* Logo Upload Zone */}
@@ -115,7 +125,7 @@ export const BrandKitView = ({
                     <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                   </label>
                   <p className="text-xs text-slate-400">
-                    Supports transparent PNG, WebP, or high-res JPG. This logo will be automatically composited on your posts.
+                    Upload your main brand logo. Dark/light theme adaptations are automatically contrast-adjusted on post frames!
                   </p>
                 </div>
               </div>
@@ -156,7 +166,7 @@ export const BrandKitView = ({
                     <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
                   </label>
                   <p className="text-xs text-slate-400">
-                    Owner, founder, agent, or professional headshot. This photo will be rendered in circular badges on post frames.
+                    Owner, founder, agent, or headshot. Rendered in circular badges on post frames.
                   </p>
                 </div>
               </div>
@@ -198,11 +208,54 @@ export const BrandKitView = ({
             />
           </Card>
 
-          {/* Section 2: Contact Info & Website */}
+          {/* Section 2: AI Copywriting & Tone Profile */}
+          <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
+            <h3 className="font-heading font-bold text-lg text-white border-b border-[#2C384E] pb-3 flex items-center gap-2">
+              <Bot className="w-5 h-5 text-amber-400" />
+              <span>2. AI Copywriting Profile (Captions & Hashtags)</span>
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Target Audience"
+                placeholder="e.g. Home Buyers, Tech Founders, Parents, Gym Goers"
+                error={errors?.targetAudience?.message}
+                {...register("targetAudience")}
+              />
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
+                  Default AI Caption Language
+                </label>
+                <select
+                  value={captionLangValue}
+                  onChange={(e) => setValue("captionLanguage", e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-sm focus:outline-none focus:border-amber-500"
+                >
+                  <option value="English">English</option>
+                  <option value="Hindi">Hindi</option>
+                  <option value="Hinglish">Hinglish (Hindi + English)</option>
+                  <option value="Gujarati">Gujarati</option>
+                  <option value="Marathi">Marathi</option>
+                  <option value="Tamil">Tamil</option>
+                  <option value="Telugu">Telugu</option>
+                </select>
+              </div>
+            </div>
+
+            <Input
+              label="Business USPs & Key Features (AI Highlights)"
+              placeholder="e.g. 100% Organic, Free Express Shipping, ISO Certified, 24x7 Support"
+              error={errors?.businessUsps?.message}
+              {...register("businessUsps")}
+            />
+          </Card>
+
+          {/* Section 3: Contact & Business Operations */}
           <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
             <h3 className="font-heading font-bold text-lg text-white border-b border-[#2C384E] pb-3 flex items-center gap-2">
               <Phone className="w-5 h-5 text-amber-400" />
-              <span>2. Contact Details & Website</span>
+              <span>3. Contact Details & Operating Hours</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -237,37 +290,22 @@ export const BrandKitView = ({
                 {...register("websiteUrl")}
               />
             </div>
-          </Card>
-
-          {/* Section 3: Social Media Handles & Address */}
-          <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
-            <h3 className="font-heading font-bold text-lg text-white border-b border-[#2C384E] pb-3 flex items-center gap-2">
-              <Globe className="w-5 h-5 text-amber-400" />
-              <span>3. Social Media & Address</span>
-            </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Instagram Handle"
-                placeholder="@mybusiness"
-                error={errors?.instagramHandle?.message}
-                {...register("instagramHandle")}
+                label="Working Hours / Store Timing"
+                placeholder="e.g. Mon - Sat: 10:00 AM - 9:00 PM"
+                error={errors?.workingHours?.message}
+                {...register("workingHours")}
               />
 
               <Input
-                label="Facebook Page Handle"
-                placeholder="fb.com/mybusiness"
-                error={errors?.facebookHandle?.message}
-                {...register("facebookHandle")}
+                label="Full Office / Store Address"
+                placeholder="e.g. Shop #12, MG Road, Commercial Complex"
+                error={errors?.address?.message}
+                {...register("address")}
               />
             </div>
-
-            <Input
-              label="Full Office / Store Address"
-              placeholder="e.g. Shop #12, MG Road, Commercial Complex"
-              error={errors?.address?.message}
-              {...register("address")}
-            />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Input
@@ -289,6 +327,134 @@ export const BrandKitView = ({
                 placeholder="India"
                 error={errors?.country?.message}
                 {...register("country")}
+              />
+            </div>
+          </Card>
+
+          {/* Section 4: Social Media Handles */}
+          <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
+            <h3 className="font-heading font-bold text-lg text-white border-b border-[#2C384E] pb-3 flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-amber-400" />
+              <span>4. Social Media Handles (Frame Footers)</span>
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Instagram Handle"
+                placeholder="@mybusiness"
+                error={errors?.instagramHandle?.message}
+                {...register("instagramHandle")}
+              />
+
+              <Input
+                label="Facebook Page Handle"
+                placeholder="fb.com/mybusiness"
+                error={errors?.facebookHandle?.message}
+                {...register("facebookHandle")}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Input
+                label="LinkedIn Handle"
+                placeholder="linkedin.com/company/mybusiness"
+                error={errors?.linkedinHandle?.message}
+                {...register("linkedinHandle")}
+              />
+
+              <Input
+                label="Twitter / X Handle"
+                placeholder="@mybusiness"
+                error={errors?.twitterHandle?.message}
+                {...register("twitterHandle")}
+              />
+
+              <Input
+                label="YouTube Channel Handle"
+                placeholder="@mychannel"
+                error={errors?.youtubeHandle?.message}
+                {...register("youtubeHandle")}
+              />
+            </div>
+          </Card>
+
+          {/* Section 5: Payments, GMB Reviews & Typography */}
+          <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
+            <h3 className="font-heading font-bold text-lg text-white border-b border-[#2C384E] pb-3 flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-amber-400" />
+              <span>5. Payments, Google Reviews & Branding Fonts</span>
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Google My Business (GMB) Review Link"
+                placeholder="e.g. https://g.page/r/your-review-link"
+                error={errors?.gmbReviewUrl?.message}
+                {...register("gmbReviewUrl")}
+              />
+
+              <Input
+                label="UPI Payment VPA ID"
+                placeholder="e.g. storename@upi or 9876543210@paytm"
+                error={errors?.upiVpa?.message}
+                {...register("upiVpa")}
+              />
+            </div>
+
+            {/* UPI QR Upload Zone */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
+                UPI Payment QR Code (Image Upload for Banners)
+              </label>
+              <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-[#0B0F17] border border-dashed border-[#2C384E] hover:border-amber-500/50 transition">
+                {upiQrPreview ? (
+                  <div className="relative w-24 h-24 rounded-xl border border-slate-700 bg-white overflow-hidden flex items-center justify-center p-1 group shrink-0">
+                    <img src={upiQrPreview} alt="UPI QR" className="w-full h-full object-contain" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUpiQrPreview(null);
+                        setBase64UpiQr(null);
+                        if (setValue) setValue("upiQrUrl", "");
+                      }}
+                      className="absolute top-1 right-1 p-1 rounded-full bg-black/80 hover:bg-rose-600 text-white transition"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-xl border border-dashed border-slate-700 bg-slate-900 flex flex-col items-center justify-center text-slate-500 shrink-0">
+                    <QrCode className="w-6 h-6 mb-1" />
+                    <span className="text-[9px]">No QR Code</span>
+                  </div>
+                )}
+
+                <div className="space-y-2 flex-1 text-center sm:text-left">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 font-semibold text-xs hover:bg-purple-500/20 transition">
+                    <Upload className="w-4 h-4" />
+                    <span>{upiQrPreview ? "Change UPI QR Code" : "Upload UPI QR Code Image"}</span>
+                    <input type="file" accept="image/*" onChange={handleUpiQrChange} className="hidden" />
+                  </label>
+                  <p className="text-xs text-slate-400">
+                    Upload your GPay / PhonePe / Paytm UPI QR image. Used for offer banners & payment flyers.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Primary Brand Font (Poster Titles)"
+                placeholder="e.g. Inter, Outfit, Montserrat, Roboto"
+                error={errors?.primaryFont?.message}
+                {...register("primaryFont")}
+              />
+
+              <Input
+                label="Secondary Brand Font (Body / Subtitles)"
+                placeholder="e.g. Roboto, Open Sans, Inter"
+                error={errors?.secondaryFont?.message}
+                {...register("secondaryFont")}
               />
             </div>
           </Card>

@@ -23,22 +23,12 @@ export const SocialAccountsManager = () => {
     setErrorMsg,
     successMsg,
     refetch,
-    connectManual,
-    isConnectingManual,
     disconnect,
     isDisconnecting,
     getLinkedinAuthUrl,
   } = useSocialAccounts();
 
   const [showConfigGuide, setShowConfigGuide] = useState(false);
-  const [manualHandle, setManualHandle] = useState('');
-  const [showManualInput, setShowManualInput] = useState(false);
-
-  const [manualFbHandle, setManualFbHandle] = useState('');
-  const [showManualFbInput, setShowManualFbInput] = useState(false);
-
-  const [manualLiHandle, setManualLiHandle] = useState('');
-  const [showManualLiInput, setShowManualLiInput] = useState(false);
   const [isLoadingLiAuthUrl, setIsLoadingLiAuthUrl] = useState(false);
 
   const handleConnectMeta = () => {
@@ -132,7 +122,7 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
 
-        {/* Action Buttons & Manual Connect Form */}
+        {/* Action Buttons */}
         <div className="flex flex-col items-end gap-2">
           {instagramAccount?.isConnected ? (
             <Button
@@ -145,62 +135,18 @@ export const SocialAccountsManager = () => {
               Disconnect Instagram
             </Button>
           ) : (
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <Button
-                variant="primary"
-                className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs justify-center shadow-lg"
-                isLoading={isLoadingAuthUrl}
-                onClick={handleConnectMeta}
-                icon={Link2}
-              >
-                Connect via Meta OAuth
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setShowManualInput(!showManualInput)}
-                className="text-xs text-amber-400 hover:underline px-2 py-1 font-semibold"
-              >
-                {showManualInput ? 'Cancel' : 'Or Enter Username Manually'}
-              </button>
-            </div>
+            <Button
+              variant="primary"
+              className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs justify-center shadow-lg"
+              isLoading={isLoadingAuthUrl}
+              onClick={handleConnectMeta}
+              icon={Link2}
+            >
+              Connect via Meta OAuth
+            </Button>
           )}
         </div>
       </div>
-
-      {/* Manual Username Input Box - Instagram */}
-      {!instagramAccount?.isConnected && showManualInput && (
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
-          <label className="text-xs font-semibold text-slate-300 block">
-            Enter your exact Instagram Username:
-          </label>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
-              <input
-                type="text"
-                placeholder="your_instagram_username"
-                value={manualHandle}
-                onChange={(e) => setManualHandle(e.target.value)}
-                className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-amber-500"
-              />
-            </div>
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={isConnectingManual}
-              onClick={() => {
-                connectManual({ handle: manualHandle, platform: 'INSTAGRAM' });
-                setShowManualInput(false);
-                setManualHandle('');
-              }}
-              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
-            >
-              Connect Username
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Facebook Page Integration Card */}
       <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
@@ -256,7 +202,7 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
 
-        {/* Action Buttons & Manual Connect Form */}
+        {/* Action Buttons */}
         <div className="flex flex-col items-end gap-2">
           {facebookAccount?.isConnected ? (
             <Button
@@ -269,62 +215,18 @@ export const SocialAccountsManager = () => {
               Disconnect Facebook
             </Button>
           ) : (
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <Button
-                variant="primary"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
-                isLoading={isLoadingAuthUrl}
-                onClick={handleConnectMeta}
-                icon={Link2}
-              >
-                Connect via Meta OAuth
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setShowManualFbInput(!showManualFbInput)}
-                className="text-xs text-blue-400 hover:underline px-2 py-1 font-semibold"
-              >
-                {showManualFbInput ? 'Cancel' : 'Or Enter Page Handle Manually'}
-              </button>
-            </div>
+            <Button
+              variant="primary"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
+              isLoading={isLoadingAuthUrl}
+              onClick={handleConnectMeta}
+              icon={Link2}
+            >
+              Connect via Meta OAuth
+            </Button>
           )}
         </div>
       </div>
-
-      {/* Manual Page Handle Input Box - Facebook */}
-      {!facebookAccount?.isConnected && showManualFbInput && (
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
-          <label className="text-xs font-semibold text-slate-300 block">
-            Enter your exact Facebook Page Name or Handle:
-          </label>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
-              <input
-                type="text"
-                placeholder="your_facebook_page"
-                value={manualFbHandle}
-                onChange={(e) => setManualFbHandle(e.target.value)}
-                className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={isConnectingManual}
-              onClick={() => {
-                connectManual({ handle: manualFbHandle, platform: 'FACEBOOK' });
-                setShowManualFbInput(false);
-                setManualFbHandle('');
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
-            >
-              Connect Facebook Page
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* LinkedIn Integration Card */}
       <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
@@ -382,7 +284,7 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
 
-        {/* Action Buttons & Manual Connect Form */}
+        {/* Action Buttons */}
         <div className="flex flex-col items-end gap-2">
           {linkedinAccount?.isConnected ? (
             <Button
@@ -395,77 +297,33 @@ export const SocialAccountsManager = () => {
               Disconnect LinkedIn
             </Button>
           ) : (
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <Button
-                variant="primary"
-                className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
-                isLoading={isLoadingLiAuthUrl}
-                onClick={async () => {
-                  try {
-                    setIsLoadingLiAuthUrl(true);
-                    setErrorMsg('');
-                    const authUrl = await getLinkedinAuthUrl();
-                    if (authUrl) {
-                      window.location.href = authUrl;
-                    } else {
-                      setErrorMsg('LinkedIn App credentials are not configured in backend.');
-                    }
-                  } catch (err) {
-                    setErrorMsg(err.message || 'Failed to start LinkedIn OAuth.');
-                  } finally {
-                    setIsLoadingLiAuthUrl(false);
+            <Button
+              variant="primary"
+              className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
+              isLoading={isLoadingLiAuthUrl}
+              onClick={async () => {
+                try {
+                  setIsLoadingLiAuthUrl(true);
+                  setErrorMsg('');
+                  const authUrl = await getLinkedinAuthUrl();
+                  if (authUrl) {
+                    window.location.href = authUrl;
+                  } else {
+                    setErrorMsg('LinkedIn App credentials are not configured in backend.');
                   }
-                }}
-                icon={Link2}
-              >
-                Connect via LinkedIn OAuth
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setShowManualLiInput(!showManualLiInput)}
-                className="text-xs text-blue-400 hover:underline px-2 py-1 font-semibold"
-              >
-                {showManualLiInput ? 'Cancel' : 'Or Enter Username Manually'}
-              </button>
-            </div>
+                } catch (err) {
+                  setErrorMsg(err.message || 'Failed to start LinkedIn OAuth.');
+                } finally {
+                  setIsLoadingLiAuthUrl(false);
+                }
+              }}
+              icon={Link2}
+            >
+              Connect via LinkedIn OAuth
+            </Button>
           )}
         </div>
       </div>
-
-      {/* Manual Page Handle Input Box - LinkedIn */}
-      {!linkedinAccount?.isConnected && showManualLiInput && (
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 animate-in fade-in">
-          <label className="text-xs font-semibold text-slate-300 block">
-            Enter your exact LinkedIn Profile or Company Username:
-          </label>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-mono">@</span>
-              <input
-                type="text"
-                placeholder="your_linkedin_username"
-                value={manualLiHandle}
-                onChange={(e) => setManualLiHandle(e.target.value)}
-                className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-sm font-mono focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <Button
-              variant="primary"
-              size="sm"
-              isLoading={isConnectingManual}
-              onClick={() => {
-                connectManual({ handle: manualLiHandle, platform: 'LINKEDIN' });
-                setShowManualLiInput(false);
-                setManualLiHandle('');
-              }}
-              className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs"
-            >
-              Connect LinkedIn Account
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Central Pagination Controls */}
       <Pagination

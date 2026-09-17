@@ -718,10 +718,16 @@ export const FrameManagerView = ({
                         <option value="EMAIL">Email Address</option>
                         <option value="INSTAGRAM">Instagram Handle</option>
                         <option value="FACEBOOK">Facebook Page</option>
+                        <option value="LINKEDIN">LinkedIn Handle</option>
+                        <option value="TWITTER">Twitter / X Handle</option>
+                        <option value="YOUTUBE">YouTube Handle</option>
                         <option value="ADDRESS">Address / Street</option>
                         <option value="CITY">City</option>
                         <option value="WEBSITE">Website URL</option>
                         <option value="TAGLINE">Tagline / Slogan</option>
+                        <option value="WORKING_HOURS">Working Hours / Timings</option>
+                        <option value="GMB_REVIEW">Google My Business Review Link</option>
+                        <option value="UPI_VPA">UPI Payment VPA ID</option>
                       </select>
                     </div>
                   )}
@@ -729,7 +735,8 @@ export const FrameManagerView = ({
                   {/* Image Slot BrandKit Mapping */}
                   {(selectedElement.slotCategory === "IMAGE_SLOT" ||
                     selectedElement.dynamicSlot === "LOGO_BOX" ||
-                    selectedElement.dynamicSlot === "AVATAR_CIRCLE") && (
+                    selectedElement.dynamicSlot === "AVATAR_CIRCLE" ||
+                    selectedElement.dynamicSlot === "UPI_QR") && (
                     <div className="space-y-1.5 pt-2 border-t border-[#2C384E]">
                       <label className="text-[10px] text-slate-300 font-semibold block">
                         Image Slot Auto-Fill
@@ -743,14 +750,15 @@ export const FrameManagerView = ({
                             type:
                               slot === "AVATAR_CIRCLE"
                                 ? "CIRCLE"
-                                : selectedElement.type,
+                                : "RECT",
                           });
                         }}
-                        className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
                       >
-                        <option value="CUSTOM_IMAGE">Custom Photo Slot</option>
-                        <option value="LOGO_BOX">Business Logo Box</option>
-                        <option value="AVATAR_CIRCLE">Profile Headshot Ring</option>
+                        <option value="CUSTOM_IMAGE">Manual Image Slot</option>
+                        <option value="LOGO_BOX">Official Brand Logo</option>
+                        <option value="AVATAR_CIRCLE">Owner Profile Photo (Circular Avatar)</option>
+                        <option value="UPI_QR">UPI Payment QR Image</option>
                       </select>
                     </div>
                   )}
