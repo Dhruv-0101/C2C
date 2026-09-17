@@ -1,3 +1,5 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import { brandKitLogic } from './brandkit.logic.js';
 
 export const brandKitController = {
@@ -9,8 +11,8 @@ export const brandKitController = {
       const userId = req.user.id;
       const brandKit = await brandKitLogic.getBrandKit(userId);
 
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'BrandKit retrieved successfully',
         data: { brandKit },
       });
@@ -30,8 +32,8 @@ export const brandKitController = {
 
       const brandKit = await brandKitLogic.updateBrandKit(userId, payload, fileBuffer);
 
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'BrandKit saved successfully',
         data: { brandKit },
       });

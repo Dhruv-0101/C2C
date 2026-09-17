@@ -1,5 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import { HTTP_STATUS } from '../constants/http-status.js';
+import { sendErrorResponse } from '../utils/response.util.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
 
@@ -48,8 +49,8 @@ const _globalLimiter = rateLimit({
   legacyHeaders: false,
   handler: (req, res) => {
     logger.warn(`⚠️ Rate limit exceeded for IP: ${req.ip}`);
-    res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json({
-      success: false,
+    return sendErrorResponse(res, {
+      statusCode: HTTP_STATUS.TOO_MANY_REQUESTS,
       message: 'Too many requests from this IP address. Please try again after 15 minutes.',
       errors: [{ field: 'rate_limit', message: 'Rate limit exceeded (2000 requests / 15 mins)' }],
     });
@@ -71,8 +72,8 @@ const _authLimiter = rateLimit({
   legacyHeaders: false,
   handler: (req, res) => {
     logger.warn(`⚠️ Auth rate limit exceeded for IP: ${req.ip}`);
-    res.status(HTTP_STATUS.TOO_MANY_REQUESTS).json({
-      success: false,
+    return sendErrorResponse(res, {
+      statusCode: HTTP_STATUS.TOO_MANY_REQUESTS,
       message: 'Too many login or signup attempts from this IP address. Please try again after 15 minutes.',
       errors: [{ field: 'auth_rate_limit', message: 'Brute-force protection activated (50 attempts / 15 mins)' }],
     });

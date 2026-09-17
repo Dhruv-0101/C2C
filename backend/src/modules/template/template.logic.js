@@ -1,3 +1,4 @@
+import { BadRequestError, NotFoundError } from '../../common/errors/custom-errors.js';
 import { templateRepository } from './template.repository.js';
 import { templateCategoryRepository } from './templateCategory.repository.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
@@ -29,7 +30,7 @@ export const templateLogic = {
     }
 
     if (!imageUrl) {
-      throw new Error('Template image file, base64 string, or direct image URL is required.');
+      throw new BadRequestError('Template image file, base64 string, or direct image URL is required.');
     }
 
     let catName = (data.newCategoryName || (data.category !== 'NEW' ? data.category : '') || 'General Business').trim();
@@ -106,7 +107,7 @@ export const templateLogic = {
   getTemplateById: async (id) => {
     const template = await templateRepository.findById(id);
     if (!template) {
-      throw new Error('System Template not found.');
+      throw new NotFoundError('System Template not found.');
     }
     return template;
   },

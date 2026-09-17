@@ -2,6 +2,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import { HTTP_STATUS } from './common/constants/http-status.js';
 import { NotFoundError } from './common/errors/custom-errors.js';
 import { errorHandler } from './common/middleware/error.middleware.js';
 import { globalLimiter } from './common/middleware/rate-limiter.middleware.js';
@@ -124,7 +125,7 @@ app.use(cookieParser());
  *   2. '/api/v1/health' (in router): Used by Postman & Frontend status dashboards under the versioned API router.
  */
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.status(HTTP_STATUS.OK).json({
     status: 'healthy',
     environment: env.NODE_ENV,
     timestamp: new Date().toISOString(),

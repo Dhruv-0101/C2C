@@ -1,10 +1,9 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
+import { sendSuccessResponse, sendErrorResponse } from '../../common/utils/response.util.js';
 import { socialLogic } from './social.logic.js';
 import { env } from '../../config/env.js';
 
 export const socialController = {
-  /**
-   * GET /api/v1/social/auth-url/instagram
-   */
   /**
    * Helper to resolve target frontend client URL from request or encoded state
    */
@@ -33,8 +32,8 @@ export const socialController = {
     try {
       const clientUrl = req.get('origin') || (req.get('referer') ? new URL(req.get('referer')).origin : null);
       const result = await socialLogic.getInstagramAuthUrl(req.user.id, clientUrl);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: result.configured
           ? 'Instagram OAuth URL generated successfully'
           : 'Meta App configuration status retrieved',
@@ -52,8 +51,8 @@ export const socialController = {
     try {
       const clientUrl = req.get('origin') || (req.get('referer') ? new URL(req.get('referer')).origin : null);
       const result = await socialLogic.getLinkedinAuthUrl(req.user.id, clientUrl);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: result.configured
           ? 'LinkedIn OAuth URL generated successfully'
           : 'LinkedIn App configuration status retrieved',
@@ -88,8 +87,8 @@ export const socialController = {
       }
 
       if (!userId) {
-        return res.status(401).json({
-          success: false,
+        return sendErrorResponse(res, {
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
           message: 'Unauthorized callback execution. Missing user context.',
         });
       }
@@ -126,8 +125,8 @@ export const socialController = {
       }
 
       if (!userId) {
-        return res.status(401).json({
-          success: false,
+        return sendErrorResponse(res, {
+          statusCode: HTTP_STATUS.UNAUTHORIZED,
           message: 'Unauthorized callback execution. Missing user context.',
         });
       }
@@ -147,8 +146,8 @@ export const socialController = {
   getUserAccounts: async (req, res, next) => {
     try {
       const result = await socialLogic.getUserAccounts(req.user.id, req.query);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Social accounts retrieved successfully',
         data: result.data,
         meta: result.meta,
@@ -165,8 +164,8 @@ export const socialController = {
     try {
       const { platform } = req.params;
       const result = await socialLogic.disconnectAccount(req.user.id, platform);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: `Disconnected ${platform} account successfully`,
         data: result,
       });
@@ -182,8 +181,8 @@ export const socialController = {
     try {
       const { handle, platform } = req.body;
       const result = await socialLogic.connectManualHandle(req.user.id, handle, platform);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: `Connected ${result.account.accountName} successfully!`,
         data: result,
       });

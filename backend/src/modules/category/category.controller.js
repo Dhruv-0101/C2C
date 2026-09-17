@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
 import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import * as categoryLogic from './category.logic.js';
 
@@ -8,6 +9,7 @@ export async function getCategories(req, res, next) {
   try {
     const result = await categoryLogic.getCategories(req.query);
     return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
       message: 'Business categories retrieved successfully',
       data: result.data,
       meta: result.meta,
@@ -23,8 +25,8 @@ export async function getCategories(req, res, next) {
 export async function createCategory(req, res, next) {
   try {
     const category = await categoryLogic.createCategory(req.body);
-    res.status(201).json({
-      success: true,
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.CREATED,
       message: 'Business category created successfully',
       data: {
         category,
@@ -41,8 +43,8 @@ export async function createCategory(req, res, next) {
 export async function deleteCategory(req, res, next) {
   try {
     await categoryLogic.deleteCategory(req.params.id);
-    res.status(200).json({
-      success: true,
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
       message: 'Business category deleted successfully',
     });
   } catch (error) {

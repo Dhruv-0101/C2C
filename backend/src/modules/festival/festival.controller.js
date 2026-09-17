@@ -1,3 +1,5 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import * as festivalLogic from './festival.logic.js';
 
 /**
@@ -6,8 +8,8 @@ import * as festivalLogic from './festival.logic.js';
 export async function getFestivals(req, res, next) {
   try {
     const result = await festivalLogic.getFestivals(req.query);
-    res.status(200).json({
-      success: true,
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
       message: 'Festivals retrieved successfully',
       data: result.data,
       meta: result.meta,
@@ -26,8 +28,8 @@ export async function createFestival(req, res, next) {
       ...req.body,
       fileBuffer: req.file?.buffer,
     });
-    res.status(201).json({
-      success: true,
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.CREATED,
       message: 'Festival created successfully',
       data: {
         festival,
@@ -44,8 +46,8 @@ export async function createFestival(req, res, next) {
 export async function updateFestival(req, res, next) {
   try {
     const festival = await festivalLogic.updateFestival(req.params.id, req.body, req.file?.buffer);
-    res.status(200).json({
-      success: true,
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
       message: 'Festival updated successfully',
       data: {
         festival,
@@ -62,8 +64,8 @@ export async function updateFestival(req, res, next) {
 export async function deleteFestival(req, res, next) {
   try {
     await festivalLogic.deleteFestival(req.params.id);
-    res.status(200).json({
-      success: true,
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
       message: 'Festival deleted successfully',
     });
   } catch (error) {

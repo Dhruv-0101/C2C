@@ -1,3 +1,4 @@
+import { BadRequestError, NotFoundError, UnauthorizedError } from '../../common/errors/custom-errors.js';
 import {
   calculatePlanPricing,
   FREE_PLAN_LIMITS,
@@ -84,7 +85,7 @@ export const billingLogic = {
 
     // If user already activated Free plan and used all 5 posts from plan quota
     if (existing && existing.plan === 'FREE' && existing.totalPostsAllowed >= FREE_PLAN_LIMITS.POST_LIMIT && existing.postsUsed >= FREE_PLAN_LIMITS.POST_LIMIT) {
-      throw new Error('Free plan quota of 5 posts has been exhausted. Please purchase a Paid Pro Plan to continue.');
+      throw new BadRequestError('Free plan quota of 5 posts has been exhausted. Please purchase a Paid Pro Plan to continue.');
     }
 
     const sub = await billingRepository.upsertSubscription(userId, {
@@ -404,12 +405,12 @@ export const billingLogic = {
   generateInvoicePdf: async (userId, transactionId, requesterRole = 'END_USER') => {
     const tx = await billingRepository.findTransactionById(transactionId);
     if (!tx) {
-      throw new Error('Billing transaction record not found.');
+      throw new NotFoundError('Billing transaction record not found.');
     }
 
     // Access control: User can only download their own invoice unless Admin
     if (tx.userId !== userId && requesterRole !== 'ADMIN' && requesterRole !== 'SUPER_ADMIN' && requesterRole !== 'SUB_ADMIN') {
-      throw new Error('Unauthorized access to invoice document.');
+      throw new UnauthorizedError('Unauthorized access to invoice document.');
     }
 
     const pdfBuffer = await buildInvoicePdfBuffer(tx, tx.user, tx.user?.brandKit || {});

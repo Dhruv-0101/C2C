@@ -1,3 +1,4 @@
+import { BadRequestError } from '../../common/errors/custom-errors.js';
 import axios from 'axios';
 import { instagramPublisherService } from './services/instagramPublisher.service.js';
 import { linkedinPublisherService } from './services/linkedinPublisher.service.js';
@@ -202,7 +203,7 @@ export const socialLogic = {
    */
   connectManualHandle: async (userId, handle, platform = 'INSTAGRAM') => {
     if (!handle || typeof handle !== 'string') {
-      throw new Error('Valid handle or URL is required.');
+      throw new BadRequestError('Valid handle or URL is required.');
     }
 
     let cleanHandle = handle.trim();
@@ -218,7 +219,7 @@ export const socialLogic = {
     cleanHandle = cleanHandle.replace(/^@/, '').trim();
 
     if (!cleanHandle) {
-      throw new Error('Please enter a valid handle or profile URL.');
+      throw new BadRequestError('Please enter a valid handle or profile URL.');
     }
 
     const formattedHandle = `@${cleanHandle}`;

@@ -1,3 +1,5 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import { billingAdminLogic } from './billing.admin.logic.js';
 
 export const billingAdminController = {
@@ -8,8 +10,8 @@ export const billingAdminController = {
   getOverview: async (req, res, next) => {
     try {
       const data = await billingAdminLogic.getOverview();
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Financial overview retrieved successfully 💳',
         data,
       });
@@ -25,8 +27,8 @@ export const billingAdminController = {
   getTransactions: async (req, res, next) => {
     try {
       const result = await billingAdminLogic.getTransactions(req.query);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Admin billing transactions retrieved successfully 📊',
         data: result,
       });
@@ -42,8 +44,8 @@ export const billingAdminController = {
   recordManualTransaction: async (req, res, next) => {
     try {
       const transaction = await billingAdminLogic.recordManualTransaction(req.body);
-      return res.status(201).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.CREATED,
         message: 'Manual transaction recorded successfully ✨',
         data: transaction,
       });
@@ -61,7 +63,7 @@ export const billingAdminController = {
       const csvData = await billingAdminLogic.exportTransactionsCsv(req.query);
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename=BrandFlow-Transactions-${Date.now()}.csv`);
-      return res.status(200).send(csvData);
+      return res.status(HTTP_STATUS.OK).send(csvData);
     } catch (err) {
       next(err);
     }

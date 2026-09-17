@@ -1,3 +1,5 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import { billingLogic } from './billing.logic.js';
 
 export const billingController = {
@@ -7,8 +9,8 @@ export const billingController = {
   getStatus: async (req, res, next) => {
     try {
       const data = await billingLogic.getSubscriptionStatus(req.user.id);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Subscription status fetched successfully.',
         data,
       });
@@ -23,8 +25,8 @@ export const billingController = {
   activateFreePlan: async (req, res, next) => {
     try {
       const data = await billingLogic.activateFreePlan(req.user.id);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: data.message,
         data,
       });
@@ -40,8 +42,8 @@ export const billingController = {
     try {
       const { postCount } = req.body;
       const data = await billingLogic.createRazorpayOrder(req.user.id, postCount);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Razorpay order created successfully.',
         data,
       });
@@ -56,8 +58,8 @@ export const billingController = {
   verifyRazorpayPayment: async (req, res, next) => {
     try {
       const data = await billingLogic.verifyRazorpayPayment(req.user.id, req.body);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: data.message,
         data,
       });
@@ -73,8 +75,8 @@ export const billingController = {
     try {
       const { postCount } = req.body;
       const data = await billingLogic.createStripeIntent(req.user.id, postCount);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Stripe PaymentIntent created successfully.',
         data,
       });
@@ -89,8 +91,8 @@ export const billingController = {
   verifyStripePayment: async (req, res, next) => {
     try {
       const data = await billingLogic.verifyStripePayment(req.user.id, req.body);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: data.message,
         data,
       });
@@ -107,8 +109,8 @@ export const billingController = {
       const { userId } = req.params;
       const { bonusPosts = 10 } = req.body;
       const data = await billingLogic.topUpUserQuota(userId, Number(bonusPosts));
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: `Successfully granted +${bonusPosts} bonus post quota to user!`,
         data,
       });
@@ -123,8 +125,8 @@ export const billingController = {
   getHistory: async (req, res, next) => {
     try {
       const data = await billingLogic.getBillingHistory(req.user.id, req.query);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Billing transaction history fetched successfully.',
         data: data.data,
         meta: data.meta,
@@ -149,7 +151,7 @@ export const billingController = {
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${data.fileName}"`);
       res.setHeader('Content-Length', data.pdfBuffer.length);
-      return res.send(data.pdfBuffer);
+      return res.status(HTTP_STATUS.OK).send(data.pdfBuffer);
     } catch (err) {
       next(err);
     }

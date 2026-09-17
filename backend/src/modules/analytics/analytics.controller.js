@@ -1,3 +1,5 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import { analyticsLogic } from './analytics.logic.js';
 
 export const analyticsController = {
@@ -7,8 +9,8 @@ export const analyticsController = {
   getOverview: async (req, res, next) => {
     try {
       const data = await analyticsLogic.getOverview(req.user.id, req.query);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Analytics KPI metrics fetched successfully.',
         data: data.kpi,
       });
@@ -23,8 +25,8 @@ export const analyticsController = {
   getTrends: async (req, res, next) => {
     try {
       const data = await analyticsLogic.getTrends(req.user.id, req.query);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Daily trend metrics fetched successfully.',
         data,
       });
@@ -39,8 +41,8 @@ export const analyticsController = {
   getPlatformBreakdown: async (req, res, next) => {
     try {
       const data = await analyticsLogic.getPlatformBreakdown(req.user.id, req.query);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Platform breakdown fetched successfully.',
         data,
       });
@@ -55,8 +57,8 @@ export const analyticsController = {
   getTopTemplates: async (req, res, next) => {
     try {
       const data = await analyticsLogic.getTopTemplates(req.user.id, req.query);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Top templates fetched successfully.',
         data,
       });
@@ -71,8 +73,8 @@ export const analyticsController = {
   seedDemo: async (req, res, next) => {
     try {
       const result = await analyticsLogic.seedDemoData(req.user.id);
-      res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: `Successfully seeded ${result.seededCount} analytics metrics records!`,
         data: result,
       });

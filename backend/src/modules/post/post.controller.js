@@ -1,3 +1,5 @@
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
+import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import { postLogic } from './post.logic.js';
 
 export const postController = {
@@ -8,8 +10,8 @@ export const postController = {
   getUserPosts: async (req, res, next) => {
     try {
       const result = await postLogic.getUserPosts(req.user.id, req.query);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'User posts retrieved successfully',
         data: result.data,
         meta: result.meta,
@@ -26,8 +28,8 @@ export const postController = {
   getScheduledPosts: async (req, res, next) => {
     try {
       const result = await postLogic.getScheduledPosts(req.user.id, req.query);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Scheduled posts queue retrieved successfully',
         data: result.data,
         meta: result.meta,
@@ -44,8 +46,8 @@ export const postController = {
   publishNow: async (req, res, next) => {
     try {
       const result = await postLogic.publishNow(req.user.id, req.body);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Post published successfully across platforms 🎉',
         data: result,
       });
@@ -61,8 +63,8 @@ export const postController = {
   schedulePost: async (req, res, next) => {
     try {
       const result = await postLogic.schedulePost(req.user.id, req.body);
-      return res.status(201).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.CREATED,
         message: 'Post scheduled successfully ⏰',
         data: result,
       });
@@ -78,8 +80,8 @@ export const postController = {
   triggerScheduledJobs: async (req, res, next) => {
     try {
       const result = await postLogic.triggerScheduledJobs();
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Scheduled job dispatcher cycle executed successfully',
         data: result,
       });
@@ -95,8 +97,8 @@ export const postController = {
   createPost: async (req, res, next) => {
     try {
       const post = await postLogic.createPost(req.user.id, req.body, req.fileBuffer);
-      return res.status(201).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.CREATED,
         message: 'Post generated and saved successfully',
         data: { post },
       });
@@ -113,8 +115,8 @@ export const postController = {
     try {
       const { id } = req.params;
       await postLogic.deletePost(id, req.user.id);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Post deleted successfully',
       });
     } catch (err) {

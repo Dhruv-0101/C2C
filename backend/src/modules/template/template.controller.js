@@ -1,5 +1,6 @@
-import { templateLogic } from './template.logic.js';
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
 import { sendSuccessResponse } from '../../common/utils/response.util.js';
+import { templateLogic } from './template.logic.js';
 
 export const templateController = {
   /**
@@ -25,8 +26,8 @@ export const templateController = {
         req.user?.id
       );
 
-      return res.status(201).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.CREATED,
         message: 'System template created & published successfully.',
         data: { template },
       });
@@ -51,6 +52,7 @@ export const templateController = {
     try {
       const result = await templateLogic.getCategories(req.query);
       return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Template categories retrieved successfully',
         data: result.data,
         meta: result.meta,
@@ -69,6 +71,7 @@ export const templateController = {
     try {
       const result = await templateLogic.getTemplates(req.query);
       return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Templates retrieved successfully',
         data: result.data,
         meta: result.meta,
@@ -86,8 +89,8 @@ export const templateController = {
   deleteTemplate: async (req, res, next) => {
     try {
       await templateLogic.deleteTemplate(req.params.id);
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Template deleted successfully.',
       });
     } catch (error) {
@@ -95,4 +98,3 @@ export const templateController = {
     }
   },
 };
-

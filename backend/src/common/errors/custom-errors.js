@@ -41,3 +41,21 @@ export class ConflictError extends AppError {
     super(message, HTTP_STATUS.CONFLICT);
   }
 }
+
+export class UnprocessableEntityError extends AppError {
+  constructor(message = 'Unprocessable Entity', errors = []) {
+    super(message, HTTP_STATUS.UNPROCESSABLE_ENTITY, errors);
+  }
+}
+
+export class TooManyRequestsError extends AppError {
+  constructor(message = 'Too many requests. Please try again later.') {
+    super(message, HTTP_STATUS.TOO_MANY_REQUESTS);
+  }
+}
+
+export class InternalServerError extends AppError {
+  constructor(message = 'Internal Server Error') {
+    super(message, HTTP_STATUS.INTERNAL_SERVER_ERROR);
+  }
+}

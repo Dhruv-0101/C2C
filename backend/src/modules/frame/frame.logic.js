@@ -1,3 +1,4 @@
+import { BadRequestError } from '../../common/errors/custom-errors.js';
 import { frameRepository } from './frame.repository.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { uploadFrameBuffer, uploadFrameOverlayBuffer, uploadFramePreviewBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
@@ -77,7 +78,7 @@ export const frameLogic = {
     }
 
     if (!overlayPngUrl) {
-      throw new Error('A transparent PNG frame image is required.');
+      throw new BadRequestError('A transparent PNG frame image is required.');
     }
 
     const frameData = {

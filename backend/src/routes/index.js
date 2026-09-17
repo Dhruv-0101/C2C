@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { HTTP_STATUS } from '../common/constants/http-status.js';
 import authRoutes from '../modules/auth/auth.routes.js';
 import categoryRoutes from '../modules/category/category.routes.js';
 import festivalRoutes from '../modules/festival/festival.routes.js';
@@ -16,7 +17,7 @@ const router = Router();
 
 // API Health Check
 router.get('/health', (req, res) => {
-  res.status(200).json({
+  res.status(HTTP_STATUS.OK).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),

@@ -1,5 +1,6 @@
-import { frameLogic } from './frame.logic.js';
+import { HTTP_STATUS } from '../../common/constants/http-status.js';
 import { sendSuccessResponse } from '../../common/utils/response.util.js';
+import { frameLogic } from './frame.logic.js';
 
 export const frameController = {
   /**
@@ -9,6 +10,7 @@ export const frameController = {
     try {
       const result = await frameLogic.getFrames(req.query);
       return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Frames retrieved successfully',
         data: result.data,
         meta: result.meta,
@@ -28,8 +30,8 @@ export const frameController = {
 
       const frame = await frameLogic.createFrame(payload, fileBuffer);
 
-      return res.status(201).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.CREATED,
         message: 'Frame created successfully',
         data: { frame },
       });
@@ -46,8 +48,8 @@ export const frameController = {
       const { id } = req.params;
       await frameLogic.deleteFrame(id);
 
-      return res.status(200).json({
-        success: true,
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
         message: 'Frame deleted successfully',
       });
     } catch (error) {
