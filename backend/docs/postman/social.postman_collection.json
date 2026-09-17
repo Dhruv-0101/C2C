@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "bf-social-v1",
+    "_postman_id": "bf-social-v2",
     "name": "BrandFlow — Social Collection",
     "description": "API endpoints for Meta/Instagram and LinkedIn accounts, OAuth redirect flows, and manual account connections.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -151,7 +151,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"platform\": \"INSTAGRAM\",\n  \"accountName\": \"sunrise_real_estate\",\n  \"handle\": \"@sunrise_real_estate\"\n}"
+          "raw": "{\n  \"handle\": \"@sunrise_real_estate\",\n  \"platform\": \"INSTAGRAM\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/social/connect-manual",
@@ -163,7 +163,7 @@
             "connect-manual"
           ]
         },
-        "description": "Manually connects a social media handle."
+        "description": "Manually connects a social media handle for quick connection."
       }
     },
     {

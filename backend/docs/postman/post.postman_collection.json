@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "bf-posts-module-v1",
+    "_postman_id": "bf-posts-module-v2",
     "name": "BrandFlow — Post Collection",
     "description": "API endpoints for saving, scheduling, instant publishing, and deleting user-composited social media marketing posts.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -13,20 +13,29 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
+            "value": "Bearer {{access_token}}"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/posts",
+          "raw": "{{base_url}}/posts?page=1&limit=10",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "posts"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
           ]
         },
-        "description": "Fetches all composited posts created by the authenticated user."
+        "description": "Fetches paginated composited posts created by the authenticated user."
       }
     },
     {
@@ -36,18 +45,27 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
+            "value": "Bearer {{access_token}}"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/posts/scheduled",
+          "raw": "{{base_url}}/posts/scheduled?page=1&limit=10",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "posts",
             "scheduled"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
           ]
         },
         "description": "Fetches the scheduled posts queue for the authenticated user."
@@ -60,18 +78,16 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
+            "value": "Bearer {{access_token}}"
           },
           {
             "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
+            "value": "application/json"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"caption\": \"Celebrating Diwali with our valued customers! 🪔✨\",\n  \"platforms\": [\"INSTAGRAM\", \"LINKEDIN\"]\n}"
+          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"postContent\": \"Celebrating Diwali with our valued customers! 🪔✨\",\n  \"graphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"targetPlatforms\": [\"INSTAGRAM\", \"FACEBOOK\", \"LINKEDIN\"]\n}"
         },
         "url": {
           "raw": "{{base_url}}/posts/publish-now",
@@ -93,18 +109,16 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
+            "value": "Bearer {{access_token}}"
           },
           {
             "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
+            "value": "application/json"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"caption\": \"Exclusive Festive Discounts on MG Road!\",\n  \"scheduledFor\": \"2026-11-08T09:00:00.000Z\",\n  \"platforms\": [\"INSTAGRAM\"]\n}"
+          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"postContent\": \"Exclusive Festive Discounts on MG Road!\",\n  \"graphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"scheduledFor\": \"2026-11-08T09:00:00.000Z\",\n  \"targetPlatforms\": [\"INSTAGRAM\", \"LINKEDIN\"]\n}"
         },
         "url": {
           "raw": "{{base_url}}/posts/schedule",
@@ -126,8 +140,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
+            "value": "Bearer {{access_token}}"
           }
         ],
         "url": {
@@ -150,18 +163,16 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
+            "value": "Bearer {{access_token}}"
           },
           {
             "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
+            "value": "application/json"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"frameId\": \"clx456frameid\",\n  \"customText\": \"Happy Diwali from Sunrise Real Estate!\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
+          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"frameId\": \"clx456frameid\",\n  \"customText\": \"Happy Diwali from Sunrise Real Estate!\",\n  \"offerText\": \"20% Off on New Bookings\",\n  \"finalGraphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
         },
         "url": {
           "raw": "{{base_url}}/posts",
@@ -182,8 +193,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
+            "value": "Bearer {{access_token}}"
           }
         ],
         "url": {

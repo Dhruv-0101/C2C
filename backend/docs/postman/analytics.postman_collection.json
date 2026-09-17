@@ -1,0 +1,131 @@
+{
+  "info": {
+    "_postman_id": "bf-analytics-v1",
+    "name": "BrandFlow — Analytics & Reporting Collection",
+    "description": "API endpoints for Tenant Performance Metrics, Daily Trends, Platform Breakdown, Top Templates, and Demo Data Seeding.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get Overview KPI Metrics",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/analytics/overview",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "analytics",
+            "overview"
+          ]
+        },
+        "description": "Returns high-level KPI cards data (totalPosts, totalViews, totalEngagement, engagementRate)."
+      }
+    },
+    {
+      "name": "2. Get Daily Performance Trends",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/analytics/trends?period=30d",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "analytics",
+            "trends"
+          ],
+          "query": [
+            {
+              "key": "period",
+              "value": "30d"
+            }
+          ]
+        },
+        "description": "Returns time-series daily metrics for line & area charts."
+      }
+    },
+    {
+      "name": "3. Get Platform Breakdown",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/analytics/platform-breakdown",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "analytics",
+            "platform-breakdown"
+          ]
+        },
+        "description": "Returns platform distribution (Instagram, Facebook, LinkedIn) for pie charts."
+      }
+    },
+    {
+      "name": "4. Get Top Performing Templates",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/analytics/top-templates",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "analytics",
+            "top-templates"
+          ]
+        },
+        "description": "Returns top performing design templates used by tenant."
+      }
+    },
+    {
+      "name": "5. Seed Demo Analytics Data",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/analytics/demo-seed",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "analytics",
+            "demo-seed"
+          ]
+        },
+        "description": "Populates demo metrics records for testing line/pie charts."
+      }
+    }
+  ]
+}

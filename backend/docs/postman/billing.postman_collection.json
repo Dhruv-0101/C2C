@@ -1,0 +1,377 @@
+{
+  "info": {
+    "_postman_id": "bf-billing-v1",
+    "name": "BrandFlow — Billing & Revenue Collection",
+    "description": "API endpoints for User Subscriptions, Razorpay/Stripe Payments, Invoice Downloads, and Admin Financial Ledgers & CSV Export.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get Subscription Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/billing/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "status"
+          ]
+        },
+        "description": "Fetches current subscription status and post quota details for the user."
+      }
+    },
+    {
+      "name": "2. Get Billing History",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/billing/history?page=1&limit=10",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "history"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Fetches paginated billing transactions for the user."
+      }
+    },
+    {
+      "name": "3. Activate Free Plan",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/billing/free/activate",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "free",
+            "activate"
+          ]
+        },
+        "description": "Activates 5 Free Posts Quota for a new tenant account."
+      }
+    },
+    {
+      "name": "4. Create Razorpay Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"postCount\": 100\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/billing/razorpay/create-order",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "razorpay",
+            "create-order"
+          ]
+        },
+        "description": "Creates a Razorpay Order ID for INR (₹) subscription purchasing."
+      }
+    },
+    {
+      "name": "5. Verify Razorpay Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"razorpay_order_id\": \"order_9A34zX9R8y\",\n  \"razorpay_payment_id\": \"pay_29384729384\",\n  \"razorpay_signature\": \"signature_hash_here\",\n  \"postCount\": 100\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/billing/razorpay/verify",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "razorpay",
+            "verify"
+          ]
+        },
+        "description": "Verifies HMAC signature for Razorpay payment and grants Pro plan quota."
+      }
+    },
+    {
+      "name": "6. Create Stripe PaymentIntent",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"postCount\": 100\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/billing/stripe/create-intent",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "stripe",
+            "create-intent"
+          ]
+        },
+        "description": "Creates a Stripe PaymentIntent for USD ($) international checkout."
+      }
+    },
+    {
+      "name": "7. Verify Stripe Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"paymentIntentId\": \"pi_3MtwBwLkdCwGaACc07YqcVqe\",\n  \"postCount\": 100\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/billing/stripe/verify",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "stripe",
+            "verify"
+          ]
+        },
+        "description": "Verifies Stripe PaymentIntent status and grants USD Pro plan subscription."
+      }
+    },
+    {
+      "name": "8. Download Invoice PDF",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/billing/invoice/:transactionId/download",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "invoice",
+            ":transactionId",
+            "download"
+          ],
+          "variable": [
+            {
+              "key": "transactionId",
+              "value": "tx_id_here"
+            }
+          ]
+        },
+        "description": "Generates and streams a PDF Invoice for a billing transaction."
+      }
+    },
+    {
+      "name": "9. Admin — Financial Overview",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/billing/admin/overview",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "admin",
+            "overview"
+          ]
+        },
+        "description": "Executive revenue breakdown (mrrINR, mrrUSD, currencyBreakdown, gatewayBreakdown, planBreakdown)."
+      }
+    },
+    {
+      "name": "10. Admin — Billing Transactions Ledger",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/billing/admin/transactions?page=1&limit=10&currency=INR&paymentGateway=RAZORPAY",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "admin",
+            "transactions"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "currency",
+              "value": "INR"
+            },
+            {
+              "key": "paymentGateway",
+              "value": "RAZORPAY"
+            }
+          ]
+        },
+        "description": "Admin paginated transaction ledger with search and currency/gateway filters."
+      }
+    },
+    {
+      "name": "11. Admin — Record Manual Transaction",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user_id_or_email\",\n  \"plan\": \"PRO\",\n  \"paymentGateway\": \"ADMIN_MANUAL\",\n  \"pricePaid\": 999,\n  \"currency\": \"INR\",\n  \"postCount\": 100,\n  \"paymentId\": \"MANUAL_123456\",\n  \"orderId\": \"ORD_123456\",\n  \"status\": \"COMPLETED\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/billing/admin/manual-transaction",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "admin",
+            "manual-transaction"
+          ]
+        },
+        "description": "Allows Admin to log manual or offline payments for tenants."
+      }
+    },
+    {
+      "name": "12. Admin — Export Transactions CSV",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/billing/admin/export?currency=INR",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "admin",
+            "export"
+          ],
+          "query": [
+            {
+              "key": "currency",
+              "value": "INR"
+            }
+          ]
+        },
+        "description": "Downloads CSV statement of all matching transactions."
+      }
+    }
+  ]
+}
