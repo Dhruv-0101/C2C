@@ -41,8 +41,6 @@ export async function findUserById(id) {
           paymentGateway: true,
           paymentId: true,
           orderId: true,
-          currentPeriodStart: true,
-          currentPeriodEnd: true,
           createdAt: true,
           updatedAt: true,
         },

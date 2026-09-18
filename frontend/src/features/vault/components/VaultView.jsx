@@ -124,12 +124,12 @@ export const VaultView = ({
             {vaultItems.map((item) => (
               <GraphicCard
                 key={item.id}
-                imageUrl={item.graphicUrl}
-                title={item.occasionName || "Social Graphic"}
-                category={item.categoryName}
+                imageUrl={item.post?.finalGraphicUrl || item.graphicUrl}
+                title={item.post?.occasionName || item.post?.template?.title || item.occasionName || "Social Graphic"}
+                category={item.post?.category?.name || item.post?.festival?.name || item.categoryName || "General"}
                 date={new Date(item.createdAt).toLocaleDateString()}
                 onPreview={() => setFullscreenItem(item)}
-                onDownload={() => handleDownload(item.graphicUrl, item.occasionName)}
+                onDownload={() => handleDownload(item.post?.finalGraphicUrl || item.graphicUrl, item.post?.occasionName || item.occasionName)}
                 onEdit={() => handleOpenEdit(item)}
                 onDelete={() => deleteMutation.mutate(item.id)}
                 isDeleting={deleteMutation.isPending}
@@ -213,19 +213,11 @@ export const VaultView = ({
 
               <form onSubmit={handleSaveEdit} className="space-y-4">
                 <Input
-                  label="Occasion Name"
+                  label="Occasion / Title"
                   placeholder="e.g. Diwali Offer Promo"
                   value={editFormData.occasionName}
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, occasionName: e.target.value })
-                  }
-                />
-                <Input
-                  label="Category Name"
-                  placeholder="e.g. Festival / Real Estate / Retail"
-                  value={editFormData.categoryName}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, categoryName: e.target.value })
                   }
                 />
 

@@ -3,6 +3,7 @@ import { uploadPostBuffer, deleteFromCloudinary } from '../../config/cloudinary.
 import { processPostJob, triggerScheduledPostsNow } from '../../jobs/index.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { billingRepository } from '../billing/billing.repository.js';
+import { ForbiddenError } from '../../common/errors/custom-errors.js';
 
 export const postLogic = {
   /**
@@ -59,7 +60,7 @@ export const postLogic = {
       postId: post.id,
       userId,
       targetPlatforms: payload.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'],
-      postContent: payload.caption || payload.customText || payload.occasionName || 'Branded Graphic Post',
+      postContent: payload.caption || payload.occasionName || 'Branded Graphic Post',
       graphicUrl: post.finalGraphicUrl,
     };
 
@@ -129,12 +130,24 @@ export const postLogic = {
       }
     }
 
+    // 1. Enforce post quota: user must have available post credits (validity is based on remaining posts)
+    const sub = await billingRepository.findByUserId(userId);
+    const planRemaining = Math.max(0, (sub?.totalPostsAllowed || 0) - (sub?.postsUsed || 0));
+    const bonusRemaining = Math.max(0, (sub?.bonusPostsAllowed || 0) - (sub?.bonusPostsUsed || 0));
+    const postsRemaining = planRemaining + bonusRemaining;
+
+    if (!sub || postsRemaining <= 0) {
+      throw new ForbiddenError(
+        'Your post quota has been exhausted. Please purchase a plan or post credits to continue creating or scheduling posts.'
+      );
+    }
+
     const postData = {
       userId,
       templateId: payload.templateId || null,
       festivalId: payload.festivalId || null,
-      customText: payload.caption || payload.customText || null,
-      offerText: payload.offerText || null,
+      occasionName: payload.occasionName || null,
+      customImageUrl: payload.customImageUrl || null,
       finalGraphicUrl: finalGraphicUrl,
       userConfigJson: payload.userConfigJson || null,
       status: payload.status || 'DRAFT',
@@ -144,10 +157,11 @@ export const postLogic = {
       occasionName: payload.occasionName,
       categoryName: payload.categoryName,
       targetPlatforms: payload.targetPlatforms,
+      caption: payload.caption || null,
     });
 
-    // Increment user's post usage counter and check for plan quota expiry
-    billingRepository.incrementPostsUsed(userId).catch((err) => {
+    // 2. Consume 1 post credit immediately upon post creation
+    await billingRepository.incrementPostsUsed(userId).catch((err) => {
       console.warn(`⚠️ Failed to increment post quota for user ${userId}: ${err.message}`);
     });
 

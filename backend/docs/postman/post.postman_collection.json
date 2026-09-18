@@ -172,7 +172,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"frameId\": \"clx456frameid\",\n  \"customText\": \"Happy Diwali from Sunrise Real Estate!\",\n  \"offerText\": \"20% Off on New Bookings\",\n  \"finalGraphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
+          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"frameId\": \"clx456frameid\",\n  \"occasionName\": \"Diwali Celebration Post\",\n  \"caption\": \"Happy Diwali from Sunrise Real Estate!\",\n  \"finalGraphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
         },
         "url": {
           "raw": "{{base_url}}/posts",

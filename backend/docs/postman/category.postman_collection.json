@@ -58,7 +58,8 @@
           "path": [
             "categories"
           ]
-        }
+        },
+        "description": "Creates a new business category. Accessible by SuperAdmin or SubAdmin with 'categories' tab permission. Stores createdBy with authenticated user ID and returns creator details."
       }
     },
     {
@@ -86,7 +87,8 @@
               "value": "category_id_here"
             }
           ]
-        }
+        },
+        "description": "Deletes a business category by ID. Accessible by SuperAdmin or SubAdmin with 'categories' tab permission."
       }
     }
   ]

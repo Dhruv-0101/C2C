@@ -220,7 +220,6 @@ export const analyticsRepository = {
           data: {
             userId,
             occasionName: p.occasionName,
-            customText: 'Special discount for our valued customers!',
             status: 'PUBLISHED',
           },
         });

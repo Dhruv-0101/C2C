@@ -87,7 +87,7 @@ export const ScheduledPostsQueueView = () => {
                 )}
                 <div>
                   <h4 className="font-bold text-sm text-white">
-                    {item.post?.occasionName || item.post?.customText || "Scheduled Social Post"}
+                    {item.post?.occasionName || item.post?.template?.title || "Scheduled Social Post"}
                   </h4>
                   <p className="text-xs text-slate-400 font-mono mt-0.5">
                     Scheduled for:{" "}

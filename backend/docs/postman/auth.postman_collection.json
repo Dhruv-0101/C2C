@@ -377,7 +377,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"fullName\": \"Jane Smith (SubAdmin)\",\n  \"email\": \"subadmin@brandflow.com\",\n  \"password\": \"SubAdminPass123!\",\n  \"allowedTabs\": [\"users\", \"analytics\", \"templates\"]\n}"
+          "raw": "{\n  \"fullName\": \"Jane Smith (SubAdmin)\",\n  \"email\": \"subadmin@brandflow.com\",\n  \"password\": \"SubAdminPass123!\",\n  \"allowedTabs\": [\"festivals\", \"categories\", \"frames\", \"templates\"]\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/subadmin",
@@ -389,7 +389,7 @@
             "subadmin"
           ]
         },
-        "description": "Creates a new SubAdmin account with assigned allowedTabs permissions (SuperAdmin only)."
+        "description": "Creates a new SubAdmin account. Strictly restricted to 4 permitted tabs: 'festivals', 'categories', 'frames', 'templates' (SuperAdmin only)."
       }
     },
     {
@@ -423,11 +423,61 @@
             }
           ]
         },
-        "description": "Fetches paginated list of all created SubAdmins and permissions (SuperAdmin only)."
+        "description": "Fetches paginated list of all created SubAdmins with creation statistics (_count: templates, festivals, categories, frames) (SuperAdmin only)."
       }
     },
     {
-      "name": "15. Update SubAdmin",
+      "name": "15. SubAdmin Activity & Creations Audit",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/auth/subadmins/activity?subAdminId=&type=all&search=&page=1&limit=20",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "subadmins",
+            "activity"
+          ],
+          "query": [
+            {
+              "key": "subAdminId",
+              "value": "",
+              "description": "Optional UUID of specific SubAdmin to filter creations"
+            },
+            {
+              "key": "type",
+              "value": "all",
+              "description": "Filter by item type: 'all' | 'template' | 'frame' | 'festival' | 'category'"
+            },
+            {
+              "key": "search",
+              "value": "",
+              "description": "Search items by title or name"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "SuperAdmin exclusive: Retrieves aggregated activity feed of all creations made by SubAdmins across Graphic Templates, Brand Frames, Festivals, and Categories, including author profiles, thumbnails, timestamps, and summary breakdown metrics."
+      }
+    },
+    {
+      "name": "16. Update SubAdmin",
       "request": {
         "method": "PUT",
         "header": [
@@ -444,7 +494,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"allowedTabs\": [\"users\", \"templates\", \"festivals\", \"frames\"]\n}"
+          "raw": "{\n  \"allowedTabs\": [\"festivals\", \"categories\", \"frames\", \"templates\"]\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/subadmin/:id",
@@ -463,11 +513,11 @@
             }
           ]
         },
-        "description": "Updates allowedTabs permissions for an existing SubAdmin (SuperAdmin only)."
+        "description": "Updates allowedTabs permissions for an existing SubAdmin. Permitted tabs strictly: 'festivals', 'categories', 'frames', 'templates' (SuperAdmin only)."
       }
     },
     {
-      "name": "16. Delete SubAdmin",
+      "name": "17. Delete SubAdmin",
       "request": {
         "method": "DELETE",
         "header": [

@@ -56,7 +56,7 @@ export const SocialPublisherModal = ({
   const [publishMode, setPublishMode] = useState("NOW"); // 'NOW' | 'SCHEDULE'
   const [validationError, setValidationError] = useState("");
   const [captionText, setCaptionText] = useState(
-    postData?.caption || postData?.customText || ""
+    postData?.caption || postData?.captions?.[0]?.captionText || ""
   );
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
@@ -509,7 +509,7 @@ export const SocialPublisherModal = ({
         <AiCaptionGeneratorModal
           isOpen={isAiModalOpen}
           onClose={() => setIsAiModalOpen(false)}
-          initialTopic={postData?.occasionName || postData?.customText || ""}
+          initialTopic={postData?.occasionName || postData?.template?.title || ""}
           onSelectCaption={(generatedText) => setCaptionText(generatedText)}
         />
       </div>

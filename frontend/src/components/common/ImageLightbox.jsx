@@ -18,8 +18,9 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
   const activeUrl =
     directUrl ||
     (typeof item === "string" ? item : null) ||
-    item?.graphicUrl ||
+    item?.post?.finalGraphicUrl ||
     item?.finalGraphicUrl ||
+    item?.graphicUrl ||
     item?.baseImageUrl ||
     item?.url;
 
@@ -49,10 +50,10 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
   if (!isVisible || !activeUrl) return null;
 
   const title =
-    (typeof item === "object" && (item?.occasionName || item?.title || item?.customText)) ||
+    (typeof item === "object" && (item?.post?.occasionName || item?.occasionName || item?.title || item?.name)) ||
     "High-Resolution Branded Graphic";
   const category =
-    (typeof item === "object" && (item?.categoryName || item?.category?.name || item?.festival?.name)) ||
+    (typeof item === "object" && (item?.post?.category?.name || item?.post?.festival?.name || item?.categoryName || item?.category?.name || item?.festival?.name)) ||
     "1080x1080 Square Post";
 
   const handleDownloadClick = () => {

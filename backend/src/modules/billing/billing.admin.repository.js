@@ -274,9 +274,6 @@ export const billingAdminRepository = {
 
     // 2. Update user subscription if transaction is COMPLETED
     if (status === 'COMPLETED') {
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
       await prisma.subscription.upsert({
         where: { userId },
         create: {
@@ -290,8 +287,6 @@ export const billingAdminRepository = {
           paymentGateway,
           paymentId: transaction.paymentId,
           orderId: transaction.orderId,
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: thirtyDaysFromNow,
         },
         update: {
           plan,
@@ -302,8 +297,6 @@ export const billingAdminRepository = {
           paymentGateway,
           paymentId: transaction.paymentId,
           orderId: transaction.orderId,
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: thirtyDaysFromNow,
         },
       });
     }

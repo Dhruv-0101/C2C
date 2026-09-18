@@ -36,25 +36,18 @@ export const postRepository = {
               data: {
                 userId: postData.userId,
                 postId: newPost.id,
-                graphicUrl: postData.finalGraphicUrl,
-                occasionName: vaultMetaData.occasionName || newPost.festival?.name || 'Social Graphic',
-                categoryName: vaultMetaData.categoryName || newPost.category?.name || 'General',
               },
             }).catch(() => {});
           }
 
-          if (postData.customText) {
-            const platforms = vaultMetaData.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
-            for (const platform of platforms) {
-              await tx.caption.create({
-                data: {
-                  postId: newPost.id,
-                  platform,
-                  captionText: postData.customText,
-                  hashtags: [],
-                },
-              }).catch(() => {});
-            }
+          if (vaultMetaData.caption) {
+            await tx.caption.create({
+              data: {
+                postId: newPost.id,
+                captionText: vaultMetaData.caption,
+                hashtags: [],
+              },
+            }).catch(() => {});
           }
 
           return newPost;
@@ -78,28 +71,21 @@ export const postRepository = {
             data: {
               userId: postData.userId,
               postId: newPost.id,
-              graphicUrl: postData.finalGraphicUrl,
-              occasionName: vaultMetaData.occasionName || newPost.festival?.name || 'Social Graphic',
-              categoryName: vaultMetaData.categoryName || newPost.category?.name || 'General',
             },
           })
           .catch(() => {});
       }
 
-      if (postData.customText) {
-        const platforms = vaultMetaData.targetPlatforms || ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
-        for (const platform of platforms) {
-          prisma.caption
-            .create({
-              data: {
-                postId: newPost.id,
-                platform,
-                captionText: postData.customText,
-                hashtags: [],
-              },
-            })
-            .catch(() => {});
-        }
+      if (vaultMetaData.caption) {
+        prisma.caption
+          .create({
+            data: {
+              postId: newPost.id,
+              captionText: vaultMetaData.caption,
+              hashtags: [],
+            },
+          })
+          .catch(() => {});
       }
 
       return newPost;
@@ -164,7 +150,14 @@ export const postRepository = {
         skip,
         take,
         include: {
-          post: true,
+          post: {
+            include: {
+              template: true,
+              festival: true,
+              category: true,
+              captions: true,
+            },
+          },
         },
         orderBy: { scheduledAt: 'asc' },
       }),
@@ -180,7 +173,14 @@ export const postRepository = {
         post: { userId },
       },
       include: {
-        post: true,
+        post: {
+          include: {
+            template: true,
+            festival: true,
+            category: true,
+            captions: true,
+          },
+        },
       },
       orderBy: { scheduledAt: 'asc' },
     });
@@ -198,7 +198,14 @@ export const postRepository = {
         },
       },
       include: {
-        post: true,
+        post: {
+          include: {
+            template: true,
+            festival: true,
+            category: true,
+            captions: true,
+          },
+        },
       },
       take: limit,
     });
@@ -213,10 +220,11 @@ export const postRepository = {
       ...(search
         ? {
             OR: [
-              { customText: { contains: search, mode: 'insensitive' } },
-              { caption: { contains: search, mode: 'insensitive' } },
+              { occasionName: { contains: search, mode: 'insensitive' } },
               { festival: { name: { contains: search, mode: 'insensitive' } } },
               { category: { name: { contains: search, mode: 'insensitive' } } },
+              { template: { title: { contains: search, mode: 'insensitive' } } },
+              { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
             ],
           }
         : {}),
@@ -231,6 +239,7 @@ export const postRepository = {
           template: true,
           festival: true,
           category: true,
+          captions: true,
         },
         orderBy: { [sortBy]: sortOrder },
       }),
@@ -250,6 +259,7 @@ export const postRepository = {
         template: true,
         festival: true,
         category: true,
+        captions: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -265,6 +275,7 @@ export const postRepository = {
         template: true,
         festival: true,
         category: true,
+        captions: true,
       },
     });
   },
@@ -299,13 +310,6 @@ export const postRepository = {
       where: { id: postId },
       data,
     });
-
-    if (finalGraphicUrl) {
-      await prisma.vaultItem.updateMany({
-        where: { postId },
-        data: { graphicUrl: finalGraphicUrl },
-      });
-    }
 
     return updatedPost;
   },

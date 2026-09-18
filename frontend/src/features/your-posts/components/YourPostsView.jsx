@@ -58,7 +58,7 @@ export const YourPostsView = ({
       const q = searchQuery.toLowerCase();
       const titleMatch =
         (p.occasionName && p.occasionName.toLowerCase().includes(q)) ||
-        (p.customText && p.customText.toLowerCase().includes(q)) ||
+        (p.captions?.[0]?.captionText && p.captions[0].captionText.toLowerCase().includes(q)) ||
         (p.category?.name && p.category.name.toLowerCase().includes(q)) ||
         (p.template?.title && p.template.title.toLowerCase().includes(q));
 
@@ -71,9 +71,11 @@ export const YourPostsView = ({
   });
 
   const filteredScheduled = scheduledPosts.filter((s) => {
+    const q = searchQuery.toLowerCase();
     return (
-      s.post?.occasionName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.post?.customText?.toLowerCase().includes(searchQuery.toLowerCase())
+      s.post?.occasionName?.toLowerCase().includes(q) ||
+      s.post?.captions?.[0]?.captionText?.toLowerCase().includes(q) ||
+      s.post?.template?.title?.toLowerCase().includes(q)
     );
   });
 
@@ -247,7 +249,7 @@ export const YourPostsView = ({
                   )}
                   <div>
                     <h4 className="font-bold text-sm text-white">
-                      {item.post?.occasionName || item.post?.customText || "Scheduled Social Graphic"}
+                      {item.post?.occasionName || item.post?.template?.title || "Scheduled Social Graphic"}
                     </h4>
                     <p className="text-xs text-slate-400 font-mono mt-0.5">
                       Scheduled for:{" "}
@@ -355,10 +357,10 @@ export const YourPostsView = ({
                   {/* Details */}
                   <div>
                     <h4 className="font-bold text-sm text-white line-clamp-1">
-                      {post.occasionName || post.customText || "Branded Graphic Post"}
+                      {post.occasionName || post.template?.title || post.festival?.name || "Branded Graphic Post"}
                     </h4>
                     <p className="text-xs text-slate-400 line-clamp-2 mt-1">
-                      {post.customText || post.offerText || "No caption text"}
+                      {post.captions?.[0]?.captionText || "No caption text"}
                     </p>
                     <p className="text-[11px] text-slate-500 font-mono mt-2">
                       Created: {new Date(post.createdAt).toLocaleDateString()}

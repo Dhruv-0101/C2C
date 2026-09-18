@@ -268,7 +268,7 @@ export const DashboardView = ({
                   )}
                   <div>
                     <p className="text-xs font-semibold text-slate-200">
-                      {post.occasionName || post.customText || "Branded Graphic Post"}
+                      {post.occasionName || post.template?.title || post.festival?.name || "Branded Graphic Post"}
                     </p>
                     <p className="text-[11px] text-slate-400">
                       Created {new Date(post.createdAt).toLocaleDateString()}

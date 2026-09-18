@@ -394,7 +394,7 @@ export const FestivalCalendarView = ({
                             )}
                             <div>
                               <p className="text-xs font-bold text-white">
-                                {item.post?.occasionName || item.post?.customText || "Scheduled Graphic"}
+                                {item.post?.occasionName || item.post?.template?.title || "Scheduled Graphic"}
                               </p>
                               <p className="text-[11px] text-teal-400 font-mono mt-0.5">
                                 Scheduled Time: {new Date(item.scheduledAt).toLocaleTimeString()}
@@ -432,7 +432,7 @@ export const FestivalCalendarView = ({
                           )}
                           <div>
                             <p className="text-xs font-bold text-white line-clamp-1">
-                              {post.occasionName || post.customText || "Live Social Post"}
+                              {post.occasionName || post.template?.title || post.festival?.name || "Live Social Post"}
                             </p>
                             <span className="text-[10px] text-emerald-400 font-semibold">🚀 Successfully Published</span>
                           </div>

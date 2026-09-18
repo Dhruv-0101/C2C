@@ -58,7 +58,7 @@
             "festivals"
           ]
         },
-        "description": "Adds a new festival calendar event with optional cover banner image upload to Cloudinary 'brandflow/festivals'."
+        "description": "Adds a new festival calendar event with optional cover banner image upload to Cloudinary 'brandflow/festivals'. Accessible by SuperAdmin or SubAdmin with 'festivals' permission. Automatically tracks createdBy with authenticated user ID and returns creator details."
       }
     },
     {

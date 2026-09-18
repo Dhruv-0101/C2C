@@ -24,7 +24,6 @@ export const VaultContainer = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [editFormData, setEditFormData] = useState({
     occasionName: "",
-    categoryName: "",
   });
 
   // Selection state for Bulk Delete
@@ -121,8 +120,7 @@ export const VaultContainer = () => {
   const handleOpenEdit = (item) => {
     setEditingItem(item);
     setEditFormData({
-      occasionName: item.occasionName || "",
-      categoryName: item.categoryName || "",
+      occasionName: item.post?.occasionName || item.occasionName || "",
     });
   };
 

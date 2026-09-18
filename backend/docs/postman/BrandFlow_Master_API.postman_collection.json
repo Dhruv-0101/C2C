@@ -388,7 +388,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"SubAdmin Operator\",\n  \"email\": \"subadmin@brandflow.ai\",\n  \"password\": \"Password123!\",\n  \"allowedTabs\": [\"templates\", \"festivals\", \"frames\"]\n}"
+              "raw": "{\n  \"fullName\": \"SubAdmin Operator\",\n  \"email\": \"subadmin@brandflow.ai\",\n  \"password\": \"Password123!\",\n  \"allowedTabs\": [\"festivals\", \"categories\", \"frames\", \"templates\"]\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/subadmin",
@@ -400,7 +400,7 @@
                 "subadmin"
               ]
             },
-            "description": "SuperAdmin RBAC endpoint to provision SubAdmin staff account."
+            "description": "SuperAdmin RBAC endpoint to provision SubAdmin staff account. Strictly restricted to 4 permitted tabs: 'festivals', 'categories', 'frames', 'templates'."
           }
         },
         {
@@ -433,7 +433,56 @@
                 }
               ]
             },
-            "description": "SuperAdmin endpoint to list all sub-admin accounts."
+            "description": "SuperAdmin endpoint to list all sub-admin accounts along with creation contribution counts (_count: templates, festivals, categories, frames)."
+          }
+        },
+        {
+          "name": "14a. SuperAdmin — SubAdmin Activity & Creations Audit",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/subadmins/activity?subAdminId=&type=all&search=&page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "subadmins",
+                "activity"
+              ],
+              "query": [
+                {
+                  "key": "subAdminId",
+                  "value": "",
+                  "description": "Optional UUID of specific SubAdmin"
+                },
+                {
+                  "key": "type",
+                  "value": "all",
+                  "description": "Filter: 'all' | 'template' | 'frame' | 'festival' | 'category'"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search keyword for item title/name"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "SuperAdmin exclusive: Retrieves aggregated activity feed of all items created by SubAdmins across Templates, Frames, Festivals, and Categories, including author profiles, thumbnails, and summary breakdown metrics."
           }
         },
         {

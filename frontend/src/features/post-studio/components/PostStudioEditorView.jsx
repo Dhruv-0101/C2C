@@ -1161,7 +1161,7 @@ export const PostStudioEditorView = ({
                     fieldKey = "country";
                     label = "Country";
                   } else {
-                    fieldKey = el.fieldKey || el.id || (el.name ? el.name.toLowerCase().replace(/[^a-z0-9]/g, "_") : "customText");
+                    fieldKey = el.fieldKey || el.id || (el.name ? el.name.toLowerCase().replace(/[^a-z0-9]/g, "_") : "custom_text_field");
                     label = el.customLabel || el.name || el.text || "Custom Text Field";
                   }
 

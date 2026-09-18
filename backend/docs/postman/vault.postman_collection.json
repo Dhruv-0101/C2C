@@ -81,7 +81,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"customText\": \"Updated Diwali Festival Banner Text\",\n  \"status\": \"READY\"\n}"
+          "raw": "{\n  \"occasionName\": \"Updated Diwali Festival Banner\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/vault/:id",

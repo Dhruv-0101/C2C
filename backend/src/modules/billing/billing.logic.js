@@ -173,12 +173,16 @@ export const billingLogic = {
     );
     const pricing = calculatePlanPricing(count, 'INR');
 
+    // Carry over unspent post credits into newly purchased pack
+    const unusedPosts = Math.max(0, (existing?.totalPostsAllowed || 0) - (existing?.postsUsed || 0));
+    const newTotalAllowed = unusedPosts + count;
+
     // Upgrade user subscription to PRO with newly purchased post quota
     const updatedSub = await billingRepository.upsertSubscription(userId, {
       plan: 'PRO',
       status: 'ACTIVE',
-      totalPostsAllowed: count,
-      postsUsed: 0, // Reset post counter for newly purchased plan
+      totalPostsAllowed: newTotalAllowed,
+      postsUsed: 0,
       bonusPostsAllowed: existing?.bonusPostsAllowed || 0,
       bonusPostsUsed: existing?.bonusPostsUsed || 0,
       pricePaid: pricing.finalTotal,
@@ -263,12 +267,16 @@ export const billingLogic = {
     );
     const pricing = calculatePlanPricing(count, 'USD');
 
+    // Carry over unspent post credits into newly purchased pack
+    const unusedPosts = Math.max(0, (existing?.totalPostsAllowed || 0) - (existing?.postsUsed || 0));
+    const newTotalAllowed = unusedPosts + count;
+
     // Upgrade user subscription to PRO with newly purchased post quota
     const updatedSub = await billingRepository.upsertSubscription(userId, {
       plan: 'PRO',
       status: 'ACTIVE',
-      totalPostsAllowed: count,
-      postsUsed: 0, // Reset post counter for newly purchased plan
+      totalPostsAllowed: newTotalAllowed,
+      postsUsed: 0,
       bonusPostsAllowed: existing?.bonusPostsAllowed || 0,
       bonusPostsUsed: existing?.bonusPostsUsed || 0,
       pricePaid: pricing.finalTotal,

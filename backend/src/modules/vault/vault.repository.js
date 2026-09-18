@@ -45,9 +45,6 @@ export const vaultRepository = {
           data: {
             userId,
             postId: post.id,
-            graphicUrl: post.finalGraphicUrl,
-            occasionName: post.festival?.name || 'Social Graphic',
-            categoryName: post.category?.name || 'General',
           },
         });
       }
@@ -61,11 +58,15 @@ export const vaultRepository = {
     const where = { userId };
 
     if (search) {
-      where.OR = [
-        { categoryName: { contains: search, mode: 'insensitive' } },
-        { occasionName: { contains: search, mode: 'insensitive' } },
-        { post: { customText: { contains: search, mode: 'insensitive' } } },
-      ];
+      where.post = {
+        OR: [
+          { occasionName: { contains: search, mode: 'insensitive' } },
+          { template: { title: { contains: search, mode: 'insensitive' } } },
+          { festival: { name: { contains: search, mode: 'insensitive' } } },
+          { category: { name: { contains: search, mode: 'insensitive' } } },
+          { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
+        ],
+      };
     }
 
     const [vaultItems, totalCount] = await prisma.$transaction([
@@ -79,6 +80,7 @@ export const vaultRepository = {
               template: true,
               festival: true,
               category: true,
+              captions: true,
             },
           },
         },
@@ -102,6 +104,7 @@ export const vaultRepository = {
             template: true,
             festival: true,
             category: true,
+            captions: true,
           },
         },
       },
@@ -109,13 +112,22 @@ export const vaultRepository = {
   },
 
   /**
-   * Update vault item details
+   * Update vault item details (updates related Post metadata)
    */
   update: async (id, userId, data) => {
-    return prisma.vaultItem.updateMany({
+    const item = await prisma.vaultItem.findFirst({
       where: { id, userId },
-      data,
+      select: { postId: true },
     });
+
+    if (item?.postId && data.occasionName) {
+      await prisma.post.update({
+        where: { id: item.postId },
+        data: { occasionName: data.occasionName },
+      });
+    }
+
+    return item;
   },
 
   /**

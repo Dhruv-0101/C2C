@@ -103,7 +103,7 @@
             "upload"
           ]
         },
-        "description": "Uploads a base festival/marketing graphic background strictly to Cloudinary 'brandflow/festival-templates' and saves to database."
+        "description": "Uploads a base festival/marketing graphic background strictly to Cloudinary 'brandflow/festival-templates' and saves to database. Accessible by SuperAdmin or SubAdmin with 'templates' permission. Automatically records createdBy with authenticated user ID and returns creator details."
       }
     },
     {
@@ -135,7 +135,7 @@
             "templates"
           ]
         },
-        "description": "Creates a master system graphic template with a direct image URL or base64."
+        "description": "Creates a master system graphic template with a direct image URL or base64. Accessible by SuperAdmin or SubAdmin with 'templates' permission. Automatically records createdBy and returns creator details."
       }
     },
     {

@@ -30,7 +30,7 @@ export const vaultLogic = {
   },
 
   /**
-   * Update vault item details (occasionName, categoryName, graphicUrl)
+   * Update vault item details (updates underlying Post occasionName)
    */
   updateVaultItem: async (id, userId, payload) => {
     const existing = await vaultRepository.findById(id, userId);
@@ -40,8 +40,6 @@ export const vaultLogic = {
 
     const updateData = {};
     if (payload.occasionName !== undefined) updateData.occasionName = payload.occasionName;
-    if (payload.categoryName !== undefined) updateData.categoryName = payload.categoryName;
-    if (payload.graphicUrl !== undefined) updateData.graphicUrl = payload.graphicUrl;
 
     await vaultRepository.update(id, userId, updateData);
     return vaultRepository.findById(id, userId);

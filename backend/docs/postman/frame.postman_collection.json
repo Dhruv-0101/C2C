@@ -73,7 +73,7 @@
             "frames"
           ]
         },
-        "description": "Publishes a new transparent PNG frame overlay (strictly stored in Cloudinary 'brandflow/frames/overlays' for overlayPngUrl and 'brandflow/frames/previews' for previewUrl)."
+        "description": "Publishes a new transparent PNG frame overlay (strictly stored in Cloudinary 'brandflow/frames/overlays' for overlayPngUrl and 'brandflow/frames/previews' for previewUrl). Accessible by SuperAdmin or SubAdmin with 'frames' permission. Automatically records createdBy with authenticated user ID and returns creator details."
       }
     },
     {

@@ -292,8 +292,7 @@ export const PostStudioContainer = () => {
     base64Graphic: dataUrl,
     finalGraphicUrl: customBaseImage || reusePost?.graphicUrl || reusePost?.finalGraphicUrl || null,
     occasionName: reusePost?.occasionName || reusePost?.post?.occasionName || currentTemplate?.title || "Branded Graphic Post",
-    customText: reusePost?.customText || reusePost?.post?.customText || customDetails?.tagline || customDetails?.businessName,
-    caption: reusePost?.customText || reusePost?.post?.customText || "",
+    caption: reusePost?.captions?.[0]?.captionText || reusePost?.caption || "",
     userConfigJson: customDetails,
   };
 
@@ -367,7 +366,6 @@ export const PostStudioContainer = () => {
       festivalId: currentTemplate?.festivalId || null,
       frameId: selectedFrame?.id || null,
       occasionName: currentTemplate?.title || selectedFrame?.title || "Branded Graphic Post",
-      customText: customDetails?.tagline || customDetails?.businessName || "Custom Graphic Post",
       base64Graphic: dataUrl,
       userConfigJson: sanitizedConfig,
       status: "DRAFT",

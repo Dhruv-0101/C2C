@@ -1,1 +1,1 @@
-Transactions, Virtualization, Infinite lists
+Transactions, Virtualization, Infinite lists, Platform specific Options in Captions & Hashtags
