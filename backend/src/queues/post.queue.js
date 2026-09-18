@@ -2,6 +2,14 @@ import { Queue } from "bullmq";
 import { redisConnectionOptions } from "../config/redis.js";
 import { logger } from "../config/logger.js";
 
+export const INSTANT_POST_QUEUE_NAME = "instant-post-queue";
+export const SCHEDULED_POST_QUEUE_NAME = "scheduled-post-queue";
+
+export const POST_JOB_NAMES = {
+  PUBLISH_INSTANT_POST: "publish-instant-post",
+  PUBLISH_SCHEDULED_POST: "publish-scheduled-post",
+};
+
 /**
  * BullMQ High-Scale Post Queues
  * - instantPostQueue: Immediate social publishing jobs
@@ -14,7 +22,7 @@ const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOS
 
 if (isRedisConfigured) {
   try {
-    instantPostQueue = new Queue("instant-post-queue", {
+    instantPostQueue = new Queue(INSTANT_POST_QUEUE_NAME, {
       connection: redisConnectionOptions,
       defaultJobOptions: {
         attempts: 3,
@@ -24,7 +32,7 @@ if (isRedisConfigured) {
       },
     });
 
-    scheduledPostQueue = new Queue("scheduled-post-queue", {
+    scheduledPostQueue = new Queue(SCHEDULED_POST_QUEUE_NAME, {
       connection: redisConnectionOptions,
       defaultJobOptions: {
         attempts: 3,

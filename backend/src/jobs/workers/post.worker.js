@@ -1,5 +1,6 @@
 import { Worker } from "bullmq";
 import { redisConnectionOptions } from "../../config/redis.js";
+import { SCHEDULED_POST_QUEUE_NAME } from "../../queues/post.queue.js";
 import { liveSocialPublisherService } from "../../modules/social/services/liveSocialPublisher.service.js";
 import { prisma } from "../../config/database.js";
 import { logger } from "../../config/logger.js";
@@ -166,7 +167,7 @@ const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOS
 if (isRedisConfigured) {
   try {
     workerInstance = new Worker(
-      "scheduled-post-queue",
+      SCHEDULED_POST_QUEUE_NAME,
       async (job) => {
         return await processPostJob(job.data);
       },

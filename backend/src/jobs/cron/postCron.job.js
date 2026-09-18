@@ -1,6 +1,6 @@
 import { prisma } from '../../config/database.js';
 import { logger } from '../../config/logger.js';
-import { scheduledPostQueue } from '../../queues/post.queue.js';
+import { scheduledPostQueue, POST_JOB_NAMES } from '../../queues/post.queue.js';
 import { processPostJob } from '../workers/post.worker.js';
 
 /**
@@ -58,7 +58,7 @@ export const triggerScheduledPostsNow = async () => {
 
       try {
         if (scheduledPostQueue) {
-          await scheduledPostQueue.add("publish-scheduled-post", jobPayload);
+          await scheduledPostQueue.add(POST_JOB_NAMES.PUBLISH_SCHEDULED_POST, jobPayload);
         } else {
           await processPostJob(jobPayload);
         }
