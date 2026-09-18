@@ -1,3 +1,4 @@
+import cron from 'node-cron';
 import { prisma } from '../../config/database.js';
 import { logger } from '../../config/logger.js';
 import { scheduledPostQueue, POST_JOB_NAMES } from '../../queues/post.queue.js';
@@ -7,7 +8,7 @@ import { processPostJob } from '../workers/post.worker.js';
  * ⏰ CRON DISPATCHER JOB (POST POLLING TICKER)
  * 
  * Real World Analogy: Alarm Clock Sweeper.
- * Runs every 60 seconds to query PostgreSQL for scheduled posts whose 
+ * Runs every minute on the exact 00th second (* * * * *) to query PostgreSQL for scheduled posts whose 
  * scheduledAt time has arrived or passed (scheduledAt <= new Date()).
  * 
  * - In Redis Mode: Pushes jobs into BullMQ scheduledPostQueue for high-concurrency worker processing.
@@ -78,16 +79,48 @@ export const triggerScheduledPostsNow = async () => {
   }
 };
 
+let isDispatcherRunning = false;
+let cronScheduledTask = null;
+
 /**
- * Initialize 60-second Interval Cron Timer
+ * Initialize 1-minute Cron Dispatcher using node-cron (* * * * *)
+ * Features concurrency lock to prevent overlapping runs if database batches run long.
  */
 export const initCronDispatcher = () => {
-  logger.info("⏰ [CronDispatcher] Starting 1-minute cron dispatcher timer...");
-  setInterval(async () => {
+  logger.info("⏰ [CronDispatcher] Starting 1-minute node-cron schedule (* * * * *)...");
+
+  if (cronScheduledTask) {
+    logger.warn("⚠️ [CronDispatcher] Cron dispatcher task is already active.");
+    return cronScheduledTask;
+  }
+
+  cronScheduledTask = cron.schedule("* * * * *", async () => {
+    // Concurrency guard: Skip cycle if previous dispatch cycle is still busy
+    if (isDispatcherRunning) {
+      logger.warn("⚠️ [CronDispatcher] Previous dispatch cycle still running. Skipping this minute's trigger.");
+      return;
+    }
+
+    isDispatcherRunning = true;
     try {
       await triggerScheduledPostsNow();
     } catch (err) {
-      // Silently catch error to maintain main loop stability
+      logger.error("💥 [CronDispatcher] Execution cycle error:", err.message);
+    } finally {
+      isDispatcherRunning = false;
     }
-  }, 60 * 1000);
+  });
+
+  return cronScheduledTask;
+};
+
+/**
+ * Gracefully stop the cron dispatcher
+ */
+export const stopCronDispatcher = () => {
+  if (cronScheduledTask) {
+    cronScheduledTask.stop();
+    cronScheduledTask = null;
+    logger.info("🛑 [CronDispatcher] Cron dispatcher task stopped successfully.");
+  }
 };

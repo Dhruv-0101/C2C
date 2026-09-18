@@ -1,6 +1,6 @@
 import { emailWorker } from './workers/email.worker.js';
 import { workerInstance, processPostJob } from './workers/post.worker.js';
-import { initCronDispatcher, triggerScheduledPostsNow } from './cron/postCron.job.js';
+import { initCronDispatcher, stopCronDispatcher, triggerScheduledPostsNow } from './cron/postCron.job.js';
 import { logger } from '../config/logger.js';
 
 /**
@@ -17,9 +17,10 @@ export function initWorkers() {
  */
 export async function closeWorkers() {
   logger.info('🛑 [BullMQ Engine] Closing Background Workers gracefully...');
+  stopCronDispatcher();
   if (emailWorker) await emailWorker.close().catch(() => {});
   if (workerInstance) await workerInstance.close().catch(() => {});
 }
 
 // Re-export job & worker functions for backward compatibility across domain modules
-export { processPostJob, triggerScheduledPostsNow, emailWorker, workerInstance };
+export { processPostJob, triggerScheduledPostsNow, emailWorker, workerInstance, stopCronDispatcher };

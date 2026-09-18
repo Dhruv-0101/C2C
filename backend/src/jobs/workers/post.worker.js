@@ -18,19 +18,28 @@ export const processPostJob = async (jobData) => {
 
   logger.info(`⚙️ [PostWorker] Processing publishing job for ScheduledPost ID: ${scheduledPostId || postId}`);
 
+  /*
+  Maan lijiye ek business owner ne Diwali ke liye 1 Graphic & Caption banaya (postId = "post_101").
+
+Ab wo usi same post ko 2 alag-alag times par schedule karna chahta hai:
+
+Diwali se 1 din pehle shaam 6:00 PM ➔ scheduledPostId: "sched_01" (postId: "post_101")
+Diwali wale din subah 9:00 AM ➔ scheduledPostId: "sched_02" (postId: "post_101")
+Agar dono ek hi table ya ek hi ID hoti, toh ek content ko multiple times alag-alag schedule nahi kiya ja sakta tha. */
+
   // 1. Update ScheduledPost status to PROCESSING
   if (scheduledPostId) {
     await prisma.scheduledPost.update({
       where: { id: scheduledPostId },
       data: { status: "PROCESSING" },
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   if (postId) {
     await prisma.post.update({
       where: { id: postId },
       data: { status: "PUBLISHING" },
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   try {
@@ -49,13 +58,13 @@ export const processPostJob = async (jobData) => {
               status: "FAILED",
               errorMessage: "Account deactivated by admin due to policy violation",
             },
-          }).catch(() => {});
+          }).catch(() => { });
         }
         if (postId) {
           await prisma.post.update({
             where: { id: postId },
             data: { status: "FAILED" },
-          }).catch(() => {});
+          }).catch(() => { });
         }
         throw new Error("Account deactivated by admin due to policy violation.");
       }
@@ -118,7 +127,7 @@ export const processPostJob = async (jobData) => {
           message: `Your post was published across ${targetPlatforms.join(", ")}.`,
           type: "POST_PUBLISHED",
         },
-      }).catch(() => {});
+      }).catch(() => { });
 
       if (user?.email) {
         sendPostPublishedEmail({
@@ -146,14 +155,14 @@ export const processPostJob = async (jobData) => {
           status: "FAILED",
           errorMessage: error.message || "Failed to publish social media post",
         },
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     if (postId) {
       await prisma.post.update({
         where: { id: postId },
         data: { status: "FAILED" },
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     throw error;
@@ -189,7 +198,7 @@ if (isRedisConfigured) {
       logger.error(`❌ [PostWorker] Job ${job?.id} failed:`, err);
     });
 
-    workerInstance.on("error", () => {});
+    workerInstance.on("error", () => { });
   } catch (err) {
     logger.warn("⚠️ [PostWorker] BullMQ Worker initialization deferred.");
   }

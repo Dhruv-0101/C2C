@@ -247,6 +247,56 @@
       </div>
     </div>
 
+    <!-- Job vs Worker Concept Section -->
+    <div class="section-title">⚙️ Technically: "Job" (Producer) vs "Worker" (Consumer) mein kya farak hota hai?</div>
+    <div class="card" style="margin-bottom: 40px;">
+      <p class="subtitle" style="margin-bottom: 20px; color: var(--text-white); font-weight: 700;">
+        BullMQ architecture mein <strong>Job</strong> aur <strong>Worker</strong> do alag-alag responsibilities handle karte hain:
+      </p>
+
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; margin-bottom: 20px;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--accent-amber);">
+            <th style="padding: 12px; font-weight: 700; width: 22%;">Concept</th>
+            <th style="padding: 12px; font-weight: 700; width: 43%;">Kaam (Role / Responsibility)</th>
+            <th style="padding: 12px; font-weight: 700; width: 35%;">Kahan hota hai? (Project File Placement)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 12px; font-weight: 700; color: var(--accent-teal);">Job (Producer)</td>
+            <td style="padding: 12px; color: var(--text-muted);">
+              <strong>Task create karke Redis queue mein push karna.</strong><br>
+              Non-blocking way mein job payload (post data, recipient email etc.) prepare karke <code>queue.add()</code> call karta hai.
+            </td>
+            <td style="padding: 12px; font-family: 'Fira Code', monospace; font-size: 12px; color: var(--accent-amber);">
+              <code>src/queues/post.queue.js</code><br>
+              <code>src/jobs/cron/postCron.job.js</code>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; font-weight: 700; color: var(--accent-blue);">Worker (Consumer)</td>
+            <td style="padding: 12px; color: var(--text-muted);">
+              <strong>Queue se job uthakar background mein execute karna.</strong><br>
+              Redis se job listen karta hai aur actual business logic (e.g. Meta Graph API, Email delivery) execute karta hai via <code>new Worker()</code>.
+            </td>
+            <td style="padding: 12px; font-family: 'Fira Code', monospace; font-size: 12px; color: var(--accent-amber);">
+              <code>src/jobs/workers/post.worker.js</code><br>
+              <span style="color: var(--text-muted); font-size: 11px;">(Re-exported via <code>src/jobs/post.job.js</code>)</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid var(--accent-amber); border-radius: 12px; padding: 16px;">
+        <p style="color: var(--accent-amber); font-weight: 700; margin-bottom: 6px; font-size: 13px;">💡 Real World Restaurant Analogy:</p>
+        <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+          <strong>Job (Producer)</strong> = <em>Waiter</em> jo customer se order lekar kitchen ki slip generate karta hai.<br>
+          <strong>Worker (Consumer)</strong> = <em>Chef</em> jo kitchen mein slip dekhkar actual khana banata hai.
+        </p>
+      </div>
+    </div>
+
     <!-- Upstash Data Browser Key Breakdown -->
     <div class="section-title">🔍 Inspecting BullMQ Jobs in Upstash Data Browser</div>
     <div class="card" style="margin-bottom: 40px;">
@@ -306,11 +356,18 @@
 │       └── welcome-email.template.js  <span class="comment"># Responsive HTML/CSS welcome email template</span>
 ├── queues/
 │   ├── email.queue.js   <span class="comment"># Defines emailQueue & Producer functions (addWelcomeEmailJob)</span>
+│   ├── post.queue.js    <span class="comment"># Defines instantPostQueue & scheduledPostQueue</span>
 │   └── index.js         <span class="comment"># Exports all platform queues</span>
 ├── jobs/
-│   ├── email.job.js     <span class="comment"># Worker consumer processing SEND_WELCOME_EMAIL</span>
-│   └── index.js         <span class="comment"># Master worker initializer (initWorkers / closeWorkers)</span>
-└── server.js            <span class="comment"># Initializes workers and graceful SIGTERM shutdown</span></code></pre>
+│   ├── cron/
+│   │   └── postCron.job.js <span class="comment"># 1-min node-cron dispatcher (* * * * *)</span>
+│   ├── workers/
+│   │   ├── email.worker.js <span class="comment"># Worker consumer processing SEND_WELCOME_EMAIL</span>
+│   │   └── post.worker.js  <span class="comment"># Worker consumer executing Meta & LinkedIn API publishing</span>
+│   ├── email.job.js     <span class="comment"># Re-exports workers/email.worker.js</span>
+│   ├── post.job.js      <span class="comment"># Re-exports workers/post.worker.js</span>
+│   └── index.js         <span class="comment"># Master worker & cron orchestrator (initWorkers / closeWorkers)</span>
+└── server.js            <span class="comment"># Boots server, starts initWorkers(), handles graceful shutdown</span></code></pre>
 
     <!-- Welcome Email Implementation Walkthrough -->
     <div class="section-title">✉️ Complete Welcome Email Implementation & Code Walkthrough</div>
