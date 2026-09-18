@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrandFlow — Database Schema & ERD Relationships Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-surface: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --bg-card-hover: rgba(31, 41, 55, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.25);
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --accent-primary: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+      
+      --badge-one-to-one: #059669;
+      --badge-one-to-many: #4f46e5;
+      --badge-many-to-many: #d97706;
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 60%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 50% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+      background-attachment: fixed;
+      padding-bottom: 80px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      padding-top: 20px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #a5b4fc;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 70%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 28px;
+    }
+
+    /* STATS SUMMARY BAR */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* SYMBOL LEGEND SECTION */
+    .legend-box {
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.9), rgba(15, 23, 42, 0.7));
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      backdrop-filter: blur(16px);
+    }
+
+    .legend-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .legend-symbol {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      min-width: 48px;
+      text-align: center;
+    }
+
+    .legend-desc h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    .legend-desc p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    /* CONTROLS (SEARCH & FILTERS) */
+    .controls-wrapper {
+      position: sticky;
+      top: 16px;
+      z-index: 50;
+      background: rgba(10, 14, 23, 0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 10px 16px 10px 38px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+      font-family: var(--font-sans);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 0.95rem;
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      background: rgba(31, 41, 55, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: rgba(55, 65, 81, 0.8);
+      color: #fff;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-primary);
+      color: #fff;
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    /* RELATIONSHIPS SECTION */
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 36px 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .section-title .count-badge {
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 10px;
+      border-radius: 999px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 20px;
+    }
+
+    .rel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rel-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+
+    .rel-card[data-type="1-to-1"]::before { background: var(--accent-emerald); }
+    .rel-card[data-type="1-to-many"]::before { background: var(--accent-primary); }
+    .rel-card[data-type="many-to-many"]::before { background: var(--accent-amber); }
+
+    .rel-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    }
+
+    /* FLOW VISUALIZER ROW INSIDE CARD */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .node-pill {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .node-pill.parent {
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .node-pill.child {
+      border-right: 3px solid var(--accent-purple);
+    }
+
+    .flow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 10px;
+      flex: 1;
+    }
+
+    .cardinality-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+
+    .badge-1-1 { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-1-n { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-n-m { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .arrow-line {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+    }
+
+    .arrow-line .line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .card-body {
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tag-mono {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #cbd5e1;
+    }
+
+    .tag-cascade {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .tag-setnull {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .tag-category {
+      margin-left: auto;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ARCHITECTURE ARCHIVE OVERVIEW */
+    .cluster-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .cluster-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 22px;
+    }
+
+    .cluster-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .cluster-icon {
+      font-size: 1.3rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .cluster-header h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .cluster-tables {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .table-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.1);
+      color: #c7d2fe;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    /* NO RESULTS */
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+      font-size: 1.1rem;
+      display: none;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--accent-primary);
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .controls-wrapper { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <div class="badge-pill">
+        <span>⚡ PostgreSQL + Prisma ORM</span>
+      </div>
+      <h1>BrandFlow Database Relationships</h1>
+      <p class="subtitle">
+        A clean, developer-friendly guide to all table connections, cardinalities, foreign keys, and cascading behaviors in the schema.
+      </p>
+    </header>
+
+    <!-- STATS SUMMARY -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-num" style="color: #60a5fa;">17</div>
+        <div class="stat-label">Total Tables / Models</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color: var(--accent-emerald);">2</div>
+        <div class="stat-label">1 : 1 Relationships</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color: var(--accent-primary);">21</div>
+        <div class="stat-label">1 : Many Relationships</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color: var(--accent-amber);">1</div>
+        <div class="stat-label">Many : Many (Junction)</div>
+      </div>
+    </div>
+
+    <!-- CROW'S FOOT NOTATION LEGEND -->
+    <div class="legend-box">
+      <div class="legend-title">
+        <span>📖 Crow's Foot Notation & Reading Symbols</span>
+      </div>
+      <div class="legend-grid">
+        <div class="legend-item">
+          <div class="legend-symbol">||</div>
+          <div class="legend-desc">
+            <h4>Exactly One (1)</h4>
+            <p>Mandatory. Must belong to exactly one record.</p>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol">|o</div>
+          <div class="legend-desc">
+            <h4>Zero or One (0..1)</h4>
+            <p>Optional. Can exist without or with at most one record.</p>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol">}o</div>
+          <div class="legend-desc">
+            <h4>Zero or Many (0..N)</h4>
+            <p>Crow's Foot. Can have 0, 1, or multiple linked records.</p>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-symbol">}|</div>
+          <div class="legend-desc">
+            <h4>One or More (1..N)</h4>
+            <p>Crow's Foot + Line. At least one required, up to many.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOMAIN CLUSTER OVERVIEW -->
+    <h2 class="section-title">
+      <span>Architecture Clusters</span>
+    </h2>
+    <div class="cluster-overview">
+      <div class="cluster-box">
+        <div class="cluster-header">
+          <div class="cluster-icon">👤</div>
+          <h3>1. Identity & Auth</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Handles credentials, multi-device JWT rotation, password recovery, and RBAC roles.</p>
+        <div class="cluster-tables">
+          <span class="table-tag">User</span>
+          <span class="table-tag">RefreshToken</span>
+          <span class="table-tag">PasswordResetToken</span>
+          <span class="table-tag">SocialAccount</span>
+        </div>
+      </div>
+
+      <div class="cluster-box">
+        <div class="cluster-header">
+          <div class="cluster-icon">🎨</div>
+          <h3>2. Brand & Overlays</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">User business logos, addresses, phone numbers, contact badges, and custom frame borders.</p>
+        <div class="cluster-tables">
+          <span class="table-tag">BrandKit</span>
+          <span class="table-tag">Frame</span>
+          <span class="table-tag">Category</span>
+        </div>
+      </div>
+
+      <div class="cluster-box">
+        <div class="cluster-header">
+          <div class="cluster-icon">🎆</div>
+          <h3>3. Creative Templates</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Curated graphic artwork, festival greetings, promotional themes, and taxonomy niches.</p>
+        <div class="cluster-tables">
+          <span class="table-tag">Template</span>
+          <span class="table-tag">TemplateCategory</span>
+          <span class="table-tag">Festival</span>
+        </div>
+      </div>
+
+      <div class="cluster-box">
+        <div class="cluster-header">
+          <div class="cluster-icon">🚀</div>
+          <h3>4. Posts & Dispatch</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Composited marketing graphics, AI captions, scheduled background jobs, and analytics.</p>
+        <div class="cluster-tables">
+          <span class="table-tag">Post</span>
+          <span class="table-tag">Caption</span>
+          <span class="table-tag">ScheduledPost</span>
+          <span class="table-tag">VaultItem</span>
+          <span class="table-tag">PostAnalytics</span>
+        </div>
+      </div>
+
+      <div class="cluster-box">
+        <div class="cluster-header">
+          <div class="cluster-icon">💳</div>
+          <h3>5. Monetization & SaaS</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Subscription tiers, monthly quota tracking, bonus credits, and payment audit ledger.</p>
+        <div class="cluster-tables">
+          <span class="table-tag">Subscription</span>
+          <span class="table-tag">BillingTransaction</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS: LIVE SEARCH & FILTERS -->
+    <div class="controls-wrapper">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search any table (e.g. User, Post, Template, BrandKit)..." />
+      </div>
+
+      <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">All (24)</button>
+        <button class="filter-btn" data-filter="1-to-1">1 : 1 (2)</button>
+        <button class="filter-btn" data-filter="1-to-many">1 : Many (21)</button>
+        <button class="filter-btn" data-filter="many-to-many">Many : Many (1)</button>
+        <button class="filter-btn" data-filter="user">User Core</button>
+        <button class="filter-btn" data-filter="post">Post Flow</button>
+      </div>
+    </div>
+
+    <!-- RELATIONSHIPS LIST -->
+    <div id="cardsContainer" class="cards-grid">
+
+      <!-- ================= 1 TO 1 RELATIONSHIPS ================= -->
+
+      <!-- User -> BrandKit -->
+      <div class="rel-card" data-type="1-to-1" data-tags="user brandkit brand 1-to-1">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-1">1 : 1 (Optional)</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── |o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">BrandKit</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">User Business Profile & Brand Kit</div>
+          <div class="card-desc">
+            Each User can have <strong>at most one</strong> BrandKit profile storing their shop name, logo, phone, UPI QR, and handles. The foreign key is <code>BrandKit.userId (@unique)</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">BrandKit.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Brand Identity</span>
+        </div>
+      </div>
+
+      <!-- User -> Subscription -->
+      <div class="rel-card" data-type="1-to-1" data-tags="user subscription billing saas 1-to-1">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-1">1 : 1 (Optional)</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── |o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Subscription</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">User Active Subscription & Quota</div>
+          <div class="card-desc">
+            Each User has <strong>exactly one</strong> active Subscription tracker record measuring their allowed post quotas, bonus credits, and active plan (Free, Pro, Enterprise).
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Subscription.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Billing</span>
+        </div>
+      </div>
+
+      <!-- ================= 1 TO MANY (USER DIRECT) ================= -->
+
+      <!-- User -> Post -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user post content 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Post</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">User Owned Creative Posts</div>
+          <div class="card-desc">
+            A single User can generate and customize <strong>multiple marketing posts</strong>. Every post strictly belongs to exactly one user owner.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Post.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Content</span>
+        </div>
+      </div>
+
+      <!-- User -> SocialAccount -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user socialaccount social oauth 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">SocialAccount</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Connected Social Channels</div>
+          <div class="card-desc">
+            A User can connect <strong>multiple social platforms</strong> (Instagram, Facebook Page, LinkedIn). Enforced via <code>@@unique([userId, platform])</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">SocialAccount.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Social</span>
+        </div>
+      </div>
+
+      <!-- User -> RefreshToken -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user refreshtoken auth jwt session 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">RefreshToken</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Multi-Device Active Sessions</div>
+          <div class="card-desc">
+            Supports multi-device login with refresh token rotation. One user can have <strong>multiple active device sessions</strong> simultaneously.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">RefreshToken.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Auth</span>
+        </div>
+      </div>
+
+      <!-- User -> PasswordResetToken -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user passwordresettoken auth security 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">PasswordReset</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Password Reset Tokens</div>
+          <div class="card-desc">
+            Time-limited magic link hashes for password reset requests. A user can request multiple resets over time, invalidated on consumption.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">PasswordResetToken.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Auth</span>
+        </div>
+      </div>
+
+      <!-- User -> BillingTransaction -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user billingtransaction billing payments ledger 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">BillingTxn</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Financial Audit Ledger</div>
+          <div class="card-desc">
+            An immutable transaction ledger. Each User accumulates <strong>multiple payment records</strong> for plan purchases, renewals, or admin bonuses.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">BillingTransaction.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Billing</span>
+        </div>
+      </div>
+
+      <!-- User -> VaultItem -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user vaultitem vault bookmark 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">VaultItem</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">User Bookmarked Vault Items</div>
+          <div class="card-desc">
+            A user can bookmark <strong>multiple posts</strong> in their private creative vault for quick re-use and social re-publishing.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">VaultItem.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Vault</span>
+        </div>
+      </div>
+
+      <!-- User -> PostAnalytics -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user postanalytics analytics metrics 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">PostAnalytics</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">User Social Performance Metrics</div>
+          <div class="card-desc">
+            Direct link to user for fast aggregated dashboard reporting (impressions, reach, likes, comments, engagement rate across platforms).
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">PostAnalytics.userId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Analytics</span>
+        </div>
+      </div>
+
+      <!-- ================= 1 TO MANY (ADMIN CREATED) ================= -->
+
+      <!-- User (Admin) -> Template -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user template admin creator 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User (Admin)</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Template</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Admin Created Templates</div>
+          <div class="card-desc">
+            Admin/SubAdmin users upload and publish master templates for small businesses. Tracked via relation <code>@relation("TemplateCreator")</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Template.createdBy</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Admin Operations</span>
+        </div>
+      </div>
+
+      <!-- User (Admin) -> Festival -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user festival admin creator 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User (Admin)</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Festival</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Admin Managed Festivals</div>
+          <div class="card-desc">
+            Admins add annual festive events (Diwali, Eid, Christmas, National Holidays) to the calendar via <code>@relation("FestivalCreator")</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Festival.createdBy</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Admin Operations</span>
+        </div>
+      </div>
+
+      <!-- User (Admin) -> Category -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user category admin creator 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User (Admin)</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Category</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Admin Industry Categories</div>
+          <div class="card-desc">
+            Admins define business verticals (Bakery, Real Estate, Healthcare, Education) via <code>@relation("CategoryCreator")</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Category.createdBy</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Admin Operations</span>
+        </div>
+      </div>
+
+      <!-- User (Admin) -> Frame -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user frame admin creator 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User (Admin)</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Frame</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Admin Created Frames / Overlays</div>
+          <div class="card-desc">
+            Admins create decorative frame borders and badge layouts composited onto user poster outputs via <code>@relation("FrameCreator")</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Frame.createdBy</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Admin Operations</span>
+        </div>
+      </div>
+
+      <!-- ================= 1 TO MANY (POST FLOW) ================= -->
+
+      <!-- Post -> Caption -->
+      <div class="rel-card" data-type="1-to-many" data-tags="post caption ai gemini 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Post</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Caption</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Post AI Captions & Hashtags</div>
+          <div class="card-desc">
+            A single Post can generate <strong>multiple AI marketing captions</strong> and hashtag lists with different tones (casual, festive, urgent sales).
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Caption.postId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Post Flow</span>
+        </div>
+      </div>
+
+      <!-- Post -> ScheduledPost -->
+      <div class="rel-card" data-type="1-to-many" data-tags="post scheduledpost scheduler bullmq cron 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Post</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">ScheduledPost</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Scheduled Publishing Dispatches</div>
+          <div class="card-desc">
+            A Post can have <strong>multiple publishing dispatch events</strong> across different dates or repeated recurring campaigns picked up by BullMQ workers.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">ScheduledPost.postId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Post Flow</span>
+        </div>
+      </div>
+
+      <!-- Post -> PostAnalytics -->
+      <div class="rel-card" data-type="1-to-many" data-tags="post postanalytics metrics social 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Post</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">PostAnalytics</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Platform-Specific Post Analytics</div>
+          <div class="card-desc">
+            Each Post published across multiple channels produces one metrics row per network (e.g. 1 Instagram row + 1 Facebook row). Enforced via <code>@@unique([postId, platform])</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">PostAnalytics.postId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Analytics</span>
+        </div>
+      </div>
+
+      <!-- Post -> VaultItem -->
+      <div class="rel-card" data-type="1-to-many" data-tags="post vaultitem bookmark 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Post</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">VaultItem</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Saved Graphic Archive References</div>
+          <div class="card-desc">
+            A generated post can be referenced in vault items. If the parent post is deleted, all its vault bookmarks are cleanly cleaned up.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">VaultItem.postId</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Vault</span>
+        </div>
+      </div>
+
+      <!-- ================= 1 TO MANY (TAXONOMY & TEMPLATES) ================= -->
+
+      <!-- Category -> BrandKit -->
+      <div class="rel-card" data-type="1-to-many" data-tags="category brandkit industry niche 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Category</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">BrandKit</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Industry Category to Brand Kits</div>
+          <div class="card-desc">
+            One business category (e.g. "Hospitality & Food") encompasses <strong>thousands of BrandKits</strong> from different restaurants and cafes.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">BrandKit.categoryId</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Taxonomy</span>
+        </div>
+      </div>
+
+      <!-- Category -> Post -->
+      <div class="rel-card" data-type="1-to-many" data-tags="category post industry 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Category</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Post</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Category Tagged Posts</div>
+          <div class="card-desc">
+            Posts can be tagged with an industry niche for content filtering and specialized AI prompt generation context.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Post.categoryId</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Content</span>
+        </div>
+      </div>
+
+      <!-- Festival -> Template -->
+      <div class="rel-card" data-type="1-to-many" data-tags="festival template festival design 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Festival</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Template</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Festival Poster Artwork Designs</div>
+          <div class="card-desc">
+            A single Festival (e.g. "Diwali 2026") contains <strong>dozens of graphic templates</strong> with varied color schemes and layouts.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Template.festivalId</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Templates</span>
+        </div>
+      </div>
+
+      <!-- Festival -> Post -->
+      <div class="rel-card" data-type="1-to-many" data-tags="festival post festival greetings 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Festival</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Post</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Festival Occasion User Posts</div>
+          <div class="card-desc">
+            Thousands of end users generate customized business greeting posts associated with a specific festive holiday.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Post.festivalId</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Content</span>
+        </div>
+      </div>
+
+      <!-- TemplateCategory -> Template -->
+      <div class="rel-card" data-type="1-to-many" data-tags="templatecategory template theme visual 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">TemplateCat</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Template</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Visual Template Groupings</div>
+          <div class="card-desc">
+            Groups templates by purpose: "Promotional Offers", "Hiring & Recruitment", "Daily Motivation", "Grand Openings".
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Template.templateCategoryId</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Templates</span>
+        </div>
+      </div>
+
+      <!-- Template -> Post -->
+      <div class="rel-card" data-type="1-to-many" data-tags="template post creative graphic 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Template</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Post</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Master Template to Generated User Posts</div>
+          <div class="card-desc">
+            One master artwork template serves as the foundation for <strong>unlimited user posts</strong>, personalized with custom business info and frames.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Post.templateId</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Content</span>
+        </div>
+      </div>
+
+      <!-- ================= MANY TO MANY (JUNCTIONS) ================= -->
+
+      <!-- User <-> Post via VaultItem -->
+      <div class="rel-card" data-type="many-to-many" data-tags="user post vaultitem bookmark many-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-n-m">Many : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">}o ── [VaultItem] ── o{</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Post</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">User Saved Favorites via VaultItem Junction</div>
+          <div class="card-desc">
+            A User can save multiple Posts to their Vault, and multiple users can theoretically bookmark posts. Implemented cleanly via the <strong><code>VaultItem</code> junction table</strong> with dual foreign keys <code>userId</code> and <code>postId</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Junction: VaultItem(userId, postId)</span>
+          <span class="tag-mono tag-cascade">Both on Cascade</span>
+          <span class="tag-category">Creative Vault</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="noResults" class="no-results">
+      No relationships found matching your query. Try searching for "User", "Post", "Template", or "BrandKit".
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>BrandFlow Database Architecture • Generated from <code style="color: #cbd5e1;">backend/prisma/schema.prisma</code></p>
+    </footer>
+  </div>
+
+  <script>
+    // Live Search and Filter Logic
+    const searchInput = document.getElementById('searchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.rel-card');
+    const noResults = document.getElementById('noResults');
+
+    let currentFilter = 'all';
+
+    function applyFilterAndSearch() {
+      const query = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const type = card.getAttribute('data-type');
+        const tags = card.getAttribute('data-tags') || '';
+        const cardText = card.textContent.toLowerCase();
+
+        // Check filter match
+        let matchesFilter = false;
+        if (currentFilter === 'all') {
+          matchesFilter = true;
+        } else if (currentFilter === '1-to-1' && type === '1-to-1') {
+          matchesFilter = true;
+        } else if (currentFilter === '1-to-many' && type === '1-to-many') {
+          matchesFilter = true;
+        } else if (currentFilter === 'many-to-many' && type === 'many-to-many') {
+          matchesFilter = true;
+        } else if (currentFilter === 'user' && tags.includes('user')) {
+          matchesFilter = true;
+        } else if (currentFilter === 'post' && tags.includes('post')) {
+          matchesFilter = true;
+        }
+
+        // Check search match
+        const matchesSearch = query === '' || cardText.includes(query) || tags.includes(query);
+
+        if (matchesFilter && matchesSearch) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    searchInput.addEventListener('input', applyFilterAndSearch);
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        applyFilterAndSearch();
+      });
+    });
+  </script>
+</body>
+</html>
