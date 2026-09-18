@@ -33,6 +33,7 @@ export async function authenticate(req, res, next) {
       isAdmin: Boolean(decoded.isAdmin),
       isSuperAdmin: Boolean(decoded.isSuperAdmin),
       isSubAdmin: Boolean(decoded.isSubAdmin),
+      allowedTabs: dbUser?.allowedTabs || decoded.allowedTabs || [],
       isActive: dbUser ? dbUser.isActive : true,
     };
 

@@ -113,21 +113,12 @@ Agar dono ek hi table ya ek hi ID hoti, toh ek content ko multiple times alag-al
       });
     }
 
-    // 4. Create In-App Notification & Send Email Alert
+    // 4. Send Email Alert
     if (userId) {
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { email: true, fullName: true },
       });
-
-      await prisma.notification.create({
-        data: {
-          userId,
-          title: "Post Published Successfully! 🎉",
-          message: `Your post was published across ${targetPlatforms.join(", ")}.`,
-          type: "POST_PUBLISHED",
-        },
-      }).catch(() => { });
 
       if (user?.email) {
         sendPostPublishedEmail({

@@ -26,6 +26,7 @@ export async function createFestival(req, res, next) {
   try {
     const festival = await festivalLogic.createFestival({
       ...req.body,
+      createdBy: req.user?.id,
       fileBuffer: req.file?.buffer,
     });
     return sendSuccessResponse(res, {

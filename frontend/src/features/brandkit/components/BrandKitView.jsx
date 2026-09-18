@@ -442,21 +442,6 @@ export const BrandKitView = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Primary Brand Font (Poster Titles)"
-                placeholder="e.g. Inter, Outfit, Montserrat, Roboto"
-                error={errors?.primaryFont?.message}
-                {...register("primaryFont")}
-              />
-
-              <Input
-                label="Secondary Brand Font (Body / Subtitles)"
-                placeholder="e.g. Roboto, Open Sans, Inter"
-                error={errors?.secondaryFont?.message}
-                {...register("secondaryFont")}
-              />
-            </div>
           </Card>
 
           {/* Submit Bar */}

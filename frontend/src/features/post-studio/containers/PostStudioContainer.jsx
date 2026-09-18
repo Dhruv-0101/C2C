@@ -5,7 +5,7 @@ import { brandKitApi } from "../../../services/brandkit.api";
 import { templateApi } from "../../../services/template.api";
 import { festivalApi } from "../../../services/festival.api";
 import { postApi } from "../../../services/post.api";
-import { useTemplates } from "../../../hooks/useTemplates";
+import { useTemplates, useTemplateCategories } from "../../../hooks/useTemplates";
 import { useFrames } from "../../../hooks/useFrames";
 import { useCategories } from "../../../hooks/useCategories";
 import { useFestivals } from "../../../hooks/useFestivals";
@@ -145,7 +145,8 @@ export const PostStudioContainer = () => {
     page: templatePage,
     limit: templateLimit,
     search: templateSearch,
-    categoryId: selectedCategory,
+    category: selectedCategory,
+    templateCategoryId: selectedCategory,
     festivalId: selectedFestival,
   });
 
@@ -160,8 +161,10 @@ export const PostStudioContainer = () => {
     search: frameSearch,
   });
 
-  // Fetch Categories List for Filter Bar
-  const { categories: categoriesList } = useCategories();
+  // Fetch Categories List for Filter Bar (Prefer Template Categories, fallback to Business)
+  const { categories: templateCategories } = useTemplateCategories();
+  const { categories: masterCategories } = useCategories();
+  const categoriesList = templateCategories.length > 0 ? templateCategories : masterCategories;
 
   // Fetch Upcoming Festivals List for Filter Bar
   const { festivals = [] } = useFestivals();

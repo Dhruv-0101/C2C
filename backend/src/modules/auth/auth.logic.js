@@ -97,6 +97,7 @@ export async function loginWithGoogle({ idToken }) {
     isAdmin: user.isAdmin,
     isSuperAdmin: user.isSuperAdmin,
     isSubAdmin: user.isSubAdmin,
+    allowedTabs: user.allowedTabs || [],
   };
   const accessToken = generateAccessToken(tokenPayload);
   const refreshToken = generateRefreshToken(tokenPayload);
@@ -151,6 +152,7 @@ export async function signupUser({ email, password, fullName }) {
     isAdmin: newUser.isAdmin,
     isSuperAdmin: newUser.isSuperAdmin,
     isSubAdmin: newUser.isSubAdmin,
+    allowedTabs: newUser.allowedTabs || [],
   };
   const accessToken = generateAccessToken(tokenPayload);
   const refreshToken = generateRefreshToken(tokenPayload);
@@ -212,6 +214,7 @@ export async function loginUser({ email, password }) {
     isAdmin: user.isAdmin,
     isSuperAdmin: user.isSuperAdmin,
     isSubAdmin: user.isSubAdmin,
+    allowedTabs: user.allowedTabs || [],
   };
   const accessToken = generateAccessToken(tokenPayload);
   const refreshToken = generateRefreshToken(tokenPayload);
@@ -278,6 +281,7 @@ export async function verifyLogin2FA({ mfaToken, code }) {
     isAdmin: user.isAdmin,
     isSuperAdmin: user.isSuperAdmin,
     isSubAdmin: user.isSubAdmin,
+    allowedTabs: user.allowedTabs || [],
   };
   const accessToken = generateAccessToken(tokenPayload);
   const refreshToken = generateRefreshToken(tokenPayload);
@@ -403,6 +407,41 @@ export async function getSubAdmins(queryParams = {}) {
 }
 
 /**
+ * Retrieve activity feed and creations made by SubAdmins with summary metrics
+ *
+ * @param {Object} queryParams
+ * @returns {Promise<Object>} { data: { items, summary }, meta }
+ */
+export async function getSubAdminActivity(queryParams = {}) {
+  const pagination = parsePaginationParams(queryParams);
+  const { subAdminId, type } = queryParams;
+
+  const { items, totalCount, summary } = await authRepository.findSubAdminActivity({
+    subAdminId,
+    type,
+    search: pagination.search,
+    page: pagination.page,
+    limit: pagination.limit,
+    sortOrder: pagination.sortOrder,
+  });
+
+  const paginatedResponse = buildPaginatedResponse({
+    items,
+    totalCount,
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+
+  return {
+    data: {
+      items: paginatedResponse.data,
+      summary,
+    },
+    meta: paginatedResponse.meta,
+  };
+}
+
+/**
  * List registered end-users with pagination
  */
 export async function getUsers(queryParams = {}) {
@@ -502,6 +541,7 @@ export async function refreshSession(refreshToken) {
     isAdmin: user.isAdmin,
     isSuperAdmin: user.isSuperAdmin,
     isSubAdmin: user.isSubAdmin,
+    allowedTabs: user.allowedTabs || [],
   };
   const newAccessToken = generateAccessToken(tokenPayload);
   const newRefreshToken = generateRefreshToken(tokenPayload);

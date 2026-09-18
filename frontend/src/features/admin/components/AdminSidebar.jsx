@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowLeft,
   CreditCard,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -26,6 +27,7 @@ const ADMIN_NAVIGATION_ITEMS = [
   { id: "categories", label: "Business Categories", icon: FolderKanban },
   { id: "users", label: "Business User Directory", icon: Users },
   { id: "subadmins", label: "SubAdmin Directory", icon: Shield, superAdminOnly: true },
+  { id: "subadmin-activity", label: "SubAdmin Activity", icon: Activity, superAdminOnly: true },
 ];
 
 /**

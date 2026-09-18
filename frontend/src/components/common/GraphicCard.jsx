@@ -1,5 +1,5 @@
 import React from "react";
-import { Maximize2, Download, Edit, Trash2, Calendar, Check } from "lucide-react";
+import { Maximize2, Download, Edit, Trash2, Calendar, Check, User } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 
@@ -12,6 +12,7 @@ import { Button } from "../ui/Button";
  * @param {string} props.title - Title or occasion name of the graphic.
  * @param {string} [props.category] - Category tag badge.
  * @param {string} [props.date] - Formatted creation or event date.
+ * @param {Object} [props.creator] - Creator user object ({ fullName, email, role }).
  * @param {Function} [props.onPreview] - Callback triggered when clicking card image for full screen lightbox.
  * @param {Function} [props.onDownload] - Callback triggered when clicking download button.
  * @param {Function} [props.onEdit] - Callback triggered when clicking edit button.
@@ -24,6 +25,7 @@ export const GraphicCard = ({
   title,
   category,
   date,
+  creator,
   onPreview,
   onDownload,
   onEdit,
@@ -96,6 +98,24 @@ export const GraphicCard = ({
                 <Calendar className="w-3 h-3 text-amber-400" />
                 {date}
               </p>
+            )}
+            {creator && (
+              <div className="pt-1 flex items-center gap-1">
+                <span
+                  className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border ${
+                    creator.role === "SUB_ADMIN"
+                      ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                      : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                  }`}
+                  title={`Author: ${creator.fullName} (${creator.email})`}
+                >
+                  <User className="w-2.5 h-2.5" />
+                  <span className="truncate max-w-[110px]">
+                    {creator.role === "SUB_ADMIN" ? "SubAdmin: " : "Admin: "}
+                    {creator.fullName}
+                  </span>
+                </span>
+              </div>
             )}
           </div>
         </div>

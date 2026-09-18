@@ -14,7 +14,8 @@ export const templateApi = {
    * @param {number} [params.page=1] - Target page index
    * @param {number} [params.limit=10] - Items per page
    * @param {string} [params.festivalId] - Optional festival UUID filter
-   * @param {string} [params.categoryId] - Optional business category UUID filter
+   * @param {string} [params.templateCategoryId] - Optional template category UUID filter
+   * @param {string} [params.category] - Optional category name/slug/UUID filter
    * @param {string} [params.search] - Search keyword filter
    * @returns {Promise<Object>} `{ templates: Array<Object>, meta: PaginationMeta }`
    */
@@ -30,8 +31,9 @@ export const templateApi = {
    * @param {string} data.title - Template title (e.g. "Happy Diwali Special Offers Graphic")
    * @param {string} data.baseImageUrl - Cloudinary CDN URL of base background graphic image
    * @param {string} [data.festivalId] - Optional festival ID UUID link
-   * @param {string} [data.categoryId] - Optional category ID UUID link
-   * @param {string} [data.designStyleId] - Optional design style UUID link
+   * @param {string} [data.templateCategoryId] - Optional relational template category UUID link
+   * @param {string} [data.category] - Optional category name string fallback
+   * @param {string} [data.newCategoryName] - Optional new category name to create
    * @param {boolean} [data.isActive=true] - Active availability flag
    * @returns {Promise<Object>} Newly created Template record from database
    */

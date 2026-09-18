@@ -8,13 +8,11 @@ export const templateCategoryRepository = {
       update: {
         name: data.name.trim(),
         description: data.description || null,
-        icon: data.icon || '🎨',
       },
       create: {
         name: data.name.trim(),
         slug,
         description: data.description || null,
-        icon: data.icon || '🎨',
         isSystem: data.isSystem || false,
       },
     });

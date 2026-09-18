@@ -3,7 +3,7 @@ import { templateController } from './template.controller.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import { validateImageUpload } from '../../common/middleware/upload.middleware.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { authorize } from '../../common/middleware/role.middleware.js';
+import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import {
   getTemplatesQuerySchema,
   createTemplateSchema,
@@ -19,7 +19,7 @@ router.get('/', validate(getTemplatesQuerySchema), templateController.getTemplat
 router.post(
   '/upload',
   authenticate,
-  authorize(['ADMIN', 'SUB_ADMIN']),
+  requireTabPermission('templates'),
   validateImageUpload,
   templateController.uploadAdminTemplate
 );
@@ -28,7 +28,7 @@ router.post(
 router.post(
   '/',
   authenticate,
-  authorize(['ADMIN', 'SUB_ADMIN']),
+  requireTabPermission('templates'),
   validate(createTemplateSchema),
   templateController.createTemplate
 );
@@ -36,7 +36,7 @@ router.post(
 router.delete(
   '/:id',
   authenticate,
-  authorize(['ADMIN', 'SUB_ADMIN']),
+  requireTabPermission('templates'),
   templateController.deleteTemplate
 );
 

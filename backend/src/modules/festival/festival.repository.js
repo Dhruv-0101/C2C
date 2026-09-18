@@ -40,6 +40,14 @@ export async function findPaginatedFestivals({
       skip,
       take,
       include: {
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
         templates: {
           where: { isActive: true },
           orderBy: { createdAt: 'desc' },
@@ -74,6 +82,14 @@ export async function findAllFestivals(year, includeInactive = false) {
   return await prisma.festival.findMany({
     where,
     include: {
+      creator: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+        },
+      },
       templates: {
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
@@ -91,6 +107,16 @@ export async function findAllFestivals(year, includeInactive = false) {
 export async function findFestivalById(id) {
   return await prisma.festival.findUnique({
     where: { id },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
   });
 }
 
@@ -106,7 +132,7 @@ export async function findFestivalBySlug(slug) {
 /**
  * Create a new festival / special day
  */
-export async function createFestival({ name, slug, description, date, targetRegion, bannerUrl, isActive }) {
+export async function createFestival({ name, slug, description, date, targetRegion, bannerUrl, isActive, createdBy }) {
   return await prisma.festival.create({
     data: {
       name,
@@ -116,6 +142,17 @@ export async function createFestival({ name, slug, description, date, targetRegi
       targetRegion: targetRegion || 'India',
       bannerUrl: bannerUrl || null,
       isActive: isActive !== undefined ? isActive : true,
+      createdBy: createdBy || null,
+    },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+        },
+      },
     },
   });
 }

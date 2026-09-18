@@ -3,7 +3,7 @@ import { frameController } from './frame.controller.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import { validateImageUpload } from '../../common/middleware/upload.middleware.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { authorize } from '../../common/middleware/role.middleware.js';
+import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { createFrameSchema, getFramesQuerySchema } from './frame.validator.js';
 
 const router = Router();
@@ -14,10 +14,10 @@ router.use(authenticate);
 // GET /api/frames (Accessible by all users with pagination)
 router.get('/', validate(getFramesQuerySchema), frameController.getFrames);
 
-// Admin-only endpoints for creating dynamic frame presets or uploading PNG frames
+// Admin / SubAdmin endpoints for creating dynamic frame presets or uploading PNG frames
 router.post(
   '/',
-  authorize(['ADMIN', 'SUB_ADMIN']),
+  requireTabPermission('frames'),
   validateImageUpload,
   validate(createFrameSchema),
   frameController.createFrame
@@ -25,7 +25,7 @@ router.post(
 
 router.delete(
   '/:id',
-  authorize(['ADMIN', 'SUB_ADMIN']),
+  requireTabPermission('frames'),
   frameController.deleteFrame
 );
 

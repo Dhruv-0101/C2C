@@ -774,9 +774,7 @@ export const AdminFinanceTab = () => {
           >
             <option value="">All Plans</option>
             <option value="FREE">Free</option>
-            <option value="STARTER">Starter</option>
             <option value="PRO">Pro</option>
-            <option value="ENTERPRISE">Enterprise</option>
           </select>
 
           {/* Date Start Filter */}
@@ -967,9 +965,8 @@ export const AdminFinanceTab = () => {
                       onChange={(e) => setManualData({ ...manualData, plan: e.target.value })}
                       className="w-full bg-[#0B0F17] border border-[#2C384E] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                     >
-                      <option value="STARTER">Starter Plan</option>
                       <option value="PRO">Pro Plan</option>
-                      <option value="ENTERPRISE">Enterprise Plan</option>
+                      <option value="FREE">Free Plan</option>
                     </select>
                   </div>
 

@@ -20,6 +20,7 @@ export const templateController = {
           description: req.body?.description,
           festivalId: req.body?.festivalId,
           categoryId: req.body?.categoryId,
+          templateCategoryId: req.body?.templateCategoryId || req.body?.categoryId,
           category: req.body?.category,
           newCategoryName: req.body?.newCategoryName,
         },

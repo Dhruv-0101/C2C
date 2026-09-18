@@ -114,8 +114,6 @@ export const brandKitLogic = {
       country: payload.country || 'India',
       websiteUrl: payload.websiteUrl || null,
       tagline: payload.tagline || null,
-      primaryFont: payload.primaryFont || null,
-      secondaryFont: payload.secondaryFont || null,
       targetAudience: payload.targetAudience || null,
       captionLanguage: payload.captionLanguage || 'English',
       businessUsps: payload.businessUsps || null,

@@ -39,15 +39,6 @@ enum SocialPlatform {
   WHATSAPP   // WhatsApp Business Cloud API
 }
 
-// 📁 Types of Media Assets Uploaded by Users to their Brand Asset Library
-enum AssetType {
-  LOGO           // Official business logo (PNG with transparency preferred)
-  PRODUCT_PHOTO  // Product showcase image for marketing creatives
-  BACKGROUND     // Custom textured or branded background graphic
-  STORE_PHOTO    // Physical shop / office exterior or interior photo
-  OTHER          // Miscellaneous user-uploaded graphic asset
-}
-
 // 🎨 Lifecycle Status of a Creative Post Asset
 enum PostStatus {
   DRAFT       // Creative drafted or saved by user; not yet queued for publishing
@@ -70,14 +61,6 @@ enum PlanType {
   FREE        // Free trial tier with limited post quota per month
   PRO         // Standard monthly/yearly plan for active small businesses
   ENTERPRISE  // High-volume tier for marketing agencies & multi-location franchises
-}
-
-// 🔔 Notification Alert Categories for In-App Notification Center
-enum NotificationType {
-  POST_PUBLISHED  // Alert when a scheduled post goes live successfully
-  POST_FAILED     // Urgent alert if a social media platform rejected the post
-  SYSTEM_ALERT    // Platform maintenance, terms updates, or security warnings
-  BILLING         // Quota low warnings, invoice receipts, subscription renewals
 }
 
 // ==============================================================================
@@ -110,13 +93,14 @@ model User {
   passwordResetTokens PasswordResetToken[]             // Temporary tokens for forgot-password workflow
   socialAccounts      SocialAccount[]                  // Connected social profiles (Instagram, FB, LinkedIn)
   brandKit            BrandKit?                        // Business branding profile (1-to-1 relationship)
-  brandAssets         BrandAsset[]                     // Uploaded custom logos, product photos, stickers
   posts               Post[]                           // Creative posts created by this user
   vaultItems          VaultItem[]                      // Bookmarked / saved favorite graphics in user vault
   subscription        Subscription?                    // Active subscription plan and post quotas
   billingTransactions BillingTransaction[]             // Payment audit ledger (Razorpay / Stripe)
-  notifications       Notification[]                   // In-app alerts and delivery statuses
   templatesCreated    Template[]           @relation("TemplateCreator") // Templates created if user is admin
+  festivalsCreated    Festival[]           @relation("FestivalCreator") // Festivals created if user is admin/subadmin
+  categoriesCreated   Category[]           @relation("CategoryCreator") // Categories created if user is admin/subadmin
+  framesCreated       Frame[]              @relation("FrameCreator") // Frames created if user is admin/subadmin
   postAnalytics       PostAnalytics[]                  // Aggregated social media engagement metrics
 
   @@index([email])
@@ -195,8 +179,6 @@ model BrandKit {
   country         String?   @default("India")
   websiteUrl      String?                             // Company website URL
   tagline         String?                             // Catchy business slogan (e.g. "Pure Taste Since 1985")
-  primaryFont     String?                             // Selected Google Font for headings (e.g. "Montserrat")
-  secondaryFont   String?                             // Selected Google Font for contact details
   targetAudience  String?                             // Audience profile used for AI caption generation
   captionLanguage String?   @default("English")       // Preferred caption language (Hindi, English, Hinglish)
   businessUsps    String?                             // Unique Selling Points for promotional copy
@@ -221,26 +203,13 @@ model Frame {
   overlayPngUrl String                                // Transparent PNG overlay URL composited over images via Sharp
   previewUrl    String?                               // Frame preview with mock business details for UI picker
   configJson    Json?                                 // Coordinate slots (logo X/Y, text positions, colors)
-  isSystem      Boolean  @default(true)               // True for default platform frames; false for user frames
-  isActive      Boolean  @default(true)               // Toggle visibility in template editor
+  isActive      Boolean  @default(true)               // Toggle visibility in template editor-also used in softdelete functionality
+  createdBy     String?                               // User / SubAdmin who created this frame
+  creator       User?    @relation("FrameCreator", fields: [createdBy], references: [id], onDelete: SetNull)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-}
 
-// 📁 Uploaded Brand Asset Files: Custom media stored on Cloudinary
-model BrandAsset {
-  id                 String    @id @default(uuid())
-  userId             String                           // Foreign key referencing User
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assetType          AssetType @default(PRODUCT_PHOTO) // LOGO, PRODUCT_PHOTO, BACKGROUND, etc.
-  fileUrl            String                           // CDN URL of uploaded asset
-  fileName           String                           // Original filename uploaded by user
-  mimeType           String                           // image/png, image/jpeg, image/webp
-  fileSize           Int                              // Size in bytes
-  cloudinaryPublicId String?                          // Cloudinary public asset ID for deletion & transformations
-  createdAt          DateTime  @default(now())
-
-  @@index([userId])
+  @@index([createdBy])
 }
 
 // ==============================================================================
@@ -253,13 +222,15 @@ model Category {
   name        String   @unique                        // Industry name (e.g. "Hospitality & Food")
   slug        String   @unique                        // URL-friendly slug (e.g. "hospitality-food")
   description String?                                 // Industry description for AI context
-  icon        String?                                 // Emoji or Lucide icon identifier (e.g. "Utensils")
-  isSystem    Boolean  @default(true)                 // System preset vs custom category
+  createdBy   String?                                 // User / SubAdmin who created this category
+  creator     User?    @relation("CategoryCreator", fields: [createdBy], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   brandKits BrandKit[]                                // Brand kits associated with this category
   posts     Post[]                                    // Posts generated under this category
+
+  @@index([createdBy])
 }
 
 // 🎆 Festivals & National Observances (e.g. Diwali, Eid, Independence Day, Holi)
@@ -272,11 +243,15 @@ model Festival {
   targetRegion String?  @default("India")             // Regional focus (e.g. "India", "Global", "Maharashtra")
   bannerUrl    String?                                // Header banner for festival spotlight on dashboard
   isActive     Boolean  @default(true)                // Toggle to display or hide on upcoming calendar
+  createdBy    String?                                // User / SubAdmin who created this festival
+  creator      User?    @relation("FestivalCreator", fields: [createdBy], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   templates Template[]                                // Graphic templates available for this festival
   posts     Post[]                                    // User posts created for this festival
+
+  @@index([createdBy])
 }
 
 // 🎨 Template Categories (Grouping templates by visual theme: Festive, Sale, Hiring, Motivation)
@@ -285,7 +260,6 @@ model TemplateCategory {
   name        String   @unique                        // Category title (e.g. "Promotional Offers", "Daily Quotes")
   slug        String   @unique                        // URL slug (e.g. "promotional-offers")
   description String?
-  icon        String?  @default("🎨")
   isSystem    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -298,7 +272,6 @@ model Template {
   id                 String            @id @default(uuid())
   title              String                           // Template name (e.g. "Happy Diwali Gold Sparkle")
   description        String?
-  category           String            @default("GENERAL") // Legacy string category tag
   templateCategoryId String?                          // Foreign key referencing TemplateCategory
   templateCategory   TemplateCategory? @relation(fields: [templateCategoryId], references: [id], onDelete: SetNull)
   festivalId         String?                          // Optional link if template is festival-specific
@@ -314,7 +287,6 @@ model Template {
   posts Post[]                                        // User posts created from this template
 
   @@index([festivalId])
-  @@index([category])
   @@index([templateCategoryId])
 }
 
@@ -426,20 +398,6 @@ model Subscription {
   currentPeriodEnd   DateTime?                         // Expiration / renewal date (null for lifetime free)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
-}
-
-// 🔔 In-App Notification Center: Alerts delivered to user dashboard & mobile bell icon
-model Notification {
-  id        String           @id @default(uuid())
-  userId    String                                    // Foreign key referencing recipient User
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String                                    // Short headline (e.g. "Post Published Successfully! 🎉")
-  message   String                                    // Descriptive alert message
-  type      NotificationType @default(SYSTEM_ALERT)    // POST_PUBLISHED, POST_FAILED, BILLING, SYSTEM_ALERT
-  isRead    Boolean          @default(false)          // Read/Unread badge indicator
-  createdAt DateTime         @default(now())
-
-  @@index([userId, isRead])                          // Composite index for fast unread count queries
 }
 
 // 🧾 Billing Transactions Ledger: Immutable financial transaction history

@@ -26,7 +26,8 @@ export const BaseTemplateManagerContainer = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "GENERAL",
+    templateCategoryId: "",
+    category: "General Business",
     festivalId: "",
     baseImageUrl: "",
   });
@@ -47,6 +48,7 @@ export const BaseTemplateManagerContainer = () => {
     search,
     festivalId: selectedFestival,
     category: selectedCategory,
+    templateCategoryId: selectedCategory,
   });
 
   const { data: festivalResponse } = useQuery({
@@ -64,19 +66,8 @@ export const BaseTemplateManagerContainer = () => {
   const festivals = festivalResponse?.data?.festivals || [];
   const rawTemplateCategories = categoryResponse?.data?.categories || [];
 
-  // Merge master business categories and template categories cleanly
-  const combinedMap = new Map();
-  masterCategories.forEach((c) => {
-    if (c?.name) combinedMap.set(c.name, c);
-  });
-  rawTemplateCategories.forEach((c) => {
-    const name = typeof c === "string" ? c : c?.name;
-    if (name && !combinedMap.has(name)) {
-      combinedMap.set(name, typeof c === "object" ? c : { id: name, name });
-    }
-  });
-
-  const categoriesList = Array.from(combinedMap.values());
+  // Master Template Categories from database with fallback
+  const categoriesList = rawTemplateCategories.length > 0 ? rawTemplateCategories : masterCategories;
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -134,6 +125,9 @@ export const BaseTemplateManagerContainer = () => {
     setFormData({
       title: "",
       description: "",
+      templateCategoryId: "",
+      category: "General Business",
+      newCategoryName: "",
       festivalId: "",
       baseImageUrl: "",
     });
@@ -154,7 +148,11 @@ export const BaseTemplateManagerContainer = () => {
     }
 
     const payload = {
-      ...formData,
+      title: formData.title.trim(),
+      description: formData.description?.trim() || undefined,
+      baseImageUrl: formData.baseImageUrl,
+      festivalId: formData.festivalId || undefined,
+      templateCategoryId: formData.category === "NEW" ? undefined : (formData.templateCategoryId || undefined),
       category: formData.category === "NEW" ? formData.newCategoryName.trim() : formData.category,
       newCategoryName: formData.category === "NEW" ? formData.newCategoryName.trim() : undefined,
     };

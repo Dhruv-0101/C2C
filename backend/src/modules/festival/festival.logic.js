@@ -48,7 +48,7 @@ export async function getFestivals(queryParams = {}, includeInactive = false) {
  * Create a new festival / special day
  * Strictly uploads festival cover banners -> Cloudinary 'brandflow/festivals'
  */
-export async function createFestival({ name, description, date, targetRegion, bannerUrl, base64Banner, fileBuffer, isActive }) {
+export async function createFestival({ name, description, date, targetRegion, bannerUrl, base64Banner, fileBuffer, isActive, createdBy }) {
   const cleanName = name.trim();
   const dateObj = new Date(date);
 
@@ -91,6 +91,7 @@ export async function createFestival({ name, description, date, targetRegion, ba
     targetRegion: targetRegion?.trim() || 'India',
     bannerUrl: finalBannerUrl,
     isActive: isActive !== undefined ? Boolean(isActive) : true,
+    createdBy: createdBy || null,
   });
 
   return festival;

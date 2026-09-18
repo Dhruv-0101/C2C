@@ -24,6 +24,7 @@ import { AdminFramesTab } from "./tabs/AdminFramesTab";
 import { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
 import { AdminUsersTab } from "./tabs/AdminUsersTab";
 import { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
+import { AdminSubAdminActivityTab } from "./tabs/AdminSubAdminActivityTab";
 import { CreateSubAdminScreen } from "./screens/CreateSubAdminScreen";
 import { EditSubAdminScreen } from "./screens/EditSubAdminScreen";
 
@@ -285,10 +286,16 @@ export const AdminDashboardView = ({
             setIsModalOpen={setIsModalOpen}
             setEditingSubAdmin={setEditingSubAdmin}
             deleteSubAdminMutation={deleteSubAdminMutation}
+            onNavigateTab={handleTabChange}
           />
         )}
 
-        {/* 7. Business User Directory Tab */}
+        {/* 7. SubAdmin Activity & Creations Audit Tab (SuperAdmin Only) */}
+        {activeTab === "subadmin-activity" && isSuperAdmin && (
+          <AdminSubAdminActivityTab onNavigateTab={handleTabChange} />
+        )}
+
+        {/* 8. Business User Directory Tab */}
         {activeTab === "users" && (
           <AdminUsersTab
             users={users}

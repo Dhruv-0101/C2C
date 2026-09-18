@@ -214,6 +214,14 @@ export async function findAllSubAdmins() {
       allowedTabs: true,
       isActive: true,
       createdAt: true,
+      _count: {
+        select: {
+          templatesCreated: true,
+          festivalsCreated: true,
+          categoriesCreated: true,
+          framesCreated: true,
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -243,6 +251,14 @@ export async function findPaginatedSubAdmins({ skip, take, search, sortBy = 'cre
     allowedTabs: true,
     isActive: true,
     createdAt: true,
+    _count: {
+      select: {
+        templatesCreated: true,
+        festivalsCreated: true,
+        categoriesCreated: true,
+        framesCreated: true,
+      },
+    },
   };
 
   const [subAdmins, totalCount] = await prisma.$transaction([
@@ -387,4 +403,325 @@ export async function updateUserPassword(userId, passwordHash) {
     where: { id: userId },
     data: { passwordHash },
   });
+}
+
+/**
+ * Audit and fetch creations made by SubAdmins across Templates, Frames, Festivals, and Categories
+ *
+ * @param {Object} params
+ * @param {string} [params.subAdminId] - Optional specific SubAdmin user UUID
+ * @param {string} [params.type='all'] - 'all' | 'template' | 'frame' | 'festival' | 'category'
+ * @param {string} [params.search] - Search keyword matching title or name
+ * @param {number} [params.page=1]
+ * @param {number} [params.limit=20]
+ * @param {string} [params.sortOrder='desc']
+ * @returns {Promise<Object>} Formatted activity feed with summary stats and pagination
+ */
+export async function findSubAdminActivity({
+  subAdminId,
+  type = 'all',
+  search,
+  page = 1,
+  limit = 20,
+  sortOrder = 'desc',
+}) {
+  const skip = (page - 1) * limit;
+
+  // 1. Fetch all SubAdmins to establish creator list and individual stats
+  const subAdmins = await prisma.user.findMany({
+    where: { isSubAdmin: true },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      avatarUrl: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+      _count: {
+        select: {
+          templatesCreated: true,
+          festivalsCreated: true,
+          categoriesCreated: true,
+          framesCreated: true,
+        },
+      },
+    },
+    orderBy: { fullName: 'asc' },
+  });
+
+  const allSubAdminIds = subAdmins.map((s) => s.id);
+  const targetCreatorIds = subAdminId ? [subAdminId] : allSubAdminIds;
+
+  // If there are no SubAdmins registered yet and no explicit subAdminId, return early
+  if (targetCreatorIds.length === 0) {
+    return {
+      items: [],
+      totalCount: 0,
+      summary: {
+        totalCreations: 0,
+        byType: { templates: 0, frames: 0, festivals: 0, categories: 0 },
+        subAdmins: [],
+      },
+    };
+  }
+
+  // Common creator projection
+  const creatorSelect = {
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      avatarUrl: true,
+      role: true,
+    },
+  };
+
+  // Base where filters
+  const templateWhere = {
+    createdBy: { in: targetCreatorIds },
+    ...(search ? { title: { contains: search, mode: 'insensitive' } } : {}),
+  };
+  const frameWhere = {
+    createdBy: { in: targetCreatorIds },
+    ...(search ? { title: { contains: search, mode: 'insensitive' } } : {}),
+  };
+  const festivalWhere = {
+    createdBy: { in: targetCreatorIds },
+    ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
+  };
+  const categoryWhere = {
+    createdBy: { in: targetCreatorIds },
+    ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
+  };
+
+  // Compute counts
+  const [templatesCount, framesCount, festivalsCount, categoriesCount] = await Promise.all([
+    prisma.template.count({ where: templateWhere }),
+    prisma.frame.count({ where: frameWhere }),
+    prisma.festival.count({ where: festivalWhere }),
+    prisma.category.count({ where: categoryWhere }),
+  ]);
+
+  let items = [];
+  let totalCount = 0;
+
+  if (type === 'template') {
+    totalCount = templatesCount;
+    const records = await prisma.template.findMany({
+      where: templateWhere,
+      include: { creator: creatorSelect, templateCategory: true },
+      skip,
+      take: limit,
+      orderBy: { createdAt: sortOrder },
+    });
+    items = records.map((item) => ({
+      id: item.id,
+      itemType: 'template',
+      title: item.title,
+      description: item.description,
+      subtitle: item.templateCategory?.name || 'Graphic Template',
+      previewUrl: item.baseImageUrl,
+      eventDate: null,
+      isActive: item.isActive,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      creator: item.creator,
+    }));
+  } else if (type === 'frame') {
+    totalCount = framesCount;
+    const records = await prisma.frame.findMany({
+      where: frameWhere,
+      include: { creator: creatorSelect },
+      skip,
+      take: limit,
+      orderBy: { createdAt: sortOrder },
+    });
+    items = records.map((item) => ({
+      id: item.id,
+      itemType: 'frame',
+      title: item.title,
+      description: item.description,
+      subtitle: 'Brand Frame Overlay',
+      previewUrl: item.previewUrl || item.overlayPngUrl,
+      eventDate: null,
+      isActive: item.isActive,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      creator: item.creator,
+    }));
+  } else if (type === 'festival') {
+    totalCount = festivalsCount;
+    const records = await prisma.festival.findMany({
+      where: festivalWhere,
+      include: { creator: creatorSelect },
+      skip,
+      take: limit,
+      orderBy: { createdAt: sortOrder },
+    });
+    items = records.map((item) => ({
+      id: item.id,
+      itemType: 'festival',
+      title: item.name,
+      description: item.description,
+      subtitle: item.targetRegion || 'National Observance',
+      previewUrl: item.bannerUrl,
+      eventDate: item.date,
+      isActive: item.isActive,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      creator: item.creator,
+    }));
+  } else if (type === 'category') {
+    totalCount = categoriesCount;
+    const records = await prisma.category.findMany({
+      where: categoryWhere,
+      include: { creator: creatorSelect },
+      skip,
+      take: limit,
+      orderBy: { createdAt: sortOrder },
+    });
+    items = records.map((item) => ({
+      id: item.id,
+      itemType: 'category',
+      title: item.name,
+      description: item.description,
+      subtitle: `Slug: /${item.slug}`,
+      previewUrl: null,
+      eventDate: null,
+      isActive: true,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      creator: item.creator,
+    }));
+  } else {
+    // type === 'all'
+    totalCount = templatesCount + framesCount + festivalsCount + categoriesCount;
+
+    // Fetch up to (skip + limit) from each category to ensure accurate sorting across models
+    const fetchLimit = skip + limit;
+    const [templates, frames, festivals, categories] = await Promise.all([
+      prisma.template.findMany({
+        where: templateWhere,
+        include: { creator: creatorSelect, templateCategory: true },
+        take: fetchLimit,
+        orderBy: { createdAt: sortOrder },
+      }),
+      prisma.frame.findMany({
+        where: frameWhere,
+        include: { creator: creatorSelect },
+        take: fetchLimit,
+        orderBy: { createdAt: sortOrder },
+      }),
+      prisma.festival.findMany({
+        where: festivalWhere,
+        include: { creator: creatorSelect },
+        take: fetchLimit,
+        orderBy: { createdAt: sortOrder },
+      }),
+      prisma.category.findMany({
+        where: categoryWhere,
+        include: { creator: creatorSelect },
+        take: fetchLimit,
+        orderBy: { createdAt: sortOrder },
+      }),
+    ]);
+
+    const unifiedList = [
+      ...templates.map((item) => ({
+        id: item.id,
+        itemType: 'template',
+        title: item.title,
+        description: item.description,
+        subtitle: item.templateCategory?.name || 'Graphic Template',
+        previewUrl: item.baseImageUrl,
+        eventDate: null,
+        isActive: item.isActive,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        creator: item.creator,
+      })),
+      ...frames.map((item) => ({
+        id: item.id,
+        itemType: 'frame',
+        title: item.title,
+        description: item.description,
+        subtitle: 'Brand Frame Overlay',
+        previewUrl: item.previewUrl || item.overlayPngUrl,
+        eventDate: null,
+        isActive: item.isActive,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        creator: item.creator,
+      })),
+      ...festivals.map((item) => ({
+        id: item.id,
+        itemType: 'festival',
+        title: item.name,
+        description: item.description,
+        subtitle: item.targetRegion || 'National Observance',
+        previewUrl: item.bannerUrl,
+        eventDate: item.date,
+        isActive: item.isActive,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        creator: item.creator,
+      })),
+      ...categories.map((item) => ({
+        id: item.id,
+        itemType: 'category',
+        title: item.name,
+        description: item.description,
+        subtitle: `Slug: /${item.slug}`,
+        previewUrl: null,
+        eventDate: null,
+        isActive: true,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        creator: item.creator,
+      })),
+    ];
+
+    // Sort unified items
+    unifiedList.sort((a, b) => {
+      const timeA = new Date(a.createdAt).getTime();
+      const timeB = new Date(b.createdAt).getTime();
+      return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+    });
+
+    items = unifiedList.slice(skip, skip + limit);
+  }
+
+  return {
+    items,
+    totalCount,
+    summary: {
+      totalCreations: templatesCount + framesCount + festivalsCount + categoriesCount,
+      byType: {
+        templates: templatesCount,
+        frames: framesCount,
+        festivals: festivalsCount,
+        categories: categoriesCount,
+      },
+      subAdmins: subAdmins.map((s) => ({
+        id: s.id,
+        fullName: s.fullName,
+        email: s.email,
+        avatarUrl: s.avatarUrl,
+        role: s.role,
+        isActive: s.isActive,
+        counts: {
+          templates: s._count.templatesCreated,
+          frames: s._count.framesCreated,
+          festivals: s._count.festivalsCreated,
+          categories: s._count.categoriesCreated,
+          total:
+            s._count.templatesCreated +
+            s._count.framesCreated +
+            s._count.festivalsCreated +
+            s._count.categoriesCreated,
+        },
+      })),
+    },
+  };
 }

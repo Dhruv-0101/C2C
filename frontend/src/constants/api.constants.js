@@ -94,6 +94,7 @@ export const API_ENDPOINTS = {
     DISABLE_2FA: '/auth/2fa/disable',
     SUBADMIN: '/auth/subadmin',
     SUBADMINS: '/auth/subadmins',
+    SUBADMIN_ACTIVITY: '/auth/subadmins/activity',
     USERS: '/auth/users',
   },
 

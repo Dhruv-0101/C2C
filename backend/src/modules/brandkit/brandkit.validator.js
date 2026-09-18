@@ -19,8 +19,6 @@ export const updateBrandKitSchema = z.object({
     country: z.string().optional().nullable(),
     websiteUrl: z.string().optional().nullable(),
     tagline: z.string().optional().nullable(),
-    primaryFont: z.string().optional().nullable(),
-    secondaryFont: z.string().optional().nullable(),
     targetAudience: z.string().optional().nullable(),
     captionLanguage: z.string().optional().nullable(),
     businessUsps: z.string().optional().nullable(),

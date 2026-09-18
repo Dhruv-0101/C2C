@@ -10,11 +10,31 @@ export const frameRepository = {
     try {
       return await prisma.frame.findMany({
         where: { isActive: true, deletedAt: null },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
         orderBy: { createdAt: 'asc' },
       });
     } catch (err) {
       return await prisma.frame.findMany({
         where: { isActive: true },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
         orderBy: { createdAt: 'asc' },
       });
     }
@@ -39,6 +59,16 @@ export const frameRepository = {
           where: { deletedAt: null, ...where },
           skip,
           take,
+          include: {
+            creator: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+              },
+            },
+          },
           orderBy: {
             [validSortBy]: sortOrder,
           },
@@ -53,6 +83,16 @@ export const frameRepository = {
           where,
           skip,
           take,
+          include: {
+            creator: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+              },
+            },
+          },
           orderBy: {
             [validSortBy]: sortOrder,
           },
@@ -71,10 +111,30 @@ export const frameRepository = {
     try {
       return await prisma.frame.findFirst({
         where: { id, deletedAt: null },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
       });
     } catch (err) {
       return await prisma.frame.findUnique({
         where: { id },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
       });
     }
   },
@@ -85,6 +145,16 @@ export const frameRepository = {
   create: async (data) => {
     return prisma.frame.create({
       data,
+      include: {
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
   },
 

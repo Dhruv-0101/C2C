@@ -28,7 +28,7 @@ export const frameController = {
       const payload = req.body;
       const fileBuffer = req.file?.buffer;
 
-      const frame = await frameLogic.createFrame(payload, fileBuffer);
+      const frame = await frameLogic.createFrame(payload, fileBuffer, req.user?.id);
 
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.CREATED,

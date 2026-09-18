@@ -100,12 +100,10 @@ export const EditSubAdminScreen = ({ subAdmin, onBack, updateSubAdminMutation })
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                 {[
-                  { id: "dashboard", label: "Dashboard Overview" },
-                  { id: "templates", label: "Graphic Templates" },
                   { id: "festivals", label: "Festival Calendar" },
-                  { id: "frames", label: "Brand Frames Studio" },
                   { id: "categories", label: "Business Categories" },
-                  { id: "users", label: "Business User Directory" },
+                  { id: "frames", label: "Brand Frame Studio" },
+                  { id: "templates", label: "Graphic Templates" },
                 ].map((tab) => {
                   const isChecked = editTabs.includes(tab.id);
                   return (

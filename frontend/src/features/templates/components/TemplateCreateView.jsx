@@ -208,7 +208,7 @@ export const TemplateCreateView = ({
                   {/* PROMINENTLY HIGHLIGHTED NEW CATEGORY BUTTON */}
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, category: "NEW" })}
+                    onClick={() => setFormData({ ...formData, category: "NEW", templateCategoryId: "" })}
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 border hover:scale-[1.02] active:scale-[0.98] ${
                       formData.category === "NEW"
                         ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 border-amber-300 shadow-glow font-extrabold scale-105"
@@ -221,12 +221,12 @@ export const TemplateCreateView = ({
                   </button>
 
                   {paginatedCategories.map((cat) => {
-                    const isSelected = formData.category === cat.name;
+                    const isSelected = (formData.templateCategoryId && formData.templateCategoryId === cat.id) || formData.category === cat.name;
                     return (
                       <button
                         key={cat.id}
                         type="button"
-                        onClick={() => setFormData({ ...formData, category: cat.name })}
+                        onClick={() => setFormData({ ...formData, category: cat.name, templateCategoryId: cat.id })}
                         className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] ${
                           isSelected
                             ? "bg-amber-500 text-slate-950 font-bold shadow-glow"

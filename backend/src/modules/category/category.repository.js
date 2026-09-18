@@ -32,6 +32,16 @@ export async function findPaginatedCategories({ skip, take, search, sortBy = 'na
       where,
       skip,
       take,
+      include: {
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
       orderBy: {
         [validSortBy]: sortOrder,
       },
@@ -48,6 +58,16 @@ export async function findPaginatedCategories({ skip, take, search, sortBy = 'na
 export async function findCategoryById(id) {
   return await prisma.category.findUnique({
     where: { id },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
   });
 }
 
@@ -77,14 +97,23 @@ export async function findCategoryBySlug(slug) {
 /**
  * Create a new business category
  */
-export async function createCategory({ name, slug, description, icon }) {
+export async function createCategory({ name, slug, description, createdBy }) {
   return await prisma.category.create({
     data: {
       name,
       slug,
       description,
-      icon,
-      isSystem: true,
+      createdBy: createdBy || null,
+    },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true,
+        },
+      },
     },
   });
 }

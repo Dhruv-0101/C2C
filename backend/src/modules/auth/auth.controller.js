@@ -208,6 +208,24 @@ export async function getSubAdmins(req, res, next) {
 }
 
 /**
+ * Retrieve activity feed and creations made by SubAdmins with summary metrics (SuperAdmin only)
+ */
+export async function getSubAdminActivity(req, res, next) {
+  try {
+    const result = await authLogic.getSubAdminActivity(req.query);
+
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'SubAdmin activity retrieved successfully.',
+      data: result.data,
+      meta: result.meta,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Retrieve list of registered end-users with pagination (Admin & SubAdmin)
  */
 export async function getUsers(req, res, next) {

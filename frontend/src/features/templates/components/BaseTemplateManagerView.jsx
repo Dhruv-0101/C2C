@@ -186,7 +186,7 @@ export const BaseTemplateManagerView = ({
             </button>
 
             {paginatedCategories.map((cat) => {
-              const isSelected = selectedCategory === cat.name;
+              const isSelected = selectedCategory === cat.name || selectedCategory === cat.id;
               return (
                 <button
                   key={cat.id}
@@ -385,7 +385,8 @@ export const BaseTemplateManagerView = ({
                   key={tpl.id}
                   imageUrl={tpl.baseImageUrl}
                   title={tpl.title}
-                  category={tpl.festival?.name}
+                  category={tpl.templateCategory?.name || tpl.category || tpl.festival?.name}
+                  creator={tpl.creator}
                   onPreview={() => setFullscreenTemplate(tpl)}
                   onDelete={() => deleteTemplateMutation.mutate(tpl.id)}
                   isDeleting={deleteTemplateMutation.isPending}

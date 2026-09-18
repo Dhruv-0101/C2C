@@ -33,24 +33,35 @@ export const templateLogic = {
       throw new BadRequestError('Template image file, base64 string, or direct image URL is required.');
     }
 
-    let catName = (data.newCategoryName || (data.category !== 'NEW' ? data.category : '') || 'General Business').trim();
-    if (catName === 'NEW') catName = 'General Business';
-
-    let catRecord = await templateCategoryRepository.findByNameOrSlug(catName);
-    if (!catRecord && catName) {
-      catRecord = await templateCategoryRepository.create({ name: catName, isSystem: false });
+    let catRecord = null;
+    if (data.templateCategoryId) {
+      catRecord = await templateCategoryRepository.findById(data.templateCategoryId);
     }
 
-    return templateRepository.create({
+    if (!catRecord) {
+      let catName = (data.newCategoryName || (data.category !== 'NEW' ? data.category : '') || 'General Business').trim();
+      if (catName === 'NEW') catName = 'General Business';
+
+      catRecord = await templateCategoryRepository.findByNameOrSlug(catName);
+      if (!catRecord && catName) {
+        catRecord = await templateCategoryRepository.create({ name: catName, isSystem: false });
+      }
+    }
+
+    const createdTemplate = await templateRepository.create({
       title: data.title || 'Festival Base Template',
       description: data.description || null,
-      category: catRecord ? catRecord.name : catName,
       templateCategoryId: catRecord ? catRecord.id : null,
       festivalId: data.festivalId || null,
       baseImageUrl: imageUrl,
       isCustomUpload: true,
       createdBy: creatorId || data.creatorId || null,
     });
+
+    return {
+      ...createdTemplate,
+      category: createdTemplate.templateCategory?.name || 'General Business',
+    };
   },
 
   /**
@@ -81,16 +92,22 @@ export const templateLogic = {
 
   getTemplates: async (queryParams = {}) => {
     const pagination = parsePaginationParams(queryParams);
-    const { festivalId, category } = queryParams;
+    const { festivalId, category, categoryId, templateCategoryId } = queryParams;
 
     const { templates, totalCount } = await templateRepository.findPaginated({
       ...pagination,
       festivalId: festivalId || undefined,
-      category: category || undefined,
+      category: category || categoryId || undefined,
+      templateCategoryId: templateCategoryId || undefined,
     });
 
+    const formattedTemplates = templates.map((template) => ({
+      ...template,
+      category: template.templateCategory?.name || 'General Business',
+    }));
+
     const paginatedResponse = buildPaginatedResponse({
-      items: templates,
+      items: formattedTemplates,
       totalCount,
       page: pagination.page,
       limit: pagination.limit,
@@ -109,7 +126,10 @@ export const templateLogic = {
     if (!template) {
       throw new NotFoundError('System Template not found.');
     }
-    return template;
+    return {
+      ...template,
+      category: template.templateCategory?.name || 'General Business',
+    };
   },
 
   deleteTemplate: async (id) => {

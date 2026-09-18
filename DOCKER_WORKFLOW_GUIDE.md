@@ -95,10 +95,10 @@ Once the containers are running, run Prisma migrations and seed default SuperAdm
 
 ```bash
 # 1. Apply database migrations:
-docker compose exec --user root backend npx prisma migrate dev
+docker compose exec --user root brandflow-backend npx prisma migrate dev
 
 # 2. Seed initial master data (SuperAdmin, Categories, Templates):
-docker compose exec --user root backend npm run db:seed
+docker compose exec --user root brandflow-backend npm run db:seed
 ```
 
 ---
@@ -128,7 +128,7 @@ Use this section during daily development tasks.
 docker compose up -d
 
 # View live real-time logs for backend:
-docker compose logs -f backend
+docker compose logs -f brandflow-backend
 
 # View live real-time logs for all services:
 docker compose logs -f
@@ -156,10 +156,10 @@ When you add or update models in `./backend/prisma/schema.prisma`:
 
 ```bash
 # 1. Generate Prisma client & create tracked migration file:
-docker compose exec --user root backend npx prisma migrate dev --name <describe_your_change>
+docker compose exec --user root brandflow-backend npx prisma migrate dev --name <describe_your_change>
 
 # Example:
-# docker compose exec --user root backend npx prisma migrate dev --name add_post_analytics
+# docker compose exec --user root brandflow-backend npx prisma migrate dev --name add_post_analytics
 ```
 
 ---
@@ -174,7 +174,7 @@ npm install <package_name>
 cd ..
 
 # Re-sync container node_modules:
-docker compose up -d --build frontend
+docker compose up -d --build brandflow-frontend
 ```
 
 #### For Backend Packages:
@@ -185,7 +185,7 @@ npm install <package_name>
 cd ..
 
 # Re-sync container node_modules:
-docker compose up -d --build backend
+docker compose up -d --build brandflow-backend
 ```
 
 ---
@@ -245,11 +245,6 @@ sudo kill -9 $(sudo lsof -t -i:5432)
 # (Or for PostgreSQL specifically on Mac Homebrew):
 brew services stop postgresql
 
-# (Or for Redis specifically on Mac Homebrew):
-brew services stop redis
-
-# 3. Restart Docker stack:
-docker compose up -d
 ```
 
 ---
@@ -287,7 +282,7 @@ The backend container runs as a non-root user by default for security, but creat
 Always pass `--user root` when executing Prisma migration commands inside Docker:
 
 ```bash
-docker compose exec --user root backend npx prisma migrate dev
+docker compose exec --user root brandflow-backend npx prisma migrate dev
 ```
 
 ---
@@ -304,7 +299,7 @@ The host's `node_modules` is isolated from the container's `/app/node_modules` v
 Rebuild the container image so `package.json` changes are installed inside Docker:
 
 ```bash
-docker compose up -d --build backend
+docker compose up -d --build brandflow-backend
 ```
 
 ---
@@ -340,8 +335,8 @@ docker compose down -v
 docker compose up -d --build
 
 # 3. Re-run migrations and seeds:
-docker compose exec --user root backend npx prisma migrate dev
-docker compose exec --user root backend npm run db:seed
+docker compose exec --user root brandflow-backend npx prisma migrate dev
+docker compose exec --user root brandflow-backend npm run db:seed
 ```
 *(Note: Never run `docker compose down -v` in Production!)*
 
@@ -372,9 +367,9 @@ docker system prune -a --volumes -f
 | **Start Dev Stack** | `docker compose up -d --build` |
 | **Stop Dev Stack** | `docker compose down` |
 | **View Live Logs** | `docker compose logs -f [service_name]` |
-| **Run Migrations** | `docker compose exec --user root backend npx prisma migrate dev` |
-| **Run Database Seed** | `docker compose exec --user root backend npm run db:seed` |
-| **Open Container Shell** | `docker compose exec backend sh` |
-| **Open Postgres CLI** | `docker compose exec postgres psql -U postgres -d brandflow_db` |
+| **Run Migrations** | `docker compose exec --user root brandflow-backend npx prisma migrate dev` |
+| **Run Database Seed** | `docker compose exec --user root brandflow-backend npm run db:seed` |
+| **Open Container Shell** | `docker compose exec brandflow-backend sh` |
+| **Open Postgres CLI** | `docker compose exec brandflow-postgres psql -U postgres -d brandflow_db` |
 | **Check Container Stats** | `docker stats` |
 | **Prune Docker Cache** | `docker system prune -f` |

@@ -35,6 +35,7 @@ export const QUERY_KEYS = {
   SUB_ADMINS: {
     ALL: ['subadmins'],
     LIST: (params = {}) => ['subadmins', 'list', params],
+    ACTIVITY: (params = {}) => ['subadmins', 'activity', params],
   },
   USERS: {
     ALL: ['users'],

@@ -36,7 +36,7 @@ export const frameLogic = {
    * - WITHOUT Text Overlay -> Cloudinary 'brandflow/frames/overlays'
    * - WITH Text Preview   -> Cloudinary 'brandflow/frames/previews'
    */
-  createFrame: async (payload, fileBuffer) => {
+  createFrame: async (payload, fileBuffer, createdBy) => {
     let overlayPngUrl = payload.overlayPngUrl || null;
     let previewUrl = payload.previewUrl || null;
 
@@ -87,8 +87,8 @@ export const frameLogic = {
       overlayPngUrl: overlayPngUrl,
       previewUrl: previewUrl,
       configJson: payload.blueprint || payload.configJson || null,
-      isSystem: false,
       isActive: true,
+      createdBy: createdBy || null,
     };
 
     return frameRepository.create(frameData);

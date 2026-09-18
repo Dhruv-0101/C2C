@@ -107,8 +107,6 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     if (brandKit?.upiVpa) newDetails.upiVpa = brandKit.upiVpa;
     if (brandKit?.upiQrUrl) newDetails.upiQrUrl = brandKit.upiQrUrl;
     if (brandKit?.workingHours) newDetails.workingHours = brandKit.workingHours;
-    if (brandKit?.primaryFont) newDetails.primaryFont = brandKit.primaryFont;
-    if (brandKit?.secondaryFont) newDetails.secondaryFont = brandKit.secondaryFont;
 
     // 2. Map sample text from selectedFrame.configJson.elements if field is still empty
     if (selectedFrame?.configJson?.elements) {

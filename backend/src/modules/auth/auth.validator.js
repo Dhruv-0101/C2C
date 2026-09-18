@@ -16,6 +16,13 @@ export const getSubAdminsQuerySchema = z.object({
   query: paginationQuerySchema,
 });
 
+export const getSubAdminActivityQuerySchema = z.object({
+  query: paginationQuerySchema.extend({
+    subAdminId: z.string().uuid('Invalid SubAdmin ID').optional(),
+    type: z.enum(['all', 'template', 'frame', 'festival', 'category']).optional().default('all'),
+  }),
+});
+
 export const getUsersQuerySchema = z.object({
   query: paginationQuerySchema,
 });
@@ -60,7 +67,10 @@ export const createSubAdminSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100),
     email: z.string().email('Please enter a valid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters').max(100),
-    allowedTabs: z.array(z.string()).optional().default([]),
+    allowedTabs: z
+      .array(z.enum(['festivals', 'categories', 'frames', 'templates']))
+      .min(1, 'Select at least one permitted tab for SubAdmin')
+      .default(['festivals', 'categories', 'frames', 'templates']),
   }),
 });
 
@@ -71,7 +81,10 @@ export const updateSubAdminSchema = z.object({
   body: z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100).optional(),
     email: z.string().email('Please enter a valid email address').optional(),
-    allowedTabs: z.array(z.string()).optional(),
+    allowedTabs: z
+      .array(z.enum(['festivals', 'categories', 'frames', 'templates']))
+      .min(1, 'Select at least one permitted tab for SubAdmin')
+      .optional(),
   }),
 });
 

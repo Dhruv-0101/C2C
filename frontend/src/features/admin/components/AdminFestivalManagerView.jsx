@@ -17,6 +17,7 @@ import {
   List,
   Upload,
   Image as ImageIcon,
+  User,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -374,6 +375,30 @@ export const AdminFestivalManagerView = () => {
                             {fest.description}
                           </p>
                         )}
+
+                        <div className="pt-2 flex items-center gap-1.5">
+                          {fest.creator ? (
+                            <span
+                              className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md border ${
+                                fest.creator.role === "SUB_ADMIN"
+                                  ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                  : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                              }`}
+                              title={`Author: ${fest.creator.fullName} (${fest.creator.email})`}
+                            >
+                              <User className="w-2.5 h-2.5" />
+                              <span className="truncate max-w-[130px]">
+                                {fest.creator.role === "SUB_ADMIN" ? "SubAdmin: " : "Admin: "}
+                                {fest.creator.fullName}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-800/40 px-2 py-0.5 rounded-md border border-slate-700/40">
+                              <User className="w-2.5 h-2.5" />
+                              <span>System</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="pt-3 border-t border-[#2C384E]/60 flex items-center justify-between gap-2">

@@ -24,7 +24,10 @@ export async function getCategories(req, res, next) {
  */
 export async function createCategory(req, res, next) {
   try {
-    const category = await categoryLogic.createCategory(req.body);
+    const category = await categoryLogic.createCategory({
+      ...req.body,
+      createdBy: req.user?.id,
+    });
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.CREATED,
       message: 'Business category created successfully',

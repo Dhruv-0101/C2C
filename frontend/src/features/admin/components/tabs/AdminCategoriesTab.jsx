@@ -1,5 +1,5 @@
 import React from "react";
-import { FolderKanban, Plus, Trash2 } from "lucide-react";
+import { FolderKanban, Plus, Trash2, User } from "lucide-react";
 import { Card } from "../../../../components/ui/Card";
 import { Button } from "../../../../components/ui/Button";
 import { Alert } from "../../../../components/ui/Alert";
@@ -101,6 +101,29 @@ export const AdminCategoriesTab = ({
                   <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                     slug: {cat.slug}
                   </p>
+                  <div className="pt-2 flex items-center gap-1.5">
+                    {cat.creator ? (
+                      <span
+                        className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md border ${
+                          cat.creator.role === "SUB_ADMIN"
+                            ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                            : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                        }`}
+                        title={`Author: ${cat.creator.fullName} (${cat.creator.email})`}
+                      >
+                        <User className="w-2.5 h-2.5" />
+                        <span className="truncate max-w-[130px]">
+                          {cat.creator.role === "SUB_ADMIN" ? "SubAdmin: " : "Admin: "}
+                          {cat.creator.fullName}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-800/40 px-2 py-0.5 rounded-md border border-slate-700/40">
+                        <User className="w-2.5 h-2.5" />
+                        <span>System</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button
                   onClick={() => deleteCategoryMutation.mutate(cat.id)}

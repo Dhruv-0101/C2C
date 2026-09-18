@@ -12,6 +12,7 @@ export { AdminFramesTab } from "./tabs/AdminFramesTab";
 export { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
 export { AdminUsersTab } from "./tabs/AdminUsersTab";
 export { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
+export { AdminSubAdminActivityTab } from "./tabs/AdminSubAdminActivityTab";
 
 export { FestivalCreateView } from "./FestivalCreateView";
 

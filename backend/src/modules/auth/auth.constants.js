@@ -17,3 +17,15 @@ export function getCookieOptions(rememberMe = false) {
       : 7 * 24 * 60 * 60 * 1000, // 7 days default in milliseconds
   };
 }
+
+/**
+ * Permitted tabs that SuperAdmin can grant to SubAdmin accounts.
+ * Restricted strictly to: Festival Calendar, Business Categories, Brand Frame Studio, Graphic Templates.
+ */
+export const SUBADMIN_PERMITTED_TABS = Object.freeze([
+  'festivals',
+  'categories',
+  'frames',
+  'templates',
+]);
+

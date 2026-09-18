@@ -139,6 +139,21 @@ export const authApi = {
   getSubAdmins: (params = {}) => api.get(API_ENDPOINTS.AUTH.SUBADMINS, { params }),
 
   /**
+   * GET /api/v1/auth/subadmins/activity
+   * SuperAdmin: Fetches paginated activity feed of creations made by SubAdmins with summary counts.
+   *
+   * @param {Object} [params={}]
+   * @param {string} [params.subAdminId] - Optional specific SubAdmin UUID
+   * @param {string} [params.type='all'] - Filter by type: 'all' | 'template' | 'frame' | 'festival' | 'category'
+   * @param {string} [params.search] - Search keyword
+   * @param {number} [params.page=1]
+   * @param {number} [params.limit=20]
+   * @returns {Promise<Object>} `{ items: Array, summary: Object, meta: PaginationMeta }`
+   */
+  getSubAdminActivity: (params = {}) =>
+    api.get(API_ENDPOINTS.AUTH.SUBADMIN_ACTIVITY, { params }),
+
+  /**
    * GET /api/v1/auth/users
    * Admin & SubAdmin: Fetches paginated list of all registered platform end-users.
    *

@@ -68,11 +68,10 @@ export const CreateSubAdminModal = ({
 
             <div className="grid grid-cols-2 gap-2 pt-2">
               {[
-                { id: "templates", label: "Graphic Templates" },
                 { id: "festivals", label: "Festival Calendar" },
-                { id: "frames", label: "Brand Frames Studio" },
                 { id: "categories", label: "Business Categories" },
-                { id: "users", label: "Business User Directory" },
+                { id: "frames", label: "Brand Frame Studio" },
+                { id: "templates", label: "Graphic Templates" },
               ].map((tab) => {
                 const isChecked = selectedTabs.includes(tab.id);
                 return (

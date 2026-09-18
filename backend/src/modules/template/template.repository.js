@@ -8,6 +8,15 @@ export const templateRepository = {
       data,
       include: {
         festival: true,
+        templateCategory: true,
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
       },
     });
   },
@@ -21,6 +30,15 @@ export const templateRepository = {
         },
         include: {
           festival: true,
+          templateCategory: true,
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -32,25 +50,43 @@ export const templateRepository = {
         },
         include: {
           festival: true,
+          templateCategory: true,
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       });
     }
   },
 
-  findPaginated: async ({ skip, take, festivalId, category, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
+  findPaginated: async ({ skip, take, festivalId, category, templateCategoryId, search, sortBy = 'createdAt', sortOrder = 'desc' }) => {
     const where = {};
     if (festivalId && festivalId !== 'undefined' && festivalId !== 'null') {
       where.festivalId = festivalId;
     }
-    if (category && category !== 'undefined' && category !== 'null' && category !== 'ALL') {
-      where.category = { equals: category, mode: 'insensitive' };
+
+    const targetCategory = templateCategoryId || category;
+    if (targetCategory && targetCategory !== 'undefined' && targetCategory !== 'null' && targetCategory !== 'ALL') {
+      where.templateCategory = {
+        OR: [
+          { id: targetCategory },
+          { slug: { equals: targetCategory.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-'), mode: 'insensitive' } },
+          { name: { equals: targetCategory, mode: 'insensitive' } },
+        ],
+      };
     }
+
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { category: { contains: search, mode: 'insensitive' } },
+        { templateCategory: { name: { contains: search, mode: 'insensitive' } } },
       ];
     }
 
@@ -65,6 +101,15 @@ export const templateRepository = {
           take,
           include: {
             festival: true,
+            templateCategory: true,
+            creator: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+              },
+            },
           },
           orderBy: {
             [validSortBy]: sortOrder,
@@ -82,6 +127,15 @@ export const templateRepository = {
           take,
           include: {
             festival: true,
+            templateCategory: true,
+            creator: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+              },
+            },
           },
           orderBy: {
             [validSortBy]: sortOrder,
@@ -100,6 +154,15 @@ export const templateRepository = {
         where: { id, deletedAt: null },
         include: {
           festival: true,
+          templateCategory: true,
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
         },
       });
     } catch (err) {
@@ -107,6 +170,15 @@ export const templateRepository = {
         where: { id },
         include: {
           festival: true,
+          templateCategory: true,
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
         },
       });
     }

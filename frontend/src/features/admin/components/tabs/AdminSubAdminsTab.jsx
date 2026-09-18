@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, UserPlus, Pencil, Trash2 } from "lucide-react";
+import { Shield, UserPlus, Pencil, Trash2, Activity } from "lucide-react";
 import { Button } from "../../../../components/ui/Button";
 import { Alert } from "../../../../components/ui/Alert";
 import { SearchBar } from "../../../../components/common/SearchBar";
@@ -32,6 +32,7 @@ export const AdminSubAdminsTab = ({
   setIsModalOpen,
   setEditingSubAdmin,
   deleteSubAdminMutation,
+  onNavigateTab,
 }) => {
   return (
     <div className="animate-in fade-in duration-200 space-y-4">
@@ -57,6 +58,17 @@ export const AdminSubAdminsTab = ({
             placeholder="Search subadmins..."
             className="max-w-sm"
           />
+
+          {onNavigateTab && (
+            <Button
+              variant="outline"
+              icon={Activity}
+              onClick={() => onNavigateTab("subadmin-activity")}
+              className="border-[#2C384E] text-amber-400 hover:text-amber-300 hover:border-amber-500/50"
+            >
+              View Works & Audit
+            </Button>
+          )}
 
           <Button
             variant="primary"
@@ -94,41 +106,83 @@ export const AdminSubAdminsTab = ({
                   <th className="py-3 px-4">Full Name</th>
                   <th className="py-3 px-4">Email</th>
                   <th className="py-3 px-4">Allowed Admin Tabs</th>
+                  <th className="py-3 px-4">Items Created</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#2C384E]">
-                {subAdmins.map((admin) => (
-                  <tr key={admin.id} className="hover:bg-slate-900/40 transition">
-                    <td className="py-3.5 px-4 font-semibold text-white">
-                      {admin.fullName || "SubAdmin"}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-300 font-mono">
-                      {admin.email}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex flex-wrap gap-1.5">
-                        {admin.allowedTabs?.length ? (
-                          admin.allowedTabs.map((tabId) => {
-                            const badgeStyle =
-                              TAB_BADGE_STYLES[tabId] ||
-                              "bg-slate-800 text-slate-300 border-slate-700";
-                            return (
-                              <span
-                                key={tabId}
-                                className={`px-2 py-0.5 rounded-md border text-[10px] font-mono font-bold capitalize transition-transform hover:scale-105 ${badgeStyle}`}
-                              >
-                                {tabId}
+                {subAdmins.map((admin) => {
+                  const counts = admin._count || {};
+                  const totalCreated =
+                    (counts.templatesCreated || 0) +
+                    (counts.festivalsCreated || 0) +
+                    (counts.framesCreated || 0) +
+                    (counts.categoriesCreated || 0);
+
+                  return (
+                    <tr key={admin.id} className="hover:bg-slate-900/40 transition">
+                      <td className="py-3.5 px-4 font-semibold text-white">
+                        {admin.fullName || "SubAdmin"}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-300 font-mono">
+                        {admin.email}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {admin.allowedTabs?.length ? (
+                            admin.allowedTabs.map((tabId) => {
+                              const badgeStyle =
+                                TAB_BADGE_STYLES[tabId] ||
+                                "bg-slate-800 text-slate-300 border-slate-700";
+                              return (
+                                <span
+                                  key={tabId}
+                                  className={`px-2 py-0.5 rounded-md border text-[10px] font-mono font-bold capitalize transition-transform hover:scale-105 ${badgeStyle}`}
+                                >
+                                  {tabId}
+                                </span>
+                              );
+                            })
+                          ) : (
+                            <span className="text-[10px] text-slate-500 italic">
+                              No permissions granted
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {totalCreated === 0 ? (
+                            <span className="text-[10px] text-slate-500 italic">0 items created</span>
+                          ) : (
+                            <>
+                              <span className="px-2 py-0.5 rounded-md border text-[10px] font-bold bg-amber-500/10 text-amber-300 border-amber-500/30">
+                                Total: {totalCreated}
                               </span>
-                            );
-                          })
-                        ) : (
-                          <span className="text-[10px] text-slate-500 italic">
-                            No permissions granted
-                          </span>
-                        )}
-                      </div>
-                    </td>
+                              {counts.festivalsCreated > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md border text-[10px] bg-emerald-500/10 text-emerald-300 border-emerald-500/30" title="Festivals Created">
+                                  🎆 {counts.festivalsCreated} Fest
+                                </span>
+                              )}
+                              {counts.categoriesCreated > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md border text-[10px] bg-indigo-500/10 text-indigo-300 border-indigo-500/30" title="Categories Created">
+                                  🏬 {counts.categoriesCreated} Cat
+                                </span>
+                              )}
+                              {counts.framesCreated > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md border text-[10px] bg-sky-500/10 text-sky-300 border-sky-500/30" title="Frames Created">
+                                  🖼️ {counts.framesCreated} Frames
+                                </span>
+                              )}
+                              {counts.templatesCreated > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md border text-[10px] bg-purple-500/10 text-purple-300 border-purple-500/30" title="Templates Created">
+                                  🎨 {counts.templatesCreated} Tpl
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
@@ -147,8 +201,9 @@ export const AdminSubAdminsTab = ({
                         </button>
                       </div>
                     </td>
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -40,7 +40,7 @@ export async function getCategories(queryParams = {}) {
 /**
  * Create a new business category (SuperAdmin Privilege)
  */
-export async function createCategory({ name, description, icon }) {
+export async function createCategory({ name, description, createdBy }) {
   const cleanName = name.trim();
   const slug = slugify(cleanName);
 
@@ -57,7 +57,7 @@ export async function createCategory({ name, description, icon }) {
     name: cleanName,
     slug,
     description: description?.trim() || null,
-    icon: icon?.trim() || null,
+    createdBy: createdBy || null,
   });
 
   return newCategory;

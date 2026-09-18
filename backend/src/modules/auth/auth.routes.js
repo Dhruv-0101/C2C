@@ -16,6 +16,7 @@ import {
   verifyLogin2FASchema,
   enable2FASchema,
   getSubAdminsQuerySchema,
+  getSubAdminActivityQuerySchema,
   getUsersQuerySchema,
 } from './auth.validator.js';
 
@@ -40,6 +41,7 @@ router.post('/2fa/disable', authenticate, authController.disable2FA);
 // Admin Directory Endpoints
 router.post('/subadmin', authenticate, requireSuperAdmin, validate(createSubAdminSchema), authController.createSubAdmin);
 router.get('/subadmins', authenticate, requireSuperAdmin, validate(getSubAdminsQuerySchema), authController.getSubAdmins);
+router.get('/subadmins/activity', authenticate, requireSuperAdmin, validate(getSubAdminActivityQuerySchema), authController.getSubAdminActivity);
 router.put('/subadmin/:id', authenticate, requireSuperAdmin, validate(updateSubAdminSchema), authController.updateSubAdmin);
 router.delete('/subadmin/:id', authenticate, requireSuperAdmin, authController.deleteSubAdmin);
 router.get('/users', authenticate, requireAdmin, validate(getUsersQuerySchema), authController.getUsers);

@@ -23,8 +23,6 @@ export const brandKitSchema = z.object({
   country: z.string().optional(),
   logoUrl: z.string().optional(),
   avatarUrl: z.string().optional(),
-  primaryFont: z.string().optional(),
-  secondaryFont: z.string().optional(),
   targetAudience: z.string().optional(),
   captionLanguage: z.string().optional(),
   businessUsps: z.string().optional(),

@@ -247,7 +247,7 @@ export const AdminDashboardContainer = () => {
       fullName: "",
       email: "",
       password: "",
-      allowedTabs: ["dashboard", "templates", "festivals", "frames", "styles", "categories", "users"],
+      allowedTabs: ["festivals", "categories", "frames", "templates"],
     },
   });
 
