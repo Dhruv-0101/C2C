@@ -30,7 +30,8 @@ export const billingAdminController = {
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
         message: 'Admin billing transactions retrieved successfully 📊',
-        data: result,
+        data: result.data,
+        meta: result.meta,
       });
     } catch (err) {
       next(err);

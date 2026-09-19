@@ -20,10 +20,27 @@ export function sendSuccessResponse(res, { statusCode = HTTP_STATUS.OK, message 
 /**
  * Standardized API Error Response Formatter
  */
-export function sendErrorResponse(res, { statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR, message = 'Internal Server Error', errors = [] }) {
-  return res.status(statusCode).json({
+export function sendErrorResponse(res, {
+  statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR,
+  message = 'Internal Server Error',
+  errors = [],
+  code = undefined,
+  data = undefined,
+}) {
+  const responseBody = {
     success: false,
     message,
     errors,
-  });
+  };
+
+  if (code !== undefined) {
+    responseBody.code = code;
+  }
+
+  if (data !== undefined) {
+    responseBody.data = data;
+  }
+
+  return res.status(statusCode).json(responseBody);
 }
+

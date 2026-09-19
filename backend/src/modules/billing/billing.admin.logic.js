@@ -1,5 +1,6 @@
 import { billingAdminRepository } from './billing.admin.repository.js';
 import { BadRequestError } from '../../common/errors/custom-errors.js';
+import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 
 export const billingAdminLogic = {
   /**
@@ -14,13 +15,12 @@ export const billingAdminLogic = {
    * Get paginated transactions list with search and filtering
    */
   getTransactions: async (queryParams) => {
-    const page = Math.max(1, parseInt(queryParams.page) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(queryParams.limit) || 10));
+    const pagination = parsePaginationParams(queryParams);
 
     const result = await billingAdminRepository.getPaginatedTransactions({
-      page,
-      limit,
-      search: queryParams.search || '',
+      page: pagination.page,
+      limit: pagination.limit,
+      search: queryParams.search || pagination.search || '',
       status: queryParams.status || '',
       paymentGateway: queryParams.paymentGateway || '',
       currency: queryParams.currency || '',
@@ -29,8 +29,22 @@ export const billingAdminLogic = {
       endDate: queryParams.endDate || '',
     });
 
-    return result;
+    const paginatedResponse = buildPaginatedResponse({
+      items: result.items,
+      totalCount: result.totalCount,
+      page: pagination.page,
+      limit: pagination.limit,
+    });
+
+    return {
+      data: {
+        ...result,
+        items: paginatedResponse.data,
+      },
+      meta: paginatedResponse.meta,
+    };
   },
+
 
   /**
    * Record a manual payment / offline transaction

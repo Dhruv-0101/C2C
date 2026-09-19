@@ -51,8 +51,18 @@ export function verifyRefreshToken(token) {
 }
 
 /**
- * Hash Refresh Token for Secure Storage in Database
+ * Hash Token (Refresh token, Password reset token) for Secure Storage in Database
  */
 export function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
+
+/**
+ * Generate cryptographically secure random hex token
+ * @param {number} [bytes=32] - Number of random bytes
+ * @returns {string} Hex string (default 64 characters)
+ */
+export function generateRandomToken(bytes = 32) {
+  return crypto.randomBytes(bytes).toString('hex');
+}
+

@@ -13,7 +13,11 @@ export const vaultController = {
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
         message: 'Vault items retrieved successfully',
-        data: result,
+        data: {
+          data: result.data,
+          vaultItems: result.data,
+        },
+        meta: result.meta,
       });
     } catch (error) {
       next(error);

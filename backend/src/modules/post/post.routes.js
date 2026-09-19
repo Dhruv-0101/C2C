@@ -3,7 +3,7 @@ import { postController } from './post.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { createPostSchema, getAdminPostsQuerySchema } from './post.validator.js';
+import { createPostSchema, getAdminPostsQuerySchema, publishNowSchema, schedulePostSchema } from './post.validator.js';
 
 const router = Router();
 
@@ -32,10 +32,10 @@ router.get('/', postController.getUserPosts);
 router.get('/scheduled', postController.getScheduledPosts);
 
 // POST /api/v1/posts/publish-now (Instant Mock Publishing)
-router.post('/publish-now', postController.publishNow);
+router.post('/publish-now', validate(publishNowSchema), postController.publishNow);
 
 // POST /api/v1/posts/schedule (Schedule for Future Date/Time)
-router.post('/schedule', postController.schedulePost);
+router.post('/schedule', validate(schedulePostSchema), postController.schedulePost);
 
 // POST /api/v1/posts/trigger-scheduled-jobs (Manual Test Trigger)
 router.post('/trigger-scheduled-jobs', postController.triggerScheduledJobs);

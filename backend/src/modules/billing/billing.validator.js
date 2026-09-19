@@ -37,3 +37,19 @@ export const adminTopUpSchema = z.object({
   }),
 });
 
+export const recordManualTransactionSchema = z.object({
+  body: z.object({
+    userId: z.string().uuid({ message: 'Valid user ID is required' }),
+    plan: z.enum(['FREE', 'PRO', 'ENTERPRISE']).optional().default('PRO'),
+    transactionType: z.string().optional().default('PLAN_PURCHASE'),
+    paymentGateway: z.string().optional().default('ADMIN_MANUAL'),
+    pricePaid: z.number().nonnegative().optional().default(0),
+    currency: z.string().optional().default('INR'),
+    postCount: z.number().int().positive().optional().default(100),
+    paymentId: z.string().optional().nullable(),
+    orderId: z.string().optional().nullable(),
+    status: z.string().optional().default('COMPLETED'),
+  }),
+});
+
+

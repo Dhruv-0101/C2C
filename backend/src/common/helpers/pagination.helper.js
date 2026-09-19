@@ -1,7 +1,29 @@
 import { z } from "zod";
 
 /**
- * Reusable Zod schema for validating pagination, search, and sorting query parameters.
+ * ==============================================================================
+ * 📄 BrandFlow Central Pagination & Query Normalizer Helper
+ * ==============================================================================
+ * Architectural Role:
+ * 1. paginationQuerySchema  ➔ [GATEKEEPER - HTTP Layer]: Validates incoming URL query params.
+ * 2. parsePaginationParams   ➔ [INPUT PROCESSOR - Logic Layer]: Calculates Prisma `skip`/`take` and enforces security limits.
+ * 3. buildPaginatedResponse  ➔ [OUTPUT FORMATTER - Response Layer]: Formats records and UI pagination metadata for frontend.
+ * ==============================================================================
+ */
+
+/**
+ * 🛡️ USE CASE 1: HTTP Query Parameter Validation (Route / Middleware Layer)
+ * ------------------------------------------------------------------------------
+ * Where it is used:
+ * - In Express route definitions wrapped by `validate(paginationQuerySchema)`.
+ * - In module validators via `.extend({ ... })` to add module-specific filters
+ *   (e.g., `getAdminPostsQuerySchema = z.object({ query: paginationQuerySchema.extend({ categoryId: ... }) })`).
+ * 
+ * Purpose & Why it exists:
+ * - Acts as an entry gatekeeper at the HTTP boundary.
+ * - Parses and validates client URL parameters like `?page=2&limit=25&sortBy=createdAt&sortOrder=desc`.
+ * - Rejects malformed requests (like `?page=abc` or `?sortOrder=invalid`) with an immediate 400 Bad Request
+ *   before any controller or database query is executed.
  */
 export const paginationQuerySchema = z.object({
   page: z
@@ -24,7 +46,20 @@ export const paginationQuerySchema = z.object({
 });
 
 /**
- * Parses and normalizes raw query parameters into Prisma-ready pagination values.
+ * ⚙️ USE CASE 2: Query Normalizer & Database Input Calculator (Business Logic Layer)
+ * ------------------------------------------------------------------------------
+ * Where it is used:
+ * - Inside service/logic functions (`*.logic.js`) right before querying the database
+ *   (e.g., in `post.logic.js`, `festival.logic.js`, `category.logic.js`, `vault.logic.js`, etc.).
+ * 
+ * Purpose & Why it exists:
+ * - Translates human-friendly pagination (`page: 2`, `limit: 10`) into SQL/Prisma offsets:
+ *     skip = (page - 1) * limit;  // Prisma: skip 10 records
+ *     take = limit;               // Prisma: fetch 10 records
+ * - Defense-in-Depth Memory Protection (RAM exhaustion / DoS guard):
+ *   Clamps `limit` to `maxLimit` (default 100) so a client requesting `?limit=1000000` cannot crash Node.js memory.
+ * - Fault Tolerance: Always safely falls back to valid integers even if negative numbers or undefined params are passed.
+ * - Trims search strings and normalizes sort order ("asc" / "desc").
  *
  * @param {Object} query - The req.query object.
  * @param {number} [defaultLimit=10] - Default item limit per page if not specified.
@@ -89,7 +124,21 @@ export function parsePaginationParams(
 }
 
 /**
- * Formats data and pagination stats into a standard paginated response payload.
+ * 📦 USE CASE 3: Standard Output Envelope Formatter (Response / Controller Layer)
+ * ------------------------------------------------------------------------------
+ * Where it is used:
+ * - Inside service/logic functions (`*.logic.js`) right after Prisma returns query results.
+ * - Used in combination with `sendSuccessResponse(res, { data: paginated.data, meta: paginated.meta })`.
+ * 
+ * Purpose & Why it exists:
+ * - Bridges the raw database output with the client UI pagination controls:
+ *   Prisma returns raw rows (`items`) and a scalar number (`totalCount`).
+ *   Frontend UI pagination bars (Next, Previous, Total Pages) need computed metadata:
+ *     - `totalPages`: Calculated dynamically as Math.ceil(totalCount / limit)
+ *     - `hasNextPage`: Boolean indicating if user can click the "Next" button
+ *     - `hasPrevPage`: Boolean indicating if user can click the "Previous" button
+ * - Enforces enterprise consistency across all 12 modules so the frontend
+ *   TanStack Query hook (`usePaginatedQuery`) receives an identical JSON shape everywhere.
  *
  * @param {Object} params
  * @param {Array} params.items - Array of records for the current page.

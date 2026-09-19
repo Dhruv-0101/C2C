@@ -1,22 +1,5 @@
 import { ForbiddenError, UnauthorizedError } from '../errors/custom-errors.js';
 
-/**
- * Middleware factory for Role-Based Access Control (RBAC)
- */
-export function authorize(...allowedRoles) {
-  const flattenedRoles = allowedRoles.flat();
-  return (req, res, next) => {
-    if (!req.user) {
-      return next(new UnauthorizedError('User authentication required'));
-    }
-
-    if (!flattenedRoles.includes(req.user.role) && !req.user.isAdmin) {
-      return next(new ForbiddenError(`Access denied. Allowed roles: ${flattenedRoles.join(', ')}`));
-    }
-
-    next();
-  };
-}
 
 /**
  * Require SuperAdmin privilege

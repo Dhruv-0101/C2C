@@ -9,6 +9,7 @@ import {
   verifyRazorpaySchema,
   verifyStripeSchema,
   adminTopUpSchema,
+  recordManualTransactionSchema,
 } from './billing.validator.js';
 
 const router = Router();
@@ -56,7 +57,7 @@ router.put(
 // Admin Finance & Executive Revenue Module Routes
 router.get('/admin/overview', requireAdmin, billingAdminController.getOverview);
 router.get('/admin/transactions', requireAdmin, billingAdminController.getTransactions);
-router.post('/admin/manual-transaction', requireAdmin, billingAdminController.recordManualTransaction);
+router.post('/admin/manual-transaction', requireAdmin, validate(recordManualTransactionSchema), billingAdminController.recordManualTransaction);
 router.get('/admin/export', requireAdmin, billingAdminController.exportTransactionsCsv);
 
 export default router;

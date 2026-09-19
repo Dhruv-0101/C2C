@@ -31,3 +31,17 @@ export const getAdminPostsQuerySchema = z.object({
     endDate: z.string().optional(),
   }),
 });
+
+export const publishNowSchema = z.object({
+  body: createPostSchema.shape.body.extend({
+    targetPlatforms: z.array(z.enum(['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'])).optional(),
+  }),
+});
+
+export const schedulePostSchema = z.object({
+  body: createPostSchema.shape.body.extend({
+    targetPlatforms: z.array(z.enum(['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'])).optional(),
+    scheduledAt: z.string().min(1, 'Scheduled date/time is required'),
+  }),
+});
+

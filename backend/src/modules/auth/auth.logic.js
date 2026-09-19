@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../../config/env.js';
@@ -11,6 +10,7 @@ import {
   generate2FAToken,
   verify2FAToken,
   hashToken,
+  generateRandomToken,
   verifyRefreshToken,
 } from '../../common/helpers/token.helper.js';
 import {
@@ -604,9 +604,9 @@ export async function requestPasswordReset({ email, clientUrl }) {
     throw new ForbiddenError('Sub-Admin accounts cannot reset passwords via email. Please contact your Super Admin to reset your password.');
   }
 
-  // Generate 64-character random hex token
-  const rawToken = crypto.randomBytes(32).toString('hex');
-  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+  // Generate 64-character random hex token via centralized token helper
+  const rawToken = generateRandomToken(32);
+  const tokenHash = hashToken(rawToken);
 
   // Token expires in 1 hour
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
@@ -641,7 +641,7 @@ export async function resetPassword({ token, newPassword }) {
     throw new BadRequestError('Reset token is required.');
   }
 
-  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const tokenHash = hashToken(token);
   const resetTokenRecord = await authRepository.findPasswordResetToken(tokenHash);
 
   if (!resetTokenRecord) {

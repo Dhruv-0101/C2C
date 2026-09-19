@@ -1,7 +1,6 @@
 import { HTTP_STATUS } from '../../common/constants/http-status.js';
 import { sendSuccessResponse } from '../../common/utils/response.util.js';
 import { aiLogic } from './ai.logic.js';
-import { generateCaptionSchema, suggestHashtagsSchema } from './ai.validator.js';
 
 export const aiController = {
   /**
@@ -10,8 +9,7 @@ export const aiController = {
    */
   generateCaption: async (req, res, next) => {
     try {
-      const validatedBody = generateCaptionSchema.parse(req.body);
-      const result = await aiLogic.generateCaption(req.user.id, validatedBody);
+      const result = await aiLogic.generateCaption(req.user.id, req.body);
 
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
@@ -29,8 +27,7 @@ export const aiController = {
    */
   suggestHashtags: async (req, res, next) => {
     try {
-      const validatedBody = suggestHashtagsSchema.parse(req.body);
-      const result = await aiLogic.suggestHashtags(validatedBody);
+      const result = await aiLogic.suggestHashtags(req.body);
 
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.OK,
@@ -42,3 +39,4 @@ export const aiController = {
     }
   },
 };
+
