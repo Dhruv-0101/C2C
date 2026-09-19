@@ -32,7 +32,7 @@ router.get('/', postController.getUserPosts);
 // GET /api/v1/posts/scheduled (Scheduled Queue)
 router.get('/scheduled', postController.getScheduledPosts);
 
-// POST /api/v1/posts/publish-now (Instant Mock Publishing)
+// POST /api/v1/posts/publish-now (Instant Live Publishing)
 router.post('/publish-now', validate(publishNowSchema), postController.publishNow);
 
 // POST /api/v1/posts/schedule (Schedule for Future Date/Time)

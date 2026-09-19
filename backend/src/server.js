@@ -94,6 +94,14 @@ async function startServer() {
 // Graceful Shutdown Handler
 async function gracefulShutdown(signal) {
   logger.warn(`⚠️ ${signal} received. Initiating graceful shutdown...`);
+
+  // 10s safety timeout to prevent hanging connections during container stop
+  const forceExitTimeout = setTimeout(() => {
+    logger.error('💥 Forced shutdown: Closing active connections after timeout.');
+    process.exit(1);
+  }, 10000);
+  forceExitTimeout.unref();
+
   await closeWorkers();
   await disconnectRedis();
   if (server) {
@@ -101,10 +109,12 @@ async function gracefulShutdown(signal) {
       logger.info('🔒 HTTP Server closed.');
       await prisma.$disconnect();
       logger.info('🔒 Database connection closed.');
+      clearTimeout(forceExitTimeout);
       process.exit(0);
     });
   } else {
     await prisma.$disconnect();
+    clearTimeout(forceExitTimeout);
     process.exit(0);
   }
 }

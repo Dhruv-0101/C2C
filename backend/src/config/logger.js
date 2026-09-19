@@ -5,16 +5,44 @@ import { env } from './env.js';
  * Preserves custom icons/emojis in logs and formats output as structured JSON in Production mode.
  */
 class Logger {
+  normalizeError(err) {
+    if (!(err instanceof Error)) return err;
+    return {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+      ...(err.code ? { code: err.code } : {}),
+      ...(err.statusCode ? { statusCode: err.statusCode } : {}),
+    };
+  }
+
   formatMessage(level, message, meta = null) {
     const timestamp = new Date().toISOString();
     const isProd = env.NODE_ENV === 'production';
+
+    const isMessageError = message instanceof Error;
+    const resolvedMessage = isMessageError ? message.message : String(message ?? '');
+    const errorStack = isMessageError ? message.stack : undefined;
+
+    let resolvedMeta = meta;
+    if (meta instanceof Error) {
+      resolvedMeta = this.normalizeError(meta);
+    } else if (meta && typeof meta === 'object') {
+      resolvedMeta = { ...meta };
+      for (const [key, val] of Object.entries(resolvedMeta)) {
+        if (val instanceof Error) {
+          resolvedMeta[key] = this.normalizeError(val);
+        }
+      }
+    }
 
     if (isProd) {
       return JSON.stringify({
         timestamp,
         level,
-        message,
-        ...(meta ? { meta } : {}),
+        message: resolvedMessage,
+        ...(errorStack ? { stack: errorStack } : {}),
+        ...(resolvedMeta ? { meta: resolvedMeta } : {}),
       });
     }
 
@@ -28,9 +56,10 @@ class Logger {
 
     const hasCustomIcon = typeof message === 'string' && /^\p{Extended_Pictographic}/u.test(message);
     const iconPrefix = hasCustomIcon ? '' : `${defaultIcons[level] || '📝'} `;
-    const metaStr = meta ? ` | ${JSON.stringify(meta)}` : '';
+    const metaStr = resolvedMeta ? ` | ${JSON.stringify(resolvedMeta)}` : '';
+    const stackStr = errorStack ? `\n${errorStack}` : '';
 
-    return `[${timestamp}] ${iconPrefix}${message}${metaStr}`;
+    return `[${timestamp}] ${iconPrefix}${resolvedMessage}${metaStr}${stackStr}`;
   }
 
   info(message, meta) {

@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { redisConnectionOptions } from "../../config/redis.js";
+import { redisConnectionOptions, isRedisConfigured } from "../../config/redis.js";
 import { SCHEDULED_POST_QUEUE_NAME } from "../../queues/post.queue.js";
 import { liveSocialPublisherService } from "../../modules/social/services/liveSocialPublisher.service.js";
 import { prisma } from "../../config/database.js";
@@ -162,8 +162,6 @@ Agar dono ek hi table ya ek hi ID hoti, toh ek content ko multiple times alag-al
 
 let workerInstance = null;
 
-const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOST);
-
 if (isRedisConfigured) {
   try {
     workerInstance = new Worker(
@@ -186,12 +184,22 @@ if (isRedisConfigured) {
     });
 
     workerInstance.on("failed", (job, err) => {
-      logger.error(`❌ [PostWorker] Job ${job?.id} failed:`, err);
+      logger.error(`❌ [PostWorker] Job ${job?.id} failed:`, err.message || err);
     });
 
-    workerInstance.on("error", () => { });
+    workerInstance.on("stalled", (jobId) => {
+      logger.warn(`⚠️ [PostWorker] Job #${jobId} stalled and will be re-processed.`);
+    });
+
+    let hasLoggedWorkerError = false;
+    workerInstance.on("error", (err) => {
+      if (!hasLoggedWorkerError) {
+        logger.warn(`ℹ️ [PostWorker] Connection notice: ${err.message}. Direct execution fallback active.`);
+        hasLoggedWorkerError = true;
+      }
+    });
   } catch (err) {
-    logger.warn("⚠️ [PostWorker] BullMQ Worker initialization deferred.");
+    logger.warn("⚠️ [PostWorker] BullMQ Worker initialization deferred:", err.message);
   }
 }
 

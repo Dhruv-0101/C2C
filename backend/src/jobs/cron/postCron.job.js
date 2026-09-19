@@ -42,33 +42,44 @@ export const triggerScheduledPostsNow = async () => {
     const processedPosts = [];
 
     for (const item of duePosts) {
-      // Mark as PROCESSING to prevent duplicate pickup by concurrent worker processes
-      await prisma.scheduledPost.update({
-        where: { id: item.id },
-        data: { status: "PROCESSING" },
-      });
-
-      const jobPayload = {
-        scheduledPostId: item.id,
-        postId: item.postId,
-        userId: item.post?.userId,
-        targetPlatforms: item.targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],
-        postContent: item.post?.captions?.[0]?.captionText || item.post?.occasionName || item.post?.template?.title || 'Branded Social Post',
-        graphicUrl: item.post?.finalGraphicUrl || item.post?.customImageUrl,
-      };
-
       try {
+        // Mark as PROCESSING to prevent duplicate pickup by concurrent worker processes
+        await prisma.scheduledPost.update({
+          where: { id: item.id },
+          data: { status: "PROCESSING" },
+        });
+
+        const jobPayload = {
+          scheduledPostId: item.id,
+          postId: item.postId,
+          userId: item.post?.userId,
+          targetPlatforms: item.targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],
+          postContent: item.post?.captions?.[0]?.captionText || item.post?.occasionName || item.post?.template?.title || 'Branded Social Post',
+          graphicUrl: item.post?.finalGraphicUrl || item.post?.customImageUrl,
+        };
+
         if (scheduledPostQueue) {
-          await scheduledPostQueue.add(POST_JOB_NAMES.PUBLISH_SCHEDULED_POST, jobPayload);
+          try {
+            await scheduledPostQueue.add(POST_JOB_NAMES.PUBLISH_SCHEDULED_POST, jobPayload);
+          } catch (queueErr) {
+            logger.warn(`ℹ️ [CronDispatcher] Redis Queue offline (${queueErr.message}). Executing direct DB publish fallback for post ${item.id}...`);
+            await processPostJob(jobPayload);
+          }
         } else {
           await processPostJob(jobPayload);
         }
-      } catch (queueErr) {
-        logger.warn(`ℹ️ [CronDispatcher] Redis Queue offline (${queueErr.message}). Executing direct DB publish fallback for post ${item.id}...`);
-        await processPostJob(jobPayload);
-      }
 
-      processedPosts.push(item.id);
+        processedPosts.push(item.id);
+      } catch (itemError) {
+        logger.error(`💥 [CronDispatcher] Failed to dispatch due post #${item.id}:`, itemError.message);
+        await prisma.scheduledPost.update({
+          where: { id: item.id },
+          data: {
+            status: "FAILED",
+            errorMessage: itemError.message || "Failed to dispatch post",
+          },
+        }).catch(() => {});
+      }
     }
 
     logger.info(`🎉 [CronDispatcher] Successfully dispatched ${processedPosts.length} posts.`);

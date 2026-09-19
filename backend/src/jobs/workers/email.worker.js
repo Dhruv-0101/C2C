@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { redisConnection } from '../../config/redis.js';
+import { redisConnection, isRedisConfigured } from '../../config/redis.js';
 import { EMAIL_QUEUE_NAME, EMAIL_JOB_NAMES } from '../../queues/email.queue.js';
 import { sendWelcomeEmail, sendPasswordResetEmail, sendInvoiceEmail } from '../../common/services/email.service.js';
 import { logger } from '../../config/logger.js';
@@ -12,8 +12,6 @@ import { logger } from '../../config/logger.js';
  * so HTTP API requests return instantly to users without waiting for SMTP network calls.
  */
 let emailWorker = null;
-
-const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOST);
 
 if (isRedisConfigured) {
   try {
@@ -64,9 +62,19 @@ if (isRedisConfigured) {
       logger.error(`❌ [EmailWorker] Job #${job?.id} (${job?.name}) failed:`, err.message);
     });
 
-    emailWorker.on('error', () => {});
+    emailWorker.on('stalled', (jobId) => {
+      logger.warn(`⚠️ [EmailWorker] Job #${jobId} stalled and will be re-processed.`);
+    });
+
+    let hasLoggedWorkerError = false;
+    emailWorker.on('error', (err) => {
+      if (!hasLoggedWorkerError) {
+        logger.warn(`ℹ️ [EmailWorker] Connection notice: ${err.message}. Direct execution fallback active.`);
+        hasLoggedWorkerError = true;
+      }
+    });
   } catch (err) {
-    logger.warn('⚠️ [EmailWorker] Email worker deferred.');
+    logger.warn('⚠️ [EmailWorker] Email worker initialization deferred:', err.message);
   }
 }
 

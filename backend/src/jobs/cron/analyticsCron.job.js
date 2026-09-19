@@ -1,3 +1,4 @@
+import cron from 'node-cron';
 import axios from 'axios';
 import { prisma } from '../../config/database.js';
 import { logger } from '../../config/logger.js';
@@ -139,14 +140,13 @@ async function fetchRealPlatformMetrics({ platform, platformPostId, accessToken 
  */
 export const syncAnalyticsMetrics = async () => {
   try {
+    // 1. Fetch recent published posts ordered by newest first (batch size 200)
     const publishedPosts = await prisma.post.findMany({
       where: { status: 'PUBLISHED' },
       include: {
-        scheduledPosts: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
+        scheduledPost: true,
       },
+      orderBy: { createdAt: 'desc' },
       take: 200,
     });
 
@@ -154,118 +154,147 @@ export const syncAnalyticsMetrics = async () => {
       return { count: 0 };
     }
 
-    const platforms = ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
+    // 2. High-Scale Optimization: Batch fetch all connected social accounts in 1 single query (eliminates N+1 loop queries)
+    const uniqueUserIds = [...new Set(publishedPosts.map((p) => p.userId).filter(Boolean))];
+    const allSocialAccounts = await prisma.socialAccount.findMany({
+      where: {
+        userId: { in: uniqueUserIds },
+        isConnected: true,
+      },
+    });
 
-    for (const post of publishedPosts) {
-      // Fetch connected user social accounts for live access tokens
-      const socialAccounts = await prisma.socialAccount.findMany({
-        where: { userId: post.userId, isConnected: true },
-      });
-
-      const tokenMap = {};
-      for (const sa of socialAccounts) {
-        if (sa.accessToken) {
-          tokenMap[sa.platform] = decryptToken(sa.accessToken);
-        }
+    // In-memory token lookup map: userTokenMap[userId][platform] = decryptedToken
+    const userTokenMap = {};
+    for (const sa of allSocialAccounts) {
+      if (!userTokenMap[sa.userId]) {
+        userTokenMap[sa.userId] = {};
       }
-
-      // Check scheduled post platform results for live media/post IDs
-      const latestSchedule = post.scheduledPosts?.[0];
-      const platformResults = latestSchedule?.platformResults || {};
-
-      // Determine target platforms for this post
-      const targetPlatforms = latestSchedule?.targetPlatforms?.length > 0
-        ? latestSchedule.targetPlatforms
-        : Object.keys(platformResults).length > 0
-        ? Object.keys(platformResults)
-        : ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
-
-      for (const platform of targetPlatforms) {
-        const liveMediaInfo = platformResults[platform] || {};
-        const platformPostId = liveMediaInfo.mediaId || liveMediaInfo.postId || liveMediaInfo.id || null;
-        const accessToken = tokenMap[platform];
-
-        // 1. Attempt Real Live API Fetching
-        let metrics = await fetchRealPlatformMetrics({
-          platform,
-          platformPostId,
-          accessToken,
-        });
-
-        // 2. Fallback to Organic Growth Simulation if Real API metric not available
-        if (!metrics) {
-          const reachInc = Math.floor(Math.random() * 25) + 5;
-          const impressionsInc = Math.floor(reachInc * 1.4);
-          const likesInc = Math.floor(reachInc * 0.1);
-          const commentsInc = Math.floor(likesInc * 0.15);
-          const sharesInc = Math.floor(likesInc * 0.05);
-
-          const existing = await prisma.postAnalytics.findUnique({
-            where: {
-              postId_platform: {
-                postId: post.id,
-                platform,
-              },
-            },
-          });
-
-          const newReach = (existing?.reach || 250) + reachInc;
-          const newImpressions = (existing?.impressions || 350) + impressionsInc;
-          const newLikes = (existing?.likes || 20) + likesInc;
-          const newComments = (existing?.comments || 3) + commentsInc;
-          const newShares = (existing?.shares || 2) + sharesInc;
-          const newEngagementRate = Number((((newLikes + newComments + newShares) / newReach) * 100).toFixed(2));
-
-          metrics = {
-            reach: newReach,
-            impressions: newImpressions,
-            likes: newLikes,
-            comments: newComments,
-            shares: newShares,
-            engagementRate: newEngagementRate,
-            isReal: false,
-          };
-        }
-
-        const targetPlatformPostId = platformPostId || `synced_${platform.toLowerCase()}_${post.id}`;
-
-        await prisma.postAnalytics.upsert({
-          where: {
-            postId_platform: {
-              postId: post.id,
-              platform,
-            },
-          },
-          create: {
-            postId: post.id,
-            userId: post.userId,
-            platform,
-            platformPostId: targetPlatformPostId,
-            reach: metrics.reach,
-            impressions: metrics.impressions,
-            likes: metrics.likes,
-            comments: metrics.comments,
-            shares: metrics.shares,
-            engagementRate: metrics.engagementRate,
-          },
-          update: {
-            platformPostId: targetPlatformPostId,
-            reach: metrics.reach,
-            impressions: metrics.impressions,
-            likes: metrics.likes,
-            comments: metrics.comments,
-            shares: metrics.shares,
-            engagementRate: metrics.engagementRate,
-            lastSyncedAt: new Date(),
-          },
-        });
+      if (sa.accessToken) {
+        userTokenMap[sa.userId][sa.platform] = decryptToken(sa.accessToken);
       }
     }
 
-    logger.info(`📊 [AnalyticsCron] Refreshed analytics metrics for ${publishedPosts.length} published posts.`);
-    return { count: publishedPosts.length };
+    let syncedCount = 0;
+
+    // 3. Process each post with isolated error handling (single post error never crashes the batch)
+    for (const post of publishedPosts) {
+      try {
+        const tokenMap = userTokenMap[post.userId] || {};
+        const latestSchedule = post.scheduledPost;
+        const platformResults = latestSchedule?.platformResults || {};
+
+        // Determine target platforms for this post
+        const targetPlatforms = latestSchedule?.targetPlatforms?.length > 0
+          ? latestSchedule.targetPlatforms
+          : Object.keys(platformResults).length > 0
+          ? Object.keys(platformResults)
+          : ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
+
+        for (const platform of targetPlatforms) {
+          const liveMediaInfo = platformResults[platform] || {};
+          const platformPostId = liveMediaInfo.mediaId || liveMediaInfo.postId || liveMediaInfo.id || null;
+          const accessToken = tokenMap[platform];
+
+          // Attempt Real Live API Fetching from Meta Graph or LinkedIn RestLi API
+          const metrics = await fetchRealPlatformMetrics({
+            platform,
+            platformPostId,
+            accessToken,
+          });
+
+          // Only record genuine metrics when live API returns real engagement data (zero fake mock numbers)
+          if (metrics) {
+            const targetPlatformPostId = platformPostId || `${platform.toLowerCase()}_${post.id}`;
+
+            await prisma.postAnalytics.upsert({
+              where: {
+                postId_platform: {
+                  postId: post.id,
+                  platform,
+                },
+              },
+              create: {
+                postId: post.id,
+                userId: post.userId,
+                platform,
+                platformPostId: targetPlatformPostId,
+                reach: metrics.reach,
+                impressions: metrics.impressions,
+                likes: metrics.likes,
+                comments: metrics.comments,
+                shares: metrics.shares,
+                engagementRate: metrics.engagementRate,
+              },
+              update: {
+                platformPostId: targetPlatformPostId,
+                reach: metrics.reach,
+                impressions: metrics.impressions,
+                likes: metrics.likes,
+                comments: metrics.comments,
+                shares: metrics.shares,
+                engagementRate: metrics.engagementRate,
+                lastSyncedAt: new Date(),
+              },
+            });
+            syncedCount++;
+          }
+        }
+      } catch (postErr) {
+        logger.warn(`⚠️ [AnalyticsCron] Notice while syncing metrics for Post #${post.id}: ${postErr.message}`);
+      }
+    }
+
+    logger.info(`📊 [AnalyticsCron] Refreshed analytics metrics for ${syncedCount} platform post records.`);
+    return { count: syncedCount };
   } catch (error) {
     logger.error('💥 [AnalyticsCron] Error during analytics sync cycle:', error.message);
+    return { count: 0, error: error.message };
+  }
+};
+
+let isAnalyticsRunning = false;
+let analyticsCronTask = null;
+
+/**
+ * Initialize 30-minute Analytics Cron Dispatcher using node-cron (default: *\/30 * * * *)
+ * Automatically polls Meta Graph API & LinkedIn API to refresh post metrics in PostgreSQL
+ */
+export const initAnalyticsCron = (cronExpression = '*/30 * * * *') => {
+  logger.info(`⏰ [AnalyticsCron] Starting periodic social analytics sync schedule (${cronExpression})...`);
+
+  if (analyticsCronTask) {
+    logger.warn('⚠️ [AnalyticsCron] Analytics cron task is already active.');
+    return analyticsCronTask;
+  }
+
+  analyticsCronTask = cron.schedule(cronExpression, async () => {
+    // Concurrency guard: Skip if previous sync cycle is still running
+    if (isAnalyticsRunning) {
+      logger.warn('⚠️ [AnalyticsCron] Previous analytics sync cycle still running. Skipping this cycle.');
+      return;
+    }
+
+    isAnalyticsRunning = true;
+    try {
+      await syncAnalyticsMetrics();
+    } catch (err) {
+      logger.error('💥 [AnalyticsCron] Analytics sync cycle error:', err.message);
+    } finally {
+      isAnalyticsRunning = false;
+    }
+  });
+
+  return analyticsCronTask;
+};
+
+/**
+ * Gracefully stop the analytics cron dispatcher
+ */
+export const stopAnalyticsCron = () => {
+  if (analyticsCronTask) {
+    analyticsCronTask.stop();
+    analyticsCronTask = null;
+    logger.info('🛑 [AnalyticsCron] Analytics cron task stopped successfully.');
   }
 };
 

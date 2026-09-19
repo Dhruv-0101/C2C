@@ -217,10 +217,33 @@ export const instagramPublisherService = {
     const containerId = containerRes.data.id;
     logger.info(`📦 [InstagramPublisher] Container created successfully. ID: ${containerId}`);
 
-    // Pause 3 seconds for Meta server-side media processing
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // Step 2: Poll Meta server-side media processing until FINISHED (Max 15 seconds)
+    let isReady = false;
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, attempt === 1 ? 2500 : 2000));
+      try {
+        const statusRes = await axios.get(`${META_GRAPH_URL}/${containerId}`, {
+          params: {
+            fields: 'status_code,status',
+            access_token: accessToken,
+          },
+        });
+        const statusCode = statusRes.data?.status_code;
+        if (statusCode === 'FINISHED') {
+          isReady = true;
+          break;
+        }
+        if (statusCode === 'ERROR') {
+          throw new Error(`Meta container processing failed: ${statusRes.data?.status || 'Media rendering error'}`);
+        }
+      } catch (pollErr) {
+        if (pollErr.message.includes('Meta container processing failed')) throw pollErr;
+        // If status check is not supported by current token permissions, proceed directly
+        break;
+      }
+    }
 
-    // Step 2: Publish Container to Instagram Feed
+    // Step 3: Publish Container to Instagram Feed
     const publishRes = await axios.post(
       `${META_GRAPH_URL}/${igUserId}/media_publish`,
       null,

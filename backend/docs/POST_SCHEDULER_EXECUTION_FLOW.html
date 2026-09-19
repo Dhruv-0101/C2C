@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrandFlow — Post Scheduler, Redis & BullMQ Complete Execution Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #080C14;
+      --bg-card: #0F172A;
+      --bg-card-hover: #1E293B;
+      --border-color: #334155;
+      --border-glow: #38BDF8;
+      --accent-cyan: #06B6D4;
+      --accent-blue: #3B82F6;
+      --accent-purple: #8B5CF6;
+      --accent-emerald: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-rose: #F43F5E;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --code-bg: #030712;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--border-glow);
+      color: #38BDF8;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #818CF8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    /* CONTROLS & FILTER BAR */
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 24px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .mode-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .quick-stats span {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    /* TIMELINE FLOW CONTAINER */
+    .flow-timeline {
+      position: relative;
+      margin-bottom: 60px;
+    }
+
+    /* Central animated guide line */
+    .flow-timeline::before {
+      content: '';
+      position: absolute;
+      left: 36px;
+      top: 30px;
+      bottom: 30px;
+      width: 3px;
+      background: linear-gradient(180deg, 
+        var(--accent-cyan) 0%, 
+        var(--accent-blue) 30%, 
+        var(--accent-purple) 60%, 
+        var(--accent-emerald) 100%);
+      border-radius: 2px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    /* FLOW STEP CARD */
+    .flow-step {
+      position: relative;
+      display: flex;
+      gap: 28px;
+      margin-bottom: 36px;
+      transition: transform 0.2s ease;
+    }
+
+    .flow-step:hover {
+      transform: translateX(4px);
+    }
+
+    /* STEP NODE CIRCLE */
+    .step-node {
+      position: relative;
+      z-index: 2;
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+      border-radius: 20px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .step-node .node-num {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .step-node .node-icon {
+      font-size: 22px;
+    }
+
+    .flow-step.cyan .step-node { border-color: var(--accent-cyan); color: var(--accent-cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.25); }
+    .flow-step.blue .step-node { border-color: var(--accent-blue); color: var(--accent-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.25); }
+    .flow-step.purple .step-node { border-color: var(--accent-purple); color: var(--accent-purple); box-shadow: 0 0 15px rgba(139, 92, 246, 0.25); }
+    .flow-step.amber .step-node { border-color: var(--accent-amber); color: var(--accent-amber); box-shadow: 0 0 15px rgba(245, 158, 11, 0.25); }
+    .flow-step.emerald .step-node { border-color: var(--accent-emerald); color: var(--accent-emerald); box-shadow: 0 0 15px rgba(16, 185, 129, 0.25); }
+
+    /* CARD CONTENT */
+    .step-card {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .step-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-ref {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #38BDF8;
+    }
+
+    .line-tag {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--accent-amber);
+      color: var(--accent-amber);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    /* CODE BOX */
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid #1E293B;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      color: #E2E8F0;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .code-box .kw { color: #F43F5E; font-weight: 600; }
+    .code-box .fn { color: #38BDF8; }
+    .code-box .str { color: #34D399; }
+    .code-box .cm { color: #64748B; font-style: italic; }
+    .code-box .obj { color: #FBBF24; }
+
+    /* FORK / BRANCH SECTION */
+    .branch-container {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 800px) {
+      .branch-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .branch-box {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    .branch-box.happy {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.03);
+    }
+
+    .branch-box.fallback {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.03);
+    }
+
+    .branch-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .branch-box.happy .branch-title { color: var(--accent-emerald); }
+    .branch-box.fallback .branch-title { color: var(--accent-amber); }
+
+    /* PLATFORM RESULTS DRAWER */
+    .platforms-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .platforms-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .platform-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 12px;
+    }
+
+    .platform-name {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .platform-card.ig .platform-name { color: #E1306C; }
+    .platform-card.fb .platform-name { color: #1877F2; }
+    .platform-card.li .platform-name { color: #0A66C2; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding-top: 40px;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- HEADER -->
+  <header>
+    <div class="badge-pill">⚡ Architecture Decoding & Execution Trace</div>
+    <h1>BrandFlow Post Scheduler, Redis & BullMQ Flow</h1>
+    <p class="subtitle">
+      Complete step-by-step technical lifecycle tracing every function call from Node.js server startup to PostgreSQL scheduled polling, BullMQ queue dispatch, live worker consumption, and Meta/LinkedIn Graph API publishing.
+    </p>
+  </header>
+
+  <!-- CONTROLS & SUMMARY BAR -->
+  <div class="controls-bar">
+    <div class="mode-toggle">
+      <span style="font-size: 13px; font-weight: 700; color: var(--text-muted);">VIEWING PATHWAY:</span>
+      <button class="toggle-btn active" id="btn-all" onclick="filterSteps('all')">Complete End-to-End Trace (13 Steps)</button>
+      <button class="toggle-btn" id="btn-happy" onclick="filterSteps('happy')">Happy Path (Redis + BullMQ)</button>
+      <button class="toggle-btn" id="btn-fallback" onclick="filterSteps('fallback')">Fallback Path (Direct DB Execution)</button>
+    </div>
+    <div class="quick-stats">
+      <div>Poll Frequency: <span>60 Seconds (* * * * *)</span></div>
+      <div>Concurrency Limit: <span>2 Workers</span></div>
+      <div>Rate Limit: <span>100 Posts / Min</span></div>
+    </div>
+  </div>
+
+  <!-- TIMELINE WRAPPER -->
+  <div class="flow-timeline">
+
+    <!-- STEP 1: DATABASE CONNECTION -->
+    <div class="flow-step cyan" data-type="boot">
+      <div class="step-node">
+        <span class="node-num">STEP 01</span>
+        <span class="node-icon">🐘</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Database Verification on Boot</div>
+          <div class="file-ref">server.js <span class="line-tag">Line 79</span></div>
+        </div>
+        <p class="step-desc">
+          When the Node.js container boots, <code>startServer()</code> first verifies the PostgreSQL database connection via Prisma ORM before any HTTP or background job queues are initialized.
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/server.js: Line 79</span><br>
+          <span class="kw">await</span> <span class="fn">connectDatabase</span>(); <span class="cm">// Verifies PostgreSQL connection & Prisma models</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: WORKER ORCHESTRATOR INVOCATION -->
+    <div class="flow-step cyan" data-type="boot">
+      <div class="step-node">
+        <span class="node-num">STEP 02</span>
+        <span class="node-icon">⚡</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Master Worker Initializer Invoked</div>
+          <div class="file-ref">server.js <span class="line-tag">Line 82</span></div>
+        </div>
+        <p class="step-desc">
+          Right after the database verifies successfully, <code>server.js</code> triggers the master background jobs orchestrator <code>initWorkers()</code>.
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/server.js: Line 82</span><br>
+          <span class="fn">initWorkers</span>(); <span class="cm">// Bootstraps BullMQ Queues, Cron Tickers & Workers</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: DISPATCHER STARTUP -->
+    <div class="flow-step blue" data-type="cron">
+      <div class="step-node">
+        <span class="node-num">STEP 03</span>
+        <span class="node-icon">⏰</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Cron Dispatcher Initialization</div>
+          <div class="file-ref">jobs/index.js <span class="line-tag">Line 15</span></div>
+        </div>
+        <p class="step-desc">
+          Inside <code>backend/src/jobs/index.js</code>, the orchestrator boots both the 1-minute scheduled post dispatcher and the 30-minute social analytics sync cron.
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/jobs/index.js: Line 15</span><br>
+          <span class="fn">initCronDispatcher</span>(); <span class="cm">// 1-minute Post Dispatcher (* * * * *)</span><br>
+          <span class="fn">initAnalyticsCron</span>();   <span class="cm">// 30-minute Social Analytics Sync (*/30 * * * *)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: NODE-CRON TICKER REGISTRATION -->
+    <div class="flow-step blue" data-type="cron">
+      <div class="step-node">
+        <span class="node-num">STEP 04</span>
+        <span class="node-icon">🔄</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Registering 1-Minute Cron Schedule with Concurrency Guard</div>
+          <div class="file-ref">jobs/cron/postCron.job.js <span class="line-tag">Line 100</span></div>
+        </div>
+        <p class="step-desc">
+          Registers <code>cron.schedule('* * * * *')</code>. Includes a critical concurrency guard (<code>isDispatcherRunning</code>) so if a large 1,000-post batch takes 75 seconds, the next minute's ticker skips to prevent overlapping queries!
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/jobs/cron/postCron.job.js: Line 108</span><br>
+          cronScheduledTask = <span class="obj">cron</span>.<span class="fn">schedule</span>(<span class="str">"* * * * *"</span>, <span class="kw">async</span> () => {<br>
+          &nbsp;&nbsp;<span class="kw">if</span> (isDispatcherRunning) <span class="kw">return</span>; <span class="cm">// Concurrency Lock</span><br>
+          &nbsp;&nbsp;isDispatcherRunning = <span class="kw">true</span>;<br>
+          &nbsp;&nbsp;<span class="kw">try</span> { <span class="kw">await</span> <span class="fn">triggerScheduledPostsNow</span>(); } <span class="cm">// Line 117</span><br>
+          &nbsp;&nbsp;<span class="kw">finally</span> { isDispatcherRunning = <span class="kw">false</span>; }<br>
+          });
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: THE 00th SECOND SWEEPER QUERY -->
+    <div class="flow-step blue" data-type="cron">
+      <div class="step-node">
+        <span class="node-num">STEP 05</span>
+        <span class="node-icon">🔍</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Querying PostgreSQL for Due Scheduled Posts</div>
+          <div class="file-ref">jobs/cron/postCron.job.js <span class="line-tag">Line 17 & 22</span></div>
+        </div>
+        <p class="step-desc">
+          Every minute on the exact 00th second, <code>triggerScheduledPostsNow()</code> sweeps PostgreSQL for records in the <code>ScheduledPost</code> table where <code>status = 'PENDING'</code> and <code>scheduledAt &lt;= new Date()</code> (picks all due or overdue posts).
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/jobs/cron/postCron.job.js: Lines 22-33</span><br>
+          <span class="kw">const</span> duePosts = <span class="kw">await</span> <span class="obj">prisma</span>.<span class="obj">scheduledPost</span>.<span class="fn">findMany</span>({<br>
+          &nbsp;&nbsp;where: { status: <span class="str">"PENDING"</span>, scheduledAt: { lte: <span class="kw">new</span> <span class="fn">Date</span>() } },<br>
+          &nbsp;&nbsp;include: { post: <span class="kw">true</span> },<br>
+          &nbsp;&nbsp;take: <span class="obj">1000</span>, <span class="cm">// Batch safety limit</span><br>
+          });
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6: OPTIMISTIC LOCKING -->
+    <div class="flow-step purple" data-type="lock">
+      <div class="step-node">
+        <span class="node-num">STEP 06</span>
+        <span class="node-icon">🔒</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Atomic Deduplication Lock (Mark Status as PROCESSING)</div>
+          <div class="file-ref">jobs/cron/postCron.job.js <span class="line-tag">Line 47</span></div>
+        </div>
+        <p class="step-desc">
+          Before dispatching to the queue, the post status is immediately updated to <code>PROCESSING</code>. In multi-container Docker or AWS deployments, this prevents another container's cron poller from picking up the exact same post!
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/jobs/cron/postCron.job.js: Lines 47-50</span><br>
+          <span class="kw">await</span> <span class="obj">prisma</span>.<span class="obj">scheduledPost</span>.<span class="fn">update</span>({<br>
+          &nbsp;&nbsp;where: { id: item.id },<br>
+          &nbsp;&nbsp;data: { status: <span class="str">"PROCESSING"</span> }<br>
+          });
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 7: THE CRITICAL FORK (LINES 61-70) -->
+    <div class="flow-step amber" data-type="fork">
+      <div class="step-node">
+        <span class="node-num">STEP 07</span>
+        <span class="node-icon">🔀</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">The Branching Fork: BullMQ Queue Push vs Direct Fallback</div>
+          <div class="file-ref">jobs/cron/postCron.job.js <span class="line-tag">Lines 61–70</span></div>
+        </div>
+        <p class="step-desc">
+          This is the core resilience mechanism you and I decoded! It evaluates whether Redis is alive. If yes, push to queue (Happy Path). If Redis drops or has a timeout, catch the error and execute directly (Fallback Path).
+        </p>
+        
+        <div class="branch-container">
+          <div class="branch-box happy">
+            <div class="branch-title">✅ BRANCH A: HAPPY PATH (LINE 63)</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+              Redis online. Job is added to BullMQ. Background worker picks it up from Redis asynchronously!
+            </p>
+            <div class="code-box">
+              <span class="kw">await</span> <span class="obj">scheduledPostQueue</span>.<span class="fn">add</span>(<br>
+              &nbsp;&nbsp;POST_JOB_NAMES.PUBLISH_SCHEDULED_POST,<br>
+              &nbsp;&nbsp;jobPayload<br>
+              );
+            </div>
+          </div>
+
+          <div class="branch-box fallback">
+            <div class="branch-title">🛡️ BRANCH B: RESILIENCE FALLBACK (LINE 66)</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+              Redis is offline/crashed. Catches <code>queueErr</code> and executes directly in-memory with zero downtime!
+            </p>
+            <div class="code-box">
+              <span class="kw">catch</span> (queueErr) {<br>
+              &nbsp;&nbsp;<span class="kw">await</span> <span class="fn">processPostJob</span>(jobPayload);<br>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 8: QUEUE DEFINITION -->
+    <div class="flow-step purple" data-type="queue">
+      <div class="step-node">
+        <span class="node-num">STEP 08</span>
+        <span class="node-icon">📦</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">BullMQ Scheduled Post Queue Ingestion</div>
+          <div class="file-ref">queues/post.queue.js <span class="line-tag">Lines 25–43</span></div>
+        </div>
+        <p class="step-desc">
+          The job lands in Redis under the queue key <code>scheduled-post-queue</code>. BullMQ attaches retry rules (3 attempts, 2000ms exponential backoff) and memory cleanups (<code>removeOnComplete: 50</code>).
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/queues/post.queue.js</span><br>
+          scheduledPostQueue = <span class="kw">new</span> <span class="fn">Queue</span>(SCHEDULED_POST_QUEUE_NAME, {<br>
+          &nbsp;&nbsp;connection: redisConnectionOptions,<br>
+          &nbsp;&nbsp;defaultJobOptions: { attempts: <span class="obj">3</span>, backoff: { type: <span class="str">"exponential"</span>, delay: <span class="obj">2000</span> } }<br>
+          });
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 9: WORKER CONSUMER -->
+    <div class="flow-step purple" data-type="worker">
+      <div class="step-node">
+        <span class="node-num">STEP 09</span>
+        <span class="node-icon">🛠️</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">BullMQ Worker Picks Up Job from Redis</div>
+          <div class="file-ref">jobs/workers/post.worker.js <span class="line-tag">Line 168 & Line 16</span></div>
+        </div>
+        <p class="step-desc">
+          <code>workerInstance</code> listens to <code>scheduled-post-queue</code> with <code>concurrency: 2</code> and rate limit of <code>100 jobs / 60s</code>. It invokes <code>processPostJob(job.data)</code> at Line 16.
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/jobs/workers/post.worker.js: Lines 168-172</span><br>
+          workerInstance = <span class="kw">new</span> <span class="fn">Worker</span>(SCHEDULED_POST_QUEUE_NAME, <span class="kw">async</span> (job) => {<br>
+          &nbsp;&nbsp;<span class="kw">return</span> <span class="kw">await</span> <span class="fn">processPostJob</span>(job.data); <span class="cm">// Jumps to Line 16!</span><br>
+          });
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 10: USER ACTIVE CHECK & DISPATCH -->
+    <div class="flow-step purple" data-type="worker">
+      <div class="step-node">
+        <span class="node-num">STEP 10</span>
+        <span class="node-icon">👤</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">User Account Active Guard & Live Social Dispatch</div>
+          <div class="file-ref">jobs/workers/post.worker.js <span class="line-tag">Line 47 & Line 74</span></div>
+        </div>
+        <p class="step-desc">
+          First verifies <code>userRecord.isActive !== false</code> (in case user was deactivated by Admin after scheduling). Then at Line 74, triggers the master social publisher service!
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/jobs/workers/post.worker.js: Line 74</span><br>
+          <span class="kw">const</span> publishResult = <span class="kw">await</span> <span class="obj">liveSocialPublisherService</span>.<span class="fn">publishToPlatforms</span>({<br>
+          &nbsp;&nbsp;postId: postId || scheduledPostId,<br>
+          &nbsp;&nbsp;userId, postContent, graphicUrl, targetPlatforms<br>
+          });
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 11: MASTER SOCIAL ORCHESTRATOR -->
+    <div class="flow-step emerald" data-type="social">
+      <div class="step-node">
+        <span class="node-num">STEP 11</span>
+        <span class="node-icon">🌐</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Master Social Dispatcher & AES-256 Token Decryption</div>
+          <div class="file-ref">social/services/liveSocialPublisher.service.js <span class="line-tag">Line 15</span></div>
+        </div>
+        <p class="step-desc">
+          Loops through target platforms (<code>INSTAGRAM</code>, <code>FACEBOOK</code>, <code>LINKEDIN</code>). Verifies the user has a connected account in <code>SocialAccount</code> table and decrypts the OAuth access token using AES-256-GCM.
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/modules/social/services/liveSocialPublisher.service.js</span><br>
+          <span class="kw">const</span> account = <span class="kw">await</span> <span class="obj">socialRepository</span>.<span class="fn">findByUserAndPlatform</span>(userId, platformUpper);<br>
+          <span class="kw">const</span> decryptedToken = <span class="fn">decryptToken</span>(account.accessToken); <span class="cm">// AES-256 Decryption</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 12: REAL GRAPH API CALLS -->
+    <div class="flow-step emerald" data-type="social">
+      <div class="step-node">
+        <span class="node-num">STEP 12</span>
+        <span class="node-icon">🚀</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Calling Official Social Media Publisher Drivers</div>
+          <div class="file-ref">liveSocialPublisher.service.js <span class="line-tag">Lines 79, 103, 126</span></div>
+        </div>
+        <p class="step-desc">
+          Dispatches directly to the individual platform drivers. No mock, no fake simulation URLs!
+        </p>
+        
+        <div class="platforms-grid">
+          <div class="platform-card ig">
+            <div class="platform-name">📷 Instagram Business</div>
+            <div style="color: var(--text-muted); margin-bottom: 6px;"><code>instagramPublisher.service.js:197</code></div>
+            <div>Two-step container API: <code>POST /media</code> ➔ poll readiness ➔ <code>POST /media_publish</code>. Returns live Instagram permalink.</div>
+          </div>
+          <div class="platform-card fb">
+            <div class="platform-name">📘 Facebook Page</div>
+            <div style="color: var(--text-muted); margin-bottom: 6px;"><code>facebookPublisher.service.js:16</code></div>
+            <div>Direct Meta Graph <code>POST /{pageId}/photos</code> with URL and caption. Returns Page post ID and URL.</div>
+          </div>
+          <div class="platform-card li">
+            <div class="platform-name">💼 LinkedIn UGC</div>
+            <div style="color: var(--text-muted); margin-bottom: 6px;"><code>linkedinPublisher.service.js:152</code></div>
+            <div>RestLi v2.0 protocol: registers asset upload ➔ binary buffer stream ➔ <code>/ugcPosts</code>. Returns share activity URL.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 13: SUCCESS & EMAIL ALERT -->
+    <div class="flow-step emerald" data-type="final">
+      <div class="step-node">
+        <span class="node-num">STEP 13</span>
+        <span class="node-icon">🎉</span>
+      </div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title">Database Success Commit & User Email Notification</div>
+          <div class="file-ref">jobs/workers/post.worker.js <span class="line-tag">Lines 87–135</span></div>
+        </div>
+        <p class="step-desc">
+          Execution returns to <code>post.worker.js</code>. Marks <code>ScheduledPost.status = 'SUCCESS'</code>, saves the live post URLs in <code>platformResults</code> JSON, marks <code>Post.status = 'PUBLISHED'</code>, and delivers an email notification to the user's inbox with live links!
+        </p>
+        <div class="code-box">
+          <span class="cm">// backend/src/jobs/workers/post.worker.js: Lines 87-135</span><br>
+          <span class="kw">await</span> <span class="obj">prisma</span>.<span class="obj">scheduledPost</span>.<span class="fn">update</span>({<br>
+          &nbsp;&nbsp;where: { id: scheduledPostId },<br>
+          &nbsp;&nbsp;data: { status: <span class="str">"SUCCESS"</span>, publishedAt: <span class="kw">new</span> <span class="fn">Date</span>(), platformResults: publishResult.platformResults }<br>
+          });<br>
+          <span class="kw">await</span> <span class="obj">prisma</span>.<span class="obj">post</span>.<span class="fn">update</span>({ where: { id: postId }, data: { status: <span class="str">"PUBLISHED"</span> } });<br>
+          <span class="fn">sendPostPublishedEmail</span>({ email: user.email, platformResults }); <span class="cm">// User gets notified!</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>BrandFlow Architecture System • Enterprise Background Engine</p>
+    <p style="margin-top: 6px;">Strictly adheres to Clean Architecture & SOLID Principles (<a href="../../.agents/rules/crc.md">crc.md</a>)</p>
+  </footer>
+
+</div>
+
+<script>
+  function filterSteps(mode) {
+    document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (mode === 'all') {
+      document.getElementById('btn-all').classList.add('active');
+      document.querySelectorAll('.flow-step').forEach(step => step.style.display = 'flex');
+    } else if (mode === 'happy') {
+      document.getElementById('btn-happy').classList.add('active');
+      document.querySelectorAll('.flow-step').forEach(step => {
+        step.style.display = 'flex';
+      });
+      document.querySelectorAll('.branch-box.fallback').forEach(el => el.style.opacity = '0.35');
+      document.querySelectorAll('.branch-box.happy').forEach(el => el.style.opacity = '1');
+    } else if (mode === 'fallback') {
+      document.getElementById('btn-fallback').classList.add('active');
+      document.querySelectorAll('.flow-step').forEach(step => {
+        const type = step.getAttribute('data-type');
+        if (type === 'queue') {
+          step.style.display = 'none'; // Queue is bypassed in fallback!
+        } else {
+          step.style.display = 'flex';
+        }
+      });
+      document.querySelectorAll('.branch-box.happy').forEach(el => el.style.opacity = '0.35');
+      document.querySelectorAll('.branch-box.fallback').forEach(el => el.style.opacity = '1');
+    }
+  }
+</script>
+
+</body>
+</html>

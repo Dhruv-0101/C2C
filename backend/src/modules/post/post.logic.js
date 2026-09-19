@@ -53,7 +53,7 @@ export const postLogic = {
   },
 
   /**
-   * Instant Mock Social Media Publishing
+   * Instant Live Social Media Publishing
    */
   publishNow: async (userId, payload) => {
     const post = await postLogic.createPost(userId, { ...payload, status: 'PUBLISHING' });

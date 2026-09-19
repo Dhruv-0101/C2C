@@ -3,6 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { HTTP_STATUS } from './common/constants/http-status.js';
+import { sendSuccessResponse } from './common/utils/response.util.js';
 import { NotFoundError } from './common/errors/custom-errors.js';
 import { errorHandler } from './common/middleware/error.middleware.js';
 import { globalLimiter } from './common/middleware/rate-limiter.middleware.js';
@@ -97,13 +98,13 @@ app.use(
 /**
  * 📥 4. REQUEST BODY & COOKIE PARSERS (PAYLOAD SECURITY & AUTH DECODING):
  * 
- * A) express.json({ limit: '10mb' }):
+ * A) express.json({ limit: '50mb' }):
  *    - Real World Analogy: Package Weight Scale at the Mailroom.
  *    - USE CASE: Converts incoming JSON payloads into 'req.body'.
- *    - WHY 10MB: Caps memory allocation to allow base64 image & logo uploads while preventing Denial of Service (DoS) 
- *      attacks where hackers send 500MB payload bombs to crash Node.js process memory.
+ *    - WHY 50MB: Caps memory allocation to allow high-resolution (1080x1080) canvas base64 image & logo uploads 
+ *      while preventing Denial of Service (DoS) attacks where hackers send 500MB payload bombs to crash Node.js process memory.
  * 
- * B) express.urlencoded({ extended: true, limit: '10mb' }):
+ * B) express.urlencoded({ extended: true, limit: '50mb' }):
  *    - USE CASE: Converts standard HTML form submissions ('application/x-www-form-urlencoded') into 'req.body'.
  *    - WHY extended: true: Uses the rich 'qs' library to parse complex nested objects & arrays from form posts.
  * 
@@ -125,11 +126,15 @@ app.use(cookieParser());
  *   2. '/api/v1/health' (in router): Used by Postman & Frontend status dashboards under the versioned API router.
  */
 app.get('/health', (req, res) => {
-  res.status(HTTP_STATUS.OK).json({
-    status: 'healthy',
-    environment: env.NODE_ENV,
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+  return sendSuccessResponse(res, {
+    statusCode: HTTP_STATUS.OK,
+    message: 'Infrastructure health check passed',
+    data: {
+      status: 'healthy',
+      environment: env.NODE_ENV,
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    },
   });
 });
 
@@ -142,4 +147,3 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 export default app;
-//try

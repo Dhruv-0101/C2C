@@ -106,6 +106,10 @@ export async function deleteFromCloudinary(publicIdOrUrl) {
  * @returns {Promise<{ url: string, public_id: string, width: number, height: number, format: string }>}
  */
 export async function uploadToCloudinaryBuffer(buffer, folder = CLOUDINARY_FOLDERS.FESTIVAL_TEMPLATES) {
+  if (!buffer || !Buffer.isBuffer(buffer)) {
+    throw new Error('Invalid image buffer provided for Cloudinary upload.');
+  }
+
   const cloudName = env.CLOUDINARY_CLOUD_NAME || 'dksdc3q6y';
   const apiKey = env.CLOUDINARY_API_KEY || '116287269373311';
   const apiSecret = env.CLOUDINARY_API_SECRET || 'qlLxvVZDj1CCj1HyoAw7shuxdRM';

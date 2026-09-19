@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { redisConnectionOptions } from "../config/redis.js";
+import { redisConnectionOptions, isRedisConfigured } from "../config/redis.js";
 import { logger } from "../config/logger.js";
 
 export const INSTANT_POST_QUEUE_NAME = "instant-post-queue";
@@ -17,8 +17,6 @@ export const POST_JOB_NAMES = {
  */
 let instantPostQueue = null;
 let scheduledPostQueue = null;
-
-const isRedisConfigured = Boolean(process.env.REDIS_URL || process.env.REDIS_HOST);
 
 if (isRedisConfigured) {
   try {
