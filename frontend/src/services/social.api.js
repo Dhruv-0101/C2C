@@ -44,7 +44,7 @@ export const socialApi = {
    * Connects a social media channel by username handle when OAuth is in sandbox or manual mode.
    *
    * @param {string} handle - Social media username handle (e.g. `"@brandflow_official"`)
-   * @param {string} [platform='INSTAGRAM'] - Platform identifier (`'INSTAGRAM'` | `'FACEBOOK'` | `'LINKEDIN'` | `'TWITTER'`)
+   * @param {string} [platform='INSTAGRAM'] - Platform identifier (`'INSTAGRAM'` | `'FACEBOOK'` | `'LINKEDIN'`)
    * @returns {Promise<Object>} Created SocialAccount database record payload
    */
   connectManualHandle: async (handle, platform = 'INSTAGRAM') => {
@@ -55,7 +55,7 @@ export const socialApi = {
    * DELETE /api/v1/social/accounts/:platform
    * Disconnects and removes a social account platform integration from PostgreSQL database.
    *
-   * @param {string} platform - Target platform to disconnect (`'INSTAGRAM'` | `'FACEBOOK'` | `'LINKEDIN'` | `'TWITTER'`)
+   * @param {string} platform - Target platform to disconnect (`'INSTAGRAM'` | `'FACEBOOK'` | `'LINKEDIN'`)
    * @returns {Promise<Object>} Disconnect success confirmation payload
    */
   disconnectAccount: async (platform) => {

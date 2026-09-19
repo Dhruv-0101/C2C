@@ -52,7 +52,6 @@ export async function findUserById(id) {
           city: true,
           state: true,
           country: true,
-          websiteUrl: true,
         },
       },
     },

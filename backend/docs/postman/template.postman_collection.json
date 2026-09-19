@@ -167,6 +167,67 @@
         },
         "description": "Deletes a graphic base template by ID and cleans up associated image from Cloudinary storage."
       }
+    },
+    {
+      "name": "6. Create Template Category (Admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Festival Celebrations\",\n  \"slug\": \"festival-celebrations\",\n  \"description\": \"Graphics and greetings tailored for major festivals.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/templates/categories",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "categories"
+          ]
+        },
+        "description": "Creates a new template category taxonomy item. Stores createdBy with authenticated user ID and returns creator details."
+      }
+    },
+    {
+      "name": "7. Delete Template Category (Admin)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/templates/categories/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "categories",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "template_category_id_here"
+            }
+          ]
+        },
+        "description": "Deletes a template category by ID. Accessible by SuperAdmin or SubAdmin with 'templates' tab permission."
+      }
     }
   ]
 }

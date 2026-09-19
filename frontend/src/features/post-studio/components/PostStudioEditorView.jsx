@@ -1252,7 +1252,7 @@ export const PostStudioEditorView = ({
                             updated.slogan = brandKit?.slogan || brandKit?.tagline || tf.placeholder || "Premium Luxury Homes & Commercial Spaces";
                           }
                           else if (fk === "email") updated.email = brandKit?.email || tf.placeholder || "contact@business.com";
-                          else if (fk === "websiteUrl") updated.websiteUrl = brandKit?.websiteUrl || tf.placeholder || "https://yourbusiness.com";
+                          else if (fk === "websiteUrl") updated.websiteUrl = tf.placeholder || "https://yourbusiness.com";
                           else if (fk === "instagramHandle") updated.instagramHandle = brandKit?.instagramHandle || tf.placeholder || "@yourbrand";
                           else if (fk === "facebookHandle") updated.facebookHandle = brandKit?.facebookHandle || tf.placeholder || "yourbrand";
                           else if (fk === "city") updated.city = brandKit?.city || tf.placeholder || "Mumbai";

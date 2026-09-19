@@ -261,7 +261,6 @@ export const postLogic = {
         city: updatedBrandKit.city,
         logoUrl: updatedBrandKit.logoUrl,
         avatarUrl: updatedBrandKit.avatarUrl,
-        websiteUrl: updatedBrandKit.websiteUrl,
         tagline: updatedBrandKit.tagline,
       };
 

@@ -12,7 +12,7 @@ export const generateCaptionSchema = z.object({
     .default('PROMOTIONAL'),
   language: z.enum(['ENGLISH', 'HINGLISH', 'HINDI']).optional().default('ENGLISH'),
   platform: z
-    .enum(['INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'TWITTER', 'ALL'])
+    .enum(['INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'ALL'])
     .optional()
     .default('ALL'),
 });
@@ -20,5 +20,5 @@ export const generateCaptionSchema = z.object({
 export const suggestHashtagsSchema = z.object({
   topic: z.string().min(1, 'Topic is required'),
   category: z.string().optional(),
-  platform: z.enum(['INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'TWITTER', 'ALL']).optional().default('INSTAGRAM'),
+  platform: z.enum(['INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'ALL']).optional().default('INSTAGRAM'),
 });

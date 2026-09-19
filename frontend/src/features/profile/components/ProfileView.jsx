@@ -349,9 +349,9 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
                 </span>
               </div>
               <div className="flex justify-between py-2 border-b border-slate-800">
-                <span className="text-slate-400">Website URL</span>
-                <span className="font-bold text-amber-400 truncate max-w-[200px]">
-                  {brandKit?.websiteUrl || "N/A"}
+                <span className="text-slate-400">Working Hours</span>
+                <span className="font-bold text-slate-100 truncate max-w-[200px]">
+                  {brandKit?.workingHours || "N/A"}
                 </span>
               </div>
             </div>

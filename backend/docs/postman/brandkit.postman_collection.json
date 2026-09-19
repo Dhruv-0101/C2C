@@ -47,7 +47,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"businessName\": \"Sunrise Real Estate Ltd.\",\n  \"tagline\": \"Premium & Commercial Property Leaders\",\n  \"phone\": \"+91 98765 43210\",\n  \"whatsapp\": \"+91 98765 43210\",\n  \"email\": \"contact@sunriserealestate.com\",\n  \"website\": \"https://sunriserealestate.com\",\n  \"address\": \"Suite 402, MG Road\",\n  \"city\": \"Mumbai\",\n  \"primaryColor\": \"#EAB308\",\n  \"secondaryColor\": \"#0F172A\",\n  \"base64Logo\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Avatar\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+          "raw": "{\n  \"businessName\": \"Sunrise Real Estate Ltd.\",\n  \"tagline\": \"Premium & Commercial Property Leaders\",\n  \"phone\": \"+91 98765 43210\",\n  \"whatsapp\": \"+91 98765 43210\",\n  \"email\": \"contact@sunriserealestate.com\",\n  \"address\": \"Suite 402, MG Road\",\n  \"city\": \"Mumbai\",\n  \"primaryColor\": \"#EAB308\",\n  \"secondaryColor\": \"#0F172A\",\n  \"base64Logo\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Avatar\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/brandkit",

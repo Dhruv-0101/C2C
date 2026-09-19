@@ -172,7 +172,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"frameId\": \"clx456frameid\",\n  \"occasionName\": \"Diwali Celebration Post\",\n  \"caption\": \"Happy Diwali from Sunrise Real Estate!\",\n  \"finalGraphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
+          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"festivalId\": \"clx789festivalid\",\n  \"categoryId\": \"clx111categoryid\",\n  \"frameId\": \"clx456frameid\",\n  \"occasionName\": \"Diwali Celebration Post\",\n  \"caption\": \"Happy Diwali from Sunrise Real Estate! #Diwali2026\",\n  \"finalGraphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
         },
         "url": {
           "raw": "{{base_url}}/posts",
@@ -183,7 +183,7 @@
             "posts"
           ]
         },
-        "description": "Saves a composited 1080x1080 post image strictly to Cloudinary 'brandflow/posts', database, and Vault."
+        "description": "Saves a composited 1080x1080 post image strictly to Cloudinary 'brandflow/posts', database, and Vault with optional categoryId, frameId, templateId, and festivalId references."
       }
     },
     {
@@ -213,6 +213,94 @@
           ]
         },
         "description": "Deletes a composited post by ID and cleans up associated image from Cloudinary storage."
+      }
+    },
+    {
+      "name": "8. Admin — Get All Generated Posts (Audit & Filter)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/posts/admin/all?page=1&limit=10&categoryId=&frameId=&templateCategoryId=&festivalId=&status=&search=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts",
+            "admin",
+            "all"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "categoryId",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "frameId",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "templateCategoryId",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "festivalId",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "status",
+              "value": "DRAFT",
+              "disabled": true
+            },
+            {
+              "key": "search",
+              "value": "",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "Admin & SubAdmin audit endpoint to view all user-generated posts across the platform with cross-dimensional filtering by business category, frame overlay, template category, festival, and publishing status."
+      }
+    },
+    {
+      "name": "9. Admin — Get Post Analytics & Volume Breakdown",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/posts/admin/analytics",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts",
+            "admin",
+            "analytics"
+          ]
+        },
+        "description": "Fetches aggregated platform post counts (total, draft, scheduled, published) and volume distribution breakdowns grouped by business category, frame, template category, and festival."
       }
     }
   ]

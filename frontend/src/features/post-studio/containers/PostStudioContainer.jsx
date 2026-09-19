@@ -209,7 +209,6 @@ export const PostStudioContainer = () => {
     city: "",
     state: "",
     country: "",
-    websiteUrl: "",
     showLogo: true,
     showAvatar: true,
     showPhone: true,
@@ -255,7 +254,6 @@ export const PostStudioContainer = () => {
       city: brandKit?.city || "Mumbai",
       state: brandKit?.state || "Maharashtra",
       country: brandKit?.country || "India",
-      websiteUrl: brandKit?.websiteUrl || "https://yourbusiness.com",
       tagline: brandKit?.tagline || brandKit?.slogan || frameTagline || "Premium Luxury Homes & Commercial Spaces",
       slogan: brandKit?.slogan || brandKit?.tagline || frameTagline || "Premium Luxury Homes & Commercial Spaces",
     }));

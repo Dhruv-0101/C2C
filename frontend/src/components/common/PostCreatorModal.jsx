@@ -96,13 +96,10 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
     if (brandKit?.phone || brandKit?.whatsapp) newDetails.phone = brandKit.phone || brandKit.whatsapp;
     if (brandKit?.address) newDetails.address = `${brandKit.address}${brandKit.city ? `, ${brandKit.city}` : ''}`;
     if (brandKit?.tagline) newDetails.tagline = brandKit.tagline;
-    if (brandKit?.websiteUrl) newDetails.websiteUrl = brandKit.websiteUrl;
     if (brandKit?.email) newDetails.email = brandKit.email;
     if (brandKit?.instagramHandle) newDetails.instagramHandle = brandKit.instagramHandle;
     if (brandKit?.facebookHandle) newDetails.facebookHandle = brandKit.facebookHandle;
     if (brandKit?.linkedinHandle) newDetails.linkedinHandle = brandKit.linkedinHandle;
-    if (brandKit?.twitterHandle) newDetails.twitterHandle = brandKit.twitterHandle;
-    if (brandKit?.youtubeHandle) newDetails.youtubeHandle = brandKit.youtubeHandle;
     if (brandKit?.gmbReviewUrl) newDetails.gmbReviewUrl = brandKit.gmbReviewUrl;
     if (brandKit?.upiVpa) newDetails.upiVpa = brandKit.upiVpa;
     if (brandKit?.upiQrUrl) newDetails.upiQrUrl = brandKit.upiQrUrl;

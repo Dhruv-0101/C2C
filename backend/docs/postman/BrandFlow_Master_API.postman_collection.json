@@ -600,7 +600,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"businessName\": \"Sunrise Real Estate\",\n  \"primaryColor\": \"#F59E0B\",\n  \"secondaryColor\": \"#1E293B\",\n  \"accentColor\": \"#10B981\",\n  \"phone\": \"+91 9876543210\",\n  \"email\": \"contact@sunriserealestate.com\",\n  \"website\": \"https://sunriserealestate.com\",\n  \"address\": \"101 Sunrise Heights, Mumbai\",\n  \"category\": \"Real Estate\"\n}"
+              "raw": "{\n  \"businessName\": \"Sunrise Real Estate\",\n  \"primaryColor\": \"#F59E0B\",\n  \"secondaryColor\": \"#1E293B\",\n  \"accentColor\": \"#10B981\",\n  \"phone\": \"+91 9876543210\",\n  \"email\": \"contact@sunriserealestate.com\",\n  \"address\": \"101 Sunrise Heights, Mumbai\",\n  \"category\": \"Real Estate\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/brandkit",
@@ -816,6 +816,127 @@
             },
             "description": "Fetches categories available for graphic templates."
           }
+        },
+        {
+          "name": "3. Create Template Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Festival Celebrations\",\n  \"slug\": \"festival-celebrations\",\n  \"description\": \"Graphics and greetings tailored for major festivals.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/templates/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates",
+                "categories"
+              ]
+            },
+            "description": "Creates a new template category taxonomy item. Stores createdBy with authenticated user ID and returns creator details."
+          }
+        },
+        {
+          "name": "4. Upload Cloudinary Template (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Diwali Golden Lights Master Graphic\",\n  \"description\": \"Base 1080x1080 graphic background for Diwali 2026 festival.\",\n  \"category\": \"FESTIVAL\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/templates/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates",
+                "upload"
+              ]
+            },
+            "description": "Uploads a base festival/marketing graphic background strictly to Cloudinary 'brandflow/festival-templates' and saves to database. Accessible by SuperAdmin or SubAdmin with 'templates' permission. Automatically records createdBy with authenticated user ID and returns creator details."
+          }
+        },
+        {
+          "name": "5. Create Template (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Navratri Festive Graphic\",\n  \"description\": \"Base graphic template for Navratri celebration.\",\n  \"category\": \"FESTIVAL\",\n  \"baseImageUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates"
+              ]
+            },
+            "description": "Creates a master system graphic template with a direct image URL or base64. Accessible by SuperAdmin or SubAdmin with 'templates' permission. Automatically records createdBy and returns creator details."
+          }
+        },
+        {
+          "name": "6. Delete Template (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "templates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "template_id_here"
+                }
+              ]
+            },
+            "description": "Deletes a graphic base template by ID and cleans up associated image from Cloudinary storage."
+          }
         }
       ]
     },
@@ -979,6 +1100,176 @@
               ]
             },
             "description": "Schedules a post for future execution."
+          }
+        },
+        {
+          "name": "5. Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"festivalId\": \"clx789festivalid\",\n  \"categoryId\": \"clx111categoryid\",\n  \"frameId\": \"clx456frameid\",\n  \"occasionName\": \"Diwali Celebration Post\",\n  \"caption\": \"Happy Diwali from Sunrise Real Estate! #Diwali2026\",\n  \"finalGraphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            },
+            "description": "Saves a composited 1080x1080 post image strictly to Cloudinary 'brandflow/posts', database, and Vault with optional categoryId, frameId, templateId, and festivalId references."
+          }
+        },
+        {
+          "name": "6. Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "post_id_here"
+                }
+              ]
+            },
+            "description": "Deletes a composited post by ID and cleans up associated image from Cloudinary storage."
+          }
+        },
+        {
+          "name": "7. Trigger Scheduled Jobs Dispatcher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/trigger-scheduled-jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "trigger-scheduled-jobs"
+              ]
+            },
+            "description": "Manually triggers the background cron dispatcher cycle to process due scheduled posts."
+          }
+        },
+        {
+          "name": "8. Admin — Get All Generated Posts (Audit & Filter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/admin/all?page=1&limit=10&categoryId=&frameId=&templateCategoryId=&festivalId=&status=&search=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "admin",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "frameId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "templateCategoryId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "festivalId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "DRAFT",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin & SubAdmin audit endpoint to view all user-generated posts across the platform with cross-dimensional filtering by business category, frame overlay, template category, festival, and publishing status."
+          }
+        },
+        {
+          "name": "9. Admin — Get Post Analytics & Volume Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/admin/analytics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "admin",
+                "analytics"
+              ]
+            },
+            "description": "Fetches aggregated platform post counts (total, draft, scheduled, published) and volume distribution breakdowns grouped by business category, frame, template category, and festival."
           }
         }
       ]

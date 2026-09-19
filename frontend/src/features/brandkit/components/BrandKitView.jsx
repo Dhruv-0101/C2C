@@ -284,21 +284,14 @@ export const BrandKitView = ({
               />
 
               <Input
-                label="Website URL"
-                placeholder="e.g. www.mybusiness.com"
-                error={errors?.websiteUrl?.message}
-                {...register("websiteUrl")}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Working Hours / Store Timing"
+                label="Working Hours / Store Timing (Optional)"
                 placeholder="e.g. Mon - Sat: 10:00 AM - 9:00 PM"
                 error={errors?.workingHours?.message}
                 {...register("workingHours")}
               />
+            </div>
 
+            <div>
               <Input
                 label="Full Office / Store Address"
                 placeholder="e.g. Shop #12, MG Road, Commercial Complex"
@@ -338,7 +331,7 @@ export const BrandKitView = ({
               <span>4. Social Media Handles (Frame Footers)</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Input
                 label="Instagram Handle"
                 placeholder="@mybusiness"
@@ -352,28 +345,12 @@ export const BrandKitView = ({
                 error={errors?.facebookHandle?.message}
                 {...register("facebookHandle")}
               />
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Input
                 label="LinkedIn Handle"
                 placeholder="linkedin.com/company/mybusiness"
                 error={errors?.linkedinHandle?.message}
                 {...register("linkedinHandle")}
-              />
-
-              <Input
-                label="Twitter / X Handle"
-                placeholder="@mybusiness"
-                error={errors?.twitterHandle?.message}
-                {...register("twitterHandle")}
-              />
-
-              <Input
-                label="YouTube Channel Handle"
-                placeholder="@mychannel"
-                error={errors?.youtubeHandle?.message}
-                {...register("youtubeHandle")}
               />
             </div>
           </Card>
@@ -387,14 +364,14 @@ export const BrandKitView = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Google My Business (GMB) Review Link"
+                label="Google My Business (GMB) Review Link (Optional)"
                 placeholder="e.g. https://g.page/r/your-review-link"
                 error={errors?.gmbReviewUrl?.message}
                 {...register("gmbReviewUrl")}
               />
 
               <Input
-                label="UPI Payment VPA ID"
+                label="UPI Payment VPA ID (Optional)"
                 placeholder="e.g. storename@upi or 9876543210@paytm"
                 error={errors?.upiVpa?.message}
                 {...register("upiVpa")}
@@ -404,7 +381,7 @@ export const BrandKitView = ({
             {/* UPI QR Upload Zone */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
-                UPI Payment QR Code (Image Upload for Banners)
+                UPI Payment QR Code (Image Upload - Optional)
               </label>
               <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-[#0B0F17] border border-dashed border-[#2C384E] hover:border-amber-500/50 transition">
                 {upiQrPreview ? (

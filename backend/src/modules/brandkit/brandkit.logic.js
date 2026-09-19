@@ -19,7 +19,6 @@ export const brandKitLogic = {
         city: 'Mumbai',
         state: 'Maharashtra',
         country: 'India',
-        websiteUrl: 'https://sunriserealestate.com',
       };
     }
     return brandKit;
@@ -112,14 +111,11 @@ export const brandKitLogic = {
       city: payload.city || null,
       state: payload.state || null,
       country: payload.country || 'India',
-      websiteUrl: payload.websiteUrl || null,
       tagline: payload.tagline || null,
       targetAudience: payload.targetAudience || null,
       captionLanguage: payload.captionLanguage || 'English',
       businessUsps: payload.businessUsps || null,
       linkedinHandle: payload.linkedinHandle || null,
-      twitterHandle: payload.twitterHandle || null,
-      youtubeHandle: payload.youtubeHandle || null,
       gmbReviewUrl: payload.gmbReviewUrl || null,
       upiVpa: payload.upiVpa || null,
       upiQrUrl: upiQrUrl || payload.upiQrUrl || null,

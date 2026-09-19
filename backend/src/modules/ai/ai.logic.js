@@ -17,12 +17,9 @@ function synthesizeSmartCaption({
   instagramHandle = '',
   facebookHandle = '',
   linkedinHandle = '',
-  twitterHandle = '',
-  youtubeHandle = '',
   targetAudience = '',
   businessUsps = '',
   workingHours = '',
-  websiteUrl = '',
   gmbReviewUrl = '',
   upiVpa = '',
   topic = '',
@@ -48,7 +45,6 @@ function synthesizeSmartCaption({
   if (whatsapp) ctaParts.push(`📲 WhatsApp: ${whatsapp}`);
   if (phone && phone !== whatsapp) ctaParts.push(`📞 Call: ${phone}`);
   if (email) ctaParts.push(`✉️ Email: ${email}`);
-  if (websiteUrl) ctaParts.push(`🌐 Visit: ${websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}`);
   if (locationStr) ctaParts.push(`📍 Location: ${locationStr}`);
   if (workingHours) ctaParts.push(`⏰ Hours: ${workingHours}`);
   if (gmbReviewUrl) ctaParts.push(`⭐ Google Review: ${gmbReviewUrl}`);
@@ -58,7 +54,6 @@ function synthesizeSmartCaption({
   const handles = [
     instagramHandle ? `@${instagramHandle.replace('@', '')}` : '',
     facebookHandle ? `@${facebookHandle.replace('@', '')}` : '',
-    twitterHandle ? `@${twitterHandle.replace('@', '')}` : '',
     linkedinHandle ? `@${linkedinHandle.replace('@', '')}` : '',
   ].filter(Boolean);
 
@@ -188,8 +183,6 @@ function synthesizeSmartCaption({
   } else if (platform === 'FACEBOOK') {
     hashtagsSet.add('#FacebookPosts');
     hashtagsSet.add('#LocalServices');
-  } else if (platform === 'TWITTER') {
-    // Twitter hashtags kept concise
   }
 
   const hashtags = Array.from(hashtagsSet).filter(Boolean);
@@ -227,13 +220,10 @@ export const aiLogic = {
         instagramHandle: true,
         facebookHandle: true,
         linkedinHandle: true,
-        twitterHandle: true,
-        youtubeHandle: true,
         targetAudience: true,
         captionLanguage: true,
         businessUsps: true,
         workingHours: true,
-        websiteUrl: true,
         gmbReviewUrl: true,
         upiVpa: true,
       },
@@ -253,13 +243,10 @@ export const aiLogic = {
       instagramHandle: brandKit?.instagramHandle || '',
       facebookHandle: brandKit?.facebookHandle || '',
       linkedinHandle: brandKit?.linkedinHandle || '',
-      twitterHandle: brandKit?.twitterHandle || '',
-      youtubeHandle: brandKit?.youtubeHandle || '',
       targetAudience: brandKit?.targetAudience || 'General Audience',
       captionLanguage: params.language || brandKit?.captionLanguage || 'English',
       businessUsps: brandKit?.businessUsps || '',
       workingHours: brandKit?.workingHours || '',
-      websiteUrl: brandKit?.websiteUrl || '',
       gmbReviewUrl: brandKit?.gmbReviewUrl || '',
       upiVpa: brandKit?.upiVpa || '',
       ...params,
@@ -281,8 +268,8 @@ Business Context (from BrandKit):
 - Target Audience: '${context.targetAudience}'
 - Location: '${fullLocation}'
 - Working Hours: '${context.workingHours}'
-- Contact: Phone '${context.phone}', WhatsApp '${context.whatsapp}', Email '${context.email}', Website '${context.websiteUrl}'
-- Social Handles / Reviews: Instagram '${context.instagramHandle}', Facebook '${context.facebookHandle}', Google Review Link '${context.gmbReviewUrl}'
+- Contact: Phone '${context.phone}', WhatsApp '${context.whatsapp}', Email '${context.email}'
+- Social Handles / Reviews: Instagram '${context.instagramHandle}', Facebook '${context.facebookHandle}', LinkedIn '${context.linkedinHandle}', Google Review Link '${context.gmbReviewUrl}'
 
 Post Content Parameters:
 - Topic / Event / Occasion: '${params.topic || params.festivalName || params.occasionName || 'Business Update'}'

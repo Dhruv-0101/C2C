@@ -26,7 +26,6 @@ export const brandKitApi = {
    * @param {string} [data.phone] - Primary phone number
    * @param {string} [data.whatsapp] - Official WhatsApp business contact
    * @param {string} [data.email] - Public business email
-   * @param {string} [data.websiteUrl] - Business website URL
    * @param {string} [data.instagramHandle] - Instagram social handle
    * @param {string} [data.facebookHandle] - Facebook page handle/URL
    * @param {string} [data.address] - Physical business address

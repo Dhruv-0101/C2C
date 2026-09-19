@@ -14,7 +14,6 @@ export const brandKitSchema = z.object({
     .email('Please enter a valid email address')
     .or(z.literal(''))
     .optional(),
-  websiteUrl: z.string().optional(),
   instagramHandle: z.string().optional(),
   facebookHandle: z.string().optional(),
   address: z.string().optional(),
@@ -27,8 +26,6 @@ export const brandKitSchema = z.object({
   captionLanguage: z.string().optional(),
   businessUsps: z.string().optional(),
   linkedinHandle: z.string().optional(),
-  twitterHandle: z.string().optional(),
-  youtubeHandle: z.string().optional(),
   gmbReviewUrl: z.string().optional(),
   upiVpa: z.string().optional(),
   upiQrUrl: z.string().optional(),

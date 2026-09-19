@@ -30,10 +30,6 @@ enum SocialPlatform {
   INSTAGRAM  // Meta Instagram Graph API (Feed, Carousels, Stories)
   FACEBOOK   // Meta Facebook Pages API
   LINKEDIN   // LinkedIn Community Management API
-  TWITTER    // X / Twitter API v2
-  PINTEREST  // Pinterest Board Pin API
-  THREADS    // Meta Threads API
-  WHATSAPP   // WhatsApp Business Cloud API
 }
 
 // 🎨 Lifecycle Status of a Creative Post Asset
@@ -174,14 +170,11 @@ model BrandKit {
   city            String?                             // City (e.g. Mumbai, Delhi, Bengaluru)
   state           String?                             // State (e.g. Maharashtra, Karnataka)
   country         String?   @default("India")
-  websiteUrl      String?                             // Company website URL
   tagline         String?                             // Catchy business slogan (e.g. "Pure Taste Since 1985")
   targetAudience  String?                             // Audience profile used for AI caption generation
   captionLanguage String?   @default("English")       // Preferred caption language (Hindi, English, Hinglish)
   businessUsps    String?                             // Unique Selling Points for promotional copy
   linkedinHandle  String?                             // LinkedIn company page handle
-  twitterHandle   String?                             // X / Twitter handle
-  youtubeHandle   String?                             // YouTube channel link
   gmbReviewUrl    String?                             // Google My Business review short-link
   upiVpa          String?                             // UPI ID for payment QR code (e.g. shop@upi)
   upiQrUrl        String?                             // Pre-generated UPI QR code graphic URL
@@ -291,6 +284,7 @@ model Template {
 
   @@index([festivalId])
   @@index([templateCategoryId])
+  @@index([createdBy])
 }
 
 // ==============================================================================
@@ -310,7 +304,7 @@ model Post {
   category        Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   frameId         String?                             // Foreign key referencing Frame overlay applied
   frame           Frame?       @relation(fields: [frameId], references: [id], onDelete: SetNull)
-  occasionName    String?                             // Free-text occasion title (e.g. "Grand Opening Sale")
+  occasionName    String?                             // Free-text occasion title (e.g. "Grand Opening Sale")//something like post title or post name
   customImageUrl  String?                             // User-uploaded product or swapped graphic URL
   finalGraphicUrl String?                             // Sharp composited high-res rendered final image URL
   userConfigJson  Json?                               // Coordinate positions, colors, font sizes for re-editing
@@ -375,6 +369,7 @@ model VaultItem {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
+  @@unique([userId, postId])
   @@index([userId])
   @@index([postId])
 }
