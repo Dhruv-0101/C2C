@@ -25,6 +25,7 @@ const ADMIN_NAVIGATION_ITEMS = [
   { id: "festivals", label: "Festival Calendar", icon: Calendar },
   { id: "frames", label: "Brand Frames Studio", icon: Layers },
   { id: "categories", label: "Business Categories", icon: FolderKanban },
+  { id: "posts", label: "Generated Posts Audit", icon: Sparkles },
   { id: "users", label: "Business User Directory", icon: Users },
   { id: "subadmins", label: "SubAdmin Directory", icon: Shield, superAdminOnly: true },
   { id: "subadmin-activity", label: "SubAdmin Activity", icon: Activity, superAdminOnly: true },

@@ -19,3 +19,4 @@ export { useTwoFactor } from "./useTwoFactor";
 export { useUsers } from "./useUsers";
 export { useVault } from "./useVault";
 export { useYourPosts } from "./useYourPosts";
+export { useAdminPosts, useAdminPostAnalytics } from "./useAdminPosts";

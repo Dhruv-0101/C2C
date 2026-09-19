@@ -23,6 +23,7 @@ import { AdminFestivalsTab } from "./tabs/AdminFestivalsTab";
 import { AdminFramesTab } from "./tabs/AdminFramesTab";
 import { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
 import { AdminUsersTab } from "./tabs/AdminUsersTab";
+import { AdminPostsTab } from "./tabs/AdminPostsTab";
 import { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
 import { AdminSubAdminActivityTab } from "./tabs/AdminSubAdminActivityTab";
 import { CreateSubAdminScreen } from "./screens/CreateSubAdminScreen";
@@ -87,6 +88,32 @@ export const AdminDashboardView = ({
   handleTabToggle,
   handleAddCategory,
   onCreateSubAdmin,
+  // Generated Posts Audit Props
+  posts = [],
+  postMeta,
+  isLoadingPosts,
+  postsFetchError,
+  postPage,
+  setPostPage,
+  setPostLimit,
+  categoryFilter,
+  setCategoryFilter,
+  frameFilter,
+  setFrameFilter,
+  templateCategoryFilter,
+  setTemplateCategoryFilter,
+  festivalFilter,
+  setFestivalFilter,
+  statusFilter,
+  setStatusFilter,
+  postSearch,
+  setPostSearch,
+  allCategories = [],
+  allFrames = [],
+  allTemplateCategories = [],
+  allFestivals = [],
+  postAnalytics,
+  isLoadingPostAnalytics,
 }) => {
   const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN";
 
@@ -202,6 +229,14 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-purple-500/50",
                   },
                   {
+                    id: "posts",
+                    label: "Generated Posts Audit",
+                    desc: "Audit & track posts by category, frame, template & festival",
+                    icon: Sparkles,
+                    color: "text-amber-400",
+                    borderColor: "hover:border-amber-500/50",
+                  },
+                  {
                     id: "users",
                     label: "Business User Directory",
                     desc: "Registered business accounts & tenant monitoring",
@@ -268,6 +303,37 @@ export const AdminDashboardView = ({
             handleAddCategory={handleAddCategory}
             createCategoryMutation={createCategoryMutation}
             deleteCategoryMutation={deleteCategoryMutation}
+          />
+        )}
+
+        {/* 5. Generated Posts Audit Tab */}
+        {activeTab === "posts" && (
+          <AdminPostsTab
+            posts={posts}
+            postMeta={postMeta}
+            isLoadingPosts={isLoadingPosts}
+            postsFetchError={postsFetchError}
+            postPage={postPage}
+            setPostPage={setPostPage}
+            setPostLimit={setPostLimit}
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+            frameFilter={frameFilter}
+            setFrameFilter={setFrameFilter}
+            templateCategoryFilter={templateCategoryFilter}
+            setTemplateCategoryFilter={setTemplateCategoryFilter}
+            festivalFilter={festivalFilter}
+            setFestivalFilter={setFestivalFilter}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            postSearch={postSearch}
+            setPostSearch={setPostSearch}
+            categoriesList={allCategories}
+            framesList={allFrames}
+            templateCategoriesList={allTemplateCategories}
+            festivalsList={allFestivals}
+            analytics={postAnalytics}
+            isLoadingAnalytics={isLoadingPostAnalytics}
           />
         )}
 

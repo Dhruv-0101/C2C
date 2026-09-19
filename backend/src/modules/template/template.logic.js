@@ -1,8 +1,9 @@
-import { BadRequestError, NotFoundError } from '../../common/errors/custom-errors.js';
+import { BadRequestError, NotFoundError, ConflictError } from '../../common/errors/custom-errors.js';
 import { templateRepository } from './template.repository.js';
 import { templateCategoryRepository } from './templateCategory.repository.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { uploadTemplateBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
+import { logger } from '../../config/logger.js';
 
 export const templateLogic = {
   /**
@@ -44,7 +45,11 @@ export const templateLogic = {
 
       catRecord = await templateCategoryRepository.findByNameOrSlug(catName);
       if (!catRecord && catName) {
-        catRecord = await templateCategoryRepository.create({ name: catName, isSystem: false });
+        catRecord = await templateCategoryRepository.create({
+          name: catName,
+          isSystem: false,
+          createdBy: creatorId || data.creatorId || null,
+        });
       }
     }
 
@@ -88,6 +93,33 @@ export const templateLogic = {
       },
       meta: paginatedResponse.meta,
     };
+  },
+
+  createCategory: async (data, creatorId) => {
+    const catName = data.name?.trim();
+    if (!catName) {
+      throw new BadRequestError('Template category name is required.');
+    }
+
+    const existing = await templateCategoryRepository.findByNameOrSlug(catName);
+    if (existing) {
+      throw new ConflictError('A template category with this name already exists.');
+    }
+
+    return templateCategoryRepository.create({
+      name: catName,
+      description: data.description?.trim() || null,
+      isSystem: data.isSystem ?? false,
+      createdBy: creatorId || null,
+    });
+  },
+
+  deleteCategory: async (id) => {
+    const existing = await templateCategoryRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError('Template category not found.');
+    }
+    return templateCategoryRepository.delete(id);
   },
 
   getTemplates: async (queryParams = {}) => {
@@ -136,7 +168,7 @@ export const templateLogic = {
     const template = await templateRepository.findById(id);
     if (template?.baseImageUrl) {
       deleteFromCloudinary(template.baseImageUrl).catch((err) =>
-        console.warn(`⚠️ Failed to cleanup template image from Cloudinary: ${err.message}`)
+        logger.warn(`Failed to cleanup template image from Cloudinary: ${err.message}`)
       );
     }
     return templateRepository.delete(id);

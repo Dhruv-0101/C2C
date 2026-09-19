@@ -104,6 +104,7 @@ export const EditSubAdminScreen = ({ subAdmin, onBack, updateSubAdminMutation })
                   { id: "categories", label: "Business Categories" },
                   { id: "frames", label: "Brand Frame Studio" },
                   { id: "templates", label: "Graphic Templates" },
+                  { id: "posts", label: "Generated Posts Audit" },
                 ].map((tab) => {
                   const isChecked = editTabs.includes(tab.id);
                   return (

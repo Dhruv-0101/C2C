@@ -75,6 +75,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
     { id: 'frames', label: 'Brand Frames Studio', path: '/admin?tab=frames', icon: Layers },
     { id: 'styles', label: 'Design System & Palettes', path: '/admin?tab=styles', icon: Palette },
     { id: 'categories', label: 'Business Categories', path: '/admin?tab=categories', icon: FolderKanban },
+    { id: 'posts', label: 'Generated Posts Audit', path: '/admin?tab=posts', icon: Sparkles },
     { id: 'subadmins', label: 'SubAdmin Directory', path: '/admin?tab=subadmins', icon: ShieldAlert, superAdminOnly: true },
     { id: 'users', label: 'Business User Directory', path: '/admin?tab=users', icon: Users },
   ];

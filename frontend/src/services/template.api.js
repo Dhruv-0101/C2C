@@ -73,7 +73,29 @@ export const templateApi = {
     return api.get(API_ENDPOINTS.TEMPLATES.CATEGORIES);
   },
 
-  getTemplateCategories: async () => {
-    return api.get(API_ENDPOINTS.TEMPLATES.CATEGORIES);
+  getTemplateCategories: async (params = {}) => {
+    return api.get(API_ENDPOINTS.TEMPLATES.CATEGORIES, { params });
+  },
+
+  /**
+   * POST /api/v1/templates/categories
+   * Admin: Creates a new master template category
+   *
+   * @param {Object} data - Category creation payload ({ name, description })
+   * @returns {Promise<Object>} Created template category
+   */
+  createTemplateCategory: async (data) => {
+    return api.post(API_ENDPOINTS.TEMPLATES.CATEGORIES, data);
+  },
+
+  /**
+   * DELETE /api/v1/templates/categories/:id
+   * Admin: Deletes a template category by ID
+   *
+   * @param {string} id - Category UUID
+   * @returns {Promise<Object>}
+   */
+  deleteTemplateCategory: async (id) => {
+    return api.delete(`${API_ENDPOINTS.TEMPLATES.CATEGORIES}/${id}`);
   },
 };

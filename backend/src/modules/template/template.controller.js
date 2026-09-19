@@ -64,6 +64,40 @@ export const templateController = {
   },
 
   /**
+   * 🏷️ POST /api/v1/templates/categories
+   * Create Master Template Category (Admin / SubAdmin)
+   * Tracks authenticated admin user ID as createdBy
+   */
+  createCategory: async (req, res, next) => {
+    try {
+      const category = await templateLogic.createCategory(req.body, req.user?.id);
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.CREATED,
+        message: 'Template category created successfully.',
+        data: { category },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * 🗑️ DELETE /api/v1/templates/categories/:id
+   * Delete Master Template Category (Admin Restricted)
+   */
+  deleteCategory: async (req, res, next) => {
+    try {
+      await templateLogic.deleteCategory(req.params.id);
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
+        message: 'Template category deleted successfully.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * 🔍 GET /api/v1/templates
    * Get Paginated System Templates with Filters
    * - Supports filtering by festivalId, category, search query, and pagination parameters

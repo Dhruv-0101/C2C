@@ -93,6 +93,7 @@ export const CreateSubAdminScreen = ({
                   { id: "categories", label: "Business Categories" },
                   { id: "frames", label: "Brand Frame Studio" },
                   { id: "templates", label: "Graphic Templates" },
+                  { id: "posts", label: "Generated Posts Audit" },
                 ].map((tab) => {
                   const isChecked = selectedTabs.includes(tab.id);
                   return (

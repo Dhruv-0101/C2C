@@ -1,10 +1,7 @@
 // ==============================================================================
 // 🎨 BRANDFLOW DATABASE SCHEMA (PostgreSQL + Prisma ORM)
 // ==============================================================================
-// Description: Multi-tenant, enterprise-grade schema for BrandFlow — AI-powered
-// social media automation, brand kit management, festival graphics, multi-platform
-// scheduling, and analytics for small businesses.
-// ==============================================================================
+
 
 generator client {
   provider      = "prisma-client-js"
@@ -60,7 +57,6 @@ enum PublishStatus {
 enum PlanType {
   FREE        // Free trial tier with limited post quota per month
   PRO         // Standard monthly/yearly plan for active small businesses
-  ENTERPRISE  // High-volume tier for marketing agencies & multi-location franchises
 }
 
 // ==============================================================================
@@ -97,11 +93,12 @@ model User {
   vaultItems          VaultItem[]                      // Bookmarked / saved favorite graphics in user vault
   subscription        Subscription?                    // Active subscription plan and post quotas
   billingTransactions BillingTransaction[]             // Payment audit ledger (Razorpay / Stripe)
-  templatesCreated    Template[]           @relation("TemplateCreator") // Templates created if user is admin
-  festivalsCreated    Festival[]           @relation("FestivalCreator") // Festivals created if user is admin/subadmin
-  categoriesCreated   Category[]           @relation("CategoryCreator") // Categories created if user is admin/subadmin
-  framesCreated       Frame[]              @relation("FrameCreator") // Frames created if user is admin/subadmin
-  postAnalytics       PostAnalytics[]                  // Aggregated social media engagement metrics
+  templatesCreated          Template[]           @relation("TemplateCreator") // Templates created if user is admin
+  festivalsCreated          Festival[]           @relation("FestivalCreator") // Festivals created if user is admin/subadmin
+  categoriesCreated         Category[]           @relation("CategoryCreator") // Categories created if user is admin/subadmin
+  templateCategoriesCreated TemplateCategory[]   @relation("TemplateCategoryCreator") // Template categories created if user is admin/subadmin
+  framesCreated             Frame[]              @relation("FrameCreator") // Frames created if user is admin/subadmin
+  postAnalytics             PostAnalytics[]                  // Aggregated social media engagement metrics
 
   @@index([email])
   @@index([googleId])
@@ -209,6 +206,8 @@ model Frame {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  posts Post[]                                        // User posts created using this frame overlay
+
   @@index([createdBy])
 }
 
@@ -228,7 +227,7 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   brandKits BrandKit[]                                // Brand kits associated with this category
-  posts     Post[]                                    // Posts generated under this category
+  posts     Post[]                                    // User posts created under this business niche
 
   @@index([createdBy])
 }
@@ -261,10 +260,14 @@ model TemplateCategory {
   slug        String   @unique                        // URL slug (e.g. "promotional-offers")
   description String?
   isSystem    Boolean  @default(false)
+  createdBy   String?                                 // User / SubAdmin who created this category
+  creator     User?    @relation("TemplateCategoryCreator", fields: [createdBy], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   templates Template[]
+
+  @@index([createdBy])
 }
 
 // 🖼️ Master Graphic Poster Templates: Ready-made artwork for users to customize
@@ -301,10 +304,12 @@ model Post {
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   templateId      String?                             // Optional foreign key to source Template
   template        Template?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  categoryId      String?                             // Optional industry niche tag
-  category        Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   festivalId      String?                             // Optional festival tag
   festival        Festival?    @relation(fields: [festivalId], references: [id], onDelete: SetNull)
+  categoryId      String?                             // Foreign key referencing Business Category
+  category        Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  frameId         String?                             // Foreign key referencing Frame overlay applied
+  frame           Frame?       @relation(fields: [frameId], references: [id], onDelete: SetNull)
   occasionName    String?                             // Free-text occasion title (e.g. "Grand Opening Sale")
   customImageUrl  String?                             // User-uploaded product or swapped graphic URL
   finalGraphicUrl String?                             // Sharp composited high-res rendered final image URL
@@ -313,16 +318,23 @@ model Post {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  captions       Caption[]                            // AI generated captions
-  scheduledPosts ScheduledPost[]                      // Scheduled publishing events (1-to-Many)
+  captions       Caption[]                            // 🚀 FUTURE-PROOF: 1-to-Many relation for multiple caption/tone variants; current app flow persists 1 selected caption
+  scheduledPost  ScheduledPost?                       // Active 1-to-1 scheduled publishing event
   vaultItems     VaultItem[]                          // Saved copies in user's vault
   postAnalytics  PostAnalytics[]                      // Social performance analytics
 
   @@index([userId])
   @@index([status])
+  @@index([categoryId])
+  @@index([frameId])
+  @@index([templateId])
+  @@index([festivalId])
+  @@index([createdAt])
 }
 
 // ✍️ Social Captions: AI-generated copy & viral hashtags
+// 🚀 [FUTURE-PROOF ARCHITECTURE]: Designed as 1-to-Many to allow saving multiple tone/marketing variants
+// per post in the future. In the current application flow, 1 selected caption is persisted upon publishing/scheduling.
 model Caption {
   id          String         @id @default(uuid())
   postId      String                                  // Foreign key referencing Post
@@ -338,7 +350,7 @@ model Caption {
 // ⏰ Scheduled Publishing Dispatcher: Manages when and where posts are sent live
 model ScheduledPost {
   id              String           @id @default(uuid()) // Unique Dispatch Event ID (scheduledPostId)
-  postId          String                               // Foreign key referencing parent Post content
+  postId          String           @unique             // Foreign key referencing parent Post (1-to-1)
   post            Post             @relation(fields: [postId], references: [id], onDelete: Cascade)
   scheduledAt     DateTime                             // Target timestamp when post must be published
   publishedAt     DateTime?                            // Exact timestamp when social APIs returned 200 OK

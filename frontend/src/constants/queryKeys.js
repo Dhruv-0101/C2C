@@ -8,6 +8,8 @@ export const QUERY_KEYS = {
     LIST: (params = {}) => ['posts', 'list', params],
     BY_ID: (id) => ['posts', id],
     SCHEDULED: ['scheduledPosts'],
+    ADMIN_ALL: (params = {}) => ['posts', 'admin', params],
+    ANALYTICS: ['posts', 'admin', 'analytics'],
   },
   FRAMES: {
     ALL: ['frames'],

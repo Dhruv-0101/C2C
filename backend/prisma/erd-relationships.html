@@ -462,6 +462,39 @@
       border-color: rgba(245, 158, 11, 0.2);
     }
 
+    .tag-futureproof {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.35);
+      font-weight: 600;
+    }
+
+    .badge-futureproof {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .note-box {
+      margin-top: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 3px solid #38bdf8;
+      font-size: 0.82rem;
+      color: #bae6fd;
+      line-height: 1.45;
+    }
+
     .tag-category {
       margin-left: auto;
       font-size: 0.72rem;
@@ -576,11 +609,11 @@
         <div class="stat-label">Total Tables / Models</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" style="color: var(--accent-emerald);">2</div>
+        <div class="stat-num" style="color: var(--accent-emerald);">3</div>
         <div class="stat-label">1 : 1 Relationships</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" style="color: var(--accent-primary);">21</div>
+        <div class="stat-num" style="color: var(--accent-primary);">22</div>
         <div class="stat-label">1 : Many Relationships</div>
       </div>
       <div class="stat-card">
@@ -708,9 +741,10 @@
 
       <div class="filter-tabs">
         <button class="filter-btn active" data-filter="all">All (24)</button>
-        <button class="filter-btn" data-filter="1-to-1">1 : 1 (2)</button>
-        <button class="filter-btn" data-filter="1-to-many">1 : Many (21)</button>
+        <button class="filter-btn" data-filter="1-to-1">1 : 1 (3)</button>
+        <button class="filter-btn" data-filter="1-to-many">1 : Many (20)</button>
         <button class="filter-btn" data-filter="many-to-many">Many : Many (1)</button>
+        <button class="filter-btn" data-filter="future-proof">🚀 Future-Proof (1)</button>
         <button class="filter-btn" data-filter="user">User Core</button>
         <button class="filter-btn" data-filter="post">Post Flow</button>
       </div>
@@ -765,13 +799,40 @@
         <div class="card-body">
           <div class="card-title">User Active Subscription & Quota</div>
           <div class="card-desc">
-            Each User has <strong>exactly one</strong> active Subscription tracker record measuring their allowed post quotas, bonus credits, and active plan (Free, Pro, Enterprise).
+            Each User has <strong>exactly one</strong> active Subscription tracker record measuring their allowed post quotas, bonus credits, and active plan (FREE or PRO).
           </div>
         </div>
         <div class="card-meta">
           <span class="tag-mono">Subscription.userId</span>
           <span class="tag-mono tag-cascade">onDelete: Cascade</span>
           <span class="tag-category">Billing</span>
+        </div>
+      </div>
+
+      <!-- Post -> ScheduledPost -->
+      <div class="rel-card" data-type="1-to-1" data-tags="post scheduledpost scheduler bullmq cron 1-to-1">
+        <div class="flow-row">
+          <span class="node-pill parent">Post</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-1">1 : 1 (Active)</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|| ── |o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">ScheduledPost</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Scheduled Publishing Dispatch</div>
+          <div class="card-desc">
+            Each customized Post can have <strong>at most one</strong> active scheduled dispatch event picked up by BullMQ workers and the cron scheduler. Enforced strictly via <code>ScheduledPost.postId (@unique)</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">ScheduledPost.postId (@unique)</span>
+          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-category">Post Flow</span>
         </div>
       </div>
 
@@ -1076,10 +1137,37 @@
         </div>
       </div>
 
+      <!-- User (Admin) -> TemplateCategory -->
+      <div class="rel-card" data-type="1-to-many" data-tags="user templatecategory admin creator 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">User (Admin)</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">TemplateCategory</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Admin Created Template Categories</div>
+          <div class="card-desc">
+            Admins and SubAdmins create visual template groups (e.g. Promotional Offers, Quotes) with creator audit tracking via <code>@relation("TemplateCategoryCreator")</code>.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">TemplateCategory.createdBy</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Admin Operations</span>
+        </div>
+      </div>
+
       <!-- ================= 1 TO MANY (POST FLOW) ================= -->
 
       <!-- Post -> Caption -->
-      <div class="rel-card" data-type="1-to-many" data-tags="post caption ai gemini 1-to-many">
+      <div class="rel-card" data-type="1-to-many" data-tags="post caption ai gemini 1-to-many future-proof">
         <div class="flow-row">
           <span class="node-pill parent">Post</span>
           <div class="flow-connector">
@@ -1093,44 +1181,26 @@
           <span class="node-pill child">Caption</span>
         </div>
         <div class="card-body">
-          <div class="card-title">Post AI Captions & Hashtags</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+            <div class="card-title" style="margin-bottom: 0;">Post AI Captions & Hashtags</div>
+            <span class="badge-futureproof">🚀 Future-Proof</span>
+          </div>
           <div class="card-desc">
-            A single Post can generate <strong>multiple AI marketing captions</strong> and hashtag lists with different tones (casual, festive, urgent sales).
+            The schema is architected as <strong>1-to-Many</strong> so that a single Post can store multiple AI marketing captions and hashtag variants (e.g. casual, festive, urgent sales, or platform-specific copy).
+          </div>
+          <div class="note-box">
+            <strong>ℹ️ Implementation Status:</strong> Database schema is 100% future-proofed for multiple caption storage. The current application flow generates captions ephemerally via AI and persists the active single selected caption upon post publishing/scheduling.
           </div>
         </div>
         <div class="card-meta">
           <span class="tag-mono">Caption.postId</span>
           <span class="tag-mono tag-cascade">onDelete: Cascade</span>
+          <span class="tag-mono tag-futureproof">🚀 Future-Proof Schema</span>
           <span class="tag-category">Post Flow</span>
         </div>
       </div>
 
-      <!-- Post -> ScheduledPost -->
-      <div class="rel-card" data-type="1-to-many" data-tags="post scheduledpost scheduler bullmq cron 1-to-many">
-        <div class="flow-row">
-          <span class="node-pill parent">Post</span>
-          <div class="flow-connector">
-            <span class="cardinality-badge badge-1-n">1 : Many</span>
-            <div class="arrow-line">
-              <span class="line"></span>
-              <span style="padding: 0 4px;">|| ── }o</span>
-              <span class="line"></span>
-            </div>
-          </div>
-          <span class="node-pill child">ScheduledPost</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Scheduled Publishing Dispatches</div>
-          <div class="card-desc">
-            A Post can have <strong>multiple publishing dispatch events</strong> across different dates or repeated recurring campaigns picked up by BullMQ workers.
-          </div>
-        </div>
-        <div class="card-meta">
-          <span class="tag-mono">ScheduledPost.postId</span>
-          <span class="tag-mono tag-cascade">onDelete: Cascade</span>
-          <span class="tag-category">Post Flow</span>
-        </div>
-      </div>
+
 
       <!-- Post -> PostAnalytics -->
       <div class="rel-card" data-type="1-to-many" data-tags="post postanalytics metrics social 1-to-many">
@@ -1215,32 +1285,7 @@
         </div>
       </div>
 
-      <!-- Category -> Post -->
-      <div class="rel-card" data-type="1-to-many" data-tags="category post industry 1-to-many">
-        <div class="flow-row">
-          <span class="node-pill parent">Category</span>
-          <div class="flow-connector">
-            <span class="cardinality-badge badge-1-n">1 : Many</span>
-            <div class="arrow-line">
-              <span class="line"></span>
-              <span style="padding: 0 4px;">|o ── }o</span>
-              <span class="line"></span>
-            </div>
-          </div>
-          <span class="node-pill child">Post</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">Category Tagged Posts</div>
-          <div class="card-desc">
-            Posts can be tagged with an industry niche for content filtering and specialized AI prompt generation context.
-          </div>
-        </div>
-        <div class="card-meta">
-          <span class="tag-mono">Post.categoryId</span>
-          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
-          <span class="tag-category">Content</span>
-        </div>
-      </div>
+
 
       <!-- Festival -> Template -->
       <div class="rel-card" data-type="1-to-many" data-tags="festival template festival design 1-to-many">
@@ -1343,8 +1388,55 @@
             One master artwork template serves as the foundation for <strong>unlimited user posts</strong>, personalized with custom business info and frames.
           </div>
         </div>
+      <!-- Category -> Post -->
+      <div class="rel-card" data-type="1-to-many" data-tags="category post industry niche 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Category</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Post</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Business Category to Generated Posts</div>
+          <div class="card-desc">
+            Tracks which business industry / niche (e.g. Retail, Healthcare, Restaurant) each post was generated for, enabling granular admin audits and category-wise performance analytics.
+          </div>
+        </div>
         <div class="card-meta">
-          <span class="tag-mono">Post.templateId</span>
+          <span class="tag-mono">Post.categoryId</span>
+          <span class="tag-mono tag-setnull">onDelete: SetNull</span>
+          <span class="tag-category">Content</span>
+        </div>
+      </div>
+
+      <!-- Frame -> Post -->
+      <div class="rel-card" data-type="1-to-many" data-tags="frame post overlay canvas 1-to-many">
+        <div class="flow-row">
+          <span class="node-pill parent">Frame</span>
+          <div class="flow-connector">
+            <span class="cardinality-badge badge-1-n">1 : Many</span>
+            <div class="arrow-line">
+              <span class="line"></span>
+              <span style="padding: 0 4px;">|o ── }o</span>
+              <span class="line"></span>
+            </div>
+          </div>
+          <span class="node-pill child">Post</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Brand Frame to Generated Posts</div>
+          <div class="card-desc">
+            Tracks which transparent vector frame overlay was composited onto the final social poster, enabling admins to see frame popularity and design usage patterns.
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="tag-mono">Post.frameId</span>
           <span class="tag-mono tag-setnull">onDelete: SetNull</span>
           <span class="tag-category">Content</span>
         </div>
@@ -1418,6 +1510,8 @@
         } else if (currentFilter === '1-to-many' && type === '1-to-many') {
           matchesFilter = true;
         } else if (currentFilter === 'many-to-many' && type === 'many-to-many') {
+          matchesFilter = true;
+        } else if (currentFilter === 'future-proof' && tags.includes('future-proof')) {
           matchesFilter = true;
         } else if (currentFilter === 'user' && tags.includes('user')) {
           matchesFilter = true;

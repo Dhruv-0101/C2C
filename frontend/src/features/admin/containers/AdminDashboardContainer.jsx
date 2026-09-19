@@ -7,6 +7,10 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useCategories } from "../../../hooks/useCategories";
 import { useSubAdmins } from "../../../hooks/useSubAdmins";
 import { useUsers } from "../../../hooks/useUsers";
+import { useAdminPosts, useAdminPostAnalytics } from "../../../hooks/useAdminPosts";
+import { useFrames } from "../../../hooks/useFrames";
+import { useTemplateCategories } from "../../../hooks/useTemplates";
+import { useFestivals } from "../../../hooks/useFestivals";
 import { authApi } from "../../../services/auth.api";
 import { categoryApi } from "../../../services/category.api";
 import { billingApi } from "../../../services/billing.api";
@@ -107,6 +111,42 @@ export const AdminDashboardContainer = () => {
     limit: categoryLimit,
     search: categorySearch,
   });
+
+  // 4. Generated Posts Audit Query (with Multi-Filters)
+  const [postPage, setPostPage] = useState(1);
+  const [postLimit, setPostLimit] = useState(10);
+  const [postSearch, setPostSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [frameFilter, setFrameFilter] = useState("");
+  const [templateCategoryFilter, setTemplateCategoryFilter] = useState("");
+  const [festivalFilter, setFestivalFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const {
+    posts,
+    meta: postMeta,
+    isLoading: isLoadingPosts,
+    error: postsFetchError,
+  } = useAdminPosts({
+    page: postPage,
+    limit: postLimit,
+    search: postSearch,
+    categoryId: categoryFilter,
+    frameId: frameFilter,
+    templateCategoryId: templateCategoryFilter,
+    festivalId: festivalFilter,
+    status: statusFilter,
+  });
+
+  const {
+    analytics: postAnalytics,
+    isLoading: isLoadingPostAnalytics,
+  } = useAdminPostAnalytics();
+
+  // Auxiliary dropdown collections for filters
+  const { frames: allFrames } = useFrames({ limit: 100 });
+  const { categories: allTemplateCategories } = useTemplateCategories();
+  const { festivals: allFestivals } = useFestivals({ limit: 100 });
 
   // Create Category Mutation
   const createCategoryMutation = useMutation({
@@ -247,7 +287,7 @@ export const AdminDashboardContainer = () => {
       fullName: "",
       email: "",
       password: "",
-      allowedTabs: ["festivals", "categories", "frames", "templates"],
+      allowedTabs: ["festivals", "categories", "frames", "templates", "posts"],
     },
   });
 
@@ -326,6 +366,32 @@ export const AdminDashboardContainer = () => {
       categoryMeta={categoryMeta}
       isLoadingCategories={isLoadingCategories}
       categoriesFetchError={categoriesFetchError}
+      // Generated Posts Audit Props
+      posts={posts}
+      postMeta={postMeta}
+      isLoadingPosts={isLoadingPosts}
+      postsFetchError={postsFetchError}
+      postPage={postPage}
+      setPostPage={setPostPage}
+      setPostLimit={setPostLimit}
+      categoryFilter={categoryFilter}
+      setCategoryFilter={setCategoryFilter}
+      frameFilter={frameFilter}
+      setFrameFilter={setFrameFilter}
+      templateCategoryFilter={templateCategoryFilter}
+      setTemplateCategoryFilter={setTemplateCategoryFilter}
+      festivalFilter={festivalFilter}
+      setFestivalFilter={setFestivalFilter}
+      statusFilter={statusFilter}
+      setStatusFilter={setStatusFilter}
+      postSearch={postSearch}
+      setPostSearch={setPostSearch}
+      allCategories={categories}
+      allFrames={allFrames}
+      allTemplateCategories={allTemplateCategories}
+      allFestivals={allFestivals}
+      postAnalytics={postAnalytics}
+      isLoadingPostAnalytics={isLoadingPostAnalytics}
       createCategoryMutation={createCategoryMutation}
       deleteCategoryMutation={deleteCategoryMutation}
       createSubAdminMutation={createSubAdminMutation}

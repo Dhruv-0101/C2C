@@ -15,6 +15,7 @@ export const ADMIN_TABS = [
   { id: 'frames', label: 'Brand Frames Studio', description: 'Manage custom brand frames & overlays' },
   { id: 'styles', label: 'Design System & Palettes', description: 'Manage brand color palettes & typography' },
   { id: 'categories', label: 'Business Categories', description: 'Manage industry category tags' },
+  { id: 'posts', label: 'Generated Posts Audit', description: 'Monitor & track user generated posts by category, frame, template, and festival' },
   { id: 'subadmins', label: 'SubAdmin Directory', description: 'Manage sub-admin privileges' },
   { id: 'users', label: 'Business User Directory', description: 'Manage platform users and business accounts' },
 ];

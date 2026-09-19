@@ -14,6 +14,7 @@ export const templateCategoryRepository = {
         slug,
         description: data.description || null,
         isSystem: data.isSystem || false,
+        createdBy: data.createdBy || null,
       },
     });
   },
@@ -34,6 +35,16 @@ export const templateCategoryRepository = {
         where,
         skip,
         take,
+        include: {
+          creator: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
         orderBy: { [sortBy]: sortOrder },
       }),
       prisma.templateCategory.count({ where }),
@@ -44,6 +55,16 @@ export const templateCategoryRepository = {
 
   findMany: async () => {
     return prisma.templateCategory.findMany({
+      include: {
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
       orderBy: { name: 'asc' },
     });
   },
@@ -51,6 +72,16 @@ export const templateCategoryRepository = {
   findById: async (id) => {
     return prisma.templateCategory.findUnique({
       where: { id },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
   },
 
@@ -63,6 +94,22 @@ export const templateCategoryRepository = {
           { slug: { equals: slug, mode: 'insensitive' } },
         ],
       },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+  },
+
+  delete: async (id) => {
+    return prisma.templateCategory.delete({
+      where: { id },
     });
   },
 };

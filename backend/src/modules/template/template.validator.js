@@ -27,3 +27,11 @@ export const createTemplateSchema = z.object({
   }),
 });
 
+export const createTemplateCategorySchema = z.object({
+  body: z.object({
+    name: z.string().min(2, 'Category name must be at least 2 characters').max(50),
+    description: z.string().max(300).optional(),
+    isSystem: z.boolean().optional(),
+  }),
+});
+

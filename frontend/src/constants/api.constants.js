@@ -134,6 +134,8 @@ export const API_ENDPOINTS = {
     PUBLISH_NOW: '/posts/publish-now',
     SCHEDULE: '/posts/schedule',
     TRIGGER_SCHEDULED: '/posts/trigger-scheduled-jobs',
+    ADMIN_ALL: '/posts/admin/all',
+    ADMIN_ANALYTICS: '/posts/admin/analytics',
     BY_ID: (id) => `/posts/${id}`,
   },
 

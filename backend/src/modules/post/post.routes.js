@@ -1,14 +1,30 @@
 import { Router } from 'express';
 import { postController } from './post.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
+import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { createPostSchema } from './post.validator.js';
+import { createPostSchema, getAdminPostsQuerySchema } from './post.validator.js';
 
 const router = Router();
 
 // All post endpoints require authentication
 router.use(authenticate);
 
+// --- 🛡️ Enterprise Admin Post Tracking & Analytics Endpoints ---
+router.get(
+  '/admin/analytics',
+  requireTabPermission('posts'),
+  postController.getAdminPostAnalytics
+);
+
+router.get(
+  '/admin/all',
+  requireTabPermission('posts'),
+  validate(getAdminPostsQuerySchema),
+  postController.getAdminPosts
+);
+
+// --- 👤 User Endpoints ---
 // GET /api/v1/posts
 router.get('/', postController.getUserPosts);
 

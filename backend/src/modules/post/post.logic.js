@@ -3,7 +3,9 @@ import { uploadPostBuffer, deleteFromCloudinary } from '../../config/cloudinary.
 import { processPostJob, triggerScheduledPostsNow } from '../../jobs/index.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { billingRepository } from '../billing/billing.repository.js';
+import { brandKitRepository } from '../brandkit/brandkit.repository.js';
 import { ForbiddenError } from '../../common/errors/custom-errors.js';
+import { logger } from '../../config/logger.js';
 
 export const postLogic = {
   /**
@@ -142,10 +144,19 @@ export const postLogic = {
       );
     }
 
+    // Auto-resolve business category from active BrandKit if not explicitly passed
+    let categoryId = payload.categoryId || null;
+    if (!categoryId) {
+      const userBrandKit = await brandKitRepository.findByUserId(userId);
+      categoryId = userBrandKit?.categoryId || null;
+    }
+
     const postData = {
       userId,
       templateId: payload.templateId || null,
       festivalId: payload.festivalId || null,
+      categoryId,
+      frameId: payload.frameId || null,
       occasionName: payload.occasionName || null,
       customImageUrl: payload.customImageUrl || null,
       finalGraphicUrl: finalGraphicUrl,
@@ -162,10 +173,55 @@ export const postLogic = {
 
     // 2. Consume 1 post credit immediately upon post creation
     await billingRepository.incrementPostsUsed(userId).catch((err) => {
-      console.warn(`⚠️ Failed to increment post quota for user ${userId}: ${err.message}`);
+      logger.warn(`Failed to increment post quota for user ${userId}: ${err.message}`);
     });
 
     return createdPost;
+  },
+
+  /**
+   * Enterprise Admin: Get all posts created across platform with multi-dimensional filters
+   */
+  getAdminPosts: async (queryParams = {}) => {
+    const pagination = parsePaginationParams(queryParams);
+    const { posts, totalCount } = await postRepository.findPaginatedForAdmin({
+      ...pagination,
+      categoryId: queryParams.categoryId || undefined,
+      frameId: queryParams.frameId || undefined,
+      templateId: queryParams.templateId || undefined,
+      templateCategoryId: queryParams.templateCategoryId || undefined,
+      festivalId: queryParams.festivalId || undefined,
+      userId: queryParams.userId || undefined,
+      status: queryParams.status || undefined,
+      startDate: queryParams.startDate || undefined,
+      endDate: queryParams.endDate || undefined,
+      search: queryParams.search || undefined,
+    });
+
+    const paginatedResponse = buildPaginatedResponse({
+      items: posts,
+      totalCount,
+      page: pagination.page,
+      limit: pagination.limit,
+    });
+
+    return {
+      data: {
+        posts: paginatedResponse.data,
+      },
+      meta: paginatedResponse.meta,
+    };
+  },
+
+  /**
+   * Enterprise Admin: Get aggregated volume analytics and distribution breakdowns
+   * "Kitni bani hai" - Total count, by Category, by Frame, by Template, by Festival, by Status, Top Creators
+   */
+  getAdminPostAnalytics: async () => {
+    const analytics = await postRepository.getPostAnalytics();
+    return {
+      data: analytics,
+    };
   },
 
   /**
@@ -175,7 +231,7 @@ export const postLogic = {
     const post = await postRepository.findById(id);
     if (post?.finalGraphicUrl) {
       deleteFromCloudinary(post.finalGraphicUrl).catch((err) =>
-        console.warn(`⚠️ Failed to cleanup post graphic from Cloudinary: ${err.message}`)
+        logger.warn(`Failed to cleanup post graphic from Cloudinary: ${err.message}`)
       );
     }
     return postRepository.delete(id, userId);

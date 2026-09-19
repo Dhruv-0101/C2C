@@ -2,16 +2,36 @@ import { prisma } from '../../config/database.js';
 
 export const postRepository = {
   /**
+   * Standard relational include selector for rich post metadata
+   */
+  postInclude: {
+    user: {
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        avatarUrl: true,
+        role: true,
+      },
+    },
+    category: true,
+    frame: true,
+    template: {
+      include: {
+        templateCategory: true,
+      },
+    },
+    festival: true,
+    captions: true,
+  },
+
+  /**
    * Create a new generated post record
    */
   create: async (data) => {
     return prisma.post.create({
       data,
-      include: {
-        template: true,
-        festival: true,
-        category: true,
-      },
+      include: postRepository.postInclude,
     });
   },
 
@@ -25,9 +45,14 @@ export const postRepository = {
           const newPost = await tx.post.create({
             data: postData,
             include: {
-              template: true,
+              template: {
+                include: {
+                  templateCategory: true,
+                },
+              },
               festival: true,
               category: true,
+              frame: true,
             },
           });
 
@@ -59,9 +84,14 @@ export const postRepository = {
       const newPost = await prisma.post.create({
         data: postData,
         include: {
-          template: true,
+          template: {
+            include: {
+              templateCategory: true,
+            },
+          },
           festival: true,
           category: true,
+          frame: true,
         },
       });
 
@@ -154,7 +184,6 @@ export const postRepository = {
             include: {
               template: true,
               festival: true,
-              category: true,
               captions: true,
             },
           },
@@ -177,7 +206,6 @@ export const postRepository = {
           include: {
             template: true,
             festival: true,
-            category: true,
             captions: true,
           },
         },
@@ -202,7 +230,6 @@ export const postRepository = {
           include: {
             template: true,
             festival: true,
-            category: true,
             captions: true,
           },
         },
@@ -222,7 +249,6 @@ export const postRepository = {
             OR: [
               { occasionName: { contains: search, mode: 'insensitive' } },
               { festival: { name: { contains: search, mode: 'insensitive' } } },
-              { category: { name: { contains: search, mode: 'insensitive' } } },
               { template: { title: { contains: search, mode: 'insensitive' } } },
               { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
             ],
@@ -238,7 +264,6 @@ export const postRepository = {
         include: {
           template: true,
           festival: true,
-          category: true,
           captions: true,
         },
         orderBy: { [sortBy]: sortOrder },
@@ -258,7 +283,6 @@ export const postRepository = {
       include: {
         template: true,
         festival: true,
-        category: true,
         captions: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -274,7 +298,6 @@ export const postRepository = {
       include: {
         template: true,
         festival: true,
-        category: true,
         captions: true,
       },
     });
@@ -292,7 +315,7 @@ export const postRepository = {
         },
       },
       include: {
-        scheduledPosts: true,
+        scheduledPost: true,
         vaultItems: true,
       },
     });
@@ -312,6 +335,299 @@ export const postRepository = {
     });
 
     return updatedPost;
+  },
+
+  /**
+   * Enterprise Admin Query: Find all generated posts across platform with multi-dimensional filtering
+   */
+  findPaginatedForAdmin: async ({
+    skip = 0,
+    take = 10,
+    categoryId,
+    frameId,
+    templateId,
+    templateCategoryId,
+    festivalId,
+    userId,
+    status,
+    search,
+    startDate,
+    endDate,
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+  }) => {
+    const where = {
+      ...(categoryId ? { categoryId } : {}),
+      ...(frameId ? { frameId } : {}),
+      ...(templateId ? { templateId } : {}),
+      ...(templateCategoryId ? { template: { templateCategoryId } } : {}),
+      ...(festivalId ? { festivalId } : {}),
+      ...(userId ? { userId } : {}),
+      ...(status ? { status } : {}),
+      ...(startDate || endDate
+        ? {
+            createdAt: {
+              ...(startDate ? { gte: new Date(startDate) } : {}),
+              ...(endDate ? { lte: new Date(endDate) } : {}),
+            },
+          }
+        : {}),
+      ...(search
+        ? {
+            OR: [
+              { occasionName: { contains: search, mode: 'insensitive' } },
+              { user: { fullName: { contains: search, mode: 'insensitive' } } },
+              { user: { email: { contains: search, mode: 'insensitive' } } },
+              { festival: { name: { contains: search, mode: 'insensitive' } } },
+              { template: { title: { contains: search, mode: 'insensitive' } } },
+              { category: { name: { contains: search, mode: 'insensitive' } } },
+              { frame: { title: { contains: search, mode: 'insensitive' } } },
+              { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
+            ],
+          }
+        : {}),
+    };
+
+    const validSortFields = ['createdAt', 'updatedAt', 'status', 'occasionName'];
+    const safeSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const safeSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
+
+    const [posts, totalCount] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              avatarUrl: true,
+              role: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          frame: {
+            select: {
+              id: true,
+              title: true,
+              previewUrl: true,
+              overlayPngUrl: true,
+            },
+          },
+          template: {
+            select: {
+              id: true,
+              title: true,
+              baseImageUrl: true,
+              templateCategoryId: true,
+              templateCategory: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+          festival: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              date: true,
+              bannerUrl: true,
+            },
+          },
+          captions: {
+            take: 1,
+            orderBy: { createdAt: 'desc' },
+          },
+          scheduledPost: true,
+        },
+        orderBy: { [safeSortBy]: safeSortOrder },
+      }),
+      prisma.post.count({ where }),
+    ]);
+
+    return { posts, totalCount };
+  },
+
+  /**
+   * Enterprise Admin Metrics: Calculate aggregated volume and breakdown distributions
+   * "Kitni bani hai" - Total posts, By Category, By Frame, By Template, By Festival, By Status, Top Creators
+   */
+  getPostAnalytics: async () => {
+    const [
+      totalPosts,
+      byCategoryGroup,
+      byFrameGroup,
+      byTemplateGroup,
+      byFestivalGroup,
+      byStatusGroup,
+      byUserGroup,
+      allCategories,
+      allFrames,
+      allTemplates,
+      allFestivals,
+    ] = await Promise.all([
+      prisma.post.count(),
+      prisma.post.groupBy({
+        by: ['categoryId'],
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+      prisma.post.groupBy({
+        by: ['frameId'],
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+      prisma.post.groupBy({
+        by: ['templateId'],
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+      prisma.post.groupBy({
+        by: ['festivalId'],
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+      prisma.post.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      prisma.post.groupBy({
+        by: ['userId'],
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+        take: 10,
+      }),
+      prisma.category.findMany({ select: { id: true, name: true, slug: true } }),
+      prisma.frame.findMany({ select: { id: true, title: true, previewUrl: true } }),
+      prisma.template.findMany({
+        select: {
+          id: true,
+          title: true,
+          baseImageUrl: true,
+          templateCategoryId: true,
+          templateCategory: { select: { id: true, name: true } },
+        },
+      }),
+      prisma.festival.findMany({ select: { id: true, name: true, date: true } }),
+    ]);
+
+    // Fast O(1) lookup maps
+    const categoryMap = new Map(allCategories.map((c) => [c.id, c]));
+    const frameMap = new Map(allFrames.map((f) => [f.id, f]));
+    const templateMap = new Map(allTemplates.map((t) => [t.id, t]));
+    const festivalMap = new Map(allFestivals.map((f) => [f.id, f]));
+
+    // Fetch top user creators details
+    const topUserIds = byUserGroup.map((u) => u.userId).filter(Boolean);
+    const topUsers = await prisma.user.findMany({
+      where: { id: { in: topUserIds } },
+      select: { id: true, fullName: true, email: true, avatarUrl: true, role: true },
+    });
+    const userMap = new Map(topUsers.map((u) => [u.id, u]));
+
+    // Format distributions
+    const byCategory = byCategoryGroup.map((item) => {
+      const cat = item.categoryId ? categoryMap.get(item.categoryId) : null;
+      return {
+        categoryId: item.categoryId || 'uncategorized',
+        name: cat?.name || 'General / Uncategorized',
+        count: item._count.id,
+        percentage: totalPosts > 0 ? Number(((item._count.id / totalPosts) * 100).toFixed(1)) : 0,
+      };
+    });
+
+    const byFrame = byFrameGroup.map((item) => {
+      const frame = item.frameId ? frameMap.get(item.frameId) : null;
+      return {
+        frameId: item.frameId || 'no_frame',
+        title: frame?.title || 'No Frame Applied',
+        previewUrl: frame?.previewUrl || null,
+        count: item._count.id,
+        percentage: totalPosts > 0 ? Number(((item._count.id / totalPosts) * 100).toFixed(1)) : 0,
+      };
+    });
+
+    // Group by Template Category
+    const templateCategoryCountMap = new Map();
+    const byTemplate = byTemplateGroup.map((item) => {
+      const tpl = item.templateId ? templateMap.get(item.templateId) : null;
+      const tplCatName = tpl?.templateCategory?.name || 'Unassigned Category';
+      const tplCatId = tpl?.templateCategoryId || 'unassigned';
+
+      const prev = templateCategoryCountMap.get(tplCatId) || { id: tplCatId, name: tplCatName, count: 0 };
+      prev.count += item._count.id;
+      templateCategoryCountMap.set(tplCatId, prev);
+
+      return {
+        templateId: item.templateId || 'custom_upload',
+        title: tpl?.title || 'Custom Canvas Poster',
+        baseImageUrl: tpl?.baseImageUrl || null,
+        categoryName: tplCatName,
+        count: item._count.id,
+        percentage: totalPosts > 0 ? Number(((item._count.id / totalPosts) * 100).toFixed(1)) : 0,
+      };
+    });
+
+    const byTemplateCategory = Array.from(templateCategoryCountMap.values())
+      .map((tc) => ({
+        ...tc,
+        percentage: totalPosts > 0 ? Number(((tc.count / totalPosts) * 100).toFixed(1)) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const byFestival = byFestivalGroup.map((item) => {
+      const fest = item.festivalId ? festivalMap.get(item.festivalId) : null;
+      return {
+        festivalId: item.festivalId || 'no_festival',
+        name: fest?.name || 'General / Non-Festival',
+        date: fest?.date || null,
+        count: item._count.id,
+        percentage: totalPosts > 0 ? Number(((item._count.id / totalPosts) * 100).toFixed(1)) : 0,
+      };
+    });
+
+    const byStatus = byStatusGroup.reduce(
+      (acc, curr) => {
+        acc[curr.status] = curr._count.id;
+        return acc;
+      },
+      { DRAFT: 0, SCHEDULED: 0, PUBLISHED: 0 }
+    );
+
+    const topCreators = byUserGroup.map((item) => {
+      const u = userMap.get(item.userId);
+      return {
+        userId: item.userId,
+        fullName: u?.fullName || 'Anonymous User',
+        email: u?.email || 'N/A',
+        avatarUrl: u?.avatarUrl || null,
+        role: u?.role || 'END_USER',
+        count: item._count.id,
+      };
+    });
+
+    return {
+      totalPosts,
+      byCategory,
+      byFrame,
+      byTemplate,
+      byTemplateCategory,
+      byFestival,
+      byStatus,
+      topCreators,
+    };
   },
 
   /**

@@ -123,4 +123,39 @@ export const postController = {
       next(err);
     }
   },
+
+  /**
+   * GET /api/v1/posts/admin/all
+   * Enterprise Admin: Query all generated posts across platform with multi-filters
+   */
+  getAdminPosts: async (req, res, next) => {
+    try {
+      const result = await postLogic.getAdminPosts(req.query);
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
+        message: 'Admin posts retrieved successfully',
+        data: result.data,
+        meta: result.meta,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * GET /api/v1/posts/admin/analytics
+   * Enterprise Admin: Get aggregated volume analytics and breakdowns
+   */
+  getAdminPostAnalytics: async (req, res, next) => {
+    try {
+      const result = await postLogic.getAdminPostAnalytics();
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
+        message: 'Admin post analytics retrieved successfully',
+        data: result.data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };

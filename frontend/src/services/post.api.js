@@ -110,4 +110,27 @@ export const postApi = {
     const response = await api.delete(API_ENDPOINTS.POSTS.BY_ID(id));
     return response.data;
   },
+
+  /**
+   * GET /api/v1/posts/admin/all
+   * Fetches paginated list of all generated posts with multi-dimensional filters
+   *
+   * @param {Object} [params={}] - Filter parameters (page, limit, categoryId, frameId, templateId, templateCategoryId, festivalId, userId, status, search)
+   * @returns {Promise<Object>} `{ posts: Array<Object>, meta: Object }`
+   */
+  getAdminPosts: async (params = {}) => {
+    const response = await api.get(API_ENDPOINTS.POSTS.ADMIN_ALL, { params });
+    return response.data;
+  },
+
+  /**
+   * GET /api/v1/posts/admin/analytics
+   * Fetches aggregated metrics and distribution breakdowns for all posts
+   *
+   * @returns {Promise<Object>} Volume counts, distributions by category, frame, template, festival, etc.
+   */
+  getAdminPostAnalytics: async () => {
+    const response = await api.get(API_ENDPOINTS.POSTS.ADMIN_ANALYTICS);
+    return response.data;
+  },
 };
