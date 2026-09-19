@@ -3,6 +3,7 @@ import { connectDatabase, prisma } from './config/database.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { initWorkers, closeWorkers } from './jobs/index.js';
+import { disconnectRedis } from './config/redis.js';
 
 import sharp from 'sharp';
 
@@ -94,6 +95,7 @@ async function startServer() {
 async function gracefulShutdown(signal) {
   logger.warn(`⚠️ ${signal} received. Initiating graceful shutdown...`);
   await closeWorkers();
+  await disconnectRedis();
   if (server) {
     server.close(async () => {
       logger.info('🔒 HTTP Server closed.');

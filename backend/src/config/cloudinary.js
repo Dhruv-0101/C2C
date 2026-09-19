@@ -1,4 +1,5 @@
 import { env } from './env.js';
+import { logger } from './logger.js';
 import axios from 'axios';
 import crypto from 'crypto';
 
@@ -93,7 +94,7 @@ export async function deleteFromCloudinary(publicIdOrUrl) {
 
     return response.data.result === 'ok';
   } catch (error) {
-    console.warn(`⚠️ Cloudinary Deletion Warning (Public ID: ${publicId}):`, error?.response?.data || error.message);
+    logger.warn(`⚠️ Cloudinary Deletion Warning (Public ID: ${publicId}): ${error?.response?.data?.error?.message || error.message}`);
     return false;
   }
 }
@@ -145,7 +146,7 @@ export async function uploadToCloudinaryBuffer(buffer, folder = CLOUDINARY_FOLDE
       format: response.data.format,
     };
   } catch (error) {
-    console.error('❌ Cloudinary Upload Error:', error?.response?.data || error.message);
+    logger.error(`❌ Cloudinary Upload Error: ${error?.response?.data?.error?.message || error.message}`);
     throw new Error(
       error?.response?.data?.error?.message || 'Failed to upload image to Cloudinary storage.'
     );

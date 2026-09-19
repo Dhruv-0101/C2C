@@ -28,7 +28,7 @@ export const brandKitController = {
     try {
       const userId = req.user.id;
       const payload = req.body;
-      const fileBuffer = req.file?.buffer;
+      const fileBuffer = req.fileBuffer || req.file?.buffer;
 
       const brandKit = await brandKitLogic.updateBrandKit(userId, payload, fileBuffer);
 

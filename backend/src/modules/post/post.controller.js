@@ -96,7 +96,8 @@ export const postController = {
    */
   createPost: async (req, res, next) => {
     try {
-      const post = await postLogic.createPost(req.user.id, req.body, req.fileBuffer);
+      const fileBuffer = req.fileBuffer || req.file?.buffer;
+      const post = await postLogic.createPost(req.user.id, req.body, fileBuffer);
       return sendSuccessResponse(res, {
         statusCode: HTTP_STATUS.CREATED,
         message: 'Post generated and saved successfully',

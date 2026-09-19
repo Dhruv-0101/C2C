@@ -46,6 +46,7 @@ router.post(
   '/',
   authenticate,
   requireTabPermission('templates'),
+  validateImageUpload,
   validate(createTemplateSchema),
   templateController.createTemplate
 );

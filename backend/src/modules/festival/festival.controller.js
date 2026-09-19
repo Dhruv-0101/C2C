@@ -27,7 +27,7 @@ export async function createFestival(req, res, next) {
     const festival = await festivalLogic.createFestival({
       ...req.body,
       createdBy: req.user?.id,
-      fileBuffer: req.file?.buffer,
+      fileBuffer: req.fileBuffer || req.file?.buffer,
     });
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.CREATED,
@@ -46,7 +46,8 @@ export async function createFestival(req, res, next) {
  */
 export async function updateFestival(req, res, next) {
   try {
-    const festival = await festivalLogic.updateFestival(req.params.id, req.body, req.file?.buffer);
+    const fileBuffer = req.fileBuffer || req.file?.buffer;
+    const festival = await festivalLogic.updateFestival(req.params.id, req.body, fileBuffer);
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: 'Festival updated successfully',

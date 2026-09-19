@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { HTTP_STATUS } from '../common/constants/http-status.js';
+import { sendSuccessResponse } from '../common/utils/response.util.js';
 import authRoutes from '../modules/auth/auth.routes.js';
 import categoryRoutes from '../modules/category/category.routes.js';
 import festivalRoutes from '../modules/festival/festival.routes.js';
@@ -17,10 +18,14 @@ const router = Router();
 
 // API Health Check
 router.get('/health', (req, res) => {
-  res.status(HTTP_STATUS.OK).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+  return sendSuccessResponse(res, {
+    statusCode: HTTP_STATUS.OK,
+    message: 'API is healthy and operational',
+    data: {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    },
   });
 });
 

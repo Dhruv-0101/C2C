@@ -3,6 +3,7 @@ import { postController } from './post.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
+import { validateOptionalImageUpload } from '../../common/middleware/upload.middleware.js';
 import { createPostSchema, getAdminPostsQuerySchema, publishNowSchema, schedulePostSchema } from './post.validator.js';
 
 const router = Router();
@@ -41,7 +42,7 @@ router.post('/schedule', validate(schedulePostSchema), postController.schedulePo
 router.post('/trigger-scheduled-jobs', postController.triggerScheduledJobs);
 
 // POST /api/v1/posts (Save generated post)
-router.post('/', validate(createPostSchema), postController.createPost);
+router.post('/', validateOptionalImageUpload, validate(createPostSchema), postController.createPost);
 
 // DELETE /api/v1/posts/:id
 router.delete('/:id', postController.deletePost);

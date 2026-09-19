@@ -26,7 +26,7 @@ export const frameController = {
   createFrame: async (req, res, next) => {
     try {
       const payload = req.body;
-      const fileBuffer = req.file?.buffer;
+      const fileBuffer = req.fileBuffer || req.file?.buffer;
 
       const frame = await frameLogic.createFrame(payload, fileBuffer, req.user?.id);
 
