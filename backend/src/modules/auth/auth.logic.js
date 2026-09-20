@@ -20,6 +20,8 @@ import {
   verifyBackupCode,
 } from '../../common/helpers/two-factor.helper.js';
 import { addWelcomeEmailJob, addPasswordResetEmailJob } from '../../queues/email.queue.js';
+import { getRefreshTokenExpiryDate } from './auth.constants.js';
+import { sanitizeUser } from './auth.helper.js';
 import * as authRepository from './auth.repository.js';
 
 const googleClient = new OAuth2Client();
@@ -103,7 +105,7 @@ export async function loginWithGoogle({ idToken }) {
   const refreshToken = generateRefreshToken(tokenPayload);
 
   const tokenHash = hashToken(refreshToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = getRefreshTokenExpiryDate(false);
 
   await authRepository.createRefreshToken({
     userId: user.id,
@@ -111,11 +113,9 @@ export async function loginWithGoogle({ idToken }) {
     expiresAt,
   });
 
-  const { passwordHash: _, twoFactorSecret: __, backupCodes: ___, ...safeUser } = user;
-
   return {
     require2FA: false,
-    user: safeUser,
+    user: sanitizeUser(user),
     accessToken,
     refreshToken,
   };
@@ -142,7 +142,7 @@ export async function signupUser({ email, password, fullName }) {
 
   // Dispatch Welcome Email Job to BullMQ Queue (Non-blocking Producer)
   addWelcomeEmailJob({ email: newUser.email, fullName: newUser.fullName }).catch((err) => {
-    console.error('Failed to dispatch welcome email BullMQ job:', err.message);
+    logger.error('Failed to dispatch welcome email BullMQ job:', err.message);
   });
 
   const tokenPayload = {
@@ -158,7 +158,7 @@ export async function signupUser({ email, password, fullName }) {
   const refreshToken = generateRefreshToken(tokenPayload);
 
   const tokenHash = hashToken(refreshToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const expiresAt = getRefreshTokenExpiryDate(false);
 
   await authRepository.createRefreshToken({
     userId: newUser.id,
@@ -167,7 +167,7 @@ export async function signupUser({ email, password, fullName }) {
   });
 
   return {
-    user: newUser,
+    user: sanitizeUser(newUser),
     accessToken,
     refreshToken,
   };
@@ -176,7 +176,7 @@ export async function signupUser({ email, password, fullName }) {
 /**
  * Authenticate existing user and check 2FA status
  */
-export async function loginUser({ email, password }) {
+export async function loginUser({ email, password, rememberMe = false }) {
   const user = await authRepository.findUserByEmail(email.toLowerCase());
   if (!user) {
     throw new UnauthorizedError('Invalid email address or password.');
@@ -220,7 +220,7 @@ export async function loginUser({ email, password }) {
   const refreshToken = generateRefreshToken(tokenPayload);
 
   const tokenHash = hashToken(refreshToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = getRefreshTokenExpiryDate(rememberMe);
 
   await authRepository.createRefreshToken({
     userId: user.id,
@@ -228,11 +228,9 @@ export async function loginUser({ email, password }) {
     expiresAt,
   });
 
-  const { passwordHash: _, twoFactorSecret: __, backupCodes: ___, ...safeUser } = user;
-
   return {
     require2FA: false,
-    user: safeUser,
+    user: sanitizeUser(user),
     accessToken,
     refreshToken,
   };
@@ -287,7 +285,7 @@ export async function verifyLogin2FA({ mfaToken, code }) {
   const refreshToken = generateRefreshToken(tokenPayload);
 
   const tokenHash = hashToken(refreshToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = getRefreshTokenExpiryDate(false);
 
   await authRepository.createRefreshToken({
     userId: user.id,
@@ -295,10 +293,8 @@ export async function verifyLogin2FA({ mfaToken, code }) {
     expiresAt,
   });
 
-  const { passwordHash: _, twoFactorSecret: __, backupCodes: ___, ...safeUser } = user;
-
   return {
-    user: safeUser,
+    user: sanitizeUser(user),
     accessToken,
     refreshToken,
   };
@@ -381,7 +377,7 @@ export async function createSubAdmin({ email, password, fullName, allowedTabs = 
     allowedTabs,
   });
 
-  return subAdminUser;
+  return sanitizeUser(subAdminUser);
 }
 
 /**
@@ -472,6 +468,10 @@ export async function toggleUserActiveStatus(userId, isActive) {
     throw new NotFoundError('User account not found.');
   }
 
+  if (user.isSuperAdmin) {
+    throw new ForbiddenError('SuperAdmin account status cannot be modified.');
+  }
+
   const updatedUser = await authRepository.updateUserActiveStatus(userId, isActive);
 
   if (!isActive) {
@@ -479,7 +479,7 @@ export async function toggleUserActiveStatus(userId, isActive) {
     await authRepository.revokeAllUserTokens(userId).catch(() => {});
   }
 
-  return updatedUser;
+  return sanitizeUser(updatedUser);
 }
 
 /**
@@ -507,7 +507,8 @@ export async function updateSubAdmin(id, { fullName, email, allowedTabs }) {
   if (email !== undefined) updateData.email = email.toLowerCase();
   if (allowedTabs !== undefined) updateData.allowedTabs = allowedTabs;
 
-  return authRepository.updateSubAdminUser(id, updateData);
+  const updatedSubAdmin = await authRepository.updateSubAdminUser(id, updateData);
+  return sanitizeUser(updatedSubAdmin);
 }
 
 /**
@@ -534,6 +535,10 @@ export async function refreshSession(refreshToken) {
   await authRepository.revokeRefreshToken(tokenHash);
 
   const user = storedToken.user;
+  if (!user || !user.isActive) {
+    throw new UnauthorizedError('Your account has been deactivated. Please contact support.');
+  }
+
   const tokenPayload = {
     userId: user.id,
     email: user.email,
@@ -547,7 +552,7 @@ export async function refreshSession(refreshToken) {
   const newRefreshToken = generateRefreshToken(tokenPayload);
 
   const newTokenHash = hashToken(newRefreshToken);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = getRefreshTokenExpiryDate(false);
 
   await authRepository.createRefreshToken({
     userId: user.id,
@@ -555,10 +560,8 @@ export async function refreshSession(refreshToken) {
     expiresAt,
   });
 
-  const { passwordHash: _, twoFactorSecret: __, backupCodes: ___, ...safeUser } = user;
-
   return {
-    user: safeUser,
+    user: sanitizeUser(user),
     accessToken: newAccessToken,
     refreshToken: newRefreshToken,
   };
@@ -582,8 +585,7 @@ export async function getUserProfile(userId) {
   if (!user) {
     throw new NotFoundError('User profile not found.');
   }
-  const { passwordHash: _, twoFactorSecret: __, backupCodes: ___, ...safeUser } = user;
-  return safeUser;
+  return sanitizeUser(user);
 }
 
 /**
@@ -659,12 +661,12 @@ export async function resetPassword({ token, newPassword }) {
   // Hash new password
   const passwordHash = await bcrypt.hash(newPassword, 12);
 
-  // Update user password & mark reset token as used
-  await authRepository.updateUserPassword(resetTokenRecord.userId, passwordHash);
-  await authRepository.markResetTokenUsed(resetTokenRecord.id);
-
-  // Revoke all existing refresh sessions for security
-  await authRepository.revokeAllUserTokens(resetTokenRecord.userId).catch(() => { });
+  // Atomically update user password, mark reset token as used, and revoke all active sessions
+  await authRepository.completePasswordReset({
+    userId: resetTokenRecord.userId,
+    passwordHash,
+    tokenId: resetTokenRecord.id,
+  });
 
   return { message: 'Password reset successful! You can now log in with your new password.' };
 }

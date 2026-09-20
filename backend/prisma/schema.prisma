@@ -446,5 +446,7 @@ model PostAnalytics {
 
   @@unique([postId, platform])                        // 1 analytics record per platform per post
   @@index([userId, platform])
+  @@index([userId, createdAt])
+  @@index([lastSyncedAt])
   @@index([createdAt])
 }

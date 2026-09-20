@@ -4,3 +4,4 @@
  */
 export * from './email.queue.js';
 export * from './post.queue.js';
+export * from './analytics.queue.js';

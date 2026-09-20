@@ -11,6 +11,7 @@
  */
 import { z } from 'zod';
 import { paginationQuerySchema } from '../../common/helpers/pagination.helper.js';
+import { SUBADMIN_PERMITTED_TABS } from './auth.constants.js';
 
 export const getSubAdminsQuerySchema = z.object({
   query: paginationQuerySchema,
@@ -68,9 +69,9 @@ export const createSubAdminSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters').max(100),
     allowedTabs: z
-      .array(z.enum(['festivals', 'categories', 'frames', 'templates']))
+      .array(z.enum(SUBADMIN_PERMITTED_TABS))
       .min(1, 'Select at least one permitted tab for SubAdmin')
-      .default(['festivals', 'categories', 'frames', 'templates']),
+      .default([...SUBADMIN_PERMITTED_TABS]),
   }),
 });
 
@@ -82,7 +83,7 @@ export const updateSubAdminSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100).optional(),
     email: z.string().email('Please enter a valid email address').optional(),
     allowedTabs: z
-      .array(z.enum(['festivals', 'categories', 'frames', 'templates']))
+      .array(z.enum(SUBADMIN_PERMITTED_TABS))
       .min(1, 'Select at least one permitted tab for SubAdmin')
       .optional(),
   }),
@@ -104,5 +105,20 @@ export const resetPasswordSchema = z.object({
   body: z.object({
     token: z.string().min(1, 'Reset token is required'),
     newPassword: z.string().min(6, 'Password must be at least 6 characters').max(100),
+  }),
+});
+
+export const deleteSubAdminSchema = z.object({
+  params: z.object({
+    id: z.string().uuid('Invalid SubAdmin ID'),
+  }),
+});
+
+export const toggleUserStatusSchema = z.object({
+  params: z.object({
+    userId: z.string().uuid('Invalid User ID'),
+  }),
+  body: z.object({
+    isActive: z.boolean({ required_error: 'isActive status boolean is required' }),
   }),
 });

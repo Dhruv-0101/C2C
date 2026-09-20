@@ -15,17 +15,26 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
   const maxSize = options.maxSize ?? MAX_IMAGE_SIZE_BYTES;
 
   // 1. Process Base64 image payload (supports all domain-specific keys across BrandFlow)
-  const base64Input =
+  const base64Candidate =
     req.body?.base64Image ||
     req.body?.base64Overlay ||
     req.body?.base64Logo ||
     req.body?.base64Avatar ||
     req.body?.base64Banner ||
     req.body?.base64Graphic ||
-    req.body?.image;
+    req.body?.image ||
+    (typeof req.body?.baseImageUrl === 'string' && req.body.baseImageUrl.includes(';base64,')
+      ? req.body.baseImageUrl
+      : null) ||
+    (typeof req.body?.bannerUrl === 'string' && req.body.bannerUrl.includes(';base64,')
+      ? req.body.bannerUrl
+      : null) ||
+    (typeof req.body?.imageUrl === 'string' && req.body.imageUrl.includes(';base64,')
+      ? req.body.imageUrl
+      : null);
 
-  if (base64Input && typeof base64Input === 'string') {
-    let base64String = base64Input;
+  if (base64Candidate && typeof base64Candidate === 'string') {
+    let base64String = base64Candidate;
     if (base64String.includes(';base64,')) {
       base64String = base64String.split(';base64,').pop();
     }
@@ -52,7 +61,7 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
   }
 
   // 2. Direct CDN / Cloudinary URL passed (bypasses buffer parsing)
-  const hasDirectUrl =
+  const directUrlCandidate =
     req.body?.baseImageUrl ||
     req.body?.imageUrl ||
     req.body?.overlayPngUrl ||
@@ -63,6 +72,13 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
     req.body?.customImageUrl ||
     req.body?.finalGraphicUrl ||
     req.body?.url;
+
+  const hasDirectUrl =
+    typeof directUrlCandidate === 'string' &&
+    !directUrlCandidate.includes(';base64,') &&
+    (directUrlCandidate.startsWith('http://') ||
+      directUrlCandidate.startsWith('https://') ||
+      directUrlCandidate.startsWith('/'));
 
   if (hasDirectUrl) {
     return next();

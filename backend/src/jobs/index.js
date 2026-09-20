@@ -1,5 +1,6 @@
 import { emailWorker } from './workers/email.worker.js';
 import { workerInstance, processPostJob } from './workers/post.worker.js';
+import { analyticsWorkerInstance, processAnalyticsJob } from './workers/analytics.worker.js';
 import { initCronDispatcher, stopCronDispatcher, triggerScheduledPostsNow } from './cron/postCron.job.js';
 import { initAnalyticsCron, stopAnalyticsCron, syncAnalyticsMetrics } from './cron/analyticsCron.job.js';
 import { logger } from '../config/logger.js';
@@ -14,7 +15,7 @@ export function initWorkers() {
   // 1. Start 1-minute Post Dispatcher Cron (* * * * *)
   initCronDispatcher();
 
-  // 2. Start 30-minute Social Analytics Sync Cron (*/30 * * * *)
+  // 2. Start 15-minute Social Analytics Sync Cron (*/15 * * * *)
   initAnalyticsCron();
 }
 
@@ -31,15 +32,18 @@ export async function closeWorkers() {
   // Close BullMQ worker consumers cleanly
   if (emailWorker) await emailWorker.close().catch(() => {});
   if (workerInstance) await workerInstance.close().catch(() => {});
+  if (analyticsWorkerInstance) await analyticsWorkerInstance.close().catch(() => {});
 }
 
 // Re-export job & worker functions for backward compatibility across domain modules
 export {
   processPostJob,
+  processAnalyticsJob,
   triggerScheduledPostsNow,
   syncAnalyticsMetrics,
   emailWorker,
   workerInstance,
+  analyticsWorkerInstance,
   initCronDispatcher,
   stopCronDispatcher,
   initAnalyticsCron,

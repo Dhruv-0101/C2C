@@ -1,7 +1,9 @@
 import { NotFoundError, BadRequestError, ConflictError } from '../../common/errors/custom-errors.js';
+import { logger } from '../../config/logger.js';
 import * as festivalRepository from './festival.repository.js';
 import { uploadFestivalBannerBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
+import { sanitizeFestival } from './festival.helper.js';
 
 function slugify(text) {
   return text
@@ -17,7 +19,6 @@ function slugify(text) {
  * Get festivals with mandatory pagination (optionally filtered by year and active status)
  */
 export async function getFestivals(queryParams = {}, includeInactive = false) {
-  // Support both object queryParams or plain string/number year
   const params = typeof queryParams === 'object' && queryParams !== null ? queryParams : { year: queryParams };
   const pagination = parsePaginationParams(params);
   const year = params.year;
@@ -29,8 +30,10 @@ export async function getFestivals(queryParams = {}, includeInactive = false) {
     includeInactive: isInactive,
   });
 
+  const sanitizedFestivals = festivals.map(sanitizeFestival);
+
   const paginatedResponse = buildPaginatedResponse({
-    items: festivals,
+    items: sanitizedFestivals,
     totalCount,
     page: pagination.page,
     limit: pagination.limit,
@@ -45,10 +48,31 @@ export async function getFestivals(queryParams = {}, includeInactive = false) {
 }
 
 /**
+ * Fetch a single festival by ID
+ */
+export async function getFestivalById(id) {
+  const festival = await festivalRepository.findFestivalById(id);
+  if (!festival) {
+    throw new NotFoundError('Festival not found.');
+  }
+  return sanitizeFestival(festival);
+}
+
+/**
  * Create a new festival / special day
  * Strictly uploads festival cover banners -> Cloudinary 'brandflow/festivals'
  */
-export async function createFestival({ name, description, date, targetRegion, bannerUrl, base64Banner, fileBuffer, isActive, createdBy }) {
+export async function createFestival({
+  name,
+  description,
+  date,
+  targetRegion,
+  bannerUrl,
+  base64Banner,
+  fileBuffer,
+  isActive,
+  createdBy,
+}) {
   const cleanName = name.trim();
   const dateObj = new Date(date);
 
@@ -94,7 +118,7 @@ export async function createFestival({ name, description, date, targetRegion, ba
     createdBy: createdBy || null,
   });
 
-  return festival;
+  return sanitizeFestival(festival);
 }
 
 /**
@@ -141,7 +165,7 @@ export async function updateFestival(id, data, fileBuffer) {
     // Delete old festival banner from Cloudinary if updated
     if (existing.bannerUrl && existing.bannerUrl !== newBannerUrl) {
       deleteFromCloudinary(existing.bannerUrl).catch((err) =>
-        console.warn(`⚠️ Failed to cleanup old festival banner from Cloudinary: ${err.message}`)
+        logger.warn(`Failed to cleanup old festival banner from Cloudinary: ${err.message}`)
       );
     }
   }
@@ -171,7 +195,8 @@ export async function updateFestival(id, data, fileBuffer) {
     updatePayload.slug = slug;
   }
 
-  return await festivalRepository.updateFestival(id, updatePayload);
+  const updatedFestival = await festivalRepository.updateFestival(id, updatePayload);
+  return sanitizeFestival(updatedFestival);
 }
 
 /**
@@ -185,11 +210,13 @@ export async function deleteFestival(id) {
 
   if (existing.bannerUrl) {
     deleteFromCloudinary(existing.bannerUrl).catch((err) =>
-      console.warn(`⚠️ Failed to cleanup festival banner from Cloudinary: ${err.message}`)
+      logger.warn(`Failed to cleanup festival banner from Cloudinary: ${err.message}`)
     );
   }
 
   await festivalRepository.deleteFestival(id);
-  return { id };
+  return {
+    id,
+    name: existing.name,
+  };
 }
-

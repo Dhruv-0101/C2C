@@ -37,6 +37,29 @@ export const categoryApi = {
   },
 
   /**
+   * GET /api/v1/categories/:id
+   * Fetches a single business category by UUID.
+   *
+   * @param {string} id - Category UUID
+   * @returns {Promise<Object>} Response containing category details
+   */
+  getCategoryById: async (id) => {
+    return await api.get(API_ENDPOINTS.CATEGORIES.BY_ID(id));
+  },
+
+  /**
+   * PUT /api/v1/categories/:id
+   * Admin / SuperAdmin: Updates an existing business category in database.
+   *
+   * @param {string} id - Category UUID
+   * @param {Object} data - Update fields ({ name, description })
+   * @returns {Promise<Object>} Response containing updated category
+   */
+  updateCategory: async (id, data) => {
+    return await api.put(API_ENDPOINTS.CATEGORIES.BY_ID(id), data);
+  },
+
+  /**
    * DELETE /api/v1/categories/:id
    * Admin / SuperAdmin: Deletes a business category record from PostgreSQL database by ID.
    *

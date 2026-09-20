@@ -29,6 +29,17 @@ export const festivalApi = {
   },
 
   /**
+   * GET /api/v1/festivals/:id
+   * Fetches a single festival event by UUID from database.
+   *
+   * @param {string} id - Festival UUID
+   * @returns {Promise<Object>} Response containing festival details
+   */
+  getFestivalById: async (id) => {
+    return await api.get(API_ENDPOINTS.FESTIVALS.BY_ID(id));
+  },
+
+  /**
    * POST /api/v1/festivals
    * Admin / SubAdmin: Creates a new festival event or commercial special day in database.
    *

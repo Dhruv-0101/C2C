@@ -18,6 +18,8 @@ import {
   getSubAdminsQuerySchema,
   getSubAdminActivityQuerySchema,
   getUsersQuerySchema,
+  deleteSubAdminSchema,
+  toggleUserStatusSchema,
 } from './auth.validator.js';
 
 const router = Router();
@@ -43,8 +45,8 @@ router.post('/subadmin', authenticate, requireSuperAdmin, validate(createSubAdmi
 router.get('/subadmins', authenticate, requireSuperAdmin, validate(getSubAdminsQuerySchema), authController.getSubAdmins);
 router.get('/subadmins/activity', authenticate, requireSuperAdmin, validate(getSubAdminActivityQuerySchema), authController.getSubAdminActivity);
 router.put('/subadmin/:id', authenticate, requireSuperAdmin, validate(updateSubAdminSchema), authController.updateSubAdmin);
-router.delete('/subadmin/:id', authenticate, requireSuperAdmin, authController.deleteSubAdmin);
+router.delete('/subadmin/:id', authenticate, requireSuperAdmin, validate(deleteSubAdminSchema), authController.deleteSubAdmin);
 router.get('/users', authenticate, requireAdmin, validate(getUsersQuerySchema), authController.getUsers);
-router.patch('/users/:userId/status', authenticate, requireAdmin, authController.toggleUserStatus);
+router.patch('/users/:userId/status', authenticate, requireAdmin, validate(toggleUserStatusSchema), authController.toggleUserStatus);
 
 export default router;

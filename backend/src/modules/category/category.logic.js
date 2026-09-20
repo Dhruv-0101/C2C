@@ -1,6 +1,7 @@
 import { ConflictError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import * as categoryRepository from './category.repository.js';
+import { sanitizeCategory } from './category.helper.js';
 
 /**
  * Generate a clean URL slug from category name
@@ -22,8 +23,10 @@ export async function getCategories(queryParams = {}) {
   const pagination = parsePaginationParams(queryParams);
   const { categories, totalCount } = await categoryRepository.findPaginatedCategories(pagination);
 
+  const sanitizedCategories = categories.map(sanitizeCategory);
+
   const paginatedResponse = buildPaginatedResponse({
-    items: categories,
+    items: sanitizedCategories,
     totalCount,
     page: pagination.page,
     limit: pagination.limit,
@@ -38,7 +41,18 @@ export async function getCategories(queryParams = {}) {
 }
 
 /**
- * Create a new business category (SuperAdmin Privilege)
+ * Fetch a single business category by ID
+ */
+export async function getCategoryById(id) {
+  const category = await categoryRepository.findCategoryById(id);
+  if (!category) {
+    throw new NotFoundError('Business category not found.');
+  }
+  return sanitizeCategory(category);
+}
+
+/**
+ * Create a new business category (Admin & SubAdmin with permission)
  */
 export async function createCategory({ name, description, createdBy }) {
   const cleanName = name.trim();
@@ -48,9 +62,16 @@ export async function createCategory({ name, description, createdBy }) {
     throw new BadRequestError('Invalid category name.');
   }
 
-  const existingCategory = await categoryRepository.findCategoryByName(cleanName);
-  if (existingCategory) {
+  // 1. Check duplicate category name
+  const existingCategoryByName = await categoryRepository.findCategoryByName(cleanName);
+  if (existingCategoryByName) {
     throw new ConflictError(`Category "${cleanName}" already exists.`);
+  }
+
+  // 2. Check duplicate category slug (prevents Prisma P2002 unique constraint crashes)
+  const existingCategoryBySlug = await categoryRepository.findCategoryBySlug(slug);
+  if (existingCategoryBySlug) {
+    throw new ConflictError(`A category with a similar name resulting in slug "${slug}" already exists.`);
   }
 
   const newCategory = await categoryRepository.createCategory({
@@ -60,18 +81,64 @@ export async function createCategory({ name, description, createdBy }) {
     createdBy: createdBy || null,
   });
 
-  return newCategory;
+  return sanitizeCategory(newCategory);
 }
 
 /**
- * Delete a category by ID (SuperAdmin Privilege)
+ * Update an existing business category
+ */
+export async function updateCategory(id, { name, description }) {
+  const existingCategory = await categoryRepository.findCategoryById(id);
+  if (!existingCategory) {
+    throw new NotFoundError('Business category not found.');
+  }
+
+  const updateData = {};
+
+  if (name !== undefined) {
+    const cleanName = name.trim();
+    const slug = slugify(cleanName);
+
+    if (!slug) {
+      throw new BadRequestError('Invalid category name.');
+    }
+
+    // Check if another category already has this name
+    const duplicateName = await categoryRepository.findCategoryByName(cleanName);
+    if (duplicateName && duplicateName.id !== id) {
+      throw new ConflictError(`Category "${cleanName}" already exists.`);
+    }
+
+    // Check if another category already has this slug
+    const duplicateSlug = await categoryRepository.findCategoryBySlug(slug);
+    if (duplicateSlug && duplicateSlug.id !== id) {
+      throw new ConflictError(`A category with a similar name resulting in slug "${slug}" already exists.`);
+    }
+
+    updateData.name = cleanName;
+    updateData.slug = slug;
+  }
+
+  if (description !== undefined) {
+    updateData.description = description?.trim() || null;
+  }
+
+  const updatedCategory = await categoryRepository.updateCategory(id, updateData);
+  return sanitizeCategory(updatedCategory);
+}
+
+/**
+ * Delete a category by ID (Admin & SubAdmin with permission)
  */
 export async function deleteCategory(id) {
   const category = await categoryRepository.findCategoryById(id);
   if (!category) {
-    throw new NotFoundError('Category not found.');
+    throw new NotFoundError('Business category not found.');
   }
 
   await categoryRepository.deleteCategory(id);
-  return { id };
+  return {
+    id,
+    name: category.name,
+  };
 }

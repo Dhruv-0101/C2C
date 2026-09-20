@@ -1,7 +1,19 @@
 import { prisma } from '../../config/database.js';
+import {
+  FESTIVAL_ALLOWED_SORT_FIELDS,
+  DEFAULT_FESTIVAL_SORT_BY,
+  DEFAULT_FESTIVAL_SORT_ORDER,
+} from './festival.constants.js';
+
+const CREATOR_SELECT = Object.freeze({
+  id: true,
+  fullName: true,
+  email: true,
+  role: true,
+});
 
 /**
- * Fetch paginated festivals with search and year filtering
+ * Fetch paginated festivals with search, year, and active status filtering
  */
 export async function findPaginatedFestivals({
   skip = 0,
@@ -9,8 +21,8 @@ export async function findPaginatedFestivals({
   search,
   year,
   includeInactive = false,
-  sortBy = 'date',
-  sortOrder = 'asc',
+  sortBy = DEFAULT_FESTIVAL_SORT_BY,
+  sortOrder = DEFAULT_FESTIVAL_SORT_ORDER,
 }) {
   const where = {};
   if (!includeInactive) {
@@ -34,26 +46,35 @@ export async function findPaginatedFestivals({
     ];
   }
 
-  const [festivals, totalCount] = await Promise.all([
+  const validSortBy = FESTIVAL_ALLOWED_SORT_FIELDS.includes(sortBy)
+    ? sortBy
+    : DEFAULT_FESTIVAL_SORT_BY;
+
+  const [festivals, totalCount] = await prisma.$transaction([
     prisma.festival.findMany({
       where,
       skip,
       take,
       include: {
-        creator: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            role: true,
-          },
-        },
+        creator: { select: CREATOR_SELECT },
         templates: {
           where: { isActive: true },
           orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            title: true,
+            baseImageUrl: true,
+            isActive: true,
+          },
+        },
+        _count: {
+          select: {
+            templates: true,
+            posts: true,
+          },
         },
       },
-      orderBy: { [sortBy]: sortOrder },
+      orderBy: { [validSortBy]: sortOrder },
     }),
     prisma.festival.count({ where }),
   ]);
@@ -82,17 +103,16 @@ export async function findAllFestivals(year, includeInactive = false) {
   return await prisma.festival.findMany({
     where,
     include: {
-      creator: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true,
-        },
-      },
+      creator: { select: CREATOR_SELECT },
       templates: {
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
+      },
+      _count: {
+        select: {
+          templates: true,
+          posts: true,
+        },
       },
     },
     orderBy: {
@@ -102,18 +122,21 @@ export async function findAllFestivals(year, includeInactive = false) {
 }
 
 /**
- * Find festival by ID
+ * Find festival by ID with creator details and templates
  */
 export async function findFestivalById(id) {
   return await prisma.festival.findUnique({
     where: { id },
     include: {
-      creator: {
+      creator: { select: CREATOR_SELECT },
+      templates: {
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+      },
+      _count: {
         select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true,
+          templates: true,
+          posts: true,
         },
       },
     },
@@ -145,12 +168,11 @@ export async function createFestival({ name, slug, description, date, targetRegi
       createdBy: createdBy || null,
     },
     include: {
-      creator: {
+      creator: { select: CREATOR_SELECT },
+      _count: {
         select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true,
+          templates: true,
+          posts: true,
         },
       },
     },
@@ -173,6 +195,15 @@ export async function updateFestival(id, data) {
   return await prisma.festival.update({
     where: { id },
     data: updateData,
+    include: {
+      creator: { select: CREATOR_SELECT },
+      _count: {
+        select: {
+          templates: true,
+          posts: true,
+        },
+      },
+    },
   });
 }
 

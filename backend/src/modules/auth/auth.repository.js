@@ -403,6 +403,26 @@ export async function updateUserPassword(userId, passwordHash) {
 }
 
 /**
+ * Atomically update password, invalidate reset token, and revoke all active refresh sessions
+ */
+export async function completePasswordReset({ userId, passwordHash, tokenId }) {
+  return prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    }),
+    prisma.passwordResetToken.update({
+      where: { id: tokenId },
+      data: { used: true },
+    }),
+    prisma.refreshToken.updateMany({
+      where: { userId },
+      data: { revoked: true },
+    }),
+  ]);
+}
+
+/**
  * Audit and fetch creations made by SubAdmins across Templates, Frames, Festivals, and Categories
  *
  * @param {Object} params

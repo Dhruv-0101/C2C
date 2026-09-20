@@ -1,253 +1,102 @@
 import cron from 'node-cron';
-import axios from 'axios';
 import { prisma } from '../../config/database.js';
 import { logger } from '../../config/logger.js';
-import { decryptToken } from '../../common/helpers/encryption.helper.js';
-
-const META_GRAPH_URL = 'https://graph.facebook.com/v19.0';
-const LINKEDIN_API_URL = 'https://api.linkedin.com/v2';
+import { addAnalyticsSyncJob } from '../../queues/analytics.queue.js';
+import { processAnalyticsJob } from '../workers/analytics.worker.js';
 
 /**
- * Attempt to fetch REAL live analytics metrics from Meta Graph API or LinkedIn API
- */
-async function fetchRealPlatformMetrics({ platform, platformPostId, accessToken }) {
-  if (!accessToken || !platformPostId || platformPostId.startsWith('synced_') || platformPostId.startsWith('mock_')) {
-    return null;
-  }
-
-  try {
-    if (platform === 'INSTAGRAM') {
-      // Fetch Instagram Media basic metrics (like_count, comments_count)
-      const mediaRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}`, {
-        params: {
-          fields: 'like_count,comments_count,media_type,timestamp',
-          access_token: accessToken,
-        },
-        timeout: 5000,
-      });
-
-      const likes = mediaRes.data?.like_count ?? 0;
-      const comments = mediaRes.data?.comments_count ?? 0;
-      let reach = Math.max(likes * 12 + comments * 25 + 50, 100);
-      let impressions = Math.floor(reach * 1.35);
-
-      // Try fetching Insights if business account has insights scope
-      try {
-        const insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
-          params: {
-            metric: 'impressions,reach',
-            access_token: accessToken,
-          },
-          timeout: 4000,
-        });
-
-        const metricsData = insightsRes.data?.data || [];
-        for (const item of metricsData) {
-          if (item.name === 'reach' && item.values?.[0]?.value) {
-            reach = item.values[0].value;
-          }
-          if (item.name === 'impressions' && item.values?.[0]?.value) {
-            impressions = item.values[0].value;
-          }
-        }
-      } catch (e) {
-        // Insights metric optional fallback
-      }
-
-      const shares = Math.floor(likes * 0.08);
-      const engagementRate = Number((((likes + comments + shares) / (reach || 1)) * 100).toFixed(2));
-
-      return { likes, comments, shares, reach, impressions, engagementRate, isReal: true };
-    }
-
-    if (platform === 'FACEBOOK') {
-      // Fetch Facebook Page Post metrics
-      const fbRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}`, {
-        params: {
-          fields: 'likes.summary(true),comments.summary(true),shares',
-          access_token: accessToken,
-        },
-        timeout: 5000,
-      });
-
-      const likes = fbRes.data?.likes?.summary?.total_count ?? 0;
-      const comments = fbRes.data?.comments?.summary?.total_count ?? 0;
-      const shares = fbRes.data?.shares?.count ?? 0;
-
-      let reach = Math.max((likes + comments + shares) * 10 + 80, 120);
-      let impressions = Math.floor(reach * 1.4);
-
-      try {
-        const insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
-          params: {
-            metric: 'post_impressions_unique,post_impressions',
-            access_token: accessToken,
-          },
-          timeout: 4000,
-        });
-
-        const metricsData = insightsRes.data?.data || [];
-        for (const item of metricsData) {
-          if (item.name === 'post_impressions_unique' && item.values?.[0]?.value) {
-            reach = item.values[0].value;
-          }
-          if (item.name === 'post_impressions' && item.values?.[0]?.value) {
-            impressions = item.values[0].value;
-          }
-        }
-      } catch (e) {
-        // Insights optional fallback
-      }
-
-      const engagementRate = Number((((likes + comments + shares) / (reach || 1)) * 100).toFixed(2));
-
-      return { likes, comments, shares, reach, impressions, engagementRate, isReal: true };
-    }
-
-    if (platform === 'LINKEDIN') {
-      // Fetch LinkedIn Share Social Actions
-      const shareUrn = platformPostId.startsWith('urn:') ? platformPostId : `urn:li:share:${platformPostId}`;
-      const liRes = await axios.get(`${LINKEDIN_API_URL}/socialActions/${encodeURIComponent(shareUrn)}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'X-Restli-Protocol-Version': '2.0.0',
-        },
-        timeout: 5000,
-      });
-
-      const likes = liRes.data?.likesSummary?.totalLikes ?? 0;
-      const comments = liRes.data?.commentsSummary?.totalComments ?? 0;
-      const shares = Math.floor(likes * 0.1);
-      const reach = Math.max(likes * 14 + 100, 150);
-      const impressions = Math.floor(reach * 1.5);
-      const engagementRate = Number((((likes + comments + shares) / (reach || 1)) * 100).toFixed(2));
-
-      return { likes, comments, shares, reach, impressions, engagementRate, isReal: true };
-    }
-  } catch (error) {
-    logger.warn(`ℹ️ [AnalyticsCron] Live ${platform} API fetch notice for ${platformPostId}:`, error.response?.data?.error?.message || error.message);
-    return null;
-  }
-
-  return null;
-}
-
-/**
- * ⏰ CRON DISPATCHER JOB (ANALYTICS METRICS REFRESHER)
+ * ⏰ HIGH-SCALE ANALYTICS CRON DISPATCHER (DECAY LIFECYCLE MODEL)
  * 
- * Periodically polls published posts and refreshes engagement metrics
- * in PostgreSQL PostAnalytics model from Real Meta/LinkedIn APIs or fallback simulation.
+ * Instead of running slow synchronous HTTP loops in a single thread,
+ * this dispatcher selects posts that are due for metric refresh according
+ * to an engagement decay schedule and pushes lightweight jobs into the BullMQ
+ * Analytics Queue for parallel worker processing.
+ * 
+ * 📊 Decay Schedule:
+ * - Tier 1: Fresh Posts (0 - 48 hrs)   -> Sync if lastSyncedAt older than 2 hours
+ * - Tier 2: Active Posts (3 - 7 days)   -> Sync if lastSyncedAt older than 12 hours
+ * - Tier 3: Mature Posts (8 - 30 days)  -> Sync if lastSyncedAt older than 24 hours
+ * - Tier 4: Archived Posts (30+ days)   -> Auto-sync stopped (On-demand UI refresh only)
  */
 export const syncAnalyticsMetrics = async () => {
   try {
-    // 1. Fetch recent published posts ordered by newest first (batch size 200)
-    const publishedPosts = await prisma.post.findMany({
-      where: { status: 'PUBLISHED' },
+    const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // 1. Fetch eligible posts matching the Engagement Decay Lifecycle
+    const eligiblePosts = await prisma.post.findMany({
+      where: {
+        status: 'PUBLISHED',
+        createdAt: { gte: thirtyDaysAgo },
+        OR: [
+          // Never synced before
+          { postAnalytics: { none: {} } },
+          // Tier 1: Fresh (0 - 48 hours old)
+          {
+            createdAt: { gte: twoDaysAgo },
+            postAnalytics: { some: { lastSyncedAt: { lte: twoHoursAgo } } },
+          },
+          // Tier 2: Active (3 - 7 days old)
+          {
+            createdAt: { gte: sevenDaysAgo, lt: twoDaysAgo },
+            postAnalytics: { some: { lastSyncedAt: { lte: twelveHoursAgo } } },
+          },
+          // Tier 3: Mature (8 - 30 days old)
+          {
+            createdAt: { gte: thirtyDaysAgo, lt: sevenDaysAgo },
+            postAnalytics: { some: { lastSyncedAt: { lte: twentyFourHoursAgo } } },
+          },
+        ],
+      },
       include: {
         scheduledPost: true,
       },
-      orderBy: { createdAt: 'desc' },
-      take: 200,
+      take: 100, // Batch limit per 15-minute cycle
     });
 
-    if (publishedPosts.length === 0) {
-      return { count: 0 };
+    if (eligiblePosts.length === 0) {
+      return { count: 0, message: 'All post analytics are up to date.' };
     }
 
-    // 2. High-Scale Optimization: Batch fetch all connected social accounts in 1 single query (eliminates N+1 loop queries)
-    const uniqueUserIds = [...new Set(publishedPosts.map((p) => p.userId).filter(Boolean))];
-    const allSocialAccounts = await prisma.socialAccount.findMany({
-      where: {
-        userId: { in: uniqueUserIds },
-        isConnected: true,
-      },
-    });
+    let enqueuedCount = 0;
 
-    // In-memory token lookup map: userTokenMap[userId][platform] = decryptedToken
-    const userTokenMap = {};
-    for (const sa of allSocialAccounts) {
-      if (!userTokenMap[sa.userId]) {
-        userTokenMap[sa.userId] = {};
+    // 2. Dispatch jobs to BullMQ Analytics Queue (or fallback direct execution)
+    for (const post of eligiblePosts) {
+      const latestSchedule = post.scheduledPost;
+      const platformResults = latestSchedule?.platformResults || {};
+      const targetPlatforms = latestSchedule?.targetPlatforms?.length > 0
+        ? latestSchedule.targetPlatforms
+        : Object.keys(platformResults).length > 0
+        ? Object.keys(platformResults)
+        : ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
+
+      const jobPayload = {
+        postId: post.id,
+        userId: post.userId,
+        targetPlatforms,
+        platformResults,
+      };
+
+      // Try BullMQ queue first, fallback to async background worker execution if Redis is offline
+      const queuedJob = await addAnalyticsSyncJob(jobPayload);
+      if (!queuedJob) {
+        // Direct async fallback (unawaited to prevent blocking dispatcher)
+        processAnalyticsJob(jobPayload).catch((err) => {
+          logger.warn(`⚠️ [AnalyticsCron] Direct fallback sync error for Post #${post.id}:`, err.message);
+        });
       }
-      if (sa.accessToken) {
-        userTokenMap[sa.userId][sa.platform] = decryptToken(sa.accessToken);
-      }
+      enqueuedCount++;
     }
 
-    let syncedCount = 0;
-
-    // 3. Process each post with isolated error handling (single post error never crashes the batch)
-    for (const post of publishedPosts) {
-      try {
-        const tokenMap = userTokenMap[post.userId] || {};
-        const latestSchedule = post.scheduledPost;
-        const platformResults = latestSchedule?.platformResults || {};
-
-        // Determine target platforms for this post
-        const targetPlatforms = latestSchedule?.targetPlatforms?.length > 0
-          ? latestSchedule.targetPlatforms
-          : Object.keys(platformResults).length > 0
-          ? Object.keys(platformResults)
-          : ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'];
-
-        for (const platform of targetPlatforms) {
-          const liveMediaInfo = platformResults[platform] || {};
-          const platformPostId = liveMediaInfo.mediaId || liveMediaInfo.postId || liveMediaInfo.id || null;
-          const accessToken = tokenMap[platform];
-
-          // Attempt Real Live API Fetching from Meta Graph or LinkedIn RestLi API
-          const metrics = await fetchRealPlatformMetrics({
-            platform,
-            platformPostId,
-            accessToken,
-          });
-
-          // Only record genuine metrics when live API returns real engagement data (zero fake mock numbers)
-          if (metrics) {
-            const targetPlatformPostId = platformPostId || `${platform.toLowerCase()}_${post.id}`;
-
-            await prisma.postAnalytics.upsert({
-              where: {
-                postId_platform: {
-                  postId: post.id,
-                  platform,
-                },
-              },
-              create: {
-                postId: post.id,
-                userId: post.userId,
-                platform,
-                platformPostId: targetPlatformPostId,
-                reach: metrics.reach,
-                impressions: metrics.impressions,
-                likes: metrics.likes,
-                comments: metrics.comments,
-                shares: metrics.shares,
-                engagementRate: metrics.engagementRate,
-              },
-              update: {
-                platformPostId: targetPlatformPostId,
-                reach: metrics.reach,
-                impressions: metrics.impressions,
-                likes: metrics.likes,
-                comments: metrics.comments,
-                shares: metrics.shares,
-                engagementRate: metrics.engagementRate,
-                lastSyncedAt: new Date(),
-              },
-            });
-            syncedCount++;
-          }
-        }
-      } catch (postErr) {
-        logger.warn(`⚠️ [AnalyticsCron] Notice while syncing metrics for Post #${post.id}: ${postErr.message}`);
-      }
-    }
-
-    logger.info(`📊 [AnalyticsCron] Refreshed analytics metrics for ${syncedCount} platform post records.`);
-    return { count: syncedCount };
+    logger.info(`⚡ [AnalyticsCron] Dispatched ${enqueuedCount} post analytics sync jobs to BullMQ Queue.`);
+    return { count: enqueuedCount };
   } catch (error) {
-    logger.error('💥 [AnalyticsCron] Error during analytics sync cycle:', error.message);
+    logger.error('💥 [AnalyticsCron] Error during analytics dispatch cycle:', error.message);
     return { count: 0, error: error.message };
   }
 };
@@ -256,11 +105,10 @@ let isAnalyticsRunning = false;
 let analyticsCronTask = null;
 
 /**
- * Initialize 30-minute Analytics Cron Dispatcher using node-cron (default: *\/30 * * * *)
- * Automatically polls Meta Graph API & LinkedIn API to refresh post metrics in PostgreSQL
+ * Initialize 15-minute Analytics Cron Dispatcher using node-cron (default: *\/15 * * * *)
  */
-export const initAnalyticsCron = (cronExpression = '*/30 * * * *') => {
-  logger.info(`⏰ [AnalyticsCron] Starting periodic social analytics sync schedule (${cronExpression})...`);
+export const initAnalyticsCron = (cronExpression = '*/15 * * * *') => {
+  logger.info(`⏰ [AnalyticsCron] Starting periodic social analytics sync dispatcher (${cronExpression})...`);
 
   if (analyticsCronTask) {
     logger.warn('⚠️ [AnalyticsCron] Analytics cron task is already active.');
@@ -268,9 +116,8 @@ export const initAnalyticsCron = (cronExpression = '*/30 * * * *') => {
   }
 
   analyticsCronTask = cron.schedule(cronExpression, async () => {
-    // Concurrency guard: Skip if previous sync cycle is still running
     if (isAnalyticsRunning) {
-      logger.warn('⚠️ [AnalyticsCron] Previous analytics sync cycle still running. Skipping this cycle.');
+      logger.warn('⚠️ [AnalyticsCron] Previous analytics dispatch cycle still running. Skipping.');
       return;
     }
 
@@ -278,7 +125,7 @@ export const initAnalyticsCron = (cronExpression = '*/30 * * * *') => {
     try {
       await syncAnalyticsMetrics();
     } catch (err) {
-      logger.error('💥 [AnalyticsCron] Analytics sync cycle error:', err.message);
+      logger.error('💥 [AnalyticsCron] Analytics dispatch cycle error:', err.message);
     } finally {
       isAnalyticsRunning = false;
     }
@@ -297,4 +144,3 @@ export const stopAnalyticsCron = () => {
     logger.info('🛑 [AnalyticsCron] Analytics cron task stopped successfully.');
   }
 };
-

@@ -24,6 +24,17 @@ export const templateApi = {
   },
 
   /**
+   * GET /api/v1/templates/:id
+   * Fetches a single master graphic template record by ID.
+   *
+   * @param {string} id - Template UUID
+   * @returns {Promise<Object>} Single Template object
+   */
+  getTemplateById: async (id) => {
+    return api.get(API_ENDPOINTS.TEMPLATES.BY_ID(id));
+  },
+
+  /**
    * POST /api/v1/templates
    * Admin / SubAdmin: Creates a new master graphic template record in database.
    *
@@ -42,14 +53,13 @@ export const templateApi = {
   },
 
   /**
-   * POST /api/v1/templates/upload
-   * Admin / SubAdmin: Directly uploads raw image file to Cloudinary CDN and registers template record in database.
+   * Helper alias mapping to canonical createTemplate endpoint
    *
-   * @param {FormData|Object} data - Multipart form data containing file upload and metadata
+   * @param {Object} data - Template creation payload
    * @returns {Promise<Object>} Created template record payload
    */
   uploadAdminTemplate: async (data) => {
-    return api.post(API_ENDPOINTS.TEMPLATES.UPLOAD, data);
+    return api.post(API_ENDPOINTS.TEMPLATES.BASE, data);
   },
 
   /**
