@@ -1,153 +1,155 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../config/database.js';
+import {
+  DEFAULT_VAULT_SORT_BY,
+  DEFAULT_VAULT_SORT_ORDER,
+} from './vault.constants.js';
 
-const prisma = new PrismaClient();
+/**
+ * 🗄️ VAULT REPOSITORY (Database Access Layer)
+ * Strictly encapsulates all database queries and Prisma ORM operations for VaultItem entities.
+ * Follows Clean Architecture: zero HTTP or presentation logic exists in this layer.
+ */
 
+export const VAULT_INCLUDE = Object.freeze({
+  post: {
+    include: {
+      template: true,
+      festival: true,
+      category: true,
+      frame: true,
+      captions: true,
+    },
+  },
+});
+
+/**
+ * Create a new VaultItem record
+ * @param {Object} data - Creation payload ({ userId, postId })
+ * @param {Object} [txPrisma=prisma] - Optional transaction client
+ * @returns {Promise<Object>}
+ */
+export async function create(data, txPrisma = prisma) {
+  return txPrisma.vaultItem.create({
+    data,
+    include: VAULT_INCLUDE,
+  });
+}
+
+/**
+ * Find all vault items belonging to a user with pagination, search, and sorting
+ * @param {string} userId - User identifier
+ * @param {Object} options - Query pagination and filter options
+ * @returns {Promise<{ vaultItems: Array<Object>, totalCount: number }>}
+ */
+export async function findPaginatedByUserId(
+  userId,
+  {
+    skip = 0,
+    take = 8,
+    search = '',
+    sortBy = DEFAULT_VAULT_SORT_BY,
+    sortOrder = DEFAULT_VAULT_SORT_ORDER,
+  } = {}
+) {
+  const where = { userId };
+
+  if (search && search.trim()) {
+    const searchPattern = search.trim();
+    where.post = {
+      OR: [
+        { occasionName: { contains: searchPattern, mode: 'insensitive' } },
+        { template: { title: { contains: searchPattern, mode: 'insensitive' } } },
+        { festival: { name: { contains: searchPattern, mode: 'insensitive' } } },
+        { category: { name: { contains: searchPattern, mode: 'insensitive' } } },
+        { captions: { some: { captionText: { contains: searchPattern, mode: 'insensitive' } } } },
+      ],
+    };
+  }
+
+  const [vaultItems, totalCount] = await prisma.$transaction([
+    prisma.vaultItem.findMany({
+      where,
+      skip,
+      take,
+      include: VAULT_INCLUDE,
+      orderBy: { [sortBy]: sortOrder },
+    }),
+    prisma.vaultItem.count({ where }),
+  ]);
+
+  return { vaultItems, totalCount };
+}
+
+/**
+ * Find single vault item by ID and User ID
+ * @param {string} id - VaultItem UUID
+ * @param {string} userId - User identifier
+ * @returns {Promise<Object|null>}
+ */
+export async function findById(id, userId) {
+  return prisma.vaultItem.findFirst({
+    where: { id, userId },
+    include: VAULT_INCLUDE,
+  });
+}
+
+/**
+ * Update vault item details (updates related Post occasionName)
+ * @param {string} id - VaultItem UUID
+ * @param {string} userId - User identifier
+ * @param {Object} data - Update payload
+ * @returns {Promise<Object|null>}
+ */
+export async function update(id, userId, data) {
+  const item = await prisma.vaultItem.findFirst({
+    where: { id, userId },
+    select: { postId: true },
+  });
+
+  if (item?.postId && data.occasionName) {
+    await prisma.post.update({
+      where: { id: item.postId },
+      data: { occasionName: data.occasionName },
+    });
+  }
+
+  return item;
+}
+
+/**
+ * Delete vault item by ID and User ID
+ * @param {string} id - VaultItem UUID
+ * @param {string} userId - User identifier
+ * @returns {Promise<{ count: number }>}
+ */
+export async function deleteVaultItem(id, userId) {
+  return prisma.vaultItem.deleteMany({
+    where: { id, userId },
+  });
+}
+
+/**
+ * Bulk delete vault items by IDs and User ID
+ * @param {Array<string>} ids - Array of VaultItem UUIDs
+ * @param {string} userId - User identifier
+ * @returns {Promise<{ count: number }>}
+ */
+export async function deleteManyByIds(ids, userId) {
+  return prisma.vaultItem.deleteMany({
+    where: {
+      id: { in: ids },
+      userId,
+    },
+  });
+}
+
+// Backwards-compatible object export
 export const vaultRepository = {
-  /**
-   * Create a new VaultItem record
-   */
-  create: async (data, txPrisma = prisma) => {
-    return txPrisma.vaultItem.create({
-      data,
-      include: {
-        post: {
-          include: {
-            template: true,
-            festival: true,
-            category: true,
-          },
-        },
-      },
-    });
-  },
-
-  /**
-   * Auto-sync existing user posts with finalGraphicUrl into VaultItem records
-   */
-  syncUserPostsToVault: async (userId) => {
-    if (!userId) return;
-
-    const postsWithGraphics = await prisma.post.findMany({
-      where: {
-        userId,
-        finalGraphicUrl: { not: null },
-      },
-      include: {
-        festival: true,
-        category: true,
-        vaultItems: true,
-      },
-    });
-
-    for (const post of postsWithGraphics) {
-      if (!post.vaultItems || post.vaultItems.length === 0) {
-        await prisma.vaultItem.create({
-          data: {
-            userId,
-            postId: post.id,
-          },
-        });
-      }
-    }
-  },
-
-  /**
-   * Find all vault items belonging to a user with pagination & search
-   */
-  findPaginatedByUserId: async (userId, { skip, take, search }) => {
-    const where = { userId };
-
-    if (search) {
-      where.post = {
-        OR: [
-          { occasionName: { contains: search, mode: 'insensitive' } },
-          { template: { title: { contains: search, mode: 'insensitive' } } },
-          { festival: { name: { contains: search, mode: 'insensitive' } } },
-          { category: { name: { contains: search, mode: 'insensitive' } } },
-          { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
-        ],
-      };
-    }
-
-    const [vaultItems, totalCount] = await prisma.$transaction([
-      prisma.vaultItem.findMany({
-        where,
-        skip,
-        take,
-        include: {
-          post: {
-            include: {
-              template: true,
-              festival: true,
-              category: true,
-              captions: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.vaultItem.count({ where }),
-    ]);
-
-    return { vaultItems, totalCount };
-  },
-
-  /**
-   * Find single vault item by ID
-   */
-  findById: async (id, userId) => {
-    return prisma.vaultItem.findFirst({
-      where: { id, userId },
-      include: {
-        post: {
-          include: {
-            template: true,
-            festival: true,
-            category: true,
-            captions: true,
-          },
-        },
-      },
-    });
-  },
-
-  /**
-   * Update vault item details (updates related Post metadata)
-   */
-  update: async (id, userId, data) => {
-    const item = await prisma.vaultItem.findFirst({
-      where: { id, userId },
-      select: { postId: true },
-    });
-
-    if (item?.postId && data.occasionName) {
-      await prisma.post.update({
-        where: { id: item.postId },
-        data: { occasionName: data.occasionName },
-      });
-    }
-
-    return item;
-  },
-
-  /**
-   * Delete vault item by ID
-   */
-  delete: async (id, userId) => {
-    return prisma.vaultItem.deleteMany({
-      where: { id, userId },
-    });
-  },
-
-  /**
-   * Bulk delete vault items by IDs
-   */
-  deleteManyByIds: async (ids, userId) => {
-    return prisma.vaultItem.deleteMany({
-      where: {
-        id: { in: ids },
-        userId,
-      },
-    });
-  },
+  create,
+  findPaginatedByUserId,
+  findById,
+  update,
+  delete: deleteVaultItem,
+  deleteVaultItem,
+  deleteManyByIds,
 };

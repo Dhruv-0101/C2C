@@ -158,7 +158,6 @@ export const API_ENDPOINTS = {
     ACCOUNTS: '/social/accounts',
     AUTH_URL_INSTAGRAM: '/social/auth-url/instagram',
     AUTH_URL_LINKEDIN: '/social/auth-url/linkedin',
-    CONNECT_MANUAL: '/social/connect-manual',
     DISCONNECT: (platform) => `/social/accounts/${platform}`,
   },
 };

@@ -1299,37 +1299,6 @@
             },
             "description": "Fetches list of all connected social media accounts for the user."
           }
-        },
-        {
-          "name": "2. Connect Social Account Manually",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"platform\": \"INSTAGRAM\",\n  \"handle\": \"@sunrise_real_estate\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/social/connect-manual",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "social",
-                "connect-manual"
-              ]
-            },
-            "description": "Manually connects a social media handle for quick connection."
-          }
         }
       ]
     },

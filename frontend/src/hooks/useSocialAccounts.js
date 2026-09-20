@@ -55,20 +55,6 @@ export function useSocialAccounts(initialPage = 1, initialLimit = 10) {
   const authUrlData = authUrlResponse?.data;
   const isMetaConfigured = authUrlData?.configured ?? true;
 
-  // Manual Handle Connect Mutation
-  const manualConnectMutation = useMutation({
-    mutationFn: ({ handle, platform }) => socialApi.connectManualHandle(handle, platform),
-    onSuccess: (res) => {
-      const name = res.data?.data?.account?.accountName || 'Social Account';
-      setSuccessMsg(`🎉 ${name} connected successfully!`);
-      queryClient.invalidateQueries({ queryKey: ['socialAccounts'] });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SOCIAL.ALL });
-    },
-    onError: (err) => {
-      setErrorMsg(err.message || 'Failed to connect account.');
-    },
-  });
-
   // Disconnect Account Mutation
   const disconnectMutation = useMutation({
     mutationFn: (platform) => socialApi.disconnectAccount(platform),
@@ -107,8 +93,6 @@ export function useSocialAccounts(initialPage = 1, initialLimit = 10) {
     successMsg,
     setSuccessMsg,
     refetch,
-    connectManual: manualConnectMutation.mutate,
-    isConnectingManual: manualConnectMutation.isPending,
     disconnect: disconnectMutation.mutate,
     isDisconnecting: disconnectMutation.isPending,
     getLinkedinAuthUrl,

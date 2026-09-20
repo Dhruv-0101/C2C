@@ -40,18 +40,6 @@ export const socialApi = {
   },
 
   /**
-   * POST /api/v1/social/connect-manual
-   * Connects a social media channel by username handle when OAuth is in sandbox or manual mode.
-   *
-   * @param {string} handle - Social media username handle (e.g. `"@brandflow_official"`)
-   * @param {string} [platform='INSTAGRAM'] - Platform identifier (`'INSTAGRAM'` | `'FACEBOOK'` | `'LINKEDIN'`)
-   * @returns {Promise<Object>} Created SocialAccount database record payload
-   */
-  connectManualHandle: async (handle, platform = 'INSTAGRAM') => {
-    return api.post(API_ENDPOINTS.SOCIAL.CONNECT_MANUAL, { handle, platform });
-  },
-
-  /**
    * DELETE /api/v1/social/accounts/:platform
    * Disconnects and removes a social account platform integration from PostgreSQL database.
    *

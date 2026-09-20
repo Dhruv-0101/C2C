@@ -2,6 +2,7 @@ import { facebookPublisherService } from './facebookPublisher.service.js';
 import { instagramPublisherService } from './instagramPublisher.service.js';
 import { linkedinPublisherService } from './linkedinPublisher.service.js';
 import { socialRepository } from '../social.repository.js';
+import { SOCIAL_PLATFORM_LIST } from '../social.constants.js';
 import { decryptToken } from '../../../common/helpers/encryption.helper.js';
 import { logger } from '../../../config/logger.js';
 
@@ -35,7 +36,7 @@ export const liveSocialPublisherService = {
     for (const platform of targetPlatforms) {
       const platformUpper = platform.toUpperCase();
 
-      if (!['INSTAGRAM', 'FACEBOOK', 'LINKEDIN'].includes(platformUpper)) {
+      if (!SOCIAL_PLATFORM_LIST.includes(platformUpper)) {
         platformResults[platformUpper] = {
           status: 'FAILED',
           platform: platformUpper,

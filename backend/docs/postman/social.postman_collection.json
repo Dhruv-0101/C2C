@@ -136,38 +136,7 @@
       }
     },
     {
-      "name": "6. Connect Social Account Manually",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"handle\": \"@sunrise_real_estate\",\n  \"platform\": \"INSTAGRAM\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/social/connect-manual",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "social",
-            "connect-manual"
-          ]
-        },
-        "description": "Manually connects a social media handle for quick connection."
-      }
-    },
-    {
-      "name": "7. Disconnect Social Account",
+      "name": "6. Disconnect Social Account",
       "request": {
         "method": "DELETE",
         "header": [

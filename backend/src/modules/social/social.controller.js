@@ -1,193 +1,171 @@
 import { HTTP_STATUS } from '../../common/constants/http-status.js';
 import { sendSuccessResponse, sendErrorResponse } from '../../common/utils/response.util.js';
-import { socialLogic } from './social.logic.js';
-import { env } from '../../config/env.js';
+import {
+  getInstagramAuthUrl as getInstagramAuthUrlLogic,
+  getLinkedinAuthUrl as getLinkedinAuthUrlLogic,
+  handleLinkedinCallback as handleLinkedinCallbackLogic,
+  handleMetaCallback as handleMetaCallbackLogic,
+  getUserAccounts as getUserAccountsLogic,
+  disconnectAccount as disconnectAccountLogic,
+} from './social.logic.js';
+import { resolveClientUrl } from './social.helper.js';
 
-export const socialController = {
-  /**
-   * Helper to resolve target frontend client URL from request or encoded state
-   */
-  _getClientUrl: (req, state) => {
-    if (state) {
+/**
+ * GET /api/v1/social/auth-url/instagram
+ */
+export const getInstagramAuthUrl = async (req, res, next) => {
+  try {
+    const clientUrl = resolveClientUrl(req);
+    const result = await getInstagramAuthUrlLogic(req.user.id, clientUrl);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.configured
+        ? 'Instagram OAuth URL generated successfully'
+        : 'Meta App configuration status retrieved',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/v1/social/auth-url/linkedin
+ */
+export const getLinkedinAuthUrl = async (req, res, next) => {
+  try {
+    const clientUrl = resolveClientUrl(req);
+    const result = await getLinkedinAuthUrlLogic(req.user.id, clientUrl);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.configured
+        ? 'LinkedIn OAuth URL generated successfully'
+        : 'LinkedIn App configuration status retrieved',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/v1/social/linkedin/callback
+ */
+export const handleLinkedinCallback = async (req, res) => {
+  const { code, state, error, error_description } = req.query;
+  const clientUrl = resolveClientUrl(req, state);
+
+  try {
+    if (error) {
+      return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
+    }
+
+    let userId = req.user?.id;
+
+    if (!userId && state) {
       try {
         const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
-        if (decoded.clientUrl && typeof decoded.clientUrl === 'string' && decoded.clientUrl.startsWith('http')) {
-          return decoded.clientUrl.replace(/\/$/, '');
-        }
-      } catch (e) {
+        userId = decoded.userId;
+      } catch {
         // ignore parse error
       }
     }
-    const origin = req?.get('origin');
-    if (origin && typeof origin === 'string' && origin.startsWith('http')) {
-      return origin.replace(/\/$/, '');
-    }
-    return env.CLIENT_URL;
-  },
 
-  /**
-   * GET /api/v1/social/auth-url/instagram
-   */
-  getInstagramAuthUrl: async (req, res, next) => {
-    try {
-      const clientUrl = req.get('origin') || (req.get('referer') ? new URL(req.get('referer')).origin : null);
-      const result = await socialLogic.getInstagramAuthUrl(req.user.id, clientUrl);
-      return sendSuccessResponse(res, {
-        statusCode: HTTP_STATUS.OK,
-        message: result.configured
-          ? 'Instagram OAuth URL generated successfully'
-          : 'Meta App configuration status retrieved',
-        data: result,
+    if (!userId) {
+      return sendErrorResponse(res, {
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+        message: 'Unauthorized callback execution. Missing user context.',
       });
-    } catch (err) {
-      next(err);
     }
-  },
 
-  /**
-   * GET /api/v1/social/auth-url/linkedin
-   */
-  getLinkedinAuthUrl: async (req, res, next) => {
-    try {
-      const clientUrl = req.get('origin') || (req.get('referer') ? new URL(req.get('referer')).origin : null);
-      const result = await socialLogic.getLinkedinAuthUrl(req.user.id, clientUrl);
-      return sendSuccessResponse(res, {
-        statusCode: HTTP_STATUS.OK,
-        message: result.configured
-          ? 'LinkedIn OAuth URL generated successfully'
-          : 'LinkedIn App configuration status retrieved',
-        data: result,
+    const result = await handleLinkedinCallbackLogic(code, userId);
+
+    return res.redirect(`${clientUrl}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
+  } catch (err) {
+    return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect LinkedIn account')}`);
+  }
+};
+
+/**
+ * GET /api/v1/social/meta/callback
+ */
+export const handleMetaCallback = async (req, res) => {
+  const { code, state, error, error_description } = req.query;
+  const clientUrl = resolveClientUrl(req, state);
+
+  try {
+    if (error) {
+      return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
+    }
+
+    let userId = req.user?.id;
+
+    if (!userId && state) {
+      try {
+        const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+        userId = decoded.userId;
+      } catch {
+        // ignore parse error
+      }
+    }
+
+    if (!userId) {
+      return sendErrorResponse(res, {
+        statusCode: HTTP_STATUS.UNAUTHORIZED,
+        message: 'Unauthorized callback execution. Missing user context.',
       });
-    } catch (err) {
-      next(err);
     }
-  },
 
-  /**
-   * GET /api/v1/social/linkedin/callback
-   */
-  handleLinkedinCallback: async (req, res, next) => {
-    const { code, state, error, error_description } = req.query;
-    const clientUrl = socialController._getClientUrl(req, state);
+    const result = await handleMetaCallbackLogic(code, userId);
 
-    try {
-      if (error) {
-        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
-      }
+    return res.redirect(`${clientUrl}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
+  } catch (err) {
+    return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect Instagram account')}`);
+  }
+};
 
-      let userId = req.user?.id;
+/**
+ * GET /api/v1/social/accounts
+ */
+export const getUserAccounts = async (req, res, next) => {
+  try {
+    const result = await getUserAccountsLogic(req.user.id, req.query);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'Social accounts retrieved successfully',
+      data: result.data,
+      meta: result.meta,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
-      if (!userId && state) {
-        try {
-          const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
-          userId = decoded.userId;
-        } catch (e) {
-          // ignore parse error
-        }
-      }
+/**
+ * DELETE /api/v1/social/accounts/:platform
+ */
+export const disconnectAccount = async (req, res, next) => {
+  try {
+    const { platform } = req.params;
+    const result = await disconnectAccountLogic(req.user.id, platform);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: `Disconnected ${platform} account successfully`,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
-      if (!userId) {
-        return sendErrorResponse(res, {
-          statusCode: HTTP_STATUS.UNAUTHORIZED,
-          message: 'Unauthorized callback execution. Missing user context.',
-        });
-      }
-
-      const result = await socialLogic.handleLinkedinCallback(code, userId);
-
-      return res.redirect(`${clientUrl}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
-    } catch (err) {
-      return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect LinkedIn account')}`);
-    }
-  },
-
-  /**
-   * GET /api/v1/social/meta/callback
-   */
-  handleMetaCallback: async (req, res, next) => {
-    const { code, state, error, error_description } = req.query;
-    const clientUrl = socialController._getClientUrl(req, state);
-
-    try {
-      if (error) {
-        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(error_description || error)}`);
-      }
-
-      let userId = req.user?.id;
-
-      if (!userId && state) {
-        try {
-          const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
-          userId = decoded.userId;
-        } catch (e) {
-          // ignore parse error
-        }
-      }
-
-      if (!userId) {
-        return sendErrorResponse(res, {
-          statusCode: HTTP_STATUS.UNAUTHORIZED,
-          message: 'Unauthorized callback execution. Missing user context.',
-        });
-      }
-
-      const result = await socialLogic.handleMetaCallback(code, userId);
-
-      // Redirect back to frontend settings page with success indicator
-      return res.redirect(`${clientUrl}/brand-kit?social_success=true&account=${encodeURIComponent(result.account.accountName)}`);
-    } catch (err) {
-      return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent(err.message || 'Failed to connect Instagram account')}`);
-    }
-  },
-
-  /**
-   * GET /api/v1/social/accounts
-   */
-  getUserAccounts: async (req, res, next) => {
-    try {
-      const result = await socialLogic.getUserAccounts(req.user.id, req.query);
-      return sendSuccessResponse(res, {
-        statusCode: HTTP_STATUS.OK,
-        message: 'Social accounts retrieved successfully',
-        data: result.data,
-        meta: result.meta,
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  /**
-   * DELETE /api/v1/social/accounts/:platform
-   */
-  disconnectAccount: async (req, res, next) => {
-    try {
-      const { platform } = req.params;
-      const result = await socialLogic.disconnectAccount(req.user.id, platform);
-      return sendSuccessResponse(res, {
-        statusCode: HTTP_STATUS.OK,
-        message: `Disconnected ${platform} account successfully`,
-        data: result,
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  /**
-   * POST /api/v1/social/connect-manual
-   */
-  connectManualHandle: async (req, res, next) => {
-    try {
-      const { handle, platform } = req.body;
-      const result = await socialLogic.connectManualHandle(req.user.id, handle, platform);
-      return sendSuccessResponse(res, {
-        statusCode: HTTP_STATUS.OK,
-        message: `Connected ${result.account.accountName} successfully!`,
-        data: result,
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
+/**
+ * Social Controller singleton for backward-compatible consumption
+ */
+export const socialController = {
+  getInstagramAuthUrl,
+  getLinkedinAuthUrl,
+  handleLinkedinCallback,
+  handleMetaCallback,
+  getUserAccounts,
+  disconnectAccount,
 };
