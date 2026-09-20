@@ -47,15 +47,6 @@ export const useYourPosts = (initialParams = {}) => {
     },
   });
 
-  // Manual Trigger Mutation for Testing Scheduled Jobs
-  const triggerMutation = useMutation({
-    mutationFn: () => postApi.triggerScheduledJobs(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.SCHEDULED });
-    },
-  });
-
   const posts = postsResponse?.posts || postsResponse?.data?.posts || [];
   const postsMeta = postsResponse?.meta;
 
@@ -79,8 +70,6 @@ export const useYourPosts = (initialParams = {}) => {
     error: postsError || scheduledError,
     deletePost: deleteMutation.mutate,
     isDeleting: deleteMutation.isPending,
-    triggerScheduledJobs: triggerMutation.mutate,
-    isTriggering: triggerMutation.isPending,
     refetchAll: () => {
       refetchPosts();
       refetchScheduled();

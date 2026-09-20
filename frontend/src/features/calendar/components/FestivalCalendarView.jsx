@@ -16,7 +16,6 @@ import {
   Clock,
   Send,
   CheckCircle2,
-  Zap,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -68,8 +67,6 @@ export const FestivalCalendarView = ({
   addFestError,
   handleAddFestivalSubmit,
   onSelectTemplate,
-  triggerScheduledJobs,
-  isTriggering,
 }) => {
   const safeSelectedFestivals = selectedDayDetails?.festivals || [];
   const safeScheduledPosts = selectedDayDetails?.scheduledPosts || [];
@@ -362,20 +359,10 @@ export const FestivalCalendarView = ({
                 {/* 1. Scheduled Posts for this Day */}
                 {safeScheduledPosts.length > 0 && (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <div className="border-b border-slate-800 pb-2">
                       <h4 className="font-heading font-bold text-sm text-teal-400 flex items-center gap-2">
                         <Clock className="w-4 h-4" /> Scheduled Posts Queue ({safeScheduledPosts.length})
                       </h4>
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        icon={Zap}
-                        isLoading={isTriggering}
-                        onClick={triggerScheduledJobs}
-                        className="bg-amber-500 text-slate-950 text-xs py-1"
-                      >
-                        Test Trigger Now
-                      </Button>
                     </div>
 
                     <div className="grid grid-cols-1 gap-2.5">

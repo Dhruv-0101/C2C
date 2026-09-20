@@ -22,6 +22,8 @@ export async function findBrandKitByUserId(userId) {
   });
 }
 
+export const findByUserId = findBrandKitByUserId;
+
 /**
  * Upsert user's BrandKit by userId
  * @param {string} userId - User primary key UUID

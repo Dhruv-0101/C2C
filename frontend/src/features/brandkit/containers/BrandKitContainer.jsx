@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { brandKitSchema } from "@/validations/brandkit.validation";
@@ -12,10 +13,12 @@ import { BrandKitView } from "../components/BrandKitView";
  * Container component handling brand kit query/mutation state via custom hooks and React Hook Form + Zod validation.
  */
 export const BrandKitContainer = () => {
+  const navigate = useNavigate();
   const { brandKit, isLoading: isLoadingBrandKit, saveBrandKit, isSaving, saveError } = useBrandKit();
   const { categories } = useCategories({ page: 1, limit: 20 });
 
   const [successMsg, setSuccessMsg] = useState("");
+  const [scheduledNotice, setScheduledNotice] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [logoPreview, setLogoPreview] = useState(null);
   const [base64Logo, setBase64Logo] = useState(null);
@@ -141,14 +144,24 @@ export const BrandKitContainer = () => {
   const onSubmit = async (data) => {
     try {
       setErrorMsg("");
-      await saveBrandKit({
+      setScheduledNotice(null);
+      const res = await saveBrandKit({
         ...data,
         base64Logo: base64Logo || undefined,
         base64Avatar: base64Avatar || undefined,
         base64UpiQr: base64UpiQr || undefined,
       });
-      setSuccessMsg("🎉 BrandKit saved successfully! All future posts will be branded automatically.");
-      setTimeout(() => setSuccessMsg(""), 5000);
+
+      const syncedCount = res?.data?.syncedPostsCount ?? res?.syncedPostsCount ?? 0;
+      if (syncedCount > 0) {
+        setScheduledNotice({
+          count: syncedCount,
+          message: `Aapki ${syncedCount} post(s) currently scheduled/pending hain. Unke visual designs ko preserve rakha gaya hai taaki layout change na ho. Agar aapko unka visual graphic bhi update karna hai, toh aap unhe Scheduled Posts me jakar review & re-save kar sakte hain.`,
+        });
+      } else {
+        setSuccessMsg("🎉 BrandKit saved successfully! All future posts will be branded automatically.");
+        setTimeout(() => setSuccessMsg(""), 5000);
+      }
     } catch (err) {
       setErrorMsg(err?.message || saveError?.message || "Failed to save BrandKit.");
     }
@@ -158,6 +171,9 @@ export const BrandKitContainer = () => {
     <BrandKitView
       isLoadingBrandKit={isLoadingBrandKit}
       successMsg={successMsg}
+      scheduledNotice={scheduledNotice}
+      onDismissNotice={() => setScheduledNotice(null)}
+      navigate={navigate}
       errorMsg={errorMsg || (saveError ? saveError.message : "")}
       register={register}
       errors={errors}

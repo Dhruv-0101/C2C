@@ -45,14 +45,21 @@ export const PostStudioContainer = () => {
 
   const passedTemplate = location.state?.template;
   const reusePost = location.state?.reusePost;
+  const isEditingScheduled = Boolean(location.state?.isEditingScheduled);
+  const scheduledPostId = location.state?.scheduledPostId;
   const templateIdParam = searchParams.get("templateId");
 
   // Wizard Active Step State (1: Template, 2: Frame, 3: Details, 4: Export)
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(isEditingScheduled ? 3 : 1);
 
   const [selectedFrame, setSelectedFrame] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(
-    passedTemplate?.id || templateIdParam || "",
+    passedTemplate?.id ||
+    reusePost?.templateId ||
+    reusePost?.post?.templateId ||
+    reusePost?.template?.id ||
+    templateIdParam ||
+    "",
   );
   const [customBaseImage, setCustomBaseImage] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState("");
@@ -277,9 +284,27 @@ export const PostStudioContainer = () => {
 
   useEffect(() => {
     if (reusePost) {
-      const reuseImg = reusePost.graphicUrl || reusePost.finalGraphicUrl || reusePost.post?.finalGraphicUrl;
-      if (reuseImg) {
-        setCustomBaseImage(reuseImg);
+      const templateId =
+        reusePost.templateId ||
+        reusePost.post?.templateId ||
+        reusePost.template?.id;
+
+      if (templateId) {
+        setSelectedTemplateId(templateId);
+        setCustomBaseImage(null);
+      } else {
+        const reuseImg =
+          reusePost.graphicUrl ||
+          reusePost.finalGraphicUrl ||
+          reusePost.post?.finalGraphicUrl;
+        if (reuseImg) {
+          setCustomBaseImage(reuseImg);
+        }
+      }
+
+      const frame = reusePost.frame || reusePost.post?.frame;
+      if (frame) {
+        setSelectedFrame(frame);
       }
     }
   }, [reusePost]);
@@ -329,8 +354,61 @@ export const PostStudioContainer = () => {
     },
   });
 
-  // Handle Save Post to DB (Deducts 1 Post Quota)
+  // In-Place Update Scheduled Post Graphic Mutation (0 Quota deducted)
+  const updatePostGraphicMutation = useMutation({
+    mutationFn: ({ postId, payload }) => postApi.updatePostGraphic(postId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
+      setSaveError("");
+      setSaveSuccess(
+        "🎉 Scheduled post graphic updated with latest BrandKit! (0 post credits deducted)",
+      );
+      setTimeout(() => setSaveSuccess(""), 4000);
+    },
+    onError: (err) => {
+      setSaveSuccess("");
+      setSaveError(
+        err?.response?.data?.message || err?.message || "Failed to update scheduled post graphic."
+      );
+      setTimeout(() => setSaveError(""), 5000);
+    },
+  });
+
+  // Handle Save Post to DB (or Update Scheduled Post without deducting quota)
   const handleSaveToDb = () => {
+    if (isEditingScheduled) {
+      const targetPostId = reusePost?.id || reusePost?.post?.id;
+      if (!targetPostId) {
+        setSaveError("Scheduled post identifier missing.");
+        return;
+      }
+
+      if (!dataUrl) {
+        setSaveError("Canvas graphic is still rendering. Please wait a moment and try again.");
+        setTimeout(() => setSaveError(""), 4000);
+        return;
+      }
+
+      if (updatePostGraphicMutation.isPending) return;
+
+      const sanitizedConfig = { ...customDetails };
+      Object.keys(sanitizedConfig).forEach((k) => {
+        if (typeof sanitizedConfig[k] === "string" && sanitizedConfig[k].startsWith("data:image/")) {
+          delete sanitizedConfig[k];
+        }
+      });
+
+      updatePostGraphicMutation.mutate({
+        postId: targetPostId,
+        payload: {
+          base64Graphic: dataUrl,
+          userConfigJson: sanitizedConfig,
+        },
+      });
+      return;
+    }
+
     if (isExpired || postsRemaining <= 0) {
       openPlanModal();
       return;
@@ -438,6 +516,8 @@ export const PostStudioContainer = () => {
         currentTemplate={currentTemplate}
         isRendering={isRendering}
         savePostMutation={savePostMutation}
+        isEditingScheduled={isEditingScheduled}
+        isUpdatingGraphic={updatePostGraphicMutation.isPending}
         handleSaveToDb={handleSaveToDb}
         handleDownloadHD={handleDownloadHD}
         onOpenPublisherModal={handleOpenPublisher}

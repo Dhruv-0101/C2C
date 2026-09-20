@@ -34,8 +34,6 @@ export const FestivalCalendarContainer = ({ onSelectTemplate, onAddFestival }) =
   const {
     posts: userPosts,
     scheduledPosts,
-    triggerScheduledJobs,
-    isTriggering,
   } = useYourPosts();
 
   // Selected Festival Day Template Search & Pagination State
@@ -271,8 +269,6 @@ export const FestivalCalendarContainer = ({ onSelectTemplate, onAddFestival }) =
       addFestError={addFestError}
       handleAddFestivalSubmit={handleAddFestivalSubmit}
       onSelectTemplate={handleTemplateSelect}
-      triggerScheduledJobs={triggerScheduledJobs}
-      isTriggering={isTriggering}
     />
   );
 };

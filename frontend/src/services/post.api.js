@@ -71,17 +71,6 @@ export const postApi = {
   },
 
   /**
-   * POST /api/v1/posts/trigger-scheduled-jobs
-   * Admin / Test Trigger: Immediately forces processing of due scheduled jobs in background queue.
-   *
-   * @returns {Promise<Object>} `{ message: string, data: { count: number } }`
-   */
-  triggerScheduledJobs: async () => {
-    const response = await api.post(API_ENDPOINTS.POSTS.TRIGGER_SCHEDULED);
-    return response.data;
-  },
-
-  /**
    * POST /api/v1/posts
    * Saves a composited 1080x1080 graphic post to Cloudinary CDN, User Vault, and PostgreSQL database.
    *
@@ -96,6 +85,19 @@ export const postApi = {
    */
   createPost: async (postData) => {
     const response = await api.post(API_ENDPOINTS.POSTS.BASE, postData);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/v1/posts/:id/graphic
+   * Re-renders & updates composited graphic and user config for an existing post in place without deducting quota.
+   *
+   * @param {string} id - Post UUID
+   * @param {Object} data - Update payload ({ base64Graphic, finalGraphicUrl, userConfigJson })
+   * @returns {Promise<Object>} Updated post record
+   */
+  updatePostGraphic: async (id, data) => {
+    const response = await api.put(API_ENDPOINTS.POSTS.UPDATE_GRAPHIC(id), data);
     return response.data;
   },
 

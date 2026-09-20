@@ -54,3 +54,25 @@ export const DEFAULT_BRAND_KIT_FALLBACK = Object.freeze({
   country: 'India',
   captionLanguage: 'English',
 });
+
+// Keys synchronized between BrandKit profile and generated post graphics/configs
+export const BRAND_SYNC_KEYS = Object.freeze([
+  'businessName',
+  'logoUrl',
+  'phone',
+  'whatsapp',
+  'email',
+  'website',
+  'address',
+  'tagline',
+  'primaryColor',
+  'secondaryColor',
+  'instagramHandle',
+  'facebookHandle',
+  'linkedinHandle',
+  'upiVpa',
+  'qrCodeUrl',
+  'customFields',
+  'city',
+  'state',
+]);

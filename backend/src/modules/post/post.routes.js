@@ -1,10 +1,17 @@
 import { Router } from 'express';
-import { postController } from './post.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireTabPermission } from '../../common/middleware/role.middleware.js';
+import { requireAdmin } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import { validateOptionalImageUpload } from '../../common/middleware/upload.middleware.js';
-import { createPostSchema, getAdminPostsQuerySchema, publishNowSchema, schedulePostSchema } from './post.validator.js';
+import {
+  createPostSchema,
+  getAdminPostsQuerySchema,
+  publishNowSchema,
+  schedulePostSchema,
+  updatePostGraphicSchema,
+  postIdParamSchema,
+} from './post.validator.js';
+import * as postController from './post.controller.js';
 
 const router = Router();
 
@@ -14,13 +21,13 @@ router.use(authenticate);
 // --- 🛡️ Enterprise Admin Post Tracking & Analytics Endpoints ---
 router.get(
   '/admin/analytics',
-  requireTabPermission('posts'),
+  requireAdmin,
   postController.getAdminPostAnalytics
 );
 
 router.get(
   '/admin/all',
-  requireTabPermission('posts'),
+  requireAdmin,
   validate(getAdminPostsQuerySchema),
   postController.getAdminPosts
 );
@@ -38,13 +45,28 @@ router.post('/publish-now', validate(publishNowSchema), postController.publishNo
 // POST /api/v1/posts/schedule (Schedule for Future Date/Time)
 router.post('/schedule', validate(schedulePostSchema), postController.schedulePost);
 
-// POST /api/v1/posts/trigger-scheduled-jobs (Manual Test Trigger)
-router.post('/trigger-scheduled-jobs', postController.triggerScheduledJobs);
-
 // POST /api/v1/posts (Save generated post)
-router.post('/', validateOptionalImageUpload, validate(createPostSchema), postController.createPost);
+router.post(
+  '/',
+  validateOptionalImageUpload,
+  validate(createPostSchema),
+  postController.createPost
+);
+
+// PUT /api/v1/posts/:id/graphic (Re-render & update post graphic in place without deducting extra quota)
+router.put(
+  '/:id/graphic',
+  validate(postIdParamSchema),
+  validateOptionalImageUpload,
+  validate(updatePostGraphicSchema),
+  postController.updatePostGraphic
+);
 
 // DELETE /api/v1/posts/:id
-router.delete('/:id', postController.deletePost);
+router.delete(
+  '/:id',
+  validate(postIdParamSchema),
+  postController.deletePost
+);
 
 export default router;

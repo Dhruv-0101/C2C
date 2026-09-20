@@ -26,6 +26,9 @@ import { Alert } from "@/components/ui/Alert";
 export const BrandKitView = ({
   isLoadingBrandKit,
   successMsg,
+  scheduledNotice,
+  onDismissNotice,
+  navigate,
   errorMsg,
   register,
   errors,
@@ -80,6 +83,55 @@ export const BrandKitView = ({
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 shrink-0" />
               <span>{successMsg}</span>
+            </div>
+          )}
+
+          {scheduledNotice && (
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#1a2538] to-[#131B2A] border border-amber-500/40 space-y-3 shadow-lg">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      BrandKit Saved & Scheduled Posts Preserved
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/30">
+                        {scheduledNotice.count} Post{scheduledNotice.count > 1 ? "s" : ""} Scheduled
+                      </span>
+                    </h4>
+                    <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                      {scheduledNotice.message}
+                    </p>
+                  </div>
+                </div>
+                {onDismissNotice && (
+                  <button
+                    type="button"
+                    onClick={onDismissNotice}
+                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
+                    title="Dismiss notice"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="pt-2 border-t border-[#2C384E]/80 flex flex-wrap items-center gap-3">
+                {navigate && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/your-posts?tab=SCHEDULED")}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer"
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Review Scheduled Posts</span>
+                  </button>
+                )}
+                <span className="text-[11px] text-slate-400">
+                  New posts will automatically use this updated branding.
+                </span>
+              </div>
             </div>
           )}
 

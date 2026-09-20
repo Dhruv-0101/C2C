@@ -1,31 +1,41 @@
 import { Router } from 'express';
-import { frameController } from './frame.controller.js';
+import * as frameController from './frame.controller.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import { validateImageUpload } from '../../common/middleware/upload.middleware.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
-import { createFrameSchema, getFramesQuerySchema } from './frame.validator.js';
+import { FRAME_TAB_PERMISSION } from './frame.constants.js';
+import {
+  createFrameSchema,
+  getFramesQuerySchema,
+  frameIdParamSchema,
+} from './frame.validator.js';
 
 const router = Router();
 
-// All frame routes require authentication
+// All frame endpoints require authenticated session
 router.use(authenticate);
 
-// GET /api/frames (Accessible by all users with pagination)
+// GET /api/v1/frames (Accessible by all authenticated users with pagination)
 router.get('/', validate(getFramesQuerySchema), frameController.getFrames);
+
+// GET /api/v1/frames/:id (Accessible by all authenticated users)
+router.get('/:id', validate(frameIdParamSchema), frameController.getFrameById);
 
 // Admin / SubAdmin endpoints for creating dynamic frame presets or uploading PNG frames
 router.post(
   '/',
-  requireTabPermission('frames'),
+  requireTabPermission(FRAME_TAB_PERMISSION),
   validateImageUpload,
   validate(createFrameSchema),
   frameController.createFrame
 );
 
+// Admin / SubAdmin endpoint for deleting frames
 router.delete(
   '/:id',
-  requireTabPermission('frames'),
+  requireTabPermission(FRAME_TAB_PERMISSION),
+  validate(frameIdParamSchema),
   frameController.deleteFrame
 );
 

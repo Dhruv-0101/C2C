@@ -76,6 +76,8 @@ export const PostStudioEditorView = ({
   currentTemplate,
   isRendering,
   savePostMutation,
+  isEditingScheduled = false,
+  isUpdatingGraphic = false,
   handleSaveToDb,
   handleDownloadHD,
   onOpenPublisherModal,
@@ -1488,13 +1490,17 @@ export const PostStudioEditorView = ({
                   </Button>
 
                   <Button
-                    variant="outline"
-                    icon={isExpired ? Lock : BookmarkCheck}
+                    variant={isEditingScheduled ? "primary" : "outline"}
+                    icon={isExpired && !isEditingScheduled ? Lock : BookmarkCheck}
                     onClick={handleSaveToDb}
-                    isLoading={savePostMutation.isPending}
-                    className="w-full justify-center border-[#2C384E] text-slate-300 hover:text-white text-xs"
+                    isLoading={savePostMutation.isPending || isUpdatingGraphic}
+                    className="w-full justify-center border-[#2C384E] text-slate-300 hover:text-white text-xs font-bold"
                   >
-                    {isExpired ? "🔒 Lock: Purchase Plan to Save" : "Save Post Draft to Vault"}
+                    {isEditingScheduled
+                      ? "Update Scheduled Post Graphic (0 Credits)"
+                      : isExpired
+                      ? "🔒 Lock: Purchase Plan to Save"
+                      : "Save Post Draft to Vault"}
                   </Button>
                 </div>
               </div>

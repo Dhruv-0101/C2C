@@ -1,13 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
-import { generateAiCaption, getSuggestedHashtags } from '../services/ai.api';
+import { generateAiCaption } from '../services/ai.api';
 
+/**
+ * Hook for generating AI captions and hashtags tailored to brand context.
+ */
 export function useAiCaption() {
   const generateCaptionMutation = useMutation({
     mutationFn: generateAiCaption,
-  });
-
-  const suggestHashtagsMutation = useMutation({
-    mutationFn: getSuggestedHashtags,
   });
 
   return {
@@ -15,9 +14,5 @@ export function useAiCaption() {
     isGenerating: generateCaptionMutation.isPending,
     captionError: generateCaptionMutation.error,
     captionData: generateCaptionMutation.data?.data,
-
-    suggestHashtags: suggestHashtagsMutation.mutateAsync,
-    isSuggestingHashtags: suggestHashtagsMutation.isPending,
-    hashtagsData: suggestHashtagsMutation.data?.data,
   };
 }

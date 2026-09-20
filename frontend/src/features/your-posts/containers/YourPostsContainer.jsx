@@ -24,8 +24,6 @@ export const YourPostsContainer = () => {
     isLoading,
     error,
     deletePost,
-    triggerScheduledJobs,
-    isTriggering,
   } = useYourPosts();
 
   return (
@@ -47,8 +45,6 @@ export const YourPostsContainer = () => {
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
       onDeletePost={deletePost}
-      onTriggerScheduled={triggerScheduledJobs}
-      isTriggering={isTriggering}
     />
   );
 };
