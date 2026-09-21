@@ -2,10 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('END_USER', 'ADMIN', 'SUB_ADMIN');
 
 -- CreateEnum
-CREATE TYPE "SocialPlatform" AS ENUM ('INSTAGRAM', 'FACEBOOK', 'LINKEDIN', 'TWITTER', 'PINTEREST', 'THREADS', 'WHATSAPP');
-
--- CreateEnum
-CREATE TYPE "AssetType" AS ENUM ('LOGO', 'PRODUCT_PHOTO', 'BACKGROUND', 'STORE_PHOTO', 'OTHER');
+CREATE TYPE "SocialPlatform" AS ENUM ('INSTAGRAM', 'FACEBOOK', 'LINKEDIN');
 
 -- CreateEnum
 CREATE TYPE "PostStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'PUBLISHING', 'PUBLISHED', 'FAILED');
@@ -14,10 +11,7 @@ CREATE TYPE "PostStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'PUBLISHING', 'PUBLISHED
 CREATE TYPE "PublishStatus" AS ENUM ('PENDING', 'PROCESSING', 'SUCCESS', 'FAILED');
 
 -- CreateEnum
-CREATE TYPE "PlanType" AS ENUM ('FREE', 'PRO', 'ENTERPRISE');
-
--- CreateEnum
-CREATE TYPE "NotificationType" AS ENUM ('POST_PUBLISHED', 'POST_FAILED', 'SYSTEM_ALERT', 'BILLING');
+CREATE TYPE "PlanType" AS ENUM ('FREE', 'PRO');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -101,8 +95,15 @@ CREATE TABLE "BrandKit" (
     "city" TEXT,
     "state" TEXT,
     "country" TEXT DEFAULT 'India',
-    "websiteUrl" TEXT,
     "tagline" TEXT,
+    "targetAudience" TEXT,
+    "captionLanguage" TEXT DEFAULT 'English',
+    "businessUsps" TEXT,
+    "linkedinHandle" TEXT,
+    "gmbReviewUrl" TEXT,
+    "upiVpa" TEXT,
+    "upiQrUrl" TEXT,
+    "workingHours" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -117,27 +118,12 @@ CREATE TABLE "Frame" (
     "overlayPngUrl" TEXT NOT NULL,
     "previewUrl" TEXT,
     "configJson" JSONB,
-    "isSystem" BOOLEAN NOT NULL DEFAULT true,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Frame_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "BrandAsset" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "assetType" "AssetType" NOT NULL DEFAULT 'PRODUCT_PHOTO',
-    "fileUrl" TEXT NOT NULL,
-    "fileName" TEXT NOT NULL,
-    "mimeType" TEXT NOT NULL,
-    "fileSize" INTEGER NOT NULL,
-    "cloudinaryPublicId" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "BrandAsset_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -146,8 +132,7 @@ CREATE TABLE "Category" (
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "description" TEXT,
-    "icon" TEXT,
-    "isSystem" BOOLEAN NOT NULL DEFAULT true,
+    "createdBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -164,6 +149,7 @@ CREATE TABLE "Festival" (
     "targetRegion" TEXT DEFAULT 'India',
     "bannerUrl" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -176,8 +162,8 @@ CREATE TABLE "TemplateCategory" (
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "description" TEXT,
-    "icon" TEXT DEFAULT '🎨',
     "isSystem" BOOLEAN NOT NULL DEFAULT false,
+    "createdBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -189,7 +175,6 @@ CREATE TABLE "Template" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "category" TEXT NOT NULL DEFAULT 'GENERAL',
     "templateCategoryId" TEXT,
     "festivalId" TEXT,
     "baseImageUrl" TEXT NOT NULL,
@@ -207,11 +192,10 @@ CREATE TABLE "Post" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "templateId" TEXT,
-    "categoryId" TEXT,
     "festivalId" TEXT,
+    "categoryId" TEXT,
+    "frameId" TEXT,
     "occasionName" TEXT,
-    "customText" TEXT,
-    "offerText" TEXT,
     "customImageUrl" TEXT,
     "finalGraphicUrl" TEXT,
     "userConfigJson" JSONB,
@@ -226,10 +210,8 @@ CREATE TABLE "Post" (
 CREATE TABLE "Caption" (
     "id" TEXT NOT NULL,
     "postId" TEXT NOT NULL,
-    "platform" "SocialPlatform" NOT NULL,
     "captionText" TEXT NOT NULL,
     "hashtags" TEXT[],
-    "isApproved" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -258,9 +240,6 @@ CREATE TABLE "VaultItem" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "postId" TEXT NOT NULL,
-    "graphicUrl" TEXT NOT NULL,
-    "categoryName" TEXT,
-    "occasionName" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "VaultItem_pkey" PRIMARY KEY ("id")
@@ -281,25 +260,10 @@ CREATE TABLE "Subscription" (
     "paymentGateway" TEXT,
     "paymentId" TEXT,
     "orderId" TEXT,
-    "currentPeriodStart" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "currentPeriodEnd" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Notification" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "message" TEXT NOT NULL,
-    "type" "NotificationType" NOT NULL DEFAULT 'SYSTEM_ALERT',
-    "isRead" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -384,7 +348,7 @@ CREATE UNIQUE INDEX "BrandKit_userId_key" ON "BrandKit"("userId");
 CREATE INDEX "BrandKit_categoryId_idx" ON "BrandKit"("categoryId");
 
 -- CreateIndex
-CREATE INDEX "BrandAsset_userId_idx" ON "BrandAsset"("userId");
+CREATE INDEX "Frame_createdBy_idx" ON "Frame"("createdBy");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
@@ -393,7 +357,13 @@ CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
 CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
 
 -- CreateIndex
+CREATE INDEX "Category_createdBy_idx" ON "Category"("createdBy");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Festival_slug_key" ON "Festival"("slug");
+
+-- CreateIndex
+CREATE INDEX "Festival_createdBy_idx" ON "Festival"("createdBy");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TemplateCategory_name_key" ON "TemplateCategory"("name");
@@ -402,13 +372,16 @@ CREATE UNIQUE INDEX "TemplateCategory_name_key" ON "TemplateCategory"("name");
 CREATE UNIQUE INDEX "TemplateCategory_slug_key" ON "TemplateCategory"("slug");
 
 -- CreateIndex
+CREATE INDEX "TemplateCategory_createdBy_idx" ON "TemplateCategory"("createdBy");
+
+-- CreateIndex
 CREATE INDEX "Template_festivalId_idx" ON "Template"("festivalId");
 
 -- CreateIndex
-CREATE INDEX "Template_category_idx" ON "Template"("category");
+CREATE INDEX "Template_templateCategoryId_idx" ON "Template"("templateCategoryId");
 
 -- CreateIndex
-CREATE INDEX "Template_templateCategoryId_idx" ON "Template"("templateCategoryId");
+CREATE INDEX "Template_createdBy_idx" ON "Template"("createdBy");
 
 -- CreateIndex
 CREATE INDEX "Post_userId_idx" ON "Post"("userId");
@@ -417,10 +390,25 @@ CREATE INDEX "Post_userId_idx" ON "Post"("userId");
 CREATE INDEX "Post_status_idx" ON "Post"("status");
 
 -- CreateIndex
+CREATE INDEX "Post_categoryId_idx" ON "Post"("categoryId");
+
+-- CreateIndex
+CREATE INDEX "Post_frameId_idx" ON "Post"("frameId");
+
+-- CreateIndex
+CREATE INDEX "Post_templateId_idx" ON "Post"("templateId");
+
+-- CreateIndex
+CREATE INDEX "Post_festivalId_idx" ON "Post"("festivalId");
+
+-- CreateIndex
+CREATE INDEX "Post_createdAt_idx" ON "Post"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "Caption_postId_idx" ON "Caption"("postId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Caption_postId_platform_key" ON "Caption"("postId", "platform");
+CREATE UNIQUE INDEX "ScheduledPost_postId_key" ON "ScheduledPost"("postId");
 
 -- CreateIndex
 CREATE INDEX "ScheduledPost_postId_idx" ON "ScheduledPost"("postId");
@@ -432,10 +420,13 @@ CREATE INDEX "ScheduledPost_status_scheduledAt_idx" ON "ScheduledPost"("status",
 CREATE INDEX "VaultItem_userId_idx" ON "VaultItem"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Subscription_userId_key" ON "Subscription"("userId");
+CREATE INDEX "VaultItem_postId_idx" ON "VaultItem"("postId");
 
 -- CreateIndex
-CREATE INDEX "Notification_userId_isRead_idx" ON "Notification"("userId", "isRead");
+CREATE UNIQUE INDEX "VaultItem_userId_postId_key" ON "VaultItem"("userId", "postId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Subscription_userId_key" ON "Subscription"("userId");
 
 -- CreateIndex
 CREATE INDEX "BillingTransaction_userId_idx" ON "BillingTransaction"("userId");
@@ -445,6 +436,12 @@ CREATE INDEX "BillingTransaction_createdAt_idx" ON "BillingTransaction"("created
 
 -- CreateIndex
 CREATE INDEX "PostAnalytics_userId_platform_idx" ON "PostAnalytics"("userId", "platform");
+
+-- CreateIndex
+CREATE INDEX "PostAnalytics_userId_createdAt_idx" ON "PostAnalytics"("userId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "PostAnalytics_lastSyncedAt_idx" ON "PostAnalytics"("lastSyncedAt");
 
 -- CreateIndex
 CREATE INDEX "PostAnalytics_createdAt_idx" ON "PostAnalytics"("createdAt");
@@ -468,7 +465,16 @@ ALTER TABLE "BrandKit" ADD CONSTRAINT "BrandKit_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "BrandKit" ADD CONSTRAINT "BrandKit_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BrandAsset" ADD CONSTRAINT "BrandAsset_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Frame" ADD CONSTRAINT "Frame_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Category" ADD CONSTRAINT "Category_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Festival" ADD CONSTRAINT "Festival_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TemplateCategory" ADD CONSTRAINT "TemplateCategory_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Template" ADD CONSTRAINT "Template_templateCategoryId_fkey" FOREIGN KEY ("templateCategoryId") REFERENCES "TemplateCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -486,10 +492,13 @@ ALTER TABLE "Post" ADD CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFE
 ALTER TABLE "Post" ADD CONSTRAINT "Post_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "Template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Post" ADD CONSTRAINT "Post_festivalId_fkey" FOREIGN KEY ("festivalId") REFERENCES "Festival"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Post" ADD CONSTRAINT "Post_festivalId_fkey" FOREIGN KEY ("festivalId") REFERENCES "Festival"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Post" ADD CONSTRAINT "Post_frameId_fkey" FOREIGN KEY ("frameId") REFERENCES "Frame"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Caption" ADD CONSTRAINT "Caption_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -505,9 +514,6 @@ ALTER TABLE "VaultItem" ADD CONSTRAINT "VaultItem_postId_fkey" FOREIGN KEY ("pos
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "BillingTransaction" ADD CONSTRAINT "BillingTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
