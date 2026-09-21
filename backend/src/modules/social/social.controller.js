@@ -51,7 +51,7 @@ export const getLinkedinAuthUrl = async (req, res, next) => {
 /**
  * GET /api/v1/social/linkedin/callback
  */
-export const handleLinkedinCallback = async (req, res) => {
+export const handleLinkedinCallback = async (req, res, next) => {
   const { code, state, error, error_description } = req.query;
   const clientUrl = resolveClientUrl(req, state);
 
@@ -89,7 +89,7 @@ export const handleLinkedinCallback = async (req, res) => {
 /**
  * GET /api/v1/social/meta/callback
  */
-export const handleMetaCallback = async (req, res) => {
+export const handleMetaCallback = async (req, res, next) => {
   const { code, state, error, error_description } = req.query;
   const clientUrl = resolveClientUrl(req, state);
 

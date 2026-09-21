@@ -17,7 +17,7 @@ import { billingApi } from '../../../services/billing.api';
 import StripeElementsCheckoutModal from './StripeElementsCheckoutModal';
 
 // Dynamic pricing calculation constants for frontend slider
-const BASE_PRICES = { INR: 40, USD: 0.8 };
+const BASE_PRICES = { INR: 15, USD: 0.17 };
 const calculatePlanPricingClient = (postCount, currency = 'INR') => {
   const count = Math.max(10, Math.min(100, Number(postCount) || 15));
   const isUsd = currency === 'USD';
@@ -94,52 +94,68 @@ export const PlanSelectionModal = ({
       setIsProcessing(true);
       setErrorMsg('');
 
-      // 1. Create Razorpay Order via Backend API
+      // Ensure Razorpay SDK is loaded in browser
+      if (typeof window !== 'undefined' && !window.Razorpay) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load Razorpay payment SDK. Please check your internet connection.'));
+          document.body.appendChild(script);
+        });
+      }
+
+      if (!window.Razorpay) {
+        throw new Error('Razorpay SDK is not available. Please refresh the page and try again.');
+      }
+
+      // 1. Create Genuine Razorpay Order via Backend API
       const orderData = await billingApi.createRazorpayOrder(postCount);
 
-      // Check if Razorpay JS SDK script is loaded in browser
-      if (window.Razorpay) {
-        const options = {
-          key: orderData.keyId,
-          amount: Math.round(orderData.finalTotal * 100),
-          currency: 'INR',
-          name: 'BrandFlow Pro Plan',
-          description: `Subscription for ${orderData.postCount} Post Creations`,
-          order_id: orderData.orderId,
-          handler: async (response) => {
-            try {
-              // 2. Direct API Verification upon Razorpay Payment Completion
-              const verifyData = await billingApi.verifyRazorpayPayment({
-                orderId: response.razorpay_order_id || orderData.orderId,
-                paymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
-                signature: response.razorpay_signature || '',
-                postCount: orderData.postCount,
-              });
-              setIsProcessing(false);
-              if (onSuccess) onSuccess(verifyData);
-              onClose();
-            } catch (vErr) {
-              setIsProcessing(false);
-              setErrorMsg(vErr?.response?.data?.message || 'Razorpay payment verification failed.');
+      const options = {
+        key: orderData.keyId,
+        amount: Math.round(orderData.finalTotal * 100),
+        currency: 'INR',
+        name: 'BrandFlow Pro Plan',
+        description: `Subscription for ${orderData.postCount} Post Creations`,
+        order_id: orderData.orderId,
+        handler: async (response) => {
+          try {
+            if (!response?.razorpay_order_id || !response?.razorpay_payment_id || !response?.razorpay_signature) {
+              throw new Error('Payment confirmation parameters were not received from Razorpay.');
             }
+
+            // 2. Direct API Cryptographic Verification upon Razorpay Payment Completion
+            const verifyData = await billingApi.verifyRazorpayPayment({
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              postCount: orderData.postCount,
+            });
+            setIsProcessing(false);
+            if (onSuccess) onSuccess(verifyData);
+            onClose();
+          } catch (vErr) {
+            setIsProcessing(false);
+            setErrorMsg(vErr?.response?.data?.message || vErr?.message || 'Razorpay payment verification failed.');
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
           },
-          prefill: { name: 'BrandFlow Member' },
-          theme: { color: '#F59E0B' },
-        };
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } else {
-        // Instant Direct API Verification Fallback for Sandbox Test Mode
-        const verifyData = await billingApi.verifyRazorpayPayment({
-          orderId: orderData.orderId,
-          paymentId: `pay_rzp_mock_${Date.now()}`,
-          signature: 'mock_signature',
-          postCount: orderData.postCount,
-        });
+        },
+        prefill: { name: 'BrandFlow Member' },
+        theme: { color: '#F59E0B' },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (resp) => {
         setIsProcessing(false);
-        if (onSuccess) onSuccess(verifyData);
-        onClose();
-      }
+        setErrorMsg(resp?.error?.description || 'Razorpay payment failed.');
+      });
+      rzp.open();
     } catch (err) {
       setIsProcessing(false);
       setErrorMsg(err?.response?.data?.message || err?.message || 'Failed to initiate Razorpay payment.');

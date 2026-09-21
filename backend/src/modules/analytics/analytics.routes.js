@@ -1,16 +1,30 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { analyticsController } from './analytics.controller.js';
+import { validate } from '../../common/middleware/validate.middleware.js';
+import {
+  getAnalyticsQuerySchema,
+  getTopTemplatesQuerySchema,
+} from './analytics.validator.js';
+import {
+  getOverview,
+  getTrends,
+  getPlatformBreakdown,
+  getTopTemplates,
+  seedDemo,
+} from './analytics.controller.js';
 
 const router = Router();
 
 // All analytics endpoints require authentication
 router.use(authenticate);
 
-router.get('/overview', analyticsController.getOverview);
-router.get('/trends', analyticsController.getTrends);
-router.get('/platform-breakdown', analyticsController.getPlatformBreakdown);
-router.get('/top-templates', analyticsController.getTopTemplates);
-router.post('/demo-seed', analyticsController.seedDemo);
+// Metric aggregation & trend routes with query parameter validation
+router.get('/overview', validate(getAnalyticsQuerySchema, 'query'), getOverview);
+router.get('/trends', validate(getAnalyticsQuerySchema, 'query'), getTrends);
+router.get('/platform-breakdown', validate(getAnalyticsQuerySchema, 'query'), getPlatformBreakdown);
+router.get('/top-templates', validate(getTopTemplatesQuerySchema, 'query'), getTopTemplates);
+
+// Development testing / sandbox seed route
+router.post('/demo-seed', seedDemo);
 
 export default router;

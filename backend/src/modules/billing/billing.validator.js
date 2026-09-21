@@ -1,8 +1,18 @@
 import { z } from 'zod';
+import {
+  PRO_SLIDER_LIMITS,
+  BILLING_PLAN_LIST,
+  BILLING_CURRENCY_LIST,
+  BILLING_ALLOWED_SORT_FIELDS,
+} from './billing.constants.js';
 
 export const createRazorpayOrderSchema = z.object({
   body: z.object({
-    postCount: z.number().min(10).max(100).default(15),
+    postCount: z
+      .number()
+      .min(PRO_SLIDER_LIMITS.MIN_POSTS)
+      .max(PRO_SLIDER_LIMITS.MAX_POSTS)
+      .default(PRO_SLIDER_LIMITS.DEFAULT_POSTS),
   }),
 });
 
@@ -10,21 +20,39 @@ export const verifyRazorpaySchema = z.object({
   body: z.object({
     orderId: z.string().min(1, 'orderId is required'),
     paymentId: z.string().min(1, 'paymentId is required'),
-    signature: z.string().optional(),
-    postCount: z.number().min(10).max(100).default(15),
+    signature: z.string().min(1, 'signature is required'),
+    postCount: z
+      .number()
+      .min(PRO_SLIDER_LIMITS.MIN_POSTS)
+      .max(PRO_SLIDER_LIMITS.MAX_POSTS)
+      .default(PRO_SLIDER_LIMITS.DEFAULT_POSTS),
   }),
 });
 
 export const createStripeIntentSchema = z.object({
   body: z.object({
-    postCount: z.number().min(10).max(100).default(15),
+    postCount: z
+      .number()
+      .min(PRO_SLIDER_LIMITS.MIN_POSTS)
+      .max(PRO_SLIDER_LIMITS.MAX_POSTS)
+      .default(PRO_SLIDER_LIMITS.DEFAULT_POSTS),
   }),
 });
 
 export const verifyStripeSchema = z.object({
   body: z.object({
     intentId: z.string().min(1, 'intentId is required'),
-    postCount: z.number().min(10).max(100).default(15),
+    postCount: z
+      .number()
+      .min(PRO_SLIDER_LIMITS.MIN_POSTS)
+      .max(PRO_SLIDER_LIMITS.MAX_POSTS)
+      .default(PRO_SLIDER_LIMITS.DEFAULT_POSTS),
+  }),
+});
+
+export const adminTopUpParamSchema = z.object({
+  params: z.object({
+    userId: z.string().uuid({ message: 'Invalid target user ID' }),
   }),
 });
 
@@ -40,11 +68,11 @@ export const adminTopUpSchema = z.object({
 export const recordManualTransactionSchema = z.object({
   body: z.object({
     userId: z.string().uuid({ message: 'Valid user ID is required' }),
-    plan: z.enum(['FREE', 'PRO', 'ENTERPRISE']).optional().default('PRO'),
+    plan: z.enum(BILLING_PLAN_LIST).optional().default('PRO'),
     transactionType: z.string().optional().default('PLAN_PURCHASE'),
     paymentGateway: z.string().optional().default('ADMIN_MANUAL'),
     pricePaid: z.number().nonnegative().optional().default(0),
-    currency: z.string().optional().default('INR'),
+    currency: z.enum(BILLING_CURRENCY_LIST).optional().default('INR'),
     postCount: z.number().int().positive().optional().default(100),
     paymentId: z.string().optional().nullable(),
     orderId: z.string().optional().nullable(),
@@ -52,4 +80,33 @@ export const recordManualTransactionSchema = z.object({
   }),
 });
 
+export const downloadInvoiceParamSchema = z.object({
+  params: z.object({
+    transactionId: z.string().min(1, 'Transaction ID is required'),
+  }),
+});
 
+export const getBillingHistoryQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().positive().optional(),
+    limit: z.coerce.number().int().positive().max(100).optional(),
+    sortBy: z.enum(BILLING_ALLOWED_SORT_FIELDS).optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
+  }),
+});
+
+export const getAdminTransactionsQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().positive().optional(),
+    limit: z.coerce.number().int().positive().max(100).optional(),
+    search: z.string().optional(),
+    status: z.string().optional(),
+    paymentGateway: z.string().optional(),
+    currency: z.enum(BILLING_CURRENCY_LIST).optional(),
+    plan: z.enum(BILLING_PLAN_LIST).optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    sortBy: z.enum(BILLING_ALLOWED_SORT_FIELDS).optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
+  }),
+});

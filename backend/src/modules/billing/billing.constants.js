@@ -1,61 +1,74 @@
 /**
- * Enterprise Subscription & Billing Constants
- * Volume Discount Matrix & Plan Rules
+ * 💳 BILLING & SUBSCRIPTION CONSTANTS
+ * Single source of truth for plans, pricing, currencies, gateways, and statuses.
  */
 
-export const FREE_PLAN_LIMITS = {
+export const BILLING_PLANS = Object.freeze({
+  FREE: 'FREE',
+  PRO: 'PRO',
+});
+
+export const BILLING_PLAN_LIST = Object.freeze(Object.values(BILLING_PLANS));
+
+export const BILLING_CURRENCIES = Object.freeze({
+  INR: 'INR',
+  USD: 'USD',
+});
+
+export const BILLING_CURRENCY_LIST = Object.freeze(Object.values(BILLING_CURRENCIES));
+
+export const SUBSCRIPTION_STATUSES = Object.freeze({
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED',
+  NO_PLAN: 'NO_PLAN',
+  BONUS_ONLY: 'BONUS_ONLY',
+});
+
+export const TRANSACTION_STATUSES = Object.freeze({
+  COMPLETED: 'COMPLETED',
+  PENDING: 'PENDING',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED',
+});
+
+export const TRANSACTION_TYPES = Object.freeze({
+  PLAN_ACTIVATION: 'PLAN_ACTIVATION',
+  PLAN_PURCHASE: 'PLAN_PURCHASE',
+  ADMIN_BONUS: 'ADMIN_BONUS',
+});
+
+export const PAYMENT_GATEWAYS = Object.freeze({
+  FREE: 'FREE',
+  RAZORPAY: 'RAZORPAY',
+  STRIPE: 'STRIPE',
+  ADMIN_MANUAL: 'ADMIN_MANUAL',
+  ADMIN_BONUS: 'ADMIN_BONUS',
+});
+
+export const FREE_PLAN_LIMITS = Object.freeze({
   POST_LIMIT: 5,
   PLAN_NAME: 'FREE',
-};
+});
 
-export const PRO_SLIDER_LIMITS = {
+export const PRO_SLIDER_LIMITS = Object.freeze({
   MIN_POSTS: 10,
   MAX_POSTS: 100,
   DEFAULT_POSTS: 15,
-};
+});
 
-export const BASE_PRICES = {
-  INR: 40, // Base ₹40 per post
-  USD: 0.8, // Base $0.80 per post
-};
+export const BASE_PRICES = Object.freeze({
+  INR: 15, // Base ₹15 per post
+  USD: 0.17, // Base $0.17 per post (direct exchange equivalent of ₹15)
+});
 
-/**
- * Calculates volume discounted total price and per-post rate
- * @param {number} postCount - Desired number of posts (10 to 100)
- * @param {string} currency - 'INR' or 'USD'
- */
-export const calculatePlanPricing = (postCount, currency = 'INR') => {
-  const count = Math.max(
-    PRO_SLIDER_LIMITS.MIN_POSTS,
-    Math.min(PRO_SLIDER_LIMITS.MAX_POSTS, Number(postCount) || PRO_SLIDER_LIMITS.DEFAULT_POSTS)
-  );
+export const BILLING_ALLOWED_SORT_FIELDS = Object.freeze([
+  'createdAt',
+  'pricePaid',
+  'postCount',
+  'status',
+]);
 
-  const isUsd = currency.toUpperCase() === 'USD';
-  const basePricePerPost = isUsd ? BASE_PRICES.USD : BASE_PRICES.INR;
+export const DEFAULT_BILLING_SORT_BY = 'createdAt';
 
-  let discountPercentage = 0;
-  if (count >= 51) {
-    discountPercentage = 0.3; // 30% discount for 51-100 posts
-  } else if (count >= 21) {
-    discountPercentage = 0.2; // 20% discount for 21-50 posts
-  } else if (count >= 10) {
-    discountPercentage = 0.1; // 10% discount for 10-20 posts
-  }
-
-  const rawTotal = count * basePricePerPost;
-  const discountAmount = rawTotal * discountPercentage;
-  const finalTotal = Math.round((rawTotal - discountAmount) * 100) / 100;
-  const effectivePricePerPost = Math.round((finalTotal / count) * 100) / 100;
-
-  return {
-    postCount: count,
-    currency: isUsd ? 'USD' : 'INR',
-    currencySymbol: isUsd ? '$' : '₹',
-    basePricePerPost,
-    discountPercentage: Math.round(discountPercentage * 100),
-    rawTotal,
-    discountAmount: Math.round(discountAmount * 100) / 100,
-    finalTotal,
-    effectivePricePerPost,
-  };
-};
+export const DEFAULT_BILLING_SORT_ORDER = 'desc';
