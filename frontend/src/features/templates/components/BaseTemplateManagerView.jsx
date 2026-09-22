@@ -57,13 +57,13 @@ export const BaseTemplateManagerView = ({
 }) => {
   const [customCatInput, setCustomCatInput] = useState("");
 
-  // Categories Pagination (5 per page) & Search State
+  // Categories Pagination (8 per page) & Search State
   const [catSearch, setCatSearch] = useState("");
   const [catPage, setCatPage] = useState(1);
-  const CAT_PER_PAGE = 5;
+  const CAT_PER_PAGE = 8;
 
-  const filteredCategories = categoriesList.filter((cat) =>
-    cat.name.toLowerCase().includes(catSearch.toLowerCase())
+  const filteredCategories = (categoriesList || []).filter((cat) =>
+    (cat?.name || "").toLowerCase().includes(catSearch.toLowerCase())
   );
   const catTotalPages = Math.ceil(filteredCategories.length / CAT_PER_PAGE) || 1;
   const paginatedCategories = filteredCategories.slice(
@@ -71,13 +71,13 @@ export const BaseTemplateManagerView = ({
     catPage * CAT_PER_PAGE
   );
 
-  // Festivals Pagination (5 per page) & Search State
+  // Festivals Pagination (8 per page) & Search State
   const [festSearch, setFestSearch] = useState("");
   const [festPage, setFestPage] = useState(1);
-  const FEST_PER_PAGE = 5;
+  const FEST_PER_PAGE = 8;
 
-  const filteredFestivals = festivals.filter((f) =>
-    f.name.toLowerCase().includes(festSearch.toLowerCase())
+  const filteredFestivals = (festivals || []).filter((f) =>
+    (f?.name || "").toLowerCase().includes(festSearch.toLowerCase())
   );
   const festTotalPages = Math.ceil(filteredFestivals.length / FEST_PER_PAGE) || 1;
   const paginatedFestivals = filteredFestivals.slice(
@@ -121,7 +121,7 @@ export const BaseTemplateManagerView = ({
             <div className="flex items-center gap-2">
               <FolderKanban className="w-4 h-4 text-amber-400" />
               <h4 className="font-heading font-extrabold text-sm text-white">
-                Categories Navigation (5 per page)
+                Categories Navigation (8 per page)
               </h4>
               <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                 Page {catPage} of {catTotalPages}
@@ -168,7 +168,7 @@ export const BaseTemplateManagerView = ({
             </div>
           </div>
 
-          {/* Category Pills (Max 5 shown per page) */}
+          {/* Category Pills (Max 8 shown per page) */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
               type="button"
@@ -184,6 +184,12 @@ export const BaseTemplateManagerView = ({
             >
               <span>🎨 All Categories</span>
             </button>
+
+            {filteredCategories.length === 0 && catSearch && (
+              <span className="text-xs text-slate-400 italic px-2">
+                No categories matching "{catSearch}"
+              </span>
+            )}
 
             {paginatedCategories.map((cat) => {
               const isSelected = selectedCategory === cat.name || selectedCategory === cat.id;
@@ -215,7 +221,7 @@ export const BaseTemplateManagerView = ({
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-emerald-400" />
               <h4 className="font-heading font-extrabold text-sm text-white">
-                Festivals Navigation (5 per page)
+                Festivals Navigation (8 per page)
               </h4>
               <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                 Page {festPage} of {festTotalPages}

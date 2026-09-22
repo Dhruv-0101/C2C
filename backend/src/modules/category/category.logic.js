@@ -1,6 +1,7 @@
 import { ConflictError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import * as categoryRepository from './category.repository.js';
+import * as templateCategoryRepository from '../template/templateCategory.repository.js';
 import { sanitizeCategory } from './category.helper.js';
 
 /**
@@ -20,7 +21,7 @@ function slugify(text) {
  * Get business categories with pagination, searching, and sorting
  */
 export async function getCategories(queryParams = {}) {
-  const pagination = parsePaginationParams(queryParams);
+  const pagination = parsePaginationParams(queryParams, 100, 100);
   const { categories, totalCount } = await categoryRepository.findPaginatedCategories(pagination);
 
   const sanitizedCategories = categories.map(sanitizeCategory);
@@ -41,7 +42,7 @@ export async function getCategories(queryParams = {}) {
 }
 
 /**
- * Fetch a single business category by ID
+ * Get a single business category by ID
  */
 export async function getCategoryById(id) {
   const category = await categoryRepository.findCategoryById(id);
@@ -80,6 +81,22 @@ export async function createCategory({ name, description, createdBy }) {
     description: description?.trim() || null,
     createdBy: createdBy || null,
   });
+
+  // Keep TemplateCategory in sync so newly created categories immediately appear in Graphic Template Manager
+  try {
+    const existingTemplateCat = await templateCategoryRepository.findTemplateCategoryByNameOrSlug(cleanName);
+    if (!existingTemplateCat) {
+      await templateCategoryRepository.createTemplateCategory({
+        name: cleanName,
+        slug,
+        description: description?.trim() || null,
+        isSystem: false,
+        createdBy: createdBy || null,
+      });
+    }
+  } catch (_syncErr) {
+    // Non-blocking sync to avoid disrupting primary category creation
+  }
 
   return sanitizeCategory(newCategory);
 }

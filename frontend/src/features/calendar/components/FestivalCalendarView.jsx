@@ -217,7 +217,7 @@ export const FestivalCalendarView = ({
                       alt={festivalWithBanner.name || "Festival Cover"}
                       className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:opacity-50 group-hover:scale-105 transition duration-300 pointer-events-none"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/75 to-black/60 pointer-events-none" />
+                    <div className="image-scrim-overlay absolute inset-0 pointer-events-none" />
                   </>
                 )}
 

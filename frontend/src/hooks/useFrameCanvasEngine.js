@@ -182,6 +182,54 @@ const defaultElements = [
 ];
 
 /**
+ * Standard typography font families supported by BrandFlow Studio.
+ */
+export const STUDIO_FONTS = [
+  'Space Grotesk',
+  'Plus Jakarta Sans',
+  'Outfit',
+  'Inter',
+  'Playfair Display',
+  'Montserrat',
+  'Roboto',
+  'Cinzel',
+];
+
+/**
+ * Helper to get a font family string with appropriate generic fallback (serif vs sans-serif).
+ */
+export const getFontFamilyWithFallback = (fontFamily = 'Space Grotesk') => {
+  const isSerif = fontFamily === 'Playfair Display' || fontFamily === 'Cinzel';
+  const fallback = isSerif ? 'serif' : 'sans-serif';
+  return `"${fontFamily}", ${fallback}`;
+};
+
+/**
+ * Accurately measures text dimensions using an offscreen canvas context.
+ */
+let _measureCtx = null;
+export const measureCanvasText = (text, fontSize = 28, fontFamily = 'Space Grotesk', fontWeight = 'bold') => {
+  if (typeof document === 'undefined') {
+    return { width: Math.max(40, (text || '').length * fontSize * 0.6), height: Math.ceil(fontSize * 1.25) };
+  }
+  try {
+    if (!_measureCtx) {
+      const c = document.createElement('canvas');
+      _measureCtx = c.getContext('2d');
+    }
+    const isSerif = fontFamily === 'Playfair Display' || fontFamily === 'Cinzel';
+    const fallback = isSerif ? 'serif' : 'sans-serif';
+    _measureCtx.font = `${fontWeight} ${fontSize}px "${fontFamily}", ${fallback}`;
+    const metrics = _measureCtx.measureText(text || 'Sample Text');
+    const width = Math.ceil(metrics.width);
+    const height = Math.ceil(fontSize * 1.25);
+    return { width, height };
+  } catch {
+    return { width: Math.max(40, (text || '').length * fontSize * 0.6), height: Math.ceil(fontSize * 1.25) };
+  }
+};
+
+/**
  * Custom hook encapsulating the Canva Vector Stage Engine.
  * Manages layer element array, selection, mouse drag/resize interactions, and 2D canvas rendering loops.
  */
@@ -191,6 +239,25 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
   const [showSelectionBox, setShowSelectionBox] = useState(true);
   const [elements, setElements] = useState(defaultElements);
   const [selectedId, setSelectedId] = useState('el-footer-bg');
+  const [fontsLoadedVersion, setFontsLoadedVersion] = useState(0);
+
+  // Preload all studio typography fonts into browser memory so canvas renders them immediately
+  useEffect(() => {
+    if (typeof document !== 'undefined' && document.fonts?.load) {
+      Promise.all(
+        STUDIO_FONTS.flatMap((font) => [
+          document.fonts.load(`bold 28px "${font}"`),
+          document.fonts.load(`normal 28px "${font}"`),
+          document.fonts.load(`600 28px "${font}"`),
+          document.fonts.load(`900 28px "${font}"`),
+        ])
+      )
+        .then(() => {
+          setFontsLoadedVersion((v) => v + 1);
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -208,7 +275,194 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
   const selectedElement =
     elements.find((el) => el.id === selectedId) || elements[0];
 
-  // Render 1080x1080 Canva Stage Canvas
+  // Core rendering logic that can output to visible stage or pristine clean offscreen canvas
+  const renderCanvaStageToContext = useCallback(
+    (ctx, drawSelection = true, background = stageBgColor) => {
+      ctx.clearRect(0, 0, 1080, 1080);
+
+      if (background === 'WHITE') {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, 1080, 1080);
+        if (drawSelection) {
+          ctx.strokeStyle = '#F1F5F9';
+          ctx.lineWidth = 1;
+          for (let g = 108; g < 1080; g += 108) {
+            ctx.beginPath();
+            ctx.moveTo(g, 0);
+            ctx.lineTo(g, 1080);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, g);
+            ctx.lineTo(1080, g);
+            ctx.stroke();
+          }
+        }
+      } else if (background === 'DARK') {
+        ctx.fillStyle = '#0F172A';
+        ctx.fillRect(0, 0, 1080, 1080);
+      }
+
+      elements.forEach((el) => {
+        ctx.save();
+        const elH = el.type === 'TEXT' ? (el.fontSize || 24) + 6 : el.height;
+        const rotation = el.rotation || 0;
+        if (rotation) {
+          const cx = el.x + el.width / 2;
+          const cy = el.y + elH / 2;
+          ctx.translate(cx, cy);
+          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.translate(-cx, -cy);
+        }
+
+        if (el.type === 'TEXT') {
+          const fontFamily = el.fontFamily || 'Space Grotesk';
+          const fontWeight = el.fontWeight || 'bold';
+          const fontSize = el.fontSize || 28;
+          ctx.fillStyle = el.fontColor || el.textColor || el.fillColor || '#FFFFFF';
+          const isSerif = fontFamily === 'Playfair Display' || fontFamily === 'Cinzel';
+          const fallback = isSerif ? 'serif' : 'sans-serif';
+          ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", ${fallback}`;
+
+          const metrics = ctx.measureText(el.text || 'Sample Text');
+          const textActualW = Math.ceil(metrics.width);
+          const effectiveW = Math.max(el.width || 0, textActualW);
+
+          ctx.textAlign = el.textAlign || 'left';
+          ctx.textBaseline = 'top';
+          const tx =
+            el.textAlign === 'center'
+              ? el.x + effectiveW / 2
+              : el.textAlign === 'right'
+                ? el.x + effectiveW
+                : el.x;
+          ctx.fillText(el.text || 'Sample Text', tx, el.y);
+        } else {
+          // Draw Vector Shape (RECTANGLE, CAPSULE, CIRCLE, STAR, DIAMOND, TRIANGLE, HEXAGON, SHIELD, RIBBON, LINE, IMAGE_SLOT, FRAME_BORDER)
+          drawVectorShapePath(ctx, el);
+
+          if (el.type !== 'LINE' && el.type !== 'FRAME_BORDER' && el.fillColor && el.fillColor !== 'transparent') {
+            ctx.fillStyle = el.fillColor;
+            ctx.fill();
+          }
+
+          if (el.borderWidth > 0) {
+            ctx.strokeStyle = el.borderColor || '#FFFFFF';
+            ctx.lineWidth = el.borderWidth;
+
+            if (el.borderStyle === 'DASHED') {
+              ctx.setLineDash([el.borderWidth * 3, el.borderWidth * 2]);
+            } else if (el.borderStyle === 'DOTTED') {
+              ctx.setLineDash([el.borderWidth, el.borderWidth]);
+            } else {
+              ctx.setLineDash([]);
+            }
+
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+
+          // Draw Dynamic Slot Labels, Icons, & Inside-Shape Text
+          if (
+            el.slotCategory === 'IMAGE_SLOT' ||
+            el.type === 'IMAGE_SLOT' ||
+            el.dynamicSlot === 'LOGO_BOX' ||
+            el.dynamicSlot === 'AVATAR_CIRCLE'
+          ) {
+            ctx.fillStyle =
+              el.fillColor === '#FFFFFF' || !el.fillColor ? '#0B0F17' : '#FFFFFF';
+            ctx.font = 'bold 16px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const label = el.dynamicSlot === 'AVATAR_CIRCLE' ? '👤 PHOTO' : '🖼️ IMAGE SLOT';
+            ctx.fillText(label, el.x + el.width / 2, el.y + (el.height || el.width) / 2);
+          } else if (el.slotCategory === 'TEXT_INPUT' || el.text) {
+            ctx.save();
+            // Clip text path to shape bounds so text never spills outside the circle or shape
+            drawVectorShapePath(ctx, el);
+            ctx.clip();
+
+            const fontFamily = el.fontFamily || 'Space Grotesk';
+            const fontWeight = el.fontWeight || 'bold';
+            const fontSize = el.fontSize || Math.min(24, Math.max(12, Math.floor((el.height || el.width) * 0.28)));
+
+            // High contrast contrast color if font color is default
+            ctx.fillStyle = el.fontColor || el.textColor || '#FFFFFF';
+            const isSerif = fontFamily === 'Playfair Display' || fontFamily === 'Cinzel';
+            const fallback = isSerif ? 'serif' : 'sans-serif';
+            ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", ${fallback}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const textVal = el.text || el.customLabel || el.name || 'Sample Text';
+            const cx = el.x + el.width / 2;
+            const cy = el.y + (el.height || el.width) / 2;
+
+            // Render text centered inside shape with max width limit
+            ctx.fillText(textVal, cx, cy, el.width * 0.82);
+            ctx.restore();
+          }
+        }
+
+        // Draw Selection Bounding Box & Resizing Handles ONLY if drawSelection is true and el.id === selectedId
+        if (drawSelection && el.id === selectedId) {
+          let boxX = el.x;
+          let boxY = el.y;
+          let boxW = el.width;
+          let boxH = el.height;
+
+          if (el.type === 'TEXT') {
+            const fontFamily = el.fontFamily || 'Space Grotesk';
+            const fontWeight = el.fontWeight || 'bold';
+            const fontSize = el.fontSize || 28;
+            const isSerif = fontFamily === 'Playfair Display' || fontFamily === 'Cinzel';
+            const fallback = isSerif ? 'serif' : 'sans-serif';
+            ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", ${fallback}`;
+            const metrics = ctx.measureText(el.text || 'Sample Text');
+            const actualTextW = Math.ceil(metrics.width);
+            boxW = Math.max(el.width, actualTextW);
+            boxH = Math.max(el.height, Math.ceil(fontSize * 1.25));
+
+            if (el.textAlign === 'center') {
+              const textCenter = el.x + (Math.max(el.width, actualTextW) / 2);
+              boxX = textCenter - boxW / 2;
+            } else if (el.textAlign === 'right') {
+              boxX = el.x + el.width - boxW;
+            }
+          }
+
+          const pad = 12;
+
+          ctx.strokeStyle = '#38BDF8';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 4]);
+          ctx.strokeRect(boxX - pad, boxY - pad, boxW + pad * 2, boxH + pad * 2);
+          ctx.setLineDash([]);
+
+          const handleSize = 14;
+          const halfH = handleSize / 2;
+          const corners = [
+            { x: boxX - pad - halfH, y: boxY - pad - halfH },
+            { x: boxX + boxW + pad - halfH, y: boxY - pad - halfH },
+            { x: boxX - pad - halfH, y: boxY + boxH + pad - halfH },
+            { x: boxX + boxW + pad - halfH, y: boxY + boxH + pad - halfH },
+          ];
+
+          corners.forEach((c) => {
+            ctx.fillStyle = '#38BDF8';
+            ctx.fillRect(c.x, c.y, handleSize, handleSize);
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(c.x, c.y, handleSize, handleSize);
+          });
+        }
+
+        ctx.restore();
+      });
+    },
+    [elements, selectedId, stageBgColor, fontsLoadedVersion]
+  );
+
+  // Render on interactive visible stage canvas
   const renderCanvaStage = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -218,152 +472,68 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
 
     canvas.width = 1080;
     canvas.height = 1080;
-    ctx.clearRect(0, 0, 1080, 1080);
+    renderCanvaStageToContext(ctx, showSelectionBox, stageBgColor);
+  }, [renderCanvaStageToContext, showSelectionBox, stageBgColor]);
 
-    if (stageBgColor === 'WHITE') {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, 1080, 1080);
-      ctx.strokeStyle = '#F1F5F9';
-      ctx.lineWidth = 1;
-      for (let g = 108; g < 1080; g += 108) {
-        ctx.beginPath();
-        ctx.moveTo(g, 0);
-        ctx.lineTo(g, 1080);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(0, g);
-        ctx.lineTo(1080, g);
-        ctx.stroke();
-      }
-    } else if (stageBgColor === 'DARK') {
-      ctx.fillStyle = '#0F172A';
-      ctx.fillRect(0, 0, 1080, 1080);
-    }
+  /**
+   * Generates a 100% clean 1080x1080 PNG data URL without ANY blue edit outlines or handles.
+   * Defaults to TRANSPARENT background so frames never bake an opaque white box.
+   */
+  const exportCleanPreviewDataUrl = useCallback((background = 'TRANSPARENT') => {
+    if (typeof document === 'undefined') return '';
+    const offscreen = document.createElement('canvas');
+    offscreen.width = 1080;
+    offscreen.height = 1080;
+    const ctx = offscreen.getContext('2d');
+    if (!ctx) return '';
+    renderCanvaStageToContext(ctx, false, background);
+    return offscreen.toDataURL('image/png');
+  }, [renderCanvaStageToContext]);
 
-    elements.forEach((el) => {
-      ctx.save();
-      const elH = el.type === 'TEXT' ? (el.fontSize || 24) + 6 : el.height;
-      const rotation = el.rotation || 0;
-      if (rotation) {
-        const cx = el.x + el.width / 2;
-        const cy = el.y + elH / 2;
-        ctx.translate(cx, cy);
-        ctx.rotate((rotation * Math.PI) / 180);
-        ctx.translate(-cx, -cy);
-      }
+  /**
+   * Centers the selected element on the 1080x1080 canvas stage.
+   * mode: 'BOTH' (horizontal & vertical - dead center), 'HORIZONTAL' (X only), 'VERTICAL' (Y only)
+   * Ensures element is perfectly aligned from top, bottom, left, and right.
+   */
+  const centerSelectedElement = useCallback((mode = 'BOTH') => {
+    if (!selectedId) return;
 
-      if (el.type === 'TEXT') {
-        const fontFamily = el.fontFamily || 'Space Grotesk';
-        const fontWeight = el.fontWeight || 'bold';
-        const fontSize = el.fontSize || 24;
-        ctx.fillStyle = el.fontColor || el.fillColor || '#0B0F17';
-        ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
-        ctx.textAlign = el.textAlign || 'left';
-        ctx.textBaseline = 'top';
-        const tx =
-          el.textAlign === 'center'
-            ? el.x + el.width / 2
-            : el.textAlign === 'right'
-              ? el.x + el.width
-              : el.x;
-        ctx.fillText(el.text || 'Sample Text', tx, el.y);
-      } else {
-        // Draw Vector Shape (RECTANGLE, CAPSULE, CIRCLE, STAR, DIAMOND, TRIANGLE, HEXAGON, SHIELD, RIBBON, LINE, IMAGE_SLOT, FRAME_BORDER)
-        drawVectorShapePath(ctx, el);
+    setElements((prev) =>
+      prev.map((el) => {
+        if (el.id !== selectedId) return el;
 
-        if (el.type !== 'LINE' && el.type !== 'FRAME_BORDER' && el.fillColor && el.fillColor !== 'transparent') {
-          ctx.fillStyle = el.fillColor;
-          ctx.fill();
+        let elW = el.width;
+        let elH = el.height;
+
+        if (el.type === 'TEXT') {
+          const currentText = el.text || el.customLabel || el.name || 'Sample Text';
+          const dims = measureCanvasText(
+            currentText,
+            el.fontSize || 28,
+            el.fontFamily || 'Space Grotesk',
+            el.fontWeight || 'bold',
+          );
+          elW = Math.max(el.width, dims.width);
+          elH = Math.max(el.height, dims.height);
         }
 
-        if (el.borderWidth > 0) {
-          ctx.strokeStyle = el.borderColor || '#FFFFFF';
-          ctx.lineWidth = el.borderWidth;
-
-          if (el.borderStyle === 'DASHED') {
-            ctx.setLineDash([el.borderWidth * 3, el.borderWidth * 2]);
-          } else if (el.borderStyle === 'DOTTED') {
-            ctx.setLineDash([el.borderWidth, el.borderWidth]);
-          } else {
-            ctx.setLineDash([]);
-          }
-
-          ctx.stroke();
-          ctx.setLineDash([]);
+        const updated = { ...el };
+        if (mode === 'BOTH' || mode === 'HORIZONTAL') {
+          // Upar, niche, right, left: X Center on 1080 canvas
+          updated.x = Math.round((1080 - elW) / 2);
+        }
+        if (mode === 'BOTH' || mode === 'VERTICAL') {
+          // Y Center on 1080 canvas
+          updated.y = Math.round((1080 - elH) / 2);
+        }
+        if (el.type === 'TEXT') {
+          updated.textAlign = 'center';
         }
 
-        // Draw Dynamic Slot Labels, Icons, & Inside-Shape Text
-        if (
-          el.slotCategory === 'IMAGE_SLOT' ||
-          el.type === 'IMAGE_SLOT' ||
-          el.dynamicSlot === 'LOGO_BOX' ||
-          el.dynamicSlot === 'AVATAR_CIRCLE'
-        ) {
-          ctx.fillStyle =
-            el.fillColor === '#FFFFFF' || !el.fillColor ? '#0B0F17' : '#FFFFFF';
-          ctx.font = 'bold 16px "Space Grotesk", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          const label = el.dynamicSlot === 'AVATAR_CIRCLE' ? '👤 PHOTO' : '🖼️ IMAGE SLOT';
-          ctx.fillText(label, el.x + el.width / 2, el.y + (el.height || el.width) / 2);
-        } else if (el.slotCategory === 'TEXT_INPUT' || el.text) {
-          ctx.save();
-          // Clip text path to shape bounds so text never spills outside the circle or shape
-          drawVectorShapePath(ctx, el);
-          ctx.clip();
-
-          const fontFamily = el.fontFamily || 'Space Grotesk';
-          const fontWeight = el.fontWeight || 'bold';
-          const fontSize = el.fontSize || Math.min(24, Math.max(12, Math.floor((el.height || el.width) * 0.28)));
-
-          // High contrast contrast color if font color is default
-          ctx.fillStyle = el.fontColor || el.textColor || '#FFFFFF';
-          ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-
-          const textVal = el.text || el.customLabel || el.name || 'Sample Text';
-          const cx = el.x + el.width / 2;
-          const cy = el.y + (el.height || el.width) / 2;
-
-          // Render text centered inside shape with max width limit
-          ctx.fillText(textVal, cx, cy, el.width * 0.82);
-          ctx.restore();
-        }
-      }
-
-      // Draw Selection Bounding Box & Resizing Handles (Padded 14px outward so it never overlaps shape stroke)
-      if (showSelectionBox && el.id === selectedId) {
-        const elH = el.type === 'TEXT' ? (el.fontSize || 24) + 6 : el.height;
-        const pad = 14;
-
-        ctx.strokeStyle = '#38BDF8';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 4]);
-        ctx.strokeRect(el.x - pad, el.y - pad, el.width + pad * 2, elH + pad * 2);
-        ctx.setLineDash([]);
-
-        const handleSize = 14;
-        const halfH = handleSize / 2;
-        const corners = [
-          { x: el.x - pad - halfH, y: el.y - pad - halfH },
-          { x: el.x + el.width + pad - halfH, y: el.y - pad - halfH },
-          { x: el.x - pad - halfH, y: el.y + elH + pad - halfH },
-          { x: el.x + el.width + pad - halfH, y: el.y + elH + pad - halfH },
-        ];
-
-        corners.forEach((c) => {
-          ctx.fillStyle = '#38BDF8';
-          ctx.fillRect(c.x, c.y, handleSize, handleSize);
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(c.x, c.y, handleSize, handleSize);
-        });
-      }
-
-      ctx.restore();
-    });
-  }, [elements, selectedId, stageBgColor, showSelectionBox]);
+        return updated;
+      })
+    );
+  }, [selectedId]);
 
   useEffect(() => {
     if (activeTab === 'canva') {
@@ -382,17 +552,35 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
     const clickY = (e.clientY - rect.top) * scale;
 
     if (selectedElement) {
-      const elH =
-        selectedElement.type === 'TEXT'
-          ? (selectedElement.fontSize || 24) + 6
-          : selectedElement.height;
+      let selX = selectedElement.x;
+      let selY = selectedElement.y;
+      let selW = selectedElement.width;
+      let selH = selectedElement.height;
+
+      if (selectedElement.type === 'TEXT') {
+        const dims = measureCanvasText(
+          selectedElement.text || 'Sample Text',
+          selectedElement.fontSize,
+          selectedElement.fontFamily,
+          selectedElement.fontWeight,
+        );
+        selW = Math.max(selectedElement.width, dims.width);
+        selH = Math.max(selectedElement.height, dims.height);
+        if (selectedElement.textAlign === 'center') {
+          selX = selectedElement.x + (Math.max(selectedElement.width, dims.width) / 2) - selW / 2;
+        } else if (selectedElement.textAlign === 'right') {
+          selX = selectedElement.x + selectedElement.width - selW;
+        }
+      }
+
       const hSize = 24;
+      const pad = 12;
 
       const corners = [
-        { handle: 'TL', x: selectedElement.x, y: selectedElement.y },
-        { handle: 'TR', x: selectedElement.x + selectedElement.width, y: selectedElement.y },
-        { handle: 'BL', x: selectedElement.x, y: selectedElement.y + elH },
-        { handle: 'BR', x: selectedElement.x + selectedElement.width, y: selectedElement.y + elH },
+        { handle: 'TL', x: selX - pad, y: selY - pad },
+        { handle: 'TR', x: selX + selW + pad, y: selY - pad },
+        { handle: 'BL', x: selX - pad, y: selY + selH + pad },
+        { handle: 'BR', x: selX + selW + pad, y: selY + selH + pad },
       ];
 
       const hitCorner = corners.find(
@@ -407,20 +595,35 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
           y: clickY,
           initialElX: selectedElement.x,
           initialElY: selectedElement.y,
-          initialWidth: selectedElement.width,
-          initialHeight: selectedElement.height,
+          initialWidth: selW,
+          initialHeight: selH,
+          initialFontSize: selectedElement.fontSize || 28,
         };
         return;
       }
     }
 
     const clickedEl = [...elements].reverse().find((el) => {
-      const h = el.type === 'TEXT' ? el.fontSize || 24 : el.height;
+      let elX = el.x;
+      let elW = el.width;
+      let elH = el.height;
+
+      if (el.type === 'TEXT') {
+        const dims = measureCanvasText(el.text || 'Sample Text', el.fontSize, el.fontFamily, el.fontWeight);
+        elW = Math.max(el.width, dims.width);
+        elH = Math.max(el.height, dims.height);
+        if (el.textAlign === 'center') {
+          elX = el.x + (Math.max(el.width, dims.width) / 2) - elW / 2;
+        } else if (el.textAlign === 'right') {
+          elX = el.x + el.width - elW;
+        }
+      }
+
       return (
-        clickX >= el.x &&
-        clickX <= el.x + el.width &&
-        clickY >= el.y &&
-        clickY <= el.y + h
+        clickX >= elX - 16 &&
+        clickX <= elX + elW + 16 &&
+        clickY >= el.y - 16 &&
+        clickY <= el.y + elH + 16
       );
     });
 
@@ -478,6 +681,19 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
 
       if (selectedElement.type === 'CIRCLE') {
         newH = newW;
+      }
+
+      if (selectedElement.type === 'TEXT') {
+        // Dragging corner handle scales the text size smoothly
+        const initialSize = dragStartRef.current.initialFontSize || selectedElement.fontSize || 28;
+        const initialW = dragStartRef.current.initialWidth || 100;
+        const scale = Math.max(0.2, newW / initialW);
+        const scaledSize = Math.max(12, Math.min(120, Math.round(initialSize * scale)));
+        updateSelectedElement({
+          fontSize: scaledSize,
+          ...(selectedElement.textAlign !== 'center' ? { x: newX, y: newY } : { y: newY }),
+        });
+        return;
       }
 
       updateSelectedElement({
@@ -574,16 +790,24 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
       newEl.borderStyle = 'SOLID';
       newEl.name = 'Full Canvas Frame Border';
     } else if (type === 'TEXT') {
-      newEl.width = 300;
-      newEl.height = 40;
-      newEl.fontSize = 24;
-      newEl.fontFamily = 'Space Grotesk';
+      const initialText = 'Custom Text Label';
+      const initialSize = 28;
+      const initialFont = 'Space Grotesk';
+      const dims = measureCanvasText(initialText, initialSize, initialFont, 'bold');
+      newEl.x = 240;
+      newEl.y = 500;
+      newEl.width = dims.width + 16;
+      newEl.height = dims.height;
+      newEl.fontSize = initialSize;
+      newEl.fontFamily = initialFont;
       newEl.fontWeight = 'bold';
-      newEl.fontColor = '#0B0F17';
-      newEl.textAlign = 'left';
-      newEl.text = 'Custom Text Label';
-      newEl.name = 'Custom Text Label';
-      newEl.customLabel = 'Custom Text Label';
+      newEl.fontColor = '#FFFFFF';
+      newEl.textColor = '#FFFFFF';
+      newEl.fillColor = '#FFFFFF';
+      newEl.textAlign = 'center';
+      newEl.text = initialText;
+      newEl.name = initialText;
+      newEl.customLabel = initialText;
       newEl.fieldKey = 'custom_text_label';
       newEl.slotCategory = 'TEXT_INPUT';
       newEl.dynamicSlot = 'CUSTOM_FIELD';
@@ -608,7 +832,62 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
             updated.customLabel = val;
             updated.fieldKey = val.toLowerCase().replace(/[^a-z0-9]/g, '_');
           }
+          if (props.fontColor !== undefined) {
+            updated.fontColor = props.fontColor;
+            updated.textColor = props.fontColor;
+            if (updated.type === 'TEXT') {
+              updated.fillColor = props.fontColor;
+            }
+          }
+          if (props.fontSize !== undefined) {
+            const sizeNum = Number(props.fontSize);
+            updated.fontSize = sizeNum;
+            if (updated.type === 'TEXT') {
+              updated.height = Math.max(24, sizeNum + 10);
+            }
+          }
+          if (props.fontFamily !== undefined) {
+            updated.fontFamily = props.fontFamily;
+            // Preload specific font and immediately force canvas redraw when font file arrives
+            if (typeof document !== 'undefined' && document.fonts?.load) {
+              const weight = props.fontWeight || el.fontWeight || 'bold';
+              const size = props.fontSize || el.fontSize || 28;
+              document.fonts.load(`${weight} ${size}px "${props.fontFamily}"`).then(() => {
+                setFontsLoadedVersion((v) => v + 1);
+              }).catch(() => {});
+            }
+          }
+          if (props.fontWeight !== undefined) {
+            updated.fontWeight = props.fontWeight;
+            if (typeof document !== 'undefined' && document.fonts?.load) {
+              const family = props.fontFamily || el.fontFamily || 'Space Grotesk';
+              const size = props.fontSize || el.fontSize || 28;
+              document.fonts.load(`${props.fontWeight} ${size}px "${family}"`).then(() => {
+                setFontsLoadedVersion((v) => v + 1);
+              }).catch(() => {});
+            }
+          }
           if (updated.type === 'TEXT') {
+            const currentText = updated.text || updated.customLabel || updated.name || 'Sample Text';
+            const currentSize = Number(updated.fontSize) || 28;
+            const currentFont = updated.fontFamily || 'Space Grotesk';
+            const currentWeight = updated.fontWeight || 'bold';
+
+            const dims = measureCanvasText(currentText, currentSize, currentFont, currentWeight);
+            const autoW = dims.width + 16;
+            const autoH = dims.height;
+
+            if (updated.textAlign === 'center' && el.width !== autoW && !props.width && !props.x) {
+              const prevCenter = updated.x + el.width / 2;
+              updated.x = Math.round(prevCenter - autoW / 2);
+            }
+            if (!props.width) {
+              updated.width = Math.max(40, autoW);
+            }
+            if (!props.height) {
+              updated.height = Math.max(24, autoH);
+            }
+
             updated.slotCategory = 'TEXT_INPUT';
             if (!updated.dynamicSlot || updated.dynamicSlot === 'NONE') {
               updated.dynamicSlot = 'CUSTOM_FIELD';
@@ -675,5 +954,7 @@ export const useFrameCanvasEngine = (activeTab = 'canva') => {
     clearAllElements,
     bringForward,
     sendBackward,
+    centerSelectedElement,
+    exportCleanPreviewDataUrl,
   };
 };

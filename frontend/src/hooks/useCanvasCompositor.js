@@ -254,36 +254,78 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         ctx.fillRect(0, 0, 1080, 1080);
       }
 
-      // 2. LAYER 2: Transparent PNG Frame Overlay & Static Shapes Fallback
-      if (frameOverlayImg) {
-        ctx.drawImage(frameOverlayImg, 0, 0, 1080, 1080);
-      } else {
-        // Fallback: Render static vector shapes directly onto canvas if PNG overlay image is missing
-        const staticShapes = frameConfigElements?.filter(
+      // 2. LAYER 2: Transparent PNG Frame Overlay & Static Vector Shapes
+      // A frame is strictly an OVERLAY on top of Layer 1 (Base Graphic). It must NEVER overwrite or blank out Layer 1.
+      const isOpaquePreviewUrl =
+        selectedFrame?.overlayPngUrl &&
+        selectedFrame?.previewUrl &&
+        selectedFrame.overlayPngUrl === selectedFrame.previewUrl &&
+        !selectedFrame.overlayPngUrl.startsWith('data:image/svg+xml');
+
+      const staticShapes =
+        frameConfigElements?.filter(
           (el) =>
-            el.slotCategory === 'STATIC_SHAPE' ||
-            el.dynamicSlot === 'NONE' ||
-            (el.type !== 'TEXT' &&
-              el.type !== 'IMAGE_SLOT' &&
-              el.dynamicSlot !== 'AVATAR_CIRCLE' &&
-              el.dynamicSlot !== 'LOGO_BOX' &&
-              el.dynamicSlot !== 'CUSTOM_IMAGE')
+            el.type !== 'TEXT' &&
+            el.type !== 'DYNAMIC_TEXT' &&
+            el.slotCategory !== 'TEXT_INPUT' &&
+            el.slotCategory !== 'IMAGE_SLOT' &&
+            el.slotCategory !== 'DYNAMIC_IMAGE' &&
+            el.type !== 'IMAGE_SLOT' &&
+            el.type !== 'IMAGE' &&
+            el.dynamicSlot !== 'AVATAR_CIRCLE' &&
+            el.dynamicSlot !== 'LOGO_BOX' &&
+            el.dynamicSlot !== 'CUSTOM_IMAGE' &&
+            el.dynamicSlot !== 'MANUAL_INPUT'
         ) || [];
 
+      // Render static shapes with vector paths whenever defined in frame config
+      if (staticShapes.length > 0) {
         staticShapes.forEach((shape) => {
           ctx.save();
+          const rotation = shape.rotation || 0;
+          if (rotation) {
+            const cx = shape.x + shape.width / 2;
+            const cy = shape.y + (shape.height || shape.width) / 2;
+            ctx.translate(cx, cy);
+            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.translate(-cx, -cy);
+          }
+
           drawVectorShapePath(ctx, shape);
-          if (shape.fillColor && shape.fillColor !== 'transparent') {
+
+          // Fill shape unless it's a line or frame border
+          if (
+            shape.type !== 'LINE' &&
+            shape.type !== 'FRAME_BORDER' &&
+            shape.fillColor &&
+            shape.fillColor !== 'transparent'
+          ) {
             ctx.fillStyle = shape.fillColor;
             ctx.fill();
           }
-          if (shape.borderWidth > 0) {
+
+          // Stroke borders
+          if (shape.borderWidth > 0 || shape.type === 'FRAME_BORDER') {
             ctx.strokeStyle = shape.borderColor || '#EAB308';
-            ctx.lineWidth = shape.borderWidth;
+            ctx.lineWidth = shape.borderWidth || (shape.type === 'FRAME_BORDER' ? 8 : 2);
+
+            if (shape.borderStyle === 'DASHED') {
+              ctx.setLineDash([ctx.lineWidth * 3, ctx.lineWidth * 2]);
+            } else if (shape.borderStyle === 'DOTTED') {
+              ctx.setLineDash([ctx.lineWidth, ctx.lineWidth]);
+            } else {
+              ctx.setLineDash([]);
+            }
+
             ctx.stroke();
+            ctx.setLineDash([]);
           }
+
           ctx.restore();
         });
+      } else if (frameOverlayImg && !isOpaquePreviewUrl) {
+        // Only draw raster/SVG overlay if no vector static shapes are drawn and it's NOT an opaque preview image
+        ctx.drawImage(frameOverlayImg, 0, 0, 1080, 1080);
       }
 
       // 3. LAYER 3: Render All Configured Image Slots (Logos, Avatars, Image Slots)
@@ -538,7 +580,9 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
             }
 
             ctx.fillStyle = textColor;
-            ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
+            const isSerif = fontFamily === 'Playfair Display' || fontFamily === 'Cinzel';
+            const fallback = isSerif ? 'serif' : 'sans-serif';
+            ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", ${fallback}`;
 
             if (isShape) {
               ctx.textAlign = 'center';

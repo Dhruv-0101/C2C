@@ -2,6 +2,7 @@ import { prisma } from '../../config/database.js';
 import {
   DEFAULT_VAULT_SORT_BY,
   DEFAULT_VAULT_SORT_ORDER,
+  VAULT_ALLOWED_SORT_FIELDS,
 } from './vault.constants.js';
 
 /**
@@ -53,6 +54,11 @@ export async function findPaginatedByUserId(
 ) {
   const where = { userId };
 
+  const safeSkip = typeof skip === 'number' && !isNaN(skip) && skip >= 0 ? skip : 0;
+  const safeTake = typeof take === 'number' && !isNaN(take) && take > 0 ? take : 8;
+  const safeSortBy = VAULT_ALLOWED_SORT_FIELDS.includes(sortBy) ? sortBy : DEFAULT_VAULT_SORT_BY;
+  const safeSortOrder = sortOrder === 'asc' ? 'asc' : DEFAULT_VAULT_SORT_ORDER;
+
   if (search && search.trim()) {
     const searchPattern = search.trim();
     where.post = {
@@ -69,10 +75,10 @@ export async function findPaginatedByUserId(
   const [vaultItems, totalCount] = await prisma.$transaction([
     prisma.vaultItem.findMany({
       where,
-      skip,
-      take,
+      skip: safeSkip,
+      take: safeTake,
       include: VAULT_INCLUDE,
-      orderBy: { [sortBy]: sortOrder },
+      orderBy: { [safeSortBy]: safeSortOrder },
     }),
     prisma.vaultItem.count({ where }),
   ]);

@@ -122,6 +122,11 @@ export const initCronDispatcher = () => {
     }
   });
 
+  // Handle clock-drift or sleep/wake missed executions gracefully without noisy false-alarm warnings
+  cronScheduledTask.on('execution:missed', () => {
+    logger.debug('⏰ [CronDispatcher] Missed scheduled tick (system standby/wake detected). Overdue posts will be processed on next cycle.');
+  });
+
   return cronScheduledTask;
 };
 

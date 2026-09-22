@@ -249,15 +249,15 @@ export const InteractiveWorkflowDemo = () => {
         </div>
 
         {/* Right Column: Simulated Social Post Canvas Container */}
-        <div className="lg:col-span-6 flex justify-center">
-          <div className="w-full max-w-xs rounded-2xl bg-[#0B0F17] border border-[#2C384E] p-3 shadow-2xl space-y-2.5">
+        <div className="lg:col-span-6 flex justify-center post-canvas-preview">
+          <div className="w-full max-w-xs rounded-2xl bg-[#0B0F17] border border-[#2C384E] p-3 shadow-2xl space-y-2.5 post-device-shell">
             {/* Social Header */}
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-2 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-[10px]">
                   {businessName.charAt(0) || 'B'}
                 </div>
-                <span className="font-bold text-white truncate max-w-[150px]">
+                <span className="font-bold text-white preserve-white-text truncate max-w-[150px]" style={{ color: '#FFFFFF' }}>
                   {businessName || 'Your Business Name'}
                 </span>
               </div>
@@ -285,13 +285,13 @@ export const InteractiveWorkflowDemo = () => {
                 />
 
                 <div className="relative z-10 text-right">
-                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-black/80 text-amber-300 text-[10px] font-extrabold border border-amber-400/50">
+                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-black/80 text-amber-300 preserve-amber-text text-[10px] font-extrabold border border-amber-400/50" style={{ color: '#FCD34D' }}>
                     ✨ Special Offer
                   </span>
                 </div>
 
                 <div className="relative z-10 text-center space-y-1 my-auto px-2">
-                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white drop-shadow-md leading-snug">
+                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
                     {headline || 'Headline Here'}
                   </h4>
                 </div>
@@ -303,8 +303,8 @@ export const InteractiveWorkflowDemo = () => {
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
                     <div className="text-left text-[11px] overflow-hidden">
-                      <p className="font-bold text-white truncate max-w-[120px]">{businessName}</p>
-                      <p className="text-[9px] text-amber-300 font-mono font-bold">📞 {phone}</p>
+                      <p className="font-bold text-white preserve-white-text truncate max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</p>
+                      <p className="text-[9px] text-amber-300 preserve-amber-text font-mono font-bold" style={{ color: '#FCD34D' }}>📞 {phone}</p>
                     </div>
                   </div>
                 </div>
@@ -323,14 +323,14 @@ export const InteractiveWorkflowDemo = () => {
 
                 {/* Top Banner */}
                 <div className="relative z-10 p-2 bg-slate-950/90 border-b border-teal-400/80 text-center">
-                  <span className="text-[10px] font-extrabold text-teal-300 uppercase tracking-wider">
+                  <span className="text-[10px] font-extrabold text-teal-300 preserve-teal-text uppercase tracking-wider" style={{ color: '#5EEAD4' }}>
                     ⚡ {businessName || 'Business Name'}
                   </span>
                 </div>
 
                 {/* Center Headline */}
                 <div className="relative z-10 text-center space-y-1 my-auto px-3">
-                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white drop-shadow-md leading-snug">
+                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
                     {headline || 'Headline Here'}
                   </h4>
                 </div>
@@ -341,9 +341,9 @@ export const InteractiveWorkflowDemo = () => {
                     <div className="w-7 h-7 rounded-full border border-teal-400 overflow-hidden shrink-0">
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
-                    <span className="font-bold text-white truncate max-w-[120px]">{businessName}</span>
+                    <span className="font-bold text-white preserve-white-text truncate max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</span>
                   </div>
-                  <span className="font-mono text-[9px] font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/30">
+                  <span className="font-mono text-[9px] font-bold text-teal-300 preserve-teal-text bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/30" style={{ color: '#5EEAD4' }}>
                     📞 {phone}
                   </span>
                 </div>
@@ -362,14 +362,14 @@ export const InteractiveWorkflowDemo = () => {
 
                 {/* Top Corner Badge */}
                 <div className="relative z-10 flex justify-between items-center">
-                  <div className="px-2.5 py-0.5 rounded-full bg-indigo-950/80 border border-indigo-300 text-indigo-300 text-[10px] font-bold shadow-md">
+                  <div className="px-2.5 py-0.5 rounded-full bg-indigo-950/80 border border-indigo-300 text-indigo-300 preserve-indigo-text text-[10px] font-bold shadow-md" style={{ color: '#A5B4FC' }}>
                     👑 Premium Promo
                   </div>
                 </div>
 
                 {/* Middle Headline */}
                 <div className="relative z-10 text-center space-y-1 my-auto px-2">
-                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white drop-shadow-md leading-snug">
+                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
                     {headline || 'Headline Here'}
                   </h4>
                 </div>
@@ -381,8 +381,8 @@ export const InteractiveWorkflowDemo = () => {
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
                     <div className="text-left text-[11px]">
-                      <p className="font-bold text-white truncate max-w-[120px]">{businessName}</p>
-                      <p className="text-[9px] font-mono font-bold text-indigo-300">📞 {phone}</p>
+                      <p className="font-bold text-white preserve-white-text truncate max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</p>
+                      <p className="text-[9px] font-mono font-bold text-indigo-300 preserve-indigo-text" style={{ color: '#A5B4FC' }}>📞 {phone}</p>
                     </div>
                   </div>
                 </div>
@@ -390,7 +390,7 @@ export const InteractiveWorkflowDemo = () => {
             )}
 
             {/* Social Interactive Footer */}
-            <div className="flex items-center justify-between text-slate-400 pt-0.5 text-[11px] px-1">
+            <div className="flex items-center justify-between text-slate-400 pt-0.5 text-[11px] px-1 post-social-footer">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setLiked(!liked)}

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @layer base {
   :root {
     --color-primary: 239 84% 67%;
@@ -276,5 +278,95 @@ input:-webkit-autofill:active {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(245, 158, 11, 0.8);
+}
+
+/* ==============================================================================
+ * 🖼️ IMAGE SCRIM OVERLAYS (LIGHT MODE IMMUNITY)
+ * ==============================================================================
+ * Overlays sitting directly on top of photos/banners must ALWAYS maintain their
+ * dark translucent scrim gradient so images and countdown badges are 100% visible
+ * in both Light and Dark themes.
+ * ============================================================================== */
+.image-scrim-overlay,
+html.light .image-scrim-overlay,
+html.dark .image-scrim-overlay {
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.15) 50%, transparent 100%) !important;
+  background-image: linear-gradient(to top, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.15) 50%, transparent 100%) !important;
+  background-color: transparent !important;
+  pointer-events: none !important;
+}
+
+/* ==============================================================================
+ * 🖼️ GRAPHIC CANVAS & POST PREVIEW PRESERVATION (LIGHT MODE IMMUNITY)
+ * ==============================================================================
+ * Social media posts and graphic canvas elements must ALWAYS maintain their
+ * original artwork contrast, dark frame overlays, and white typography regardless
+ * of the global UI theme (Dark or Light mode).
+ * ============================================================================== */
+html.light .post-canvas-preview .post-device-shell {
+  background-color: #0B0F17 !important;
+  border-color: #2C384E !important;
+}
+
+html.light .post-canvas-preview .post-device-shell .text-white,
+html.light .post-canvas-preview .post-device-shell span.text-white,
+html.light .post-canvas-preview .post-device-shell p.text-white,
+html.light .post-canvas-preview .post-device-shell h4 {
+  color: #FFFFFF !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"] h4,
+html.light .post-canvas-preview [class*="aspect-square"] .text-white,
+html.light .post-canvas-preview [class*="aspect-square"] p.text-white,
+html.light .post-canvas-preview [class*="aspect-square"] span.text-white,
+html.light .post-canvas-preview .preserve-white-text {
+  color: #FFFFFF !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"] .text-amber-300,
+html.light .post-canvas-preview [class*="aspect-square"] span.text-amber-300,
+html.light .post-canvas-preview [class*="aspect-square"] p.text-amber-300,
+html.light .post-canvas-preview .preserve-amber-text {
+  color: #FCD34D !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"] .text-teal-300,
+html.light .post-canvas-preview [class*="aspect-square"] span.text-teal-300,
+html.light .post-canvas-preview .preserve-teal-text {
+  color: #5EEAD4 !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"] .text-indigo-300,
+html.light .post-canvas-preview [class*="aspect-square"] span.text-indigo-300,
+html.light .post-canvas-preview [class*="aspect-square"] p.text-indigo-300,
+html.light .post-canvas-preview .preserve-indigo-text {
+  color: #A5B4FC !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"],
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-slate-950"],
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-slate-900"],
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-black"],
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-indigo-950"] {
+  background-color: #020617 !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-slate-900/90"],
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-slate-950/90"] {
+  background-color: rgba(2, 6, 23, 0.92) !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-indigo-950/80"] {
+  background-color: rgba(30, 27, 75, 0.85) !important;
+}
+
+html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-black/80"] {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+html.light .post-canvas-preview .post-social-footer,
+html.light .post-canvas-preview .post-social-footer span,
+html.light .post-canvas-preview .post-social-footer button {
+  color: #94A3B8 !important;
 }
 

@@ -27,12 +27,12 @@ import {
  * @returns {Promise<{ data: Array<Object>, meta: Object }>}
  */
 export async function getVaultItems(userId, queryParams = {}) {
-  const { page, limit, skip, take, search, sortBy, sortOrder } = parsePaginationParams(
-    queryParams,
-    DEFAULT_VAULT_SORT_BY,
-    DEFAULT_VAULT_SORT_ORDER,
-    VAULT_ALLOWED_SORT_FIELDS
-  );
+  const { page, limit, skip, take } = parsePaginationParams(queryParams, 8);
+  const search = queryParams.search ? String(queryParams.search).trim() : '';
+  const sortBy = VAULT_ALLOWED_SORT_FIELDS.includes(queryParams.sortBy)
+    ? queryParams.sortBy
+    : DEFAULT_VAULT_SORT_BY;
+  const sortOrder = queryParams.sortOrder === 'asc' ? 'asc' : DEFAULT_VAULT_SORT_ORDER;
 
   const { vaultItems, totalCount } = await vaultRepository.findPaginatedByUserId(userId, {
     skip,

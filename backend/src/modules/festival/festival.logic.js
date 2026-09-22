@@ -20,13 +20,17 @@ function slugify(text) {
  */
 export async function getFestivals(queryParams = {}, includeInactive = false) {
   const params = typeof queryParams === 'object' && queryParams !== null ? queryParams : { year: queryParams };
-  const pagination = parsePaginationParams(params);
+  const pagination = parsePaginationParams(params, 100, 100);
   const year = params.year;
   const isInactive = params.includeInactive !== undefined ? Boolean(params.includeInactive) : includeInactive;
+  const startDate = params.startDate;
+  const endDate = params.endDate;
 
   const { festivals, totalCount } = await festivalRepository.findPaginatedFestivals({
     ...pagination,
     year,
+    startDate,
+    endDate,
     includeInactive: isInactive,
   });
 

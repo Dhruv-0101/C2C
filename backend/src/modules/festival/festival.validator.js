@@ -18,6 +18,8 @@ export const getFestivalsQuerySchema = z.object({
       .enum(['true', 'false', '1', '0'])
       .optional()
       .transform((val) => val === 'true' || val === '1'),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
   }),
 });
 

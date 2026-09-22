@@ -48,6 +48,8 @@ export const PostStudioContainer = () => {
   const isEditingScheduled = Boolean(location.state?.isEditingScheduled);
   const scheduledPostId = location.state?.scheduledPostId;
   const templateIdParam = searchParams.get("templateId");
+  const festivalIdParam = searchParams.get("festivalId") || location.state?.festivalId || "";
+  const initialBaseImage = location.state?.customBaseImage || null;
 
   // Wizard Active Step State (1: Template, 2: Frame, 3: Details, 4: Export)
   const [currentStep, setCurrentStep] = useState(isEditingScheduled ? 3 : 1);
@@ -61,7 +63,7 @@ export const PostStudioContainer = () => {
     templateIdParam ||
     "",
   );
-  const [customBaseImage, setCustomBaseImage] = useState(null);
+  const [customBaseImage, setCustomBaseImage] = useState(initialBaseImage);
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
 
@@ -71,7 +73,7 @@ export const PostStudioContainer = () => {
       id: "slide-1",
       title: "Main Post Headline",
       text: "Enter your post text or caption explanation here.",
-      customBaseImage: null,
+      customBaseImage: initialBaseImage,
       selectedFrame: null,
     },
   ]);
@@ -94,7 +96,7 @@ export const PostStudioContainer = () => {
     if (slides.length <= 1) return;
     setSlides((prev) => prev.filter((_, idx) => idx !== indexToRemove));
     if (activeSlideIndex >= indexToRemove && activeSlideIndex > 0) {
-      setActiveSlideIndex(activeSlideIndex - 1);
+      setActiveSlideIndex((prev) => prev - 1);
     }
   };
 
@@ -131,7 +133,17 @@ export const PostStudioContainer = () => {
 
   // Template Category & Festival Filter States
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedFestival, setSelectedFestival] = useState("");
+  const [selectedFestival, setSelectedFestival] = useState(festivalIdParam);
+
+  // Sync incoming router state (e.g. from CelebrationWelcomeModal)
+  useEffect(() => {
+    if (festivalIdParam && festivalIdParam !== selectedFestival) {
+      setSelectedFestival(festivalIdParam);
+    }
+    if (location.state?.customBaseImage && !customBaseImage) {
+      setCustomBaseImage(location.state.customBaseImage);
+    }
+  }, [festivalIdParam, location.state]);
 
   // Template Search & Central Pagination State
   const [templatePage, setTemplatePage] = useState(1);

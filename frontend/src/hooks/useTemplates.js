@@ -30,10 +30,10 @@ export function useTemplates(params = {}, queryOptions = {}) {
  * @param {Object} [queryOptions={}] - Additional TanStack Query options
  * @returns {Object} `{ categories, isLoading, error, refetch, ... }`
  */
-export function useTemplateCategories(queryOptions = {}) {
+export function useTemplateCategories(params = { limit: 100 }, queryOptions = {}) {
   const result = useQuery({
     queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES,
-    queryFn: () => templateApi.getTemplateCategories(),
+    queryFn: () => templateApi.getTemplateCategories(params),
     staleTime: 5 * 60 * 1000,
     ...queryOptions,
   });

@@ -131,6 +131,11 @@ export const initAnalyticsCron = (cronExpression = '*/15 * * * *') => {
     }
   });
 
+  // Handle clock-drift or sleep/wake missed executions gracefully without noisy false-alarm warnings
+  analyticsCronTask.on('execution:missed', () => {
+    logger.debug('⏰ [AnalyticsCron] Missed scheduled tick (system standby/wake detected). Next cycle will sync automatically.');
+  });
+
   return analyticsCronTask;
 };
 

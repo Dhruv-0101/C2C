@@ -1,17 +1,19 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { billingApi } from '../services/billing.api';
+import { useAuth } from './useAuth';
 
 export const QUERY_KEYS = {
   SUBSCRIPTION: ['subscription', 'status'],
 };
 
 export const useSubscription = () => {
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [successData, setSuccessData] = useState(null);
 
-  // Fetch live subscription status & post quota
+  // Fetch live subscription status & post quota only if user is authenticated
   const {
     data: subscription,
     isLoading,
@@ -20,6 +22,7 @@ export const useSubscription = () => {
   } = useQuery({
     queryKey: QUERY_KEYS.SUBSCRIPTION,
     queryFn: billingApi.getStatus,
+    enabled: Boolean(isAuthenticated),
     staleTime: 1000 * 60 * 2, // 2 minutes
     refetchOnWindowFocus: true,
   });

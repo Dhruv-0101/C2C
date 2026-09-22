@@ -20,6 +20,8 @@ export async function findPaginatedFestivals({
   take = 10,
   search,
   year,
+  startDate,
+  endDate,
   includeInactive = false,
   sortBy = DEFAULT_FESTIVAL_SORT_BY,
   sortOrder = DEFAULT_FESTIVAL_SORT_ORDER,
@@ -35,6 +37,14 @@ export async function findPaginatedFestivals({
     where.date = {
       gte: startOfYear,
       lte: endOfYear,
+    };
+  }
+
+  if (startDate || endDate) {
+    where.date = {
+      ...(where.date || {}),
+      ...(startDate ? { gte: new Date(startDate) } : {}),
+      ...(endDate ? { lte: new Date(endDate) } : {}),
     };
   }
 

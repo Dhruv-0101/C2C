@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FolderKanban,
@@ -14,6 +14,7 @@ import {
   Sparkles,
   Share2,
   Maximize2,
+  Layers,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -72,7 +73,7 @@ export const YourPostsView = ({
   }, [posts, activeTab, searchQuery]);
 
   // Filter scheduled posts based on search
-  const filteredScheduledPosts = useMemo(() => {
+  const filteredScheduled = useMemo(() => {
     if (!searchQuery.trim()) return scheduledPosts;
     const q = searchQuery.toLowerCase();
     return scheduledPosts.filter(
@@ -81,6 +82,7 @@ export const YourPostsView = ({
         s.post?.template?.title?.toLowerCase().includes(q)
     );
   }, [scheduledPosts, searchQuery]);
+  const filteredScheduledPosts = filteredScheduled;
 
   const publishedCount = posts.filter((p) => p.status === "PUBLISHED").length;
   const scheduledCount = scheduledPosts.length;

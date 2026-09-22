@@ -105,7 +105,7 @@ export const WelcomeSplashPage = () => {
           <ScrollReveal animation="fade-up" delay={200}>
             <p className="text-slate-300 text-base sm:text-xl max-w-2xl mx-auto leading-relaxed font-medium">
               Turn your business offers, festival greetings, and promotions into
-              professional, on-brand social media graphics with instant
+              professional, on-brand social media post with instant
               multi-platform scheduling.
             </p>
           </ScrollReveal>

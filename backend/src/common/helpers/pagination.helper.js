@@ -34,8 +34,8 @@ export const paginationQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 10))
-    .pipe(z.number().int().positive("Limit must be a positive integer")),
+    .transform((val) => (val ? parseInt(val, 10) : undefined))
+    .pipe(z.number().int().positive("Limit must be a positive integer").optional()),
   search: z.string().trim().optional(),
   sortBy: z.string().trim().optional(),
   sortOrder: z
@@ -101,16 +101,27 @@ export function parsePaginationParams(
   // Math.max(1, 10) ➔ 10
   // Math.min(100, 10) ➔ 10
   // Final limit = 10
-  const limit = Math.min(
-    maxLimit,
-    Math.max(1, parseInt(query.limit, 10) || defaultLimit),
-  );
+
+  // Robust defensive guards: coerce defaultLimit & maxLimit to valid positive numbers
+  const safeDefaultLimit =
+    typeof defaultLimit === 'number' && !isNaN(defaultLimit) && defaultLimit > 0
+      ? defaultLimit
+      : 10;
+  const safeMaxLimit =
+    typeof maxLimit === 'number' && !isNaN(maxLimit) && maxLimit > 0
+      ? maxLimit
+      : 100;
+
+  const parsedLimit = parseInt(query.limit, 10);
+  const rawLimit = !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : safeDefaultLimit;
+  const limit = Math.min(safeMaxLimit, Math.max(1, rawLimit));
+
   const skip = (page - 1) * limit;
   const take = limit;
 
   const search = query.search ? String(query.search).trim() : undefined;
   const sortBy = query.sortBy ? String(query.sortBy).trim() : undefined;
-  const sortOrder = query.sortOrder === "desc" ? "desc" : "asc";
+  const sortOrder = query.sortOrder === 'desc' ? 'desc' : 'asc';
 
   return {
     page,

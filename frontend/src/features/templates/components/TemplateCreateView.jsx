@@ -34,33 +34,37 @@ export const TemplateCreateView = ({
   festivals = [],
   isUploading = false,
 }) => {
-  // Category Pagination (5 per page) & Search State inside Create Screen
+  // Category Pagination (8 per page) & Search State inside Create Screen
   const [catSearch, setCatSearch] = useState("");
   const [catPage, setCatPage] = useState(1);
-  const CAT_PER_PAGE = 5;
+  const CAT_PER_PAGE = 8;
 
-  const filteredCategories = categoriesList.filter((cat) =>
-    cat.name.toLowerCase().includes(catSearch.toLowerCase())
+  const filteredCategories = (categoriesList || []).filter((cat) =>
+    (cat?.name || "").toLowerCase().includes(catSearch.toLowerCase())
   );
   const catTotalPages = Math.ceil(filteredCategories.length / CAT_PER_PAGE) || 1;
   const paginatedCategories = filteredCategories.slice(
     (catPage - 1) * CAT_PER_PAGE,
     catPage * CAT_PER_PAGE
   );
+  const selectedCategoryObj = (categoriesList || []).find(
+    (c) => (formData.templateCategoryId && c.id === formData.templateCategoryId) || c.name === formData.category
+  );
 
-  // Festival Pagination (5 per page) & Search State inside Create Screen
+  // Festival Pagination (8 per page) & Search State inside Create Screen
   const [festSearch, setFestSearch] = useState("");
   const [festPage, setFestPage] = useState(1);
-  const FEST_PER_PAGE = 5;
+  const FEST_PER_PAGE = 8;
 
-  const filteredFestivals = festivals.filter((f) =>
-    f.name.toLowerCase().includes(festSearch.toLowerCase())
+  const filteredFestivals = (festivals || []).filter((f) =>
+    (f?.name || "").toLowerCase().includes(festSearch.toLowerCase())
   );
   const festTotalPages = Math.ceil(filteredFestivals.length / FEST_PER_PAGE) || 1;
   const paginatedFestivals = filteredFestivals.slice(
     (festPage - 1) * FEST_PER_PAGE,
     festPage * FEST_PER_PAGE
   );
+  const selectedFestivalObj = (festivals || []).find((f) => f.id === formData.festivalId);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in">
@@ -156,11 +160,47 @@ export const TemplateCreateView = ({
               </div>
 
               <div className="space-y-2.5 p-4 rounded-2xl bg-[#0B0F17]/80 border border-[#2C384E]">
+                {/* Active Category Selection Banner */}
+                {selectedCategoryObj && formData.category !== "NEW" && (
+                  <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-amber-400" />
+                      <span>
+                        Selected Category: <strong className="text-white">{selectedCategoryObj.icon || "🎨"} {selectedCategoryObj.name}</strong>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, category: "", templateCategoryId: "" })}
+                      className="text-xs text-rose-400 hover:text-rose-300 font-bold ml-2 underline cursor-pointer"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                )}
+                {formData.category === "NEW" && (
+                  <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <span>
+                        Creating New Custom Category: <strong className="text-white">{formData.newCategoryName || "(enter name below)"}</strong>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, category: "", templateCategoryId: "", newCategoryName: "" })}
+                      className="text-xs text-rose-400 hover:text-rose-300 font-bold ml-2 underline cursor-pointer"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <FolderKanban className="w-4 h-4 text-amber-400" />
                     <label className="text-xs font-bold text-white uppercase tracking-wider">
-                      Categories Navigation (5 per page)
+                      Categories Navigation (8 per page)
                     </label>
                     <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                       Page {catPage} of {catTotalPages}
@@ -178,7 +218,7 @@ export const TemplateCreateView = ({
                           setCatSearch(e.target.value);
                           setCatPage(1);
                         }}
-                        className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-40"
+                        className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-44"
                       />
                     </div>
 
@@ -219,6 +259,12 @@ export const TemplateCreateView = ({
                     <span>+ Create New Category</span>
                     <span className="text-[9px] bg-amber-400 text-slate-950 px-1 rounded font-black uppercase">NEW</span>
                   </button>
+
+                  {filteredCategories.length === 0 && catSearch && (
+                    <span className="text-xs text-slate-400 italic px-2">
+                      No categories matching "{catSearch}"
+                    </span>
+                  )}
 
                   {paginatedCategories.map((cat) => {
                     const isSelected = (formData.templateCategoryId && formData.templateCategoryId === cat.id) || formData.category === cat.name;
@@ -271,11 +317,39 @@ export const TemplateCreateView = ({
               </div>
 
               <div className="space-y-2.5 p-4 rounded-2xl bg-[#0B0F17]/80 border border-[#2C384E]">
+                {/* Active Selection Banner */}
+                {selectedFestivalObj && (
+                  <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400" />
+                      <span>
+                        Selected Festival: <strong className="text-white">{selectedFestivalObj.name}</strong>
+                      </span>
+                      {selectedFestivalObj.date && (
+                        <span className="text-[10px] text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700">
+                          {new Date(selectedFestivalObj.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, festivalId: "" })}
+                      className="text-xs text-rose-400 hover:text-rose-300 font-bold ml-2 underline cursor-pointer"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-emerald-400" />
                     <label className="text-xs font-bold text-white uppercase tracking-wider">
-                      Festivals Navigation (5 per page)
+                      Festivals Navigation (8 per page)
                     </label>
                     <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                       Page {festPage} of {festTotalPages}
@@ -293,7 +367,7 @@ export const TemplateCreateView = ({
                           setFestSearch(e.target.value);
                           setFestPage(1);
                         }}
-                        className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-40"
+                        className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-44"
                       />
                     </div>
 
@@ -331,6 +405,12 @@ export const TemplateCreateView = ({
                   >
                     <span>🎉 No Specific Festival</span>
                   </button>
+
+                  {filteredFestivals.length === 0 && festSearch && (
+                    <span className="text-xs text-slate-400 italic px-2">
+                      No festivals matching "{festSearch}"
+                    </span>
+                  )}
 
                   {paginatedFestivals.map((f) => {
                     const isSelected = formData.festivalId === f.id;

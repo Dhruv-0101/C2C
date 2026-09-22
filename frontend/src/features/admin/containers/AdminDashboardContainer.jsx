@@ -16,6 +16,7 @@ import { categoryApi } from "../../../services/category.api";
 import { billingApi } from "../../../services/billing.api";
 import { subAdminSchema } from "../../../validations/auth.validation";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
+import { QUERY_KEYS } from "../../../constants/queryKeys";
 import { AdminDashboardView } from "../components/AdminDashboardView";
 import { CelebrationWelcomeModal } from "../../../components/common/CelebrationWelcomeModal";
 
@@ -152,7 +153,8 @@ export const AdminDashboardContainer = () => {
   const createCategoryMutation = useMutation({
     mutationFn: (name) => categoryApi.createCategory({ name }),
     onSuccess: (res, name) => {
-      queryClient.invalidateQueries(["categories"]);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
       setNewCategory("");
       setCategoryError("");
       showSuccess(
@@ -173,7 +175,8 @@ export const AdminDashboardContainer = () => {
   const deleteCategoryMutation = useMutation({
     mutationFn: (id) => categoryApi.deleteCategory(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(["categories"]);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
       showSuccess(
         "Category Removed 🗑️",
         "Business category deleted successfully from database.",

@@ -78,8 +78,11 @@ api.interceptors.response.use(
     };
 
     // 3. Silent Refresh on 401 Unauthorized
+    const hasToken = Boolean(storage.get(STORAGE_KEYS.ACCESS_TOKEN));
+
     if (
       error.response?.status === 401 &&
+      hasToken &&
       originalRequest &&
       !originalRequest._retry &&
       !originalRequest.url?.includes(API_ENDPOINTS.AUTH.LOGIN) &&
@@ -123,11 +126,17 @@ api.interceptors.response.use(
         storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
         storage.remove(STORAGE_KEYS.USER_DATA);
 
-        // Redirect to login if unauthenticated session
-        if (
-          typeof window !== "undefined" &&
-          !window.location.pathname.includes("/login")
-        ) {
+        // Redirect to login only if user was on a protected workspace route
+        const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+        const isPublicRoute =
+          currentPath === "/" ||
+          currentPath.startsWith("/welcome") ||
+          currentPath.startsWith("/login") ||
+          currentPath.startsWith("/register") ||
+          currentPath.startsWith("/forgot-password") ||
+          currentPath.startsWith("/reset-password");
+
+        if (typeof window !== "undefined" && !isPublicRoute) {
           window.location.href = "/login";
         }
         return Promise.reject(formattedError);

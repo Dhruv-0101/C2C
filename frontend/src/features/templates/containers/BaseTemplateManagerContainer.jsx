@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { templateApi } from "../../../services/template.api";
 import { festivalApi } from "../../../services/festival.api";
 import { useTemplates } from "../../../hooks/useTemplates";
+import { useFestivals } from "../../../hooks/useFestivals";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
 import { useCategories } from "../../../hooks/useCategories";
@@ -51,23 +52,52 @@ export const BaseTemplateManagerContainer = () => {
     templateCategoryId: selectedCategory,
   });
 
-  const { data: festivalResponse } = useQuery({
-    queryKey: QUERY_KEYS.FESTIVALS.ALL,
-    queryFn: () => festivalApi.getFestivals(),
-  });
+  const {
+    festivals = [],
+    isLoading: isLoadingFestivals,
+  } = useFestivals({ limit: 100, includeInactive: true });
 
   const { data: categoryResponse } = useQuery({
     queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES,
-    queryFn: () => templateApi.getTemplateCategories(),
+    queryFn: () => templateApi.getTemplateCategories({ limit: 100 }),
   });
 
   const { categories: masterCategories } = useCategories({ limit: 100 });
 
-  const festivals = festivalResponse?.data?.festivals || [];
-  const rawTemplateCategories = categoryResponse?.data?.categories || [];
+  const rawTemplateCategories = categoryResponse?.data?.categories || categoryResponse?.categories || [];
 
-  // Master Template Categories from database with fallback
-  const categoriesList = rawTemplateCategories.length > 0 ? rawTemplateCategories : masterCategories;
+  // Master Template Categories combined with Business Categories (deduplicated by name)
+  const categoriesList = useMemo(() => {
+    const map = new Map();
+    // 1. Template Categories
+    (rawTemplateCategories || []).forEach((cat) => {
+      if (cat?.name) {
+        map.set(cat.name.trim().toLowerCase(), {
+          id: cat.id,
+          name: cat.name.trim(),
+          icon: cat.icon || "🎨",
+          description: cat.description,
+          isTemplateCategory: true,
+        });
+      }
+    });
+    // 2. Business Categories (supplement if not already in template categories)
+    (masterCategories || []).forEach((cat) => {
+      if (cat?.name) {
+        const key = cat.name.trim().toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, {
+            id: cat.id,
+            name: cat.name.trim(),
+            icon: cat.icon || "💼",
+            description: cat.description,
+            isTemplateCategory: false,
+          });
+        }
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [rawTemplateCategories, masterCategories]);
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -87,6 +117,7 @@ export const BaseTemplateManagerContainer = () => {
     onSuccess: (res, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
       setIsModalOpen(false);
       setViewMode("list");
       resetForm();

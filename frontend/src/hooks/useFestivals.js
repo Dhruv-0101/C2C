@@ -6,7 +6,7 @@ import { QUERY_KEYS } from '@/constants/queryKeys';
  * Custom TanStack Query Hook for Festival Calendar Data & Operations
  * @param {{ year?: number|string, includeInactive?: boolean }} [options={ includeInactive: true }]
  */
-export const useFestivals = (options = { includeInactive: true }) => {
+export const useFestivals = (options = { includeInactive: true, limit: 100 }) => {
   const queryClient = useQueryClient();
 
   const festivalsQuery = useQuery({

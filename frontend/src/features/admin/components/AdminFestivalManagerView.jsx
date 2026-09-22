@@ -342,7 +342,7 @@ export const AdminFestivalManagerView = () => {
                           alt={fest.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-transparent" />
+                        <div className="image-scrim-overlay absolute inset-0 pointer-events-none" />
                       </div>
                     ) : null}
 

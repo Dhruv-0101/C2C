@@ -42,6 +42,8 @@ export const FrameManagerContainer = () => {
     clearAllElements,
     bringForward,
     sendBackward,
+    centerSelectedElement,
+    exportCleanPreviewDataUrl,
   } = useFrameCanvasEngine(activeTab);
 
   const handleClearStage = () => {
@@ -187,7 +189,8 @@ export const FrameManagerContainer = () => {
       });
 
       const transparentBase64 = offscreen.toDataURL("image/png");
-      const previewBase64 = canvas.toDataURL("image/png");
+      // Export 100% clean 1080x1080 preview without ANY blue edit lines or selection handles
+      const previewBase64 = exportCleanPreviewDataUrl();
 
       createFrameMutation.mutate({
         title: frameMeta.title || "Custom Brand Frame",
@@ -271,6 +274,7 @@ export const FrameManagerContainer = () => {
       handleDeleteSelected={deleteSelectedElement}
       handleClearStage={handleClearStage}
       handleMoveLayer={handleMoveLayer}
+      centerSelectedElement={centerSelectedElement}
       loadPreset={(presetKey) => {
         const found = MASTER_FRAME_PRESETS.find((p) => p.key === presetKey);
         if (found) {

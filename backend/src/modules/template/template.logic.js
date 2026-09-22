@@ -96,7 +96,7 @@ export async function createTemplate(data, creatorId) {
  * Get paginated template categories
  */
 export async function getCategories(queryParams = {}) {
-  const pagination = parsePaginationParams(queryParams);
+  const pagination = parsePaginationParams(queryParams, 100, 100);
   const { search, sortBy, sortOrder } = queryParams;
 
   const { categories, totalCount } =

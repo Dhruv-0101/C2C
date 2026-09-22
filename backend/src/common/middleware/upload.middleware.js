@@ -16,8 +16,8 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
 
   // 1. Process Base64 image payload (supports all domain-specific keys across BrandFlow)
   const base64Candidate =
-    req.body?.base64Image ||
     req.body?.base64Overlay ||
+    req.body?.base64Image ||
     req.body?.base64Logo ||
     req.body?.base64Avatar ||
     req.body?.base64Banner ||

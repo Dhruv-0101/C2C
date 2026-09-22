@@ -16,12 +16,19 @@ export const postIdParamSchema = z.object({
   }),
 });
 
+const optionalIdSchema = z
+  .string()
+  .trim()
+  .optional()
+  .nullable()
+  .transform((val) => (val === '' ? null : val));
+
 export const createPostSchema = z.object({
   body: z.object({
-    templateId: z.string().uuid().optional().nullable(),
-    festivalId: z.string().uuid().optional().nullable(),
-    frameId: z.string().uuid().optional().nullable(),
-    categoryId: z.string().uuid().optional().nullable(),
+    templateId: optionalIdSchema,
+    festivalId: optionalIdSchema,
+    frameId: optionalIdSchema,
+    categoryId: optionalIdSchema,
     occasionName: z.string().trim().max(200).optional().nullable(),
     caption: z.string().trim().optional().nullable(),
     hashtags: z.array(z.string().trim()).optional().nullable(),
@@ -36,11 +43,11 @@ export const createPostSchema = z.object({
 
 export const getAdminPostsQuerySchema = z.object({
   query: paginationQuerySchema.extend({
-    categoryId: z.string().uuid().optional(),
-    frameId: z.string().uuid().optional(),
-    templateId: z.string().uuid().optional(),
-    templateCategoryId: z.string().uuid().optional(),
-    festivalId: z.string().uuid().optional(),
+    categoryId: optionalIdSchema,
+    frameId: optionalIdSchema,
+    templateId: optionalIdSchema,
+    templateCategoryId: optionalIdSchema,
+    festivalId: optionalIdSchema,
     userId: z.string().uuid().optional(),
     status: z.enum(POST_STATUSES).optional(),
     startDate: z.string().datetime().optional().or(z.string()),

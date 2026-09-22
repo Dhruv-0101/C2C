@@ -144,7 +144,7 @@ export function renderWelcomeEmail({ fullName, loginUrl }) {
       <div class="content-body">
         <p class="greeting">Hello ${fullName || 'Creator'} 👋</p>
         <p class="paragraph">
-          Turn your business offers, festival greetings, and promotions into professional, on-brand social media graphics with instant multi-platform scheduling.
+          Turn your business offers, festival greetings, and promotions into professional, on-brand social media post with instant multi-platform scheduling.
         </p>
 
         <p class="paragraph" style="margin-bottom: 12px; font-weight: 700; color: #E2E8F0;">

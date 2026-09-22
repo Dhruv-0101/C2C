@@ -32,6 +32,11 @@ import {
   FileText,
   Grid,
   User,
+  Palette,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Crosshair,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -84,6 +89,7 @@ export const FrameManagerView = ({
   handleMoveLayer,
   loadPreset,
   handlePublishCanvaFrame,
+  centerSelectedElement,
 }) => {
   // Left Sidebar Sub-Tab State
   const [sidebarTab, setSidebarTab] = useState("elements");
@@ -521,6 +527,18 @@ export const FrameManagerView = ({
                     Dark
                   </button>
 
+                  {selectedElement && (
+                    <button
+                      type="button"
+                      onClick={() => centerSelectedElement && centerSelectedElement("BOTH")}
+                      className="px-2.5 py-1 rounded-lg font-bold transition bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 flex items-center gap-1 shadow-sm"
+                      title="Dead Center: Upar, Niche, Left, Right sab se center karein (1080x1080)"
+                    >
+                      <Crosshair className="w-3 h-3 text-amber-400" />
+                      <span>Center Both (X & Y)</span>
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setShowSelectionBox && setShowSelectionBox(!showSelectionBox)}
@@ -613,6 +631,60 @@ export const FrameManagerView = ({
                     })
                   }
                 />
+
+                {/* 🎯 Canvas Alignment & Dead Center Controls (Upar, Niche, Left, Right) */}
+                <div className="space-y-2 p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                      <Crosshair className="w-3 h-3 text-amber-400" />
+                      <span>Stage Alignment</span>
+                    </label>
+                    <span className="text-[9px] font-mono text-slate-400">
+                      X: {selectedElement.x || 0}px | Y: {selectedElement.y || 0}px
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => centerSelectedElement && centerSelectedElement("BOTH")}
+                      className="p-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 hover:from-amber-400 hover:to-amber-500 font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 col-span-3 transition active:scale-[0.98]"
+                      title="Upar, Niche, Left, Right: Sab se dead center karein (1080x1080)"
+                    >
+                      <Crosshair className="w-3.5 h-3.5" />
+                      <span>🎯 Center Both (Upar, Niche, Left, Right)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => centerSelectedElement && centerSelectedElement("HORIZONTAL")}
+                      className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-200 hover:text-white hover:border-amber-500 font-bold text-[10px] flex items-center justify-center gap-1 transition"
+                      title="Center Horizontally (Left-Right Center)"
+                    >
+                      <span>↔️ Center X</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => centerSelectedElement && centerSelectedElement("VERTICAL")}
+                      className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-200 hover:text-white hover:border-amber-500 font-bold text-[10px] flex items-center justify-center gap-1 transition"
+                      title="Center Vertically (Upar-Niche Center)"
+                    >
+                      <span>↕️ Center Y</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateSelectedElement({ y: 1080 - (selectedElement.height || 60) - 20 });
+                      }}
+                      className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-200 hover:text-white hover:border-amber-500 font-bold text-[10px] flex items-center justify-center gap-1 transition"
+                      title="Snap to Footer / Bottom"
+                    >
+                      <span>⬇️ Bottom</span>
+                    </button>
+                  </div>
+                </div>
 
                 {/* Slot Category Selection */}
                 <div className="space-y-2.5 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
@@ -775,7 +847,7 @@ export const FrameManagerView = ({
                           <span>Type / Edit Text Content</span>
                         </label>
                         <span className="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
-                          TYPE HERE ✍️
+                          LIVE TEXT ✍️
                         </span>
                       </div>
                       <input
@@ -792,51 +864,275 @@ export const FrameManagerView = ({
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-300 uppercase block">
-                          Font
+                    {/* 🔤 1. TEXT SIZE / FONT SIZE CONTROLS */}
+                    <div className="space-y-1.5 p-2.5 rounded-xl bg-[#131B2A] border border-[#2C384E]">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1">
+                          <Sliders className="w-3 h-3 text-amber-400" />
+                          <span>Text Size: {selectedElement.fontSize || 28}px</span>
                         </label>
-                        <select
-                          value={selectedElement.fontFamily || "Space Grotesk"}
-                          onChange={(e) =>
-                            updateSelectedElement({
-                              fontFamily: e.target.value,
-                            })
-                          }
-                          className="w-full px-2 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs"
-                        >
-                          <option value="Space Grotesk">Space Grotesk</option>
-                          <option value="Plus Jakarta Sans">Plus Jakarta</option>
-                          <option value="Outfit">Outfit</option>
-                          <option value="Inter">Inter</option>
-                          <option value="Playfair Display">Playfair</option>
-                          <option value="Montserrat">Montserrat</option>
-                          <option value="Roboto">Roboto</option>
-                          <option value="Cinzel">Cinzel</option>
-                        </select>
+                        <div className="flex items-center gap-1">
+                          {[18, 24, 28, 36, 48].map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => updateSelectedElement({ fontSize: size })}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold transition ${
+                                (selectedElement.fontSize || 28) === size
+                                  ? "bg-amber-500 text-slate-950 shadow"
+                                  : "bg-[#0B0F17] text-slate-400 hover:text-white border border-[#2C384E]"
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-300 uppercase block">
-                          Weight
-                        </label>
-                        <select
-                          value={selectedElement.fontWeight || "bold"}
+                      <div className="flex items-center gap-3 pt-1">
+                        <input
+                          type="range"
+                          min="12"
+                          max="96"
+                          step="1"
+                          value={selectedElement.fontSize || 28}
                           onChange={(e) =>
                             updateSelectedElement({
-                              fontWeight: e.target.value,
+                              fontSize: Number(e.target.value),
                             })
                           }
-                          className="w-full px-2 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs"
-                        >
-                          <option value="normal">Normal (400)</option>
-                          <option value="semibold">SemiBold (600)</option>
-                          <option value="bold">Bold (700)</option>
-                          <option value="900">Black (900)</option>
-                        </select>
+                          className="w-full h-1.5 bg-[#0B0F17] rounded-lg appearance-none cursor-pointer accent-amber-500"
+                        />
+                        <div className="flex items-center gap-1 bg-[#0B0F17] px-2 py-1 rounded-lg border border-[#2C384E] shrink-0">
+                          <input
+                            type="number"
+                            min="12"
+                            max="96"
+                            value={selectedElement.fontSize || 28}
+                            onChange={(e) =>
+                              updateSelectedElement({
+                                fontSize: Math.max(10, Math.min(120, Number(e.target.value) || 24)),
+                              })
+                            }
+                            className="w-10 bg-transparent text-white font-mono text-xs font-bold focus:outline-none text-right"
+                          />
+                          <span className="text-[10px] text-slate-400 font-mono">px</span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* 🎨 2. TEXT COLOR CONTROLS */}
+                    <div className="space-y-1.5 p-2.5 rounded-xl bg-[#131B2A] border border-[#2C384E]">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1">
+                          <Palette className="w-3 h-3 text-amber-400" />
+                          <span>Text Color</span>
+                        </label>
+                        <span className="font-mono text-[10px] font-bold text-amber-400 uppercase">
+                          {selectedElement.fontColor || selectedElement.textColor || "#FFFFFF"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {/* Native Color Picker */}
+                        <div className="flex items-center gap-1.5 bg-[#0B0F17] p-1 rounded-lg border border-[#2C384E] shrink-0">
+                          <input
+                            type="color"
+                            value={selectedElement.fontColor || selectedElement.textColor || "#FFFFFF"}
+                            onChange={(e) =>
+                              updateSelectedElement({
+                                fontColor: e.target.value,
+                                textColor: e.target.value,
+                                ...(selectedElement.type === "TEXT" ? { fillColor: e.target.value } : {}),
+                              })
+                            }
+                            className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0"
+                            title="Choose Custom Color"
+                          />
+                        </div>
+
+                        {/* Quick Color Swatches */}
+                        <div className="grid grid-cols-6 gap-1 w-full">
+                          {[
+                            { label: "White", hex: "#FFFFFF" },
+                            { label: "Gold", hex: "#FCD34D" },
+                            { label: "Teal", hex: "#2DD4BF" },
+                            { label: "Sky", hex: "#38BDF8" },
+                            { label: "Black", hex: "#000000" },
+                            { label: "Coral", hex: "#F87171" },
+                          ].map((color) => {
+                            const activeColor = selectedElement.fontColor || selectedElement.textColor || "#FFFFFF";
+                            const isSelected = activeColor.toUpperCase() === color.hex.toUpperCase();
+                            return (
+                              <button
+                                key={color.hex}
+                                type="button"
+                                title={color.label}
+                                onClick={() =>
+                                  updateSelectedElement({
+                                    fontColor: color.hex,
+                                    textColor: color.hex,
+                                    ...(selectedElement.type === "TEXT" ? { fillColor: color.hex } : {}),
+                                  })
+                                }
+                                style={{ backgroundColor: color.hex }}
+                                className={`h-7 rounded-lg border transition-all ${
+                                  isSelected
+                                    ? "ring-2 ring-amber-400 scale-105 border-white"
+                                    : "border-slate-700/60 hover:scale-105"
+                                }`}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Font Family & Weight */}
+                    <div className="space-y-2.5">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase block">
+                            Font Family
+                          </label>
+                          <select
+                            value={selectedElement.fontFamily || "Space Grotesk"}
+                            onChange={(e) =>
+                              updateSelectedElement({
+                                fontFamily: e.target.value,
+                              })
+                            }
+                            className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold focus:outline-none focus:border-amber-500"
+                          >
+                            <option value="Space Grotesk" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Space Grotesk (Tech)</option>
+                            <option value="Playfair Display" style={{ fontFamily: "'Playfair Display', serif" }}>Playfair Display (Serif)</option>
+                            <option value="Cinzel" style={{ fontFamily: "'Cinzel', serif" }}>Cinzel (Luxury Serif)</option>
+                            <option value="Outfit" style={{ fontFamily: "'Outfit', sans-serif" }}>Outfit (Geometric)</option>
+                            <option value="Inter" style={{ fontFamily: "'Inter', sans-serif" }}>Inter (Minimal)</option>
+                            <option value="Plus Jakarta Sans" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Plus Jakarta (Modern)</option>
+                            <option value="Montserrat" style={{ fontFamily: "'Montserrat', sans-serif" }}>Montserrat (Bold)</option>
+                            <option value="Roboto" style={{ fontFamily: "'Roboto', sans-serif" }}>Roboto (Classic)</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-300 uppercase block">
+                            Weight
+                          </label>
+                          <select
+                            value={selectedElement.fontWeight || "bold"}
+                            onChange={(e) =>
+                              updateSelectedElement({
+                                fontWeight: e.target.value,
+                              })
+                            }
+                            className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold focus:outline-none focus:border-amber-500"
+                          >
+                            <option value="normal">Normal (400)</option>
+                            <option value="semibold">SemiBold (600)</option>
+                            <option value="bold">Bold (700)</option>
+                            <option value="900">Black (900)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Quick Font Selection Pills */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Quick Font Presets
+                        </label>
+                        <div className="grid grid-cols-4 gap-1">
+                          {[
+                            { label: "Playfair", value: "Playfair Display" },
+                            { label: "Cinzel", value: "Cinzel" },
+                            { label: "Space Grotesk", value: "Space Grotesk" },
+                            { label: "Inter", value: "Inter" },
+                            { label: "Outfit", value: "Outfit" },
+                            { label: "Plus Jakarta", value: "Plus Jakarta Sans" },
+                            { label: "Montserrat", value: "Montserrat" },
+                            { label: "Roboto", value: "Roboto" },
+                          ].map((f) => {
+                            const isCurrent = (selectedElement.fontFamily || "Space Grotesk") === f.value;
+                            return (
+                              <button
+                                key={f.value}
+                                type="button"
+                                onClick={() => updateSelectedElement({ fontFamily: f.value })}
+                                style={{ fontFamily: f.value }}
+                                className={`px-1.5 py-1 rounded-lg text-[11px] font-bold truncate transition text-center ${
+                                  isCurrent
+                                    ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 ring-1 ring-white/50"
+                                    : "bg-[#131B2A] text-slate-300 hover:text-white hover:bg-slate-800 border border-[#2C384E]"
+                                }`}
+                                title={f.value}
+                              >
+                                {f.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Live Typography Preview Badge */}
+                      <div className="p-2.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400 font-mono">Font Preview:</span>
+                        <span
+                          style={{
+                            fontFamily: selectedElement.fontFamily || "Space Grotesk",
+                            fontWeight: selectedElement.fontWeight || "bold",
+                            color: selectedElement.fontColor || selectedElement.textColor || "#FFFFFF",
+                          }}
+                          className="text-sm font-semibold truncate max-w-[200px]"
+                        >
+                          {selectedElement.text || selectedElement.customLabel || "Playfair Display Typography"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Text Alignment & Center Controls */}
+                    {selectedElement.type === "TEXT" && (
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-300 uppercase block">
+                          Alignment & Center
+                        </label>
+                        <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#131B2A] rounded-lg border border-[#2C384E]">
+                          {[
+                            { id: "left", label: "Left", icon: AlignLeft },
+                            { id: "center", label: "Center Both", icon: AlignCenter },
+                            { id: "right", label: "Right", icon: AlignRight },
+                          ].map((align) => {
+                            const Icon = align.icon;
+                            const isSelected = (selectedElement.textAlign || "left") === align.id;
+                            return (
+                              <button
+                                key={align.id}
+                                type="button"
+                                onClick={() => {
+                                  if (align.id === "center") {
+                                    if (centerSelectedElement) {
+                                      centerSelectedElement("BOTH");
+                                    } else {
+                                      updateSelectedElement({ textAlign: "center" });
+                                    }
+                                  } else {
+                                    updateSelectedElement({ textAlign: align.id });
+                                  }
+                                }}
+                                className={`py-1 rounded flex items-center justify-center gap-1 text-[11px] font-semibold transition ${
+                                  isSelected
+                                    ? "bg-amber-500 text-slate-950 font-bold shadow"
+                                    : "text-slate-400 hover:text-white"
+                                }`}
+                                title={align.id === "center" ? "Align text center and center on canvas (Upar, Niche, Left, Right)" : `Align ${align.label}`}
+                              >
+                                <Icon className="w-3 h-3" />
+                                <span>{align.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

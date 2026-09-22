@@ -15,13 +15,27 @@ export const festivalApi = {
    * @param {boolean} [options.includeInactive=false] - Whether to include inactive/hidden draft festivals
    * @returns {Promise<Object>} `{ festivals: Array<Object>, meta: Object }`
    */
-  getFestivals: async (options) => {
+  getFestivals: async (options = {}) => {
     let year = typeof options === 'object' ? options?.year : options;
     let includeInactive = typeof options === 'object' ? options?.includeInactive : false;
+    let limit = typeof options === 'object' ? options?.limit : undefined;
+    let page = typeof options === 'object' ? options?.page : undefined;
+    let search = typeof options === 'object' ? options?.search : undefined;
+    let startDate = typeof options === 'object' ? options?.startDate : undefined;
+    let endDate = typeof options === 'object' ? options?.endDate : undefined;
+    let sortBy = typeof options === 'object' ? options?.sortBy : undefined;
+    let sortOrder = typeof options === 'object' ? options?.sortOrder : undefined;
 
     const params = new URLSearchParams();
-    if (year) params.append('year', year);
+    if (year) params.append('year', String(year));
     if (includeInactive) params.append('includeInactive', 'true');
+    if (limit) params.append('limit', String(limit));
+    if (page) params.append('page', String(page));
+    if (search) params.append('search', search);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (sortBy) params.append('sortBy', sortBy);
+    if (sortOrder) params.append('sortOrder', sortOrder);
 
     const queryString = params.toString();
     const url = queryString ? `${API_ENDPOINTS.FESTIVALS.BASE}?${queryString}` : API_ENDPOINTS.FESTIVALS.BASE;
