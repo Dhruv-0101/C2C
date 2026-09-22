@@ -49,7 +49,19 @@ export const BaseTemplateManagerView = ({
   templateMeta,
   isLoadingTemplates,
   festivals = [],
+  festivalMeta = null,
+  festSearch = "",
+  setFestSearch,
+  festPage = 1,
+  setFestPage,
+  isLoadingFestivals = false,
   categoriesList = [],
+  categoryMeta = null,
+  catSearch = "",
+  setCatSearch,
+  catPage = 1,
+  setCatPage,
+  isLoadingCategories = false,
   handleFileChange,
   createTemplateMutation,
   deleteTemplateMutation,
@@ -57,33 +69,8 @@ export const BaseTemplateManagerView = ({
 }) => {
   const [customCatInput, setCustomCatInput] = useState("");
 
-  // Categories Pagination (8 per page) & Search State
-  const [catSearch, setCatSearch] = useState("");
-  const [catPage, setCatPage] = useState(1);
-  const CAT_PER_PAGE = 8;
-
-  const filteredCategories = (categoriesList || []).filter((cat) =>
-    (cat?.name || "").toLowerCase().includes(catSearch.toLowerCase())
-  );
-  const catTotalPages = Math.ceil(filteredCategories.length / CAT_PER_PAGE) || 1;
-  const paginatedCategories = filteredCategories.slice(
-    (catPage - 1) * CAT_PER_PAGE,
-    catPage * CAT_PER_PAGE
-  );
-
-  // Festivals Pagination (8 per page) & Search State
-  const [festSearch, setFestSearch] = useState("");
-  const [festPage, setFestPage] = useState(1);
-  const FEST_PER_PAGE = 8;
-
-  const filteredFestivals = (festivals || []).filter((f) =>
-    (f?.name || "").toLowerCase().includes(festSearch.toLowerCase())
-  );
-  const festTotalPages = Math.ceil(filteredFestivals.length / FEST_PER_PAGE) || 1;
-  const paginatedFestivals = filteredFestivals.slice(
-    (festPage - 1) * FEST_PER_PAGE,
-    festPage * FEST_PER_PAGE
-  );
+  const catTotalPages = categoryMeta?.totalPages || 1;
+  const festTotalPages = festivalMeta?.totalPages || 1;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -185,13 +172,19 @@ export const BaseTemplateManagerView = ({
               <span>🎨 All Categories</span>
             </button>
 
-            {filteredCategories.length === 0 && catSearch && (
+            {isLoadingCategories && (
+              <span className="text-xs text-slate-400 animate-pulse px-2">
+                Searching categories...
+              </span>
+            )}
+
+            {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
               <span className="text-xs text-slate-400 italic px-2">
                 No categories matching "{catSearch}"
               </span>
             )}
 
-            {paginatedCategories.map((cat) => {
+            {categoriesList.map((cat) => {
               const isSelected = selectedCategory === cat.name || selectedCategory === cat.id;
               return (
                 <button
@@ -215,7 +208,7 @@ export const BaseTemplateManagerView = ({
           </div>
         </div>
 
-        {/* 2. Festival Section (5 Items per Page + Search) */}
+        {/* 2. Festival Section (8 Items per Page + Search) */}
         <div className="space-y-3 p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -268,7 +261,7 @@ export const BaseTemplateManagerView = ({
             </div>
           </div>
 
-          {/* Festival Pills (Max 5 shown per page) */}
+          {/* Festival Pills (Max 8 shown per page) */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
               type="button"
@@ -285,7 +278,19 @@ export const BaseTemplateManagerView = ({
               <span>🎉 All Festivals</span>
             </button>
 
-            {paginatedFestivals.map((f) => {
+            {isLoadingFestivals && (
+              <span className="text-xs text-slate-400 animate-pulse px-2">
+                Searching festivals...
+              </span>
+            )}
+
+            {!isLoadingFestivals && festivals.length === 0 && festSearch && (
+              <span className="text-xs text-slate-400 italic px-2">
+                No festivals matching "{festSearch}"
+              </span>
+            )}
+
+            {festivals.map((f) => {
               const isSelected = selectedFestival === f.id;
               return (
                 <button

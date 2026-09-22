@@ -1,12 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { templateApi } from "../../../services/template.api";
-import { festivalApi } from "../../../services/festival.api";
-import { useTemplates } from "../../../hooks/useTemplates";
+import { useTemplates, useTemplateCategories } from "../../../hooks/useTemplates";
 import { useFestivals } from "../../../hooks/useFestivals";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
-import { useCategories } from "../../../hooks/useCategories";
 import { readImageAsBase64 } from "../../../utils/file.utils";
 import { BaseTemplateManagerView } from "../components/BaseTemplateManagerView";
 
@@ -15,6 +14,7 @@ import { TemplateCreateView } from "../components/TemplateCreateView";
 /**
  * BaseTemplateManagerContainer
  * Container component handling base graphic templates queries, image upload readers, and full-screen view switching.
+ * Integrates True Server-Side Search & Pagination for Categories and Festivals at infinite scale.
  */
 export const BaseTemplateManagerContainer = () => {
   const queryClient = useQueryClient();
@@ -29,10 +29,14 @@ export const BaseTemplateManagerContainer = () => {
     description: "",
     templateCategoryId: "",
     category: "General Business",
+    selectedCategoryObj: null,
     festivalId: "",
+    selectedFestivalObj: null,
+    newCategoryName: "",
     baseImageUrl: "",
   });
 
+  // Templates Grid server pagination & filters
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(8);
   const [search, setSearch] = useState("");
@@ -52,52 +56,44 @@ export const BaseTemplateManagerContainer = () => {
     templateCategoryId: selectedCategory,
   });
 
-  const {
-    festivals = [],
-    isLoading: isLoadingFestivals,
-  } = useFestivals({ limit: 100, includeInactive: true });
+  // Server-Side Category Selector State (8 per page)
+  const [catPage, setCatPage] = useState(1);
+  const [catSearch, setCatSearch] = useState("");
+  const debouncedCatSearch = useDebounce(catSearch, 300);
 
-  const { data: categoryResponse } = useQuery({
-    queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES,
-    queryFn: () => templateApi.getTemplateCategories({ limit: 100 }),
+  useEffect(() => {
+    setCatPage(1);
+  }, [debouncedCatSearch]);
+
+  const {
+    categories: categoriesList = [],
+    meta: categoryMeta,
+    isLoading: isLoadingCategories,
+  } = useTemplateCategories({
+    page: catPage,
+    limit: 8,
+    search: debouncedCatSearch || undefined,
   });
 
-  const { categories: masterCategories } = useCategories({ limit: 100 });
+  // Server-Side Festival Selector State (8 per page)
+  const [festPage, setFestPage] = useState(1);
+  const [festSearch, setFestSearch] = useState("");
+  const debouncedFestSearch = useDebounce(festSearch, 300);
 
-  const rawTemplateCategories = categoryResponse?.data?.categories || categoryResponse?.categories || [];
+  useEffect(() => {
+    setFestPage(1);
+  }, [debouncedFestSearch]);
 
-  // Master Template Categories combined with Business Categories (deduplicated by name)
-  const categoriesList = useMemo(() => {
-    const map = new Map();
-    // 1. Template Categories
-    (rawTemplateCategories || []).forEach((cat) => {
-      if (cat?.name) {
-        map.set(cat.name.trim().toLowerCase(), {
-          id: cat.id,
-          name: cat.name.trim(),
-          icon: cat.icon || "🎨",
-          description: cat.description,
-          isTemplateCategory: true,
-        });
-      }
-    });
-    // 2. Business Categories (supplement if not already in template categories)
-    (masterCategories || []).forEach((cat) => {
-      if (cat?.name) {
-        const key = cat.name.trim().toLowerCase();
-        if (!map.has(key)) {
-          map.set(key, {
-            id: cat.id,
-            name: cat.name.trim(),
-            icon: cat.icon || "💼",
-            description: cat.description,
-            isTemplateCategory: false,
-          });
-        }
-      }
-    });
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [rawTemplateCategories, masterCategories]);
+  const {
+    festivals = [],
+    meta: festivalMeta,
+    isLoading: isLoadingFestivals,
+  } = useFestivals({
+    page: festPage,
+    limit: 8,
+    search: debouncedFestSearch || undefined,
+    includeInactive: true,
+  });
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -158,11 +154,30 @@ export const BaseTemplateManagerContainer = () => {
       description: "",
       templateCategoryId: "",
       category: "General Business",
+      selectedCategoryObj: null,
       newCategoryName: "",
       festivalId: "",
+      selectedFestivalObj: null,
       baseImageUrl: "",
     });
     setErrorMsg("");
+  };
+
+  const handleOpenCreate = () => {
+    setViewMode("create");
+    setCatSearch("");
+    setCatPage(1);
+    setFestSearch("");
+    setFestPage(1);
+  };
+
+  const handleBackToList = () => {
+    setViewMode("list");
+    resetForm();
+    setCatSearch("");
+    setCatPage(1);
+    setFestSearch("");
+    setFestPage(1);
   };
 
   const handleFormSubmit = (e) => {
@@ -194,17 +209,26 @@ export const BaseTemplateManagerContainer = () => {
   if (viewMode === "create") {
     return (
       <TemplateCreateView
-        onBack={() => {
-          setViewMode("list");
-          resetForm();
-        }}
+        onBack={handleBackToList}
         formData={formData}
         setFormData={setFormData}
         handleFileChange={handleFileChange}
         handleFormSubmit={handleFormSubmit}
         errorMsg={errorMsg}
         categoriesList={categoriesList}
+        categoryMeta={categoryMeta}
+        catSearch={catSearch}
+        setCatSearch={setCatSearch}
+        catPage={catPage}
+        setCatPage={setCatPage}
+        isLoadingCategories={isLoadingCategories}
         festivals={festivals}
+        festivalMeta={festivalMeta}
+        festSearch={festSearch}
+        setFestSearch={setFestSearch}
+        festPage={festPage}
+        setFestPage={setFestPage}
+        isLoadingFestivals={isLoadingFestivals}
         isUploading={createTemplateMutation.isPending}
       />
     );
@@ -212,7 +236,7 @@ export const BaseTemplateManagerContainer = () => {
 
   return (
     <BaseTemplateManagerView
-      onOpenCreate={() => setViewMode("create")}
+      onOpenCreate={handleOpenCreate}
       modalProps={modalProps}
       isModalOpen={isModalOpen}
       setIsModalOpen={setIsModalOpen}
@@ -235,7 +259,19 @@ export const BaseTemplateManagerContainer = () => {
       templateMeta={templateMeta}
       isLoadingTemplates={isLoadingTemplates}
       festivals={festivals}
+      festivalMeta={festivalMeta}
+      festSearch={festSearch}
+      setFestSearch={setFestSearch}
+      festPage={festPage}
+      setFestPage={setFestPage}
+      isLoadingFestivals={isLoadingFestivals}
       categoriesList={categoriesList}
+      categoryMeta={categoryMeta}
+      catSearch={catSearch}
+      setCatSearch={setCatSearch}
+      catPage={catPage}
+      setCatPage={setCatPage}
+      isLoadingCategories={isLoadingCategories}
       handleFileChange={handleFileChange}
       createTemplateMutation={createTemplateMutation}
       deleteTemplateMutation={deleteTemplateMutation}

@@ -31,40 +31,36 @@ export const TemplateCreateView = ({
   handleFormSubmit,
   errorMsg,
   categoriesList = [],
+  categoryMeta = null,
+  catSearch = "",
+  setCatSearch,
+  catPage = 1,
+  setCatPage,
+  isLoadingCategories = false,
   festivals = [],
+  festivalMeta = null,
+  festSearch = "",
+  setFestSearch,
+  festPage = 1,
+  setFestPage,
+  isLoadingFestivals = false,
   isUploading = false,
 }) => {
-  // Category Pagination (8 per page) & Search State inside Create Screen
-  const [catSearch, setCatSearch] = useState("");
-  const [catPage, setCatPage] = useState(1);
-  const CAT_PER_PAGE = 8;
+  const catTotalPages = categoryMeta?.totalPages || 1;
+  const festTotalPages = festivalMeta?.totalPages || 1;
 
-  const filteredCategories = (categoriesList || []).filter((cat) =>
-    (cat?.name || "").toLowerCase().includes(catSearch.toLowerCase())
-  );
-  const catTotalPages = Math.ceil(filteredCategories.length / CAT_PER_PAGE) || 1;
-  const paginatedCategories = filteredCategories.slice(
-    (catPage - 1) * CAT_PER_PAGE,
-    catPage * CAT_PER_PAGE
-  );
-  const selectedCategoryObj = (categoriesList || []).find(
-    (c) => (formData.templateCategoryId && c.id === formData.templateCategoryId) || c.name === formData.category
-  );
+  // Selected Category & Festival pinned objects (from formData or current list)
+  const selectedCategoryObj =
+    formData.selectedCategoryObj ||
+    (categoriesList || []).find(
+      (c) =>
+        (formData.templateCategoryId && c.id === formData.templateCategoryId) ||
+        c.name === formData.category
+    );
 
-  // Festival Pagination (8 per page) & Search State inside Create Screen
-  const [festSearch, setFestSearch] = useState("");
-  const [festPage, setFestPage] = useState(1);
-  const FEST_PER_PAGE = 8;
-
-  const filteredFestivals = (festivals || []).filter((f) =>
-    (f?.name || "").toLowerCase().includes(festSearch.toLowerCase())
-  );
-  const festTotalPages = Math.ceil(filteredFestivals.length / FEST_PER_PAGE) || 1;
-  const paginatedFestivals = filteredFestivals.slice(
-    (festPage - 1) * FEST_PER_PAGE,
-    festPage * FEST_PER_PAGE
-  );
-  const selectedFestivalObj = (festivals || []).find((f) => f.id === formData.festivalId);
+  const selectedFestivalObj =
+    formData.selectedFestivalObj ||
+    (festivals || []).find((f) => f.id === formData.festivalId);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in">
@@ -171,7 +167,7 @@ export const TemplateCreateView = ({
                     </div>
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, category: "", templateCategoryId: "" })}
+                      onClick={() => setFormData({ ...formData, category: "", templateCategoryId: "", selectedCategoryObj: null })}
                       className="text-xs text-rose-400 hover:text-rose-300 font-bold ml-2 underline cursor-pointer"
                     >
                       Clear Selection
@@ -188,7 +184,7 @@ export const TemplateCreateView = ({
                     </div>
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, category: "", templateCategoryId: "", newCategoryName: "" })}
+                      onClick={() => setFormData({ ...formData, category: "", templateCategoryId: "", selectedCategoryObj: null, newCategoryName: "" })}
                       className="text-xs text-rose-400 hover:text-rose-300 font-bold ml-2 underline cursor-pointer"
                     >
                       Reset
@@ -248,7 +244,7 @@ export const TemplateCreateView = ({
                   {/* PROMINENTLY HIGHLIGHTED NEW CATEGORY BUTTON */}
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, category: "NEW", templateCategoryId: "" })}
+                    onClick={() => setFormData({ ...formData, category: "NEW", templateCategoryId: "", selectedCategoryObj: null })}
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 border hover:scale-[1.02] active:scale-[0.98] ${
                       formData.category === "NEW"
                         ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 border-amber-300 shadow-glow font-extrabold scale-105"
@@ -260,19 +256,25 @@ export const TemplateCreateView = ({
                     <span className="text-[9px] bg-amber-400 text-slate-950 px-1 rounded font-black uppercase">NEW</span>
                   </button>
 
-                  {filteredCategories.length === 0 && catSearch && (
+                  {isLoadingCategories && (
+                    <span className="text-xs text-slate-400 animate-pulse px-2">
+                      Searching categories...
+                    </span>
+                  )}
+
+                  {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
                     <span className="text-xs text-slate-400 italic px-2">
                       No categories matching "{catSearch}"
                     </span>
                   )}
 
-                  {paginatedCategories.map((cat) => {
+                  {categoriesList.map((cat) => {
                     const isSelected = (formData.templateCategoryId && formData.templateCategoryId === cat.id) || formData.category === cat.name;
                     return (
                       <button
                         key={cat.id}
                         type="button"
-                        onClick={() => setFormData({ ...formData, category: cat.name, templateCategoryId: cat.id })}
+                        onClick={() => setFormData({ ...formData, category: cat.name, templateCategoryId: cat.id, selectedCategoryObj: cat })}
                         className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] ${
                           isSelected
                             ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
@@ -337,7 +339,7 @@ export const TemplateCreateView = ({
                     </div>
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, festivalId: "" })}
+                      onClick={() => setFormData({ ...formData, festivalId: "", selectedFestivalObj: null })}
                       className="text-xs text-rose-400 hover:text-rose-300 font-bold ml-2 underline cursor-pointer"
                     >
                       Clear Selection
@@ -396,7 +398,7 @@ export const TemplateCreateView = ({
                 <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 custom-scrollbar">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, festivalId: "" })}
+                    onClick={() => setFormData({ ...formData, festivalId: "", selectedFestivalObj: null })}
                     className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] ${
                       !formData.festivalId
                         ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
@@ -406,19 +408,25 @@ export const TemplateCreateView = ({
                     <span>🎉 No Specific Festival</span>
                   </button>
 
-                  {filteredFestivals.length === 0 && festSearch && (
+                  {isLoadingFestivals && (
+                    <span className="text-xs text-slate-400 animate-pulse px-2">
+                      Searching festivals...
+                    </span>
+                  )}
+
+                  {!isLoadingFestivals && festivals.length === 0 && festSearch && (
                     <span className="text-xs text-slate-400 italic px-2">
                       No festivals matching "{festSearch}"
                     </span>
                   )}
 
-                  {paginatedFestivals.map((f) => {
+                  {festivals.map((f) => {
                     const isSelected = formData.festivalId === f.id;
                     return (
                       <button
                         key={f.id}
                         type="button"
-                        onClick={() => setFormData({ ...formData, festivalId: f.id })}
+                        onClick={() => setFormData({ ...formData, festivalId: f.id, selectedFestivalObj: f })}
                         className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] ${
                           isSelected
                             ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"

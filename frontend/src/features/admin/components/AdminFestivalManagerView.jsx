@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   Calendar,
@@ -25,6 +25,7 @@ import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
 import Pagination from "../../../components/common/Pagination";
 import { useFestivals } from "../../../hooks/useFestivals";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { FeedbackModal } from "../../../components/common/FeedbackModal";
 import { FestivalCalendarContainer } from "../../calendar/containers/FestivalCalendarContainer";
 import { readImageAsBase64 } from "../../../utils/file.utils";
@@ -35,24 +36,38 @@ import { FestivalCreateView } from "./FestivalCreateView";
  * Dedicated Admin Component to Add, Edit, Delete, Search, and Manage system festivals & special days.
  */
 export const AdminFestivalManagerView = () => {
+  // Search & Pagination State
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(8);
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Reset page to 1 whenever debounced search query changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   const {
     festivals = [],
+    meta,
     isLoading,
+    isFetching,
     createFestival,
     isCreating,
     updateFestival,
     isUpdating,
     deleteFestival,
     isDeleting,
-  } = useFestivals();
+  } = useFestivals({
+    page,
+    limit,
+    search: debouncedSearch || undefined,
+    includeInactive: true,
+  });
 
   // Mode View: "list" (Table Management) vs "calendar" (Monthly Grid) vs "form" (Create/Edit Page)
   const [displayMode, setDisplayMode] = useState("list");
-
-  // Search & Pagination State
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(8);
 
   // Modals & Feedback State
   const [editingFestival, setEditingFestival] = useState(null); // null = Create, object = Edit
@@ -200,15 +215,10 @@ export const AdminFestivalManagerView = () => {
     }
   };
 
-  // Filtered & Paginated List
-  const filteredFestivals = festivals.filter((f) =>
-    f.name.toLowerCase().includes(search.toLowerCase()) ||
-    (f.targetRegion && f.targetRegion.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  const totalFiltered = filteredFestivals.length;
-  const totalPages = Math.ceil(totalFiltered / limit) || 1;
-  const paginatedFestivals = filteredFestivals.slice((page - 1) * limit, page * limit);
+  // Server-driven paginated list
+  const paginatedFestivals = festivals;
+  const totalFiltered = meta?.totalItems ?? festivals.length;
+  const totalPages = meta?.totalPages ?? 1;
 
   if (displayMode === "form") {
     return (
@@ -241,7 +251,7 @@ export const AdminFestivalManagerView = () => {
             <h1 className="font-heading font-extrabold text-2xl text-white flex items-center gap-2">
               <span>Festival & Special Days Management</span>
               <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
-                {festivals.length} Events
+                {meta?.totalItems ?? festivals.length} Events
               </span>
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -318,7 +328,7 @@ export const AdminFestivalManagerView = () => {
               No matching festivals found. Click "Add Festival" to create one.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
               {paginatedFestivals.map((fest) => {
                 const festDate = fest.date ? new Date(fest.date) : null;
                 const formattedDate = festDate
@@ -433,19 +443,17 @@ export const AdminFestivalManagerView = () => {
           )}
 
           {/* Central Pagination */}
-          {totalPages > 1 && (
-            <div className="pt-4 border-t border-[#2C384E]">
-              <Pagination
-                meta={{ page, totalPages, totalCount: totalFiltered }}
-                onPageChange={(p) => setPage(p)}
-                onLimitChange={(l) => {
-                  setLimit(l);
-                  setPage(1);
-                }}
-                pageSizeOptions={[8, 16, 24]}
-              />
-            </div>
-          )}
+          <div className="pt-4 border-t border-[#2C384E]">
+            <Pagination
+              meta={meta}
+              onPageChange={(p) => setPage(p)}
+              onLimitChange={(l) => {
+                setLimit(l);
+                setPage(1);
+              }}
+              pageSizeOptions={[8, 16, 24]}
+            />
+          </div>
         </Card>
       )}
 

@@ -13,17 +13,13 @@ export const useFestivals = (options = { includeInactive: true, limit: 100 }) =>
     queryKey: [...QUERY_KEYS.FESTIVALS.ALL, options],
     queryFn: async () => {
       const response = await festivalApi.getFestivals(options);
-      // Handle array vs object response structures safely
-      if (Array.isArray(response.data)) {
-        return response.data;
-      }
-      if (Array.isArray(response.data?.festivals)) {
-        return response.data.festivals;
-      }
-      if (Array.isArray(response.festivals)) {
-        return response.festivals;
-      }
-      return [];
+      const list =
+        response?.data?.festivals ||
+        response?.festivals ||
+        (Array.isArray(response?.data) ? response.data : []) ||
+        [];
+      const meta = response?.meta || response?.data?.meta || null;
+      return { festivals: Array.isArray(list) ? list : [], meta };
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -50,8 +46,10 @@ export const useFestivals = (options = { includeInactive: true, limit: 100 }) =>
   });
 
   return {
-    festivals: Array.isArray(festivalsQuery.data) ? festivalsQuery.data : [],
+    festivals: festivalsQuery.data?.festivals || [],
+    meta: festivalsQuery.data?.meta || null,
     isLoading: festivalsQuery.isLoading,
+    isFetching: festivalsQuery.isFetching,
     isError: festivalsQuery.isError,
     error: festivalsQuery.error,
     refetch: festivalsQuery.refetch,

@@ -12,6 +12,7 @@ import { useFestivals } from "../../../hooks/useFestivals";
 import { useBrandKit } from "../../../hooks/useBrandKit";
 import { useCanvasCompositor } from "../../../hooks/useCanvasCompositor";
 import { useSubscription } from "../../../hooks/useSubscription";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
 import { PostStudioEditorView } from "../components/PostStudioEditorView";
 import { SocialPublisherModal } from "../components/SocialPublisherModal";
@@ -180,13 +181,47 @@ export const PostStudioContainer = () => {
     search: frameSearch,
   });
 
+  // Step 1 Category & Festival Server Pagination & Search
+  const [catSearch, setCatSearch] = useState("");
+  const [catPage, setCatPage] = useState(1);
+  const debouncedCatSearch = useDebounce(catSearch, 300);
+
+  const [festSearch, setFestSearch] = useState("");
+  const [festPage, setFestPage] = useState(1);
+  const debouncedFestSearch = useDebounce(festSearch, 300);
+
+  useEffect(() => {
+    setCatPage(1);
+  }, [debouncedCatSearch]);
+
+  useEffect(() => {
+    setFestPage(1);
+  }, [debouncedFestSearch]);
+
   // Fetch Categories List for Filter Bar (Prefer Template Categories, fallback to Business)
-  const { categories: templateCategories } = useTemplateCategories();
-  const { categories: masterCategories } = useCategories();
+  const {
+    categories: templateCategories = [],
+    meta: categoryMeta,
+    isLoading: isLoadingCategories,
+  } = useTemplateCategories({
+    page: catPage,
+    limit: 8,
+    search: debouncedCatSearch || undefined,
+  });
+  const { categories: masterCategories = [] } = useCategories();
   const categoriesList = templateCategories.length > 0 ? templateCategories : masterCategories;
 
   // Fetch Upcoming Festivals List for Filter Bar
-  const { festivals = [] } = useFestivals();
+  const {
+    festivals = [],
+    meta: festivalMeta,
+    isLoading: isLoadingFestivals,
+  } = useFestivals({
+    page: festPage,
+    limit: 8,
+    search: debouncedFestSearch || undefined,
+    includeInactive: true,
+  });
 
   // Fetch Active User BrandKit Details
   const { brandKit } = useBrandKit();
@@ -509,7 +544,19 @@ export const PostStudioContainer = () => {
         selectedFestival={selectedFestival}
         setSelectedFestival={setSelectedFestival}
         categoriesList={categoriesList}
+        categoryMeta={categoryMeta}
+        catSearch={catSearch}
+        setCatSearch={setCatSearch}
+        catPage={catPage}
+        setCatPage={setCatPage}
+        isLoadingCategories={isLoadingCategories}
         festivals={festivals}
+        festivalMeta={festivalMeta}
+        festSearch={festSearch}
+        setFestSearch={setFestSearch}
+        festPage={festPage}
+        setFestPage={setFestPage}
+        isLoadingFestivals={isLoadingFestivals}
         templates={templates}
         templatesMeta={templatesMeta}
         isLoadingTemplates={isLoadingTemplates}

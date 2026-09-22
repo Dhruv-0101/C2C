@@ -57,7 +57,19 @@ export const PostStudioEditorView = ({
   selectedFestival,
   setSelectedFestival,
   categoriesList = [],
+  categoryMeta,
+  catSearch = "",
+  setCatSearch,
+  catPage = 1,
+  setCatPage,
+  isLoadingCategories = false,
   festivals = [],
+  festivalMeta,
+  festSearch = "",
+  setFestSearch,
+  festPage = 1,
+  setFestPage,
+  isLoadingFestivals = false,
   templates,
   templatesMeta,
   isLoadingTemplates,
@@ -103,34 +115,14 @@ export const PostStudioEditorView = ({
   // Step 1 Category & Festival Collapsible Dropdown State (default: false / closed)
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
-  // Step 1 Category/Festival Segmented Tab & Pagination State
+  // Step 1 Category/Festival Segmented Tab & Server Pagination
   const [activeFilterTab, setActiveFilterTab] = useState("CATEGORIES"); // 'CATEGORIES' | 'FESTIVALS'
-  const [catSearch, setCatSearch] = useState("");
-  const [catPage, setCatPage] = useState(1);
-  const CAT_PER_PAGE = 5;
 
-  const filteredCategories = categoriesList.filter((cat) =>
-    cat.name.toLowerCase().includes(catSearch.toLowerCase())
-  );
-  const catTotalPages = Math.ceil(filteredCategories.length / CAT_PER_PAGE) || 1;
-  const paginatedCategories = filteredCategories.slice(
-    (catPage - 1) * CAT_PER_PAGE,
-    catPage * CAT_PER_PAGE
-  );
+  const catTotalPages = categoryMeta?.totalPages || 1;
+  const paginatedCategories = categoriesList;
 
-  // Step 1 Festival Pagination (5 per page) & Search State
-  const [festSearch, setFestSearch] = useState("");
-  const [festPage, setFestPage] = useState(1);
-  const FEST_PER_PAGE = 5;
-
-  const filteredFestivals = festivals.filter((f) =>
-    f.name.toLowerCase().includes(festSearch.toLowerCase())
-  );
-  const festTotalPages = Math.ceil(filteredFestivals.length / FEST_PER_PAGE) || 1;
-  const paginatedFestivals = filteredFestivals.slice(
-    (festPage - 1) * FEST_PER_PAGE,
-    festPage * FEST_PER_PAGE
-  );
+  const festTotalPages = festivalMeta?.totalPages || 1;
+  const paginatedFestivals = festivals;
   // Zoomed Frame Lightbox Modal State
   const [zoomedFrame, setZoomedFrame] = useState(null);
 
@@ -577,8 +569,8 @@ export const PostStudioEditorView = ({
                                 placeholder="Filter category..."
                                 value={catSearch}
                                 onChange={(e) => {
-                                  setCatSearch(e.target.value);
-                                  setCatPage(1);
+                                  if (setCatSearch) setCatSearch(e.target.value);
+                                  if (setCatPage) setCatPage(1);
                                 }}
                                 className="w-full pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
                               />
@@ -587,7 +579,7 @@ export const PostStudioEditorView = ({
                               <button
                                 type="button"
                                 disabled={catPage <= 1}
-                                onClick={() => setCatPage((p) => Math.max(1, p - 1))}
+                                onClick={() => setCatPage && setCatPage((p) => Math.max(1, p - 1))}
                                 className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
                               >
                                 <ChevronLeft className="w-3.5 h-3.5" />
@@ -598,7 +590,7 @@ export const PostStudioEditorView = ({
                               <button
                                 type="button"
                                 disabled={catPage >= catTotalPages}
-                                onClick={() => setCatPage((p) => Math.min(catTotalPages, p + 1))}
+                                onClick={() => setCatPage && setCatPage((p) => Math.min(catTotalPages, p + 1))}
                                 className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
                               >
                                 <ChevronRight className="w-3.5 h-3.5" />
@@ -614,8 +606,8 @@ export const PostStudioEditorView = ({
                                 placeholder="Filter festival..."
                                 value={festSearch}
                                 onChange={(e) => {
-                                  setFestSearch(e.target.value);
-                                  setFestPage(1);
+                                  if (setFestSearch) setFestSearch(e.target.value);
+                                  if (setFestPage) setFestPage(1);
                                 }}
                                 className="w-full pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
                               />
@@ -624,7 +616,7 @@ export const PostStudioEditorView = ({
                               <button
                                 type="button"
                                 disabled={festPage <= 1}
-                                onClick={() => setFestPage((p) => Math.max(1, p - 1))}
+                                onClick={() => setFestPage && setFestPage((p) => Math.max(1, p - 1))}
                                 className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
                               >
                                 <ChevronLeft className="w-3.5 h-3.5" />
@@ -635,7 +627,7 @@ export const PostStudioEditorView = ({
                               <button
                                 type="button"
                                 disabled={festPage >= festTotalPages}
-                                onClick={() => setFestPage((p) => Math.min(festTotalPages, p + 1))}
+                                onClick={() => setFestPage && setFestPage((p) => Math.min(festTotalPages, p + 1))}
                                 className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
                               >
                                 <ChevronRight className="w-3.5 h-3.5" />
@@ -664,27 +656,53 @@ export const PostStudioEditorView = ({
                           <span>🎨 All</span>
                         </button>
 
-                        {paginatedCategories.map((cat) => {
-                          const isSelected = selectedCategory === cat.name;
-                          return (
-                            <button
-                              key={cat.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedCategory(cat.name);
-                                setTemplatePage(1);
-                              }}
-                              className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition shrink-0 flex items-center gap-1 cursor-pointer ${
-                                isSelected
-                                  ? "bg-amber-500 text-slate-950 shadow-glow font-extrabold"
-                                  : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                              }`}
-                            >
-                              <span>{cat.icon || "🎨"}</span>
-                              <span>{cat.name}</span>
-                            </button>
-                          );
-                        })}
+                        {selectedCategory && !paginatedCategories.some((cat) => cat.name === selectedCategory) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedCategory("");
+                              setTemplatePage(1);
+                            }}
+                            className="px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold transition shrink-0 flex items-center gap-1 bg-amber-500 text-slate-950 shadow-glow"
+                            title="Currently active category filter (click to reset)"
+                          >
+                            <span>✓</span>
+                            <span>{selectedCategory}</span>
+                            <span className="text-[10px] opacity-75">✕</span>
+                          </button>
+                        )}
+
+                        {isLoadingCategories ? (
+                          <div className="flex items-center gap-1.5 animate-pulse">
+                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
+                            <div className="h-6 w-20 bg-slate-800 rounded-lg" />
+                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
+                          </div>
+                        ) : paginatedCategories.length === 0 ? (
+                          <span className="text-[11px] text-slate-500 italic px-2 py-0.5">No categories found</span>
+                        ) : (
+                          paginatedCategories.map((cat) => {
+                            const isSelected = selectedCategory === cat.name;
+                            return (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCategory(cat.name);
+                                  setTemplatePage(1);
+                                }}
+                                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition shrink-0 flex items-center gap-1 cursor-pointer ${
+                                  isSelected
+                                    ? "bg-amber-500 text-slate-950 shadow-glow font-extrabold"
+                                    : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                                }`}
+                              >
+                                <span>{cat.icon || "🎨"}</span>
+                                <span>{cat.name}</span>
+                              </button>
+                            );
+                          })
+                        )}
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
@@ -703,27 +721,53 @@ export const PostStudioEditorView = ({
                           <span>🎉 All</span>
                         </button>
 
-                        {paginatedFestivals.map((f) => {
-                          const isSelected = selectedFestival === f.id;
-                          return (
-                            <button
-                              key={f.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedFestival(f.id);
-                                setTemplatePage(1);
-                              }}
-                              className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition shrink-0 flex items-center gap-1 cursor-pointer ${
-                                isSelected
-                                  ? "bg-emerald-500 text-slate-950 shadow-glow font-extrabold"
-                                  : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                              }`}
-                            >
-                              <span>🪔</span>
-                              <span>{f.name}</span>
-                            </button>
-                          );
-                        })}
+                        {selectedFestival && !paginatedFestivals.some((f) => f.id === selectedFestival) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedFestival("");
+                              setTemplatePage(1);
+                            }}
+                            className="px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold transition shrink-0 flex items-center gap-1 bg-emerald-500 text-slate-950 shadow-glow"
+                            title="Currently active festival filter (click to reset)"
+                          >
+                            <span>✓</span>
+                            <span>Selected Festival</span>
+                            <span className="text-[10px] opacity-75">✕</span>
+                          </button>
+                        )}
+
+                        {isLoadingFestivals ? (
+                          <div className="flex items-center gap-1.5 animate-pulse">
+                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
+                            <div className="h-6 w-20 bg-slate-800 rounded-lg" />
+                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
+                          </div>
+                        ) : paginatedFestivals.length === 0 ? (
+                          <span className="text-[11px] text-slate-500 italic px-2 py-0.5">No festivals found</span>
+                        ) : (
+                          paginatedFestivals.map((f) => {
+                            const isSelected = selectedFestival === f.id;
+                            return (
+                              <button
+                                key={f.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedFestival(f.id);
+                                  setTemplatePage(1);
+                                }}
+                                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition shrink-0 flex items-center gap-1 cursor-pointer ${
+                                  isSelected
+                                    ? "bg-emerald-500 text-slate-950 shadow-glow font-extrabold"
+                                    : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                                }`}
+                              >
+                                <span>🪔</span>
+                                <span>{f.name}</span>
+                              </button>
+                            );
+                          })
+                        )}
                       </div>
                     )}
                   </div>
