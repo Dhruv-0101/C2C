@@ -12,6 +12,8 @@ import {
   FolderKanban,
   Calendar,
   Sparkles,
+  Trash2,
+  AlertCircle,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -68,6 +70,7 @@ export const BaseTemplateManagerView = ({
   handleFormSubmit,
 }) => {
   const [customCatInput, setCustomCatInput] = useState("");
+  const [templateToDelete, setTemplateToDelete] = useState(null);
 
   const catTotalPages = categoryMeta?.totalPages || 1;
   const festTotalPages = festivalMeta?.totalPages || 1;
@@ -81,8 +84,11 @@ export const BaseTemplateManagerView = ({
             <FileCode2 className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-heading font-extrabold text-lg text-white">
-              Graphic Templates Manager
+            <h2 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
+              <span>Graphic Templates Manager</span>
+              <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+                {templateMeta?.totalItems ?? templates.length} Templates
+              </span>
             </h2>
             <p className="text-xs text-slate-400">
               Upload clean 1080x1080 graphic backgrounds that end-users composite with custom transparent brand frames.
@@ -105,11 +111,14 @@ export const BaseTemplateManagerView = ({
         {/* 1. Category Section (5 Items per Page + Search) */}
         <div className="space-y-3 p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <FolderKanban className="w-4 h-4 text-amber-400" />
               <h4 className="font-heading font-extrabold text-sm text-white">
-                Categories Navigation (8 per page)
+                Categories Navigation
               </h4>
+              <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                {categoryMeta?.totalItems ?? categoriesList.length} Categories
+              </span>
               <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                 Page {catPage} of {catTotalPages}
               </span>
@@ -127,7 +136,7 @@ export const BaseTemplateManagerView = ({
                     setCatSearch(e.target.value);
                     setCatPage(1);
                   }}
-                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-44"
+                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-40"
                 />
               </div>
 
@@ -137,26 +146,28 @@ export const BaseTemplateManagerView = ({
                   type="button"
                   disabled={catPage <= 1}
                   onClick={() => setCatPage((p) => Math.max(1, p - 1))}
-                  className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition"
+                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
                   title="Previous Categories"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Prev</span>
                 </button>
                 <button
                   type="button"
                   disabled={catPage >= catTotalPages}
                   onClick={() => setCatPage((p) => Math.min(catTotalPages, p + 1))}
-                  className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition"
+                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
                   title="Next Categories"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Category Pills (Max 8 shown per page) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto pt-1.5 pb-3.5 custom-scrollbar">
             <button
               type="button"
               onClick={() => {
@@ -211,11 +222,14 @@ export const BaseTemplateManagerView = ({
         {/* 2. Festival Section (8 Items per Page + Search) */}
         <div className="space-y-3 p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Calendar className="w-4 h-4 text-emerald-400" />
               <h4 className="font-heading font-extrabold text-sm text-white">
-                Festivals Navigation (8 per page)
+                Festivals Navigation
               </h4>
+              <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                {festivalMeta?.totalItems ?? festivals.length} Festivals
+              </span>
               <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                 Page {festPage} of {festTotalPages}
               </span>
@@ -233,7 +247,7 @@ export const BaseTemplateManagerView = ({
                     setFestSearch(e.target.value);
                     setFestPage(1);
                   }}
-                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-44"
+                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-40"
                 />
               </div>
 
@@ -243,26 +257,28 @@ export const BaseTemplateManagerView = ({
                   type="button"
                   disabled={festPage <= 1}
                   onClick={() => setFestPage((p) => Math.max(1, p - 1))}
-                  className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition"
+                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
                   title="Previous Festivals"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Prev</span>
                 </button>
                 <button
                   type="button"
                   disabled={festPage >= festTotalPages}
                   onClick={() => setFestPage((p) => Math.min(festTotalPages, p + 1))}
-                  className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition"
+                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
                   title="Next Festivals"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Festival Pills (Max 8 shown per page) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto pt-1.5 pb-3.5 custom-scrollbar">
             <button
               type="button"
               onClick={() => {
@@ -316,15 +332,20 @@ export const BaseTemplateManagerView = ({
 
         {/* 3. Search Base Templates Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
-          <SearchBar
-            placeholder="Search base graphic templates by title..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-            className="w-full sm:max-w-md"
-          />
+          <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-3">
+            <SearchBar
+              placeholder="Search base graphic templates by title..."
+              value={search}
+              onChange={(val) => {
+                setSearch(val);
+                setPage(1);
+              }}
+              className="w-full sm:max-w-md"
+            />
+            <div className="text-xs text-slate-400 font-mono">
+              Showing {templates.length} of {templateMeta?.totalItems ?? templates.length} templates
+            </div>
+          </div>
 
           {(selectedCategory || selectedFestival) && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -396,23 +417,24 @@ export const BaseTemplateManagerView = ({
                   key={tpl.id}
                   imageUrl={tpl.baseImageUrl}
                   title={tpl.title}
-                  category={tpl.templateCategory?.name || tpl.category || tpl.festival?.name}
                   creator={tpl.creator}
                   onPreview={() => setFullscreenTemplate(tpl)}
-                  onDelete={() => deleteTemplateMutation.mutate(tpl.id)}
-                  isDeleting={deleteTemplateMutation.isPending}
+                  onDelete={() => setTemplateToDelete(tpl)}
+                  isDeleting={deleteTemplateMutation.isPending && deleteTemplateMutation.variables === tpl.id}
                 />
               ))}
             </div>
 
             <Pagination
               meta={templateMeta}
+              currentPage={templateMeta?.page || page}
+              totalPages={templateMeta?.totalPages || 1}
               onPageChange={(newPage) => setPage(newPage)}
               onLimitChange={(newLimit) => {
                 setLimit(newLimit);
                 setPage(1);
               }}
-              pageSizeOptions={[4, 8, 12, 24]}
+              pageSizeOptions={[8, 12, 24, 48]}
             />
           </div>
         )}
@@ -426,6 +448,51 @@ export const BaseTemplateManagerView = ({
         item={fullscreenTemplate}
         onClose={() => setFullscreenTemplate(null)}
       />
+
+      {/* Delete Confirmation Modal */}
+      {templateToDelete &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-sm rounded-2xl bg-[#131B2A] border border-[#2C384E] p-6 shadow-2xl space-y-4 text-center"
+            >
+              <div className="mx-auto w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+
+              <div>
+                <h3 className="font-heading font-extrabold text-lg text-white">
+                  Delete Graphic Template?
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Are you sure you want to delete <span className="text-white font-semibold">"{templateToDelete.title}"</span>? This will permanently delete the background graphic.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => setTemplateToDelete(null)}
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    deleteTemplateMutation.mutate(templateToDelete.id);
+                    setTemplateToDelete(null);
+                  }}
+                  className="text-xs"
+                >
+                  Yes, Delete
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

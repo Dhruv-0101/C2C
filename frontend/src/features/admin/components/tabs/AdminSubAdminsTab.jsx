@@ -51,8 +51,9 @@ export const AdminSubAdminsTab = ({
         <div className="flex items-center gap-3">
           <SearchBar
             value={subAdminSearch}
-            onChange={(e) => {
-              setSubAdminSearch(e.target.value);
+            onChange={(val) => {
+              const query = typeof val === "string" ? val : (val?.target?.value ?? "");
+              setSubAdminSearch(query);
               setSubAdminPage(1);
             }}
             placeholder="Search subadmins..."
@@ -217,6 +218,7 @@ export const AdminSubAdminsTab = ({
               setSubAdminLimit(newLimit);
               setSubAdminPage(1);
             }}
+            pageSizeOptions={[5, 10, 20, 50]}
           />
         </div>
       )}

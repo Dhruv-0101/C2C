@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Shield, Sparkles, ArrowLeft, LogOut, User } from "lucide-react";
+import { Shield, Sparkles, ArrowLeft, LogOut, User, Menu } from "lucide-react";
 import { AdminSidebar } from "../features/admin/components/AdminSidebar";
 import { useAuth } from "../hooks/useAuth";
 
@@ -16,6 +16,8 @@ export const AdminLayout = () => {
     return localStorage.getItem("admin_sidebar_collapsed") === "true";
   });
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   const toggleSidebar = () => {
     setIsCollapsed((prev) => {
       const nextState = !prev;
@@ -24,23 +26,35 @@ export const AdminLayout = () => {
     });
   };
 
-  const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN";
+  const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   return (
     <div className="min-h-screen bg-[#0B0F17] text-slate-100 font-body flex">
       {/* Dedicated Left Navigation Sidebar */}
-      <AdminSidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />
+      <AdminSidebar
+        isCollapsed={isCollapsed}
+        onToggle={toggleSidebar}
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
+      />
 
       {/* Main Content & Top Security Header Area */}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out ${
-          isCollapsed ? "md:ml-20" : "md:ml-64"
+          isCollapsed ? "lg:ml-20" : "lg:ml-64"
         } min-h-screen flex flex-col`}
       >
         {/* Top Security Header Banner */}
-        <header className="h-16 bg-[#131B2A] border-b border-[#2C384E] px-6 flex items-center justify-between sticky top-0 z-30 shadow-md">
-          {/* Left Security Badge */}
+        <header className="h-16 bg-[#131B2A] border-b border-[#2C384E] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md">
+          {/* Left Security Badge & Mobile Drawer Trigger */}
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
+              title="Open Navigation Menu"
+            >
+              <Menu className="w-5 h-5 text-amber-400" />
+            </button>
             <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>

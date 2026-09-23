@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { frameApi } from "@/services/frame.api";
 import { useFrames } from "@/hooks/useFrames";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useFeedbackModal } from "@/hooks/useFeedbackModal";
 import { useFrameCanvasEngine, drawVectorShapePath } from "@/hooks/useFrameCanvasEngine";
 import { QUERY_KEYS } from "@/constants/queryKeys";
@@ -72,6 +73,7 @@ export const FrameManagerContainer = () => {
   const [framePage, setFramePage] = useState(1);
   const [frameLimit, setFrameLimit] = useState(8);
   const [frameSearch, setFrameSearch] = useState("");
+  const debouncedFrameSearch = useDebounce(frameSearch, 300);
 
   const {
     frames,
@@ -80,7 +82,9 @@ export const FrameManagerContainer = () => {
   } = useFrames({
     page: framePage,
     limit: frameLimit,
-    search: frameSearch,
+    search: debouncedFrameSearch,
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   // Mutations
@@ -88,6 +92,8 @@ export const FrameManagerContainer = () => {
     mutationFn: (data) => frameApi.createFrame(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FRAMES.ALL });
+      setFramePage(1);
+      setActiveTab("manage");
       setSuccessMsg("🎉 Canva Frame converted to transparent PNG and saved to Cloud & DB!");
       setErrorMsg("");
       setUploadData({

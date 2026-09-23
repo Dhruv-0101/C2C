@@ -205,15 +205,30 @@ export async function createScheduledPost(data) {
 }
 
 /**
- * Find scheduled posts for a user with pagination
+ * Find scheduled posts for a user with pagination and optional search
  * @param {string} userId
  * @param {Object} params
  * @param {number} params.skip
  * @param {number} params.take
+ * @param {string} [params.search]
  * @returns {Promise<{ scheduledPosts: Array<Object>, totalCount: number }>}
  */
-export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 10 }) {
-  const where = { post: { userId } };
+export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 10, search }) {
+  const where = {
+    post: {
+      userId,
+      ...(search
+        ? {
+            OR: [
+              { occasionName: { contains: search, mode: 'insensitive' } },
+              { festival: { name: { contains: search, mode: 'insensitive' } } },
+              { template: { title: { contains: search, mode: 'insensitive' } } },
+              { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
+            ],
+          }
+        : {}),
+    },
+  };
 
   const [scheduledPosts, totalCount] = await Promise.all([
     prisma.scheduledPost.findMany({
@@ -481,6 +496,7 @@ export async function findPaginatedForAdmin({
             { occasionName: { contains: search, mode: 'insensitive' } },
             { user: { fullName: { contains: search, mode: 'insensitive' } } },
             { user: { email: { contains: search, mode: 'insensitive' } } },
+            { user: { brandKit: { businessName: { contains: search, mode: 'insensitive' } } } },
             { festival: { name: { contains: search, mode: 'insensitive' } } },
             { template: { title: { contains: search, mode: 'insensitive' } } },
             { category: { name: { contains: search, mode: 'insensitive' } } },

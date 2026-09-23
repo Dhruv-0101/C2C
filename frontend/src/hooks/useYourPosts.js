@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { postApi } from "../services/post.api";
 import { QUERY_KEYS } from "../constants/queryKeys";
 
@@ -15,26 +15,30 @@ export const useYourPosts = (initialParams = {}) => {
   const [scheduledPage, setScheduledPage] = useState(initialParams.scheduledPage || 1);
   const [scheduledLimit, setScheduledLimit] = useState(initialParams.scheduledLimit || 10);
 
-  // Query User All Posts with Pagination
+  const search = initialParams.search || "";
+
+  // Query User All Posts with Pagination & Search
   const {
     data: postsResponse,
     isLoading: isLoadingPosts,
     error: postsError,
     refetch: refetchPosts,
   } = useQuery({
-    queryKey: [...QUERY_KEYS.POSTS.ALL, postsPage, postsLimit],
-    queryFn: () => postApi.getUserPosts({ page: postsPage, limit: postsLimit }),
+    queryKey: [...QUERY_KEYS.POSTS.ALL, postsPage, postsLimit, search],
+    queryFn: () => postApi.getUserPosts({ page: postsPage, limit: postsLimit, search: search.trim() || undefined }),
+    placeholderData: keepPreviousData,
   });
 
-  // Query User Scheduled Posts Queue with Pagination
+  // Query User Scheduled Posts Queue with Pagination & Search
   const {
     data: scheduledResponse,
     isLoading: isLoadingScheduled,
     error: scheduledError,
     refetch: refetchScheduled,
   } = useQuery({
-    queryKey: [...QUERY_KEYS.POSTS.SCHEDULED, scheduledPage, scheduledLimit],
-    queryFn: () => postApi.getScheduledPosts({ page: scheduledPage, limit: scheduledLimit }),
+    queryKey: [...QUERY_KEYS.POSTS.SCHEDULED, scheduledPage, scheduledLimit, search],
+    queryFn: () => postApi.getScheduledPosts({ page: scheduledPage, limit: scheduledLimit, search: search.trim() || undefined }),
+    placeholderData: keepPreviousData,
   });
 
   // Delete Post Mutation

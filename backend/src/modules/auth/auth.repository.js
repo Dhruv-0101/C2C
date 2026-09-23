@@ -279,6 +279,7 @@ export async function findPaginatedUsers({ skip, take, search, sortBy = 'created
     where.OR = [
       { fullName: { contains: search, mode: 'insensitive' } },
       { email: { contains: search, mode: 'insensitive' } },
+      { brandKit: { businessName: { contains: search, mode: 'insensitive' } } },
     ];
   }
 

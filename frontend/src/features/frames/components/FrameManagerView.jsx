@@ -37,6 +37,7 @@ import {
   AlignCenter,
   AlignRight,
   Crosshair,
+  AlertTriangle,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -44,6 +45,7 @@ import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { FeedbackModal } from "@/components/common/FeedbackModal";
 import { ImageLightbox } from "@/components/common/ImageLightbox";
+import { SearchBar } from "@/components/common/SearchBar";
 import Pagination from "@/components/common/Pagination";
 import { MASTER_FRAME_PRESETS } from "../../../constants/framePresets";
 
@@ -93,6 +95,8 @@ export const FrameManagerView = ({
 }) => {
   // Left Sidebar Sub-Tab State
   const [sidebarTab, setSidebarTab] = useState("elements");
+  // Delete confirmation state
+  const [frameToDelete, setFrameToDelete] = useState(null);
 
   return (
     <div className="space-y-6">
@@ -105,12 +109,12 @@ export const FrameManagerView = ({
           <div>
             <h2 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
               <span>Interactive Frame Studio</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              {/* <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
                 PRO BUILDER
-              </span>
+              </span> */}
             </h2>
             <p className="text-xs text-slate-400">
-              Visual canvas studio for designing transparent brand frame overlays & dynamic text/image slots.
+              Visual studio for designing transparent brand frame overlays & dynamic text/image slots.
             </p>
           </div>
         </div>
@@ -120,11 +124,10 @@ export const FrameManagerView = ({
           <div className="flex items-center gap-1.5 bg-[#0B0F17] p-1.5 rounded-xl border border-[#2C384E]">
             <button
               onClick={() => setActiveTab("canva")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-                activeTab === "canva"
-                  ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20"
-                  : "text-slate-400 hover:text-white"
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === "canva"
+                ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20"
+                : "text-slate-400 hover:text-white"
+                }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Canvas Studio</span>
@@ -132,11 +135,10 @@ export const FrameManagerView = ({
 
             <button
               onClick={() => setActiveTab("manage")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-                activeTab === "manage"
-                  ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20"
-                  : "text-slate-400 hover:text-white"
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === "manage"
+                ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20"
+                : "text-slate-400 hover:text-white"
+                }`}
             >
               <Eye className="w-3.5 h-3.5" />
               <span>Active Frames ({framesPaginationMeta?.totalItems ?? frames?.length ?? 0})</span>
@@ -169,7 +171,7 @@ export const FrameManagerView = ({
       {/* 2. TAB 1: Canvas Studio Workspace */}
       {activeTab === "canva" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
+
           {/* LEFT STUDIO SIDEBAR (4 Cols): Tool Tabs & Drawers */}
           <Card className="lg:col-span-4 border-[#2C384E] bg-[#131B2A] p-4 sm:p-5 space-y-4 shadow-xl">
             {/* Sidebar Internal Navigation Tabs */}
@@ -177,11 +179,10 @@ export const FrameManagerView = ({
               <button
                 type="button"
                 onClick={() => setSidebarTab("elements")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${
-                  sidebarTab === "elements"
-                    ? "bg-amber-500 text-slate-950 font-bold shadow"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "elements"
+                  ? "bg-amber-500 text-slate-950 font-bold shadow"
+                  : "text-slate-400 hover:text-white"
+                  }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Elements</span>
@@ -190,11 +191,10 @@ export const FrameManagerView = ({
               <button
                 type="button"
                 onClick={() => setSidebarTab("presets")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${
-                  sidebarTab === "presets"
-                    ? "bg-amber-500 text-slate-950 font-bold shadow"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "presets"
+                  ? "bg-amber-500 text-slate-950 font-bold shadow"
+                  : "text-slate-400 hover:text-white"
+                  }`}
               >
                 <Grid className="w-3.5 h-3.5" />
                 <span>Presets</span>
@@ -203,11 +203,10 @@ export const FrameManagerView = ({
               <button
                 type="button"
                 onClick={() => setSidebarTab("layers")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${
-                  sidebarTab === "layers"
-                    ? "bg-amber-500 text-slate-950 font-bold shadow"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "layers"
+                  ? "bg-amber-500 text-slate-950 font-bold shadow"
+                  : "text-slate-400 hover:text-white"
+                  }`}
               >
                 <Layers className="w-3.5 h-3.5" />
                 <span>Layers ({elements.length})</span>
@@ -216,14 +215,13 @@ export const FrameManagerView = ({
               <button
                 type="button"
                 onClick={() => setSidebarTab("info")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${
-                  sidebarTab === "info"
-                    ? "bg-amber-500 text-slate-950 font-bold shadow"
-                    : "text-slate-400 hover:text-white"
-                }`}
+                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "info"
+                  ? "bg-amber-500 text-slate-950 font-bold shadow"
+                  : "text-slate-400 hover:text-white"
+                  }`}
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>Package</span>
+                <span>Details</span>
               </button>
             </div>
 
@@ -434,11 +432,10 @@ export const FrameManagerView = ({
                       <div
                         key={el.id}
                         onClick={() => setSelectedId(el.id)}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between transition cursor-pointer ${
-                          el.id === selectedId
-                            ? "bg-amber-500/20 border-amber-500 text-white font-bold shadow"
-                            : "bg-[#0B0F17] border-[#2C384E] text-slate-300 hover:border-slate-600"
-                        }`}
+                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between transition cursor-pointer ${el.id === selectedId
+                          ? "bg-amber-500/20 border-amber-500 text-white font-bold shadow"
+                          : "bg-[#0B0F17] border-[#2C384E] text-slate-300 hover:border-slate-600"
+                          }`}
                       >
                         <div className="flex items-center gap-2 truncate">
                           <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
@@ -499,7 +496,7 @@ export const FrameManagerView = ({
                 <div className="flex items-center gap-1.5">
                   <Move className="w-4 h-4 text-amber-400 shrink-0" />
                   <span className="font-heading font-extrabold text-xs text-white uppercase tracking-wider">
-                    1080x1080 Interactive Stage
+                    Interactive Stage
                   </span>
                 </div>
 
@@ -507,27 +504,25 @@ export const FrameManagerView = ({
                   <button
                     type="button"
                     onClick={() => setStageBgColor("WHITE")}
-                    className={`px-2 py-1 rounded-lg font-bold transition ${
-                      stageBgColor === "WHITE"
-                        ? "bg-white text-slate-950"
-                        : "text-slate-400 hover:text-white"
-                    }`}
+                    className={`px-2 py-1 rounded-lg font-bold transition ${stageBgColor === "WHITE"
+                      ? "bg-white text-slate-950"
+                      : "text-slate-400 hover:text-white"
+                      }`}
                   >
                     White
                   </button>
                   <button
                     type="button"
                     onClick={() => setStageBgColor("DARK")}
-                    className={`px-2 py-1 rounded-lg font-bold transition ${
-                      stageBgColor === "DARK"
-                        ? "bg-slate-800 text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
+                    className={`px-2 py-1 rounded-lg font-bold transition ${stageBgColor === "DARK"
+                      ? "bg-slate-800 text-white"
+                      : "text-slate-400 hover:text-white"
+                      }`}
                   >
                     Dark
                   </button>
 
-                  {selectedElement && (
+                  {/* {selectedElement && (
                     <button
                       type="button"
                       onClick={() => centerSelectedElement && centerSelectedElement("BOTH")}
@@ -537,16 +532,15 @@ export const FrameManagerView = ({
                       <Crosshair className="w-3 h-3 text-amber-400" />
                       <span>Center Both (X & Y)</span>
                     </button>
-                  )}
+                  )} */}
 
                   <button
                     type="button"
                     onClick={() => setShowSelectionBox && setShowSelectionBox(!showSelectionBox)}
-                    className={`px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 ${
-                      showSelectionBox
-                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                        : "text-slate-400"
-                    }`}
+                    className={`px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 ${showSelectionBox
+                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                      : "text-slate-400"
+                      }`}
                     title="Toggle selection box outline"
                   >
                     <Eye className="w-3 h-3" />
@@ -596,7 +590,7 @@ export const FrameManagerView = ({
                   </div>
 
                   <div className="flex items-center gap-1">
-                    <button
+                    {/* <button
                       onClick={() => handleMoveLayer("UP")}
                       className="p-1 rounded bg-slate-800 text-slate-300 hover:text-white transition"
                       title="Move Layer Up"
@@ -609,7 +603,7 @@ export const FrameManagerView = ({
                       title="Move Layer Down"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
-                    </button>
+                    </button> */}
                     <button
                       onClick={handleDeleteSelected}
                       className="p-1 rounded bg-rose-500/15 text-rose-400 hover:bg-rose-600 hover:text-white transition"
@@ -652,7 +646,7 @@ export const FrameManagerView = ({
                       title="Upar, Niche, Left, Right: Sab se dead center karein (1080x1080)"
                     >
                       <Crosshair className="w-3.5 h-3.5" />
-                      <span>🎯 Center Both (Upar, Niche, Left, Right)</span>
+                      <span>Center Both</span>
                     </button>
 
                     <button
@@ -661,7 +655,7 @@ export const FrameManagerView = ({
                       className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-200 hover:text-white hover:border-amber-500 font-bold text-[10px] flex items-center justify-center gap-1 transition"
                       title="Center Horizontally (Left-Right Center)"
                     >
-                      <span>↔️ Center X</span>
+                      <span>Center X</span>
                     </button>
 
                     <button
@@ -670,7 +664,7 @@ export const FrameManagerView = ({
                       className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-200 hover:text-white hover:border-amber-500 font-bold text-[10px] flex items-center justify-center gap-1 transition"
                       title="Center Vertically (Upar-Niche Center)"
                     >
-                      <span>↕️ Center Y</span>
+                      <span>Center Y</span>
                     </button>
 
                     <button
@@ -681,7 +675,7 @@ export const FrameManagerView = ({
                       className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-200 hover:text-white hover:border-amber-500 font-bold text-[10px] flex items-center justify-center gap-1 transition"
                       title="Snap to Footer / Bottom"
                     >
-                      <span>⬇️ Bottom</span>
+                      <span>Bottom</span>
                     </button>
                   </div>
                 </div>
@@ -697,12 +691,12 @@ export const FrameManagerView = ({
                       selectedElement.type === "TEXT"
                         ? "TEXT_INPUT"
                         : selectedElement.slotCategory ||
-                          (selectedElement.dynamicSlot === "LOGO_BOX" ||
+                        (selectedElement.dynamicSlot === "LOGO_BOX" ||
                           selectedElement.dynamicSlot === "AVATAR_CIRCLE"
-                            ? "IMAGE_SLOT"
-                            : selectedElement.dynamicSlot !== "NONE"
-                              ? "TEXT_INPUT"
-                              : "STATIC")
+                          ? "IMAGE_SLOT"
+                          : selectedElement.dynamicSlot !== "NONE"
+                            ? "TEXT_INPUT"
+                            : "STATIC")
                     }
                     disabled={selectedElement.type === "TEXT"}
                     onChange={(e) => {
@@ -739,8 +733,8 @@ export const FrameManagerView = ({
                             selectedElement.dynamicSlot === "AVATAR_CIRCLE"
                               ? "AVATAR_CIRCLE"
                               : selectedElement.dynamicSlot === "LOGO_BOX"
-                              ? "LOGO_BOX"
-                              : "CUSTOM_IMAGE",
+                                ? "LOGO_BOX"
+                                : "CUSTOM_IMAGE",
                           customLabel:
                             selectedElement.customLabel ||
                             selectedElement.name ||
@@ -771,70 +765,70 @@ export const FrameManagerView = ({
                   {(selectedElement.slotCategory === "TEXT_INPUT" ||
                     selectedElement.type === "TEXT" ||
                     selectedElement.dynamicSlot !== "NONE") && (
-                    <div className="space-y-1.5 pt-2 border-t border-[#2C384E]">
-                      <label className="text-[10px] text-slate-300 font-semibold block">
-                        BrandKit Key Mapping
-                      </label>
-                      <select
-                        value={selectedElement.dynamicSlot || "CUSTOM_FIELD"}
-                        onChange={(e) =>
-                          updateSelectedElement({
-                            dynamicSlot: e.target.value,
-                          })
-                        }
-                        className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
-                      >
-                        <option value="CUSTOM_FIELD">Manual User Input</option>
-                        <option value="BUSINESS_NAME">Business Name</option>
-                        <option value="PHONE">Phone Number</option>
-                        <option value="WHATSAPP">WhatsApp Number</option>
-                        <option value="EMAIL">Email Address</option>
-                        <option value="INSTAGRAM">Instagram Handle</option>
-                        <option value="FACEBOOK">Facebook Page</option>
-                        <option value="LINKEDIN">LinkedIn Handle</option>
-                        <option value="TWITTER">Twitter / X Handle</option>
-                        <option value="YOUTUBE">YouTube Handle</option>
-                        <option value="ADDRESS">Address / Street</option>
-                        <option value="CITY">City</option>
-                        <option value="WEBSITE">Website URL</option>
-                        <option value="TAGLINE">Tagline / Slogan</option>
-                        <option value="WORKING_HOURS">Working Hours / Timings</option>
-                        <option value="GMB_REVIEW">Google My Business Review Link</option>
-                        <option value="UPI_VPA">UPI Payment VPA ID</option>
-                      </select>
-                    </div>
-                  )}
+                      <div className="space-y-1.5 pt-2 border-t border-[#2C384E]">
+                        <label className="text-[10px] text-slate-300 font-semibold block">
+                          BrandKit Key Mapping
+                        </label>
+                        <select
+                          value={selectedElement.dynamicSlot || "CUSTOM_FIELD"}
+                          onChange={(e) =>
+                            updateSelectedElement({
+                              dynamicSlot: e.target.value,
+                            })
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
+                        >
+                          <option value="CUSTOM_FIELD">Manual User Input</option>
+                          <option value="BUSINESS_NAME">Business Name</option>
+                          <option value="PHONE">Phone Number</option>
+                          <option value="WHATSAPP">WhatsApp Number</option>
+                          <option value="EMAIL">Email Address</option>
+                          <option value="INSTAGRAM">Instagram Handle</option>
+                          <option value="FACEBOOK">Facebook Page</option>
+                          <option value="LINKEDIN">LinkedIn Handle</option>
+                          <option value="TWITTER">Twitter / X Handle</option>
+                          <option value="YOUTUBE">YouTube Handle</option>
+                          <option value="ADDRESS">Address / Street</option>
+                          <option value="CITY">City</option>
+                          <option value="WEBSITE">Website URL</option>
+                          <option value="TAGLINE">Tagline / Slogan</option>
+                          <option value="WORKING_HOURS">Working Hours / Timings</option>
+                          <option value="GMB_REVIEW">Google My Business Review Link</option>
+                          <option value="UPI_VPA">UPI Payment VPA ID</option>
+                        </select>
+                      </div>
+                    )}
 
                   {/* Image Slot BrandKit Mapping */}
                   {(selectedElement.slotCategory === "IMAGE_SLOT" ||
                     selectedElement.dynamicSlot === "LOGO_BOX" ||
                     selectedElement.dynamicSlot === "AVATAR_CIRCLE" ||
                     selectedElement.dynamicSlot === "UPI_QR") && (
-                    <div className="space-y-1.5 pt-2 border-t border-[#2C384E]">
-                      <label className="text-[10px] text-slate-300 font-semibold block">
-                        Image Slot Auto-Fill
-                      </label>
-                      <select
-                        value={selectedElement.dynamicSlot || "CUSTOM_IMAGE"}
-                        onChange={(e) => {
-                          const slot = e.target.value;
-                          updateSelectedElement({
-                            dynamicSlot: slot,
-                            type:
-                              slot === "AVATAR_CIRCLE"
-                                ? "CIRCLE"
-                                : "RECT",
-                          });
-                        }}
-                        className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
-                      >
-                        <option value="CUSTOM_IMAGE">Manual Image Slot</option>
-                        <option value="LOGO_BOX">Official Brand Logo</option>
-                        <option value="AVATAR_CIRCLE">Owner Profile Photo (Circular Avatar)</option>
-                        <option value="UPI_QR">UPI Payment QR Image</option>
-                      </select>
-                    </div>
-                  )}
+                      <div className="space-y-1.5 pt-2 border-t border-[#2C384E]">
+                        <label className="text-[10px] text-slate-300 font-semibold block">
+                          Image Slot Auto-Fill
+                        </label>
+                        <select
+                          value={selectedElement.dynamicSlot || "CUSTOM_IMAGE"}
+                          onChange={(e) => {
+                            const slot = e.target.value;
+                            updateSelectedElement({
+                              dynamicSlot: slot,
+                              type:
+                                slot === "AVATAR_CIRCLE"
+                                  ? "CIRCLE"
+                                  : "RECT",
+                            });
+                          }}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500"
+                        >
+                          <option value="CUSTOM_IMAGE">Manual Image Slot</option>
+                          <option value="LOGO_BOX">Official Brand Logo</option>
+                          <option value="AVATAR_CIRCLE">Owner Profile Photo (Circular Avatar)</option>
+                          <option value="UPI_QR">UPI Payment QR Image</option>
+                        </select>
+                      </div>
+                    )}
                 </div>
 
                 {/* Typography Controls (Visible for TEXT elements OR Shapes with TEXT_INPUT slot category) */}
@@ -877,11 +871,10 @@ export const FrameManagerView = ({
                               key={size}
                               type="button"
                               onClick={() => updateSelectedElement({ fontSize: size })}
-                              className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold transition ${
-                                (selectedElement.fontSize || 28) === size
-                                  ? "bg-amber-500 text-slate-950 shadow"
-                                  : "bg-[#0B0F17] text-slate-400 hover:text-white border border-[#2C384E]"
-                              }`}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold transition ${(selectedElement.fontSize || 28) === size
+                                ? "bg-amber-500 text-slate-950 shadow"
+                                : "bg-[#0B0F17] text-slate-400 hover:text-white border border-[#2C384E]"
+                                }`}
                             >
                               {size}
                             </button>
@@ -976,11 +969,10 @@ export const FrameManagerView = ({
                                   })
                                 }
                                 style={{ backgroundColor: color.hex }}
-                                className={`h-7 rounded-lg border transition-all ${
-                                  isSelected
-                                    ? "ring-2 ring-amber-400 scale-105 border-white"
-                                    : "border-slate-700/60 hover:scale-105"
-                                }`}
+                                className={`h-7 rounded-lg border transition-all ${isSelected
+                                  ? "ring-2 ring-amber-400 scale-105 border-white"
+                                  : "border-slate-700/60 hover:scale-105"
+                                  }`}
                               />
                             );
                           })}
@@ -1059,11 +1051,10 @@ export const FrameManagerView = ({
                                 type="button"
                                 onClick={() => updateSelectedElement({ fontFamily: f.value })}
                                 style={{ fontFamily: f.value }}
-                                className={`px-1.5 py-1 rounded-lg text-[11px] font-bold truncate transition text-center ${
-                                  isCurrent
-                                    ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 ring-1 ring-white/50"
-                                    : "bg-[#131B2A] text-slate-300 hover:text-white hover:bg-slate-800 border border-[#2C384E]"
-                                }`}
+                                className={`px-1.5 py-1 rounded-lg text-[11px] font-bold truncate transition text-center ${isCurrent
+                                  ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 ring-1 ring-white/50"
+                                  : "bg-[#131B2A] text-slate-300 hover:text-white hover:bg-slate-800 border border-[#2C384E]"
+                                  }`}
                                 title={f.value}
                               >
                                 {f.label}
@@ -1118,11 +1109,10 @@ export const FrameManagerView = ({
                                     updateSelectedElement({ textAlign: align.id });
                                   }
                                 }}
-                                className={`py-1 rounded flex items-center justify-center gap-1 text-[11px] font-semibold transition ${
-                                  isSelected
-                                    ? "bg-amber-500 text-slate-950 font-bold shadow"
-                                    : "text-slate-400 hover:text-white"
-                                }`}
+                                className={`py-1 rounded flex items-center justify-center gap-1 text-[11px] font-semibold transition ${isSelected
+                                  ? "bg-amber-500 text-slate-950 font-bold shadow"
+                                  : "text-slate-400 hover:text-white"
+                                  }`}
                                 title={align.id === "center" ? "Align text center and center on canvas (Upar, Niche, Left, Right)" : `Align ${align.label}`}
                               >
                                 <Icon className="w-3 h-3" />
@@ -1289,17 +1279,16 @@ export const FrameManagerView = ({
               <span>Active Transparent PNG Frame Blueprints</span>
             </h3>
 
-            <div className="relative flex-1 max-w-sm">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search frames by title..."
+            <div className="w-full md:w-80">
+              <SearchBar
                 value={frameSearch}
-                onChange={(e) => {
-                  setFrameSearch(e.target.value);
+                onChange={(val) => {
+                  const query = typeof val === "string" ? val : (val?.target?.value ?? "");
+                  setFrameSearch(query);
                   setFramePage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-sm focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
+                placeholder="Search frames by title or description..."
+                className="w-full"
               />
             </div>
           </div>
@@ -1310,13 +1299,42 @@ export const FrameManagerView = ({
             </div>
           ) : !frames || frames.length === 0 ? (
             <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3">
-              <ImageIcon className="w-10 h-10 text-slate-600 mx-auto" />
-              <p className="text-slate-300 font-semibold text-sm">
-                No frames found.
-              </p>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Use the Canvas Studio to design and publish your first frame overlay!
-              </p>
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
+                <ImageIcon className="w-6 h-6 text-amber-400" />
+              </div>
+              <div>
+                <p className="font-heading font-bold text-white text-base">
+                  {frameSearch ? "No matching frames found" : "No frames found"}
+                </p>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                  {frameSearch
+                    ? `No frames match "${frameSearch}". Try searching for another keyword.`
+                    : "Use the Canvas Studio to design and publish your first frame overlay!"}
+                </p>
+              </div>
+              {frameSearch ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFrameSearch("");
+                    setFramePage(1);
+                  }}
+                  className="text-xs font-semibold text-amber-400 hover:underline cursor-pointer"
+                >
+                  Clear search filter
+                </button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={Sparkles}
+                  onClick={() => setActiveTab("canva")}
+                  className="mx-auto mt-2"
+                >
+                  Open Canvas Studio
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-5">
@@ -1369,11 +1387,10 @@ export const FrameManagerView = ({
                           <div className="pt-1.5 flex items-center gap-1.5">
                             {f.creator ? (
                               <span
-                                className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md border ${
-                                  f.creator.role === "SUB_ADMIN"
-                                    ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
-                                    : "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                                }`}
+                                className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md border ${f.creator.role === "SUB_ADMIN"
+                                  ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                  : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                  }`}
                                 title={`Author: ${f.creator.fullName} (${f.creator.email})`}
                               >
                                 <User className="w-2.5 h-2.5" />
@@ -1391,8 +1408,9 @@ export const FrameManagerView = ({
                           </div>
                         </div>
                         <button
-                          onClick={() => deleteFrameMutation.mutate(f.id)}
-                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition shrink-0"
+                          type="button"
+                          onClick={() => setFrameToDelete(f)}
+                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition shrink-0 cursor-pointer"
                           title="Delete Frame"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1406,12 +1424,14 @@ export const FrameManagerView = ({
               {framesPaginationMeta && (
                 <Pagination
                   meta={framesPaginationMeta}
+                  currentPage={framesPaginationMeta?.page}
+                  totalPages={framesPaginationMeta?.totalPages || 1}
                   onPageChange={(newPage) => setFramePage(newPage)}
                   onLimitChange={(newLimit) => {
                     setFrameLimit(newLimit);
                     setFramePage(1);
                   }}
-                  pageSizeOptions={[4, 8, 12, 24]}
+                  pageSizeOptions={[8, 12, 24, 48]}
                 />
               )}
             </div>
@@ -1428,15 +1448,102 @@ export const FrameManagerView = ({
         item={
           fullscreenFrame
             ? {
-                url: fullscreenFrame.previewUrl || fullscreenFrame.overlayPngUrl,
-                graphicUrl: fullscreenFrame.previewUrl || fullscreenFrame.overlayPngUrl,
-                title: fullscreenFrame.title,
-                categoryName: fullscreenFrame.description || "Frame Blueprint Overlay",
-              }
+              url: fullscreenFrame.previewUrl || fullscreenFrame.overlayPngUrl,
+              graphicUrl: fullscreenFrame.previewUrl || fullscreenFrame.overlayPngUrl,
+              title: fullscreenFrame.title,
+              categoryName: fullscreenFrame.description || "Frame Blueprint Overlay",
+            }
             : null
         }
         onClose={() => setFullscreenFrame(null)}
       />
+
+      {/* 6. Delete Frame Confirmation Modal */}
+      {frameToDelete && (
+        <div
+          className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in overflow-y-auto"
+          onClick={() => setFrameToDelete(null)}
+        >
+          <div
+            className="w-full max-w-md bg-[#131B2A] border border-rose-500/30 rounded-2xl p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between border-b border-[#2C384E] pb-3.5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-rose-400" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-base text-white">
+                    Delete Frame Blueprint?
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setFrameToDelete(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3">
+              {(frameToDelete.previewUrl || frameToDelete.overlayPngUrl) && (
+                <img
+                  src={frameToDelete.previewUrl || frameToDelete.overlayPngUrl}
+                  alt={frameToDelete.title}
+                  className="w-12 h-12 object-contain rounded-lg bg-slate-950 border border-slate-800 shrink-0 p-1"
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <h4 className="font-heading font-bold text-sm text-white truncate">
+                  {frameToDelete.title}
+                </h4>
+                {frameToDelete.description && (
+                  <p className="text-xs text-slate-400 truncate">
+                    {frameToDelete.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Deleting this frame overlay will permanently remove it from the database. Any posts currently referencing this frame will keep their saved graphic, but future posts cannot apply this overlay.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2C384E]">
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                onClick={() => setFrameToDelete(null)}
+                disabled={deleteFrameMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                size="md"
+                icon={Trash2}
+                onClick={() => {
+                  deleteFrameMutation.mutate(frameToDelete.id, {
+                    onSuccess: () => setFrameToDelete(null),
+                  });
+                }}
+                isLoading={deleteFrameMutation.isPending}
+              >
+                Delete Frame
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -12,5 +12,5 @@ export const CATEGORY_NAME_MAX_LENGTH = 50;
 export const CATEGORY_DESCRIPTION_MAX_LENGTH = 500;
 
 export const CATEGORY_ALLOWED_SORT_FIELDS = Object.freeze(['name', 'createdAt', 'updatedAt']);
-export const DEFAULT_CATEGORY_SORT_BY = 'name';
-export const DEFAULT_CATEGORY_SORT_ORDER = 'asc';
+export const DEFAULT_CATEGORY_SORT_BY = 'createdAt';
+export const DEFAULT_CATEGORY_SORT_ORDER = 'desc';

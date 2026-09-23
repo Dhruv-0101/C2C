@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { adminFinanceApi } from '../services/admin.finance.api';
 
 export const useAdminFinance = ({
@@ -53,6 +53,7 @@ export const useAdminFinance = ({
         startDate,
         endDate,
       }),
+    placeholderData: keepPreviousData,
     staleTime: 30 * 1000,
   });
 
@@ -101,9 +102,13 @@ export const useAdminFinance = ({
 
     transactions: transactionsData?.data?.items || [],
     meta: {
-      totalItems: transactionsData?.data?.totalCount || 0,
-      totalPages: transactionsData?.data?.totalPages || 1,
-      currentPage: transactionsData?.data?.currentPage || 1,
+      page: transactionsData?.meta?.page || transactionsData?.data?.meta?.page || transactionsData?.data?.currentPage || page,
+      limit: transactionsData?.meta?.limit || transactionsData?.data?.meta?.limit || limit,
+      totalItems: transactionsData?.meta?.totalItems ?? transactionsData?.data?.meta?.totalItems ?? transactionsData?.data?.totalCount ?? 0,
+      totalPages: transactionsData?.meta?.totalPages || transactionsData?.data?.meta?.totalPages || 1,
+      currentPage: transactionsData?.meta?.page || transactionsData?.data?.meta?.page || transactionsData?.data?.currentPage || page,
+      hasNextPage: (transactionsData?.meta?.page || transactionsData?.data?.meta?.page || page) < (transactionsData?.meta?.totalPages || transactionsData?.data?.meta?.totalPages || 1),
+      hasPrevPage: (transactionsData?.meta?.page || transactionsData?.data?.meta?.page || page) > 1,
     },
     isLoadingTransactions,
     transactionsError,

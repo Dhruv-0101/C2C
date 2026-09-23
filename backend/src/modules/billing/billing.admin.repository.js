@@ -204,6 +204,7 @@ export const getPaginatedTransactions = async ({
       { orderId: { contains: search, mode: 'insensitive' } },
       { user: { email: { contains: search, mode: 'insensitive' } } },
       { user: { fullName: { contains: search, mode: 'insensitive' } } },
+      { user: { brandKit: { businessName: { contains: search, mode: 'insensitive' } } } },
     ];
   }
 

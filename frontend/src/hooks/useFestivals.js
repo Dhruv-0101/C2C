@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { festivalApi } from '@/services/festival.api';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 
@@ -21,6 +21,7 @@ export const useFestivals = (options = { includeInactive: true, limit: 100 }) =>
       const meta = response?.meta || response?.data?.meta || null;
       return { festivals: Array.isArray(list) ? list : [], meta };
     },
+    placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
   });
 

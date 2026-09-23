@@ -1,22 +1,40 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock, Calendar, Sparkles, AlertCircle } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
+import { SearchBar } from "../../../components/common/SearchBar";
+import Pagination from "../../../components/common/Pagination";
 import { useYourPosts } from "../../../hooks/useYourPosts";
+import { useDebounce } from "../../../hooks/useDebounce";
 
 /**
  * ScheduledPostsQueueView
- * Renders user's scheduled post queue.
+ * Renders user's scheduled post queue with debounced searching and standardized pagination.
  */
 export const ScheduledPostsQueueView = () => {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+
   const {
     scheduledPosts,
-    isLoading,
+    scheduledMeta,
+    scheduledPage,
+    setScheduledPage,
+    scheduledLimit,
+    setScheduledLimit,
+    isLoadingScheduled,
     error,
-  } = useYourPosts();
+  } = useYourPosts({
+    search: debouncedSearch,
+  });
+
+  // Auto-reset page on search change
+  useEffect(() => {
+    setScheduledPage(1);
+  }, [debouncedSearch, setScheduledPage]);
 
   return (
     <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-6">
@@ -27,26 +45,42 @@ export const ScheduledPostsQueueView = () => {
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-heading font-extrabold text-lg text-white">
-              Scheduled Posts Queue
-            </h3>
-            <p className="text-xs text-slate-400">
+            <div className="flex items-center gap-2">
+              <h3 className="font-heading font-extrabold text-lg text-white">
+                Scheduled Posts Queue
+              </h3>
+              <span className="text-[11px] font-bold text-teal-400 bg-teal-500/10 border border-teal-500/30 px-2.5 py-0.5 rounded-full">
+                {scheduledMeta?.totalItems ?? scheduledPosts.length} Queued
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
               Posts queued for automated publication across social platforms.
             </p>
           </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="w-full sm:w-64">
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            placeholder="Search scheduled posts..."
+          />
         </div>
       </div>
 
       {error && <Alert variant="error" message="Failed to load scheduled queue." />}
 
-      {isLoading ? (
+      {isLoadingScheduled ? (
         <div className="p-8 text-center text-slate-400 text-sm">Loading scheduled queue...</div>
       ) : scheduledPosts.length === 0 ? (
         <div className="p-8 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-2">
           <Calendar className="w-8 h-8 text-slate-600 mx-auto" />
-          <p className="text-slate-300 font-semibold text-sm">No Scheduled Posts Queued</p>
+          <p className="text-slate-300 font-semibold text-sm">
+            {search ? `No scheduled posts matching "${search}"` : "No Scheduled Posts Queued"}
+          </p>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Use the Post Creator or Festival Studio to schedule posts for future dates!
+            {search ? "Try adjusting your search terms." : "Use the Post Creator or Festival Studio to schedule posts for future dates!"}
           </p>
         </div>
       ) : (
@@ -136,6 +170,18 @@ export const ScheduledPostsQueueView = () => {
             );
           })}
         </div>
+      )}
+
+      {/* Central Pagination */}
+      {scheduledMeta && (
+        <Pagination
+          meta={scheduledMeta}
+          currentPage={scheduledPage}
+          totalPages={scheduledMeta?.totalPages || 1}
+          onPageChange={setScheduledPage}
+          onLimitChange={setScheduledLimit}
+          pageSizeOptions={[5, 10, 20]}
+        />
       )}
     </Card>
   );

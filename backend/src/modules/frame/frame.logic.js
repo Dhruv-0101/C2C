@@ -2,6 +2,10 @@ import { BadRequestError, NotFoundError } from '../../common/errors/custom-error
 import * as frameRepository from './frame.repository.js';
 import { sanitizeFrame, sanitizeFrames, createSvgOverlayUri } from './frame.helper.js';
 import {
+  DEFAULT_FRAME_SORT_BY,
+  DEFAULT_FRAME_SORT_ORDER,
+} from './frame.constants.js';
+import {
   parsePaginationParams,
   buildPaginatedResponse,
 } from '../../common/helpers/pagination.helper.js';
@@ -28,9 +32,13 @@ export async function getFrames(queryParams = {}) {
   const pagination = parsePaginationParams(queryParams);
   const { frames, totalCount } = await frameRepository.findPaginatedFrames({
     ...pagination,
-    search: queryParams.search,
-    sortBy: queryParams.sortBy,
-    sortOrder: queryParams.sortOrder,
+    search: pagination.search || queryParams.search,
+    sortBy: queryParams.sortBy || DEFAULT_FRAME_SORT_BY,
+    sortOrder: queryParams.sortOrder
+      ? queryParams.sortOrder === 'asc'
+        ? 'asc'
+        : 'desc'
+      : DEFAULT_FRAME_SORT_ORDER,
   });
 
   const paginatedResponse = buildPaginatedResponse({

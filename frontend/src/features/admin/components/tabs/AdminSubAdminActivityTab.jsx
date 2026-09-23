@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Activity,
   FileCode2,
@@ -22,6 +22,7 @@ import { Alert } from "../../../../components/ui/Alert";
 import { SearchBar } from "../../../../components/common/SearchBar";
 import Pagination from "../../../../components/common/Pagination";
 import { useSubAdminActivity } from "../../../../hooks/useSubAdminActivity";
+import { useDebounce } from "../../../../hooks/useDebounce";
 
 // Visual theme configurations for each creation type
 const TYPE_CONFIG = {
@@ -104,16 +105,22 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
   const [selectedSubAdminId, setSelectedSubAdminId] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [inspectItem, setInspectItem] = useState(null);
+
+  // Auto-reset page to 1 whenever debounced search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm, selectedSubAdminId, selectedType]);
 
   // Fetch audit activity feed
   const { items, summary, meta, isLoading, error, refetch, isFetching } =
     useSubAdminActivity({
       subAdminId: selectedSubAdminId || undefined,
       type: selectedType,
-      search: searchTerm || undefined,
+      search: debouncedSearchTerm || undefined,
       page: currentPage,
       limit: pageSize,
     });
@@ -392,8 +399,9 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         <div className="w-full md:w-72 shrink-0">
           <SearchBar
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
+            onChange={(val) => {
+              const query = typeof val === "string" ? val : (val?.target?.value ?? "");
+              setSearchTerm(query);
               setCurrentPage(1);
             }}
             placeholder="Search items by title..."
@@ -579,15 +587,19 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
           </div>
 
           {/* 7. Pagination Controls */}
-          {meta && meta.totalPages > 1 && (
-            <div className="pt-4 border-t border-[#2C384E] flex justify-center">
-              <Pagination
-                currentPage={meta.page}
-                totalPages={meta.totalPages}
-                onPageChange={(p) => setCurrentPage(p)}
-              />
-            </div>
-          )}
+          <div className="pt-4 border-t border-[#2C384E]">
+            <Pagination
+              meta={meta}
+              currentPage={meta?.page || currentPage}
+              totalPages={meta?.totalPages || 1}
+              onPageChange={(p) => setCurrentPage(p)}
+              onLimitChange={(l) => {
+                setPageSize(l);
+                setCurrentPage(1);
+              }}
+              pageSizeOptions={[12, 24, 48]}
+            />
+          </div>
         </div>
       )}
 

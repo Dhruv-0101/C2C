@@ -75,12 +75,18 @@ export const PostStudioEditorView = ({
   isLoadingTemplates,
   templateSearch,
   setTemplateSearch,
+  templatePage = 1,
   setTemplatePage,
+  templateLimit = 8,
   setTemplateLimit,
   frames,
   framesMeta,
   isLoadingFrames,
+  frameSearch = "",
+  setFrameSearch,
+  framePage = 1,
   setFramePage,
+  frameLimit = 8,
   setFrameLimit,
   customDetails,
   setCustomDetails,
@@ -348,10 +354,10 @@ export const PostStudioEditorView = ({
       {/* Main Studio Viewport (Left Controls, Right Live Canvas) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN (6 Cols): Wizard Controls */}
-        <div className="lg:col-span-6 flex flex-col h-[570px]">
+        <div className="lg:col-span-6 flex flex-col min-h-[570px]">
           {/* STEP 1: SELECT BASE GRAPHIC */}
           {currentStep === 1 && (
-            <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between h-[570px] min-h-[570px] max-h-[570px] overflow-hidden shrink-0 gap-2.5">
+            <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[570px] gap-3.5">
               {/* TOP CONTROLS SECTION */}
               <div className="space-y-2.5 shrink-0">
                 {/* Step Header */}
@@ -503,275 +509,226 @@ export const PostStudioEditorView = ({
                     </div>
                   </div>
                 </div>
-              )}
-
-              {/* Collapsible Category & Festival Filter Accordion (Default: Closed) */}
-              <div className="rounded-xl bg-[#0B0F17] border border-[#2C384E] overflow-hidden transition-all duration-200">
-                <button
-                  type="button"
-                  onClick={() => setIsFilterDropdownOpen((prev) => !prev)}
-                  className="w-full px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-300 hover:text-amber-400 bg-[#0B0F17] hover:bg-[#131B2A] transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FolderKanban className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span className="truncate">Filter by Category / Festival</span>
-                    {(selectedCategory || selectedFestival) && (
-                      <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 truncate shrink-0">
-                        {selectedCategory || (festivals.find((f) => f.id === selectedFestival)?.name || "Festival Active")}
-                      </span>
-                    )}
+              )}              {/* 1. Category Navigation (8 Items per Page + Search) */}
+              <div className="space-y-2 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <FolderKanban className="w-3.5 h-3.5 text-amber-400" />
+                    <h4 className="font-heading font-extrabold text-xs text-white">
+                      Category Navigation
+                    </h4>
+                    <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.2 rounded-full">
+                      {categoryMeta?.totalItems ?? categoriesList.length} Categories
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.2 rounded-full border border-slate-700 font-mono">
+                      Page {catPage} of {catTotalPages}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 shrink-0">
-                    <span>{isFilterDropdownOpen ? "Close Filters" : "Open Filters"}</span>
-                    {isFilterDropdownOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  </div>
-                </button>
 
-                {isFilterDropdownOpen && (
-                  <div className="p-3 border-t border-[#2C384E] space-y-2.5 bg-[#0B0F17]/95 animate-in fade-in duration-150">
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                      {/* Dual Segmented Tabs */}
-                      <div className="inline-flex items-center bg-[#131B2A] p-0.5 rounded-lg border border-[#2C384E] shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setActiveFilterTab("CATEGORIES")}
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold flex items-center gap-1 transition cursor-pointer ${
-                            activeFilterTab === "CATEGORIES"
-                              ? "bg-amber-500 text-slate-950 shadow-glow"
-                              : "text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <FolderKanban className="w-3 h-3" />
-                          <span>Categories ({categoriesList.length})</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveFilterTab("FESTIVALS")}
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold flex items-center gap-1 transition cursor-pointer ${
-                            activeFilterTab === "FESTIVALS"
-                              ? "bg-emerald-500 text-slate-950 shadow-glow"
-                              : "text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <Calendar className="w-3 h-3" />
-                          <span>Festivals ({festivals.length})</span>
-                        </button>
-                      </div>
-
-                      {/* Filter Search & Mini Pagination */}
-                      <div className="flex items-center justify-between sm:justify-end gap-2">
-                        {activeFilterTab === "CATEGORIES" ? (
-                          <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                            <div className="relative flex-1 sm:w-36">
-                              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" />
-                              <input
-                                type="text"
-                                placeholder="Filter category..."
-                                value={catSearch}
-                                onChange={(e) => {
-                                  if (setCatSearch) setCatSearch(e.target.value);
-                                  if (setCatPage) setCatPage(1);
-                                }}
-                                className="w-full pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
-                              />
-                            </div>
-                            <div className="flex items-center gap-0.5 shrink-0">
-                              <button
-                                type="button"
-                                disabled={catPage <= 1}
-                                onClick={() => setCatPage && setCatPage((p) => Math.max(1, p - 1))}
-                                className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
-                              >
-                                <ChevronLeft className="w-3.5 h-3.5" />
-                              </button>
-                              <span className="text-[10px] font-mono text-slate-400 px-1">
-                                {catPage}/{catTotalPages}
-                              </span>
-                              <button
-                                type="button"
-                                disabled={catPage >= catTotalPages}
-                                onClick={() => setCatPage && setCatPage((p) => Math.min(catTotalPages, p + 1))}
-                                className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
-                              >
-                                <ChevronRight className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                            <div className="relative flex-1 sm:w-36">
-                              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" />
-                              <input
-                                type="text"
-                                placeholder="Filter festival..."
-                                value={festSearch}
-                                onChange={(e) => {
-                                  if (setFestSearch) setFestSearch(e.target.value);
-                                  if (setFestPage) setFestPage(1);
-                                }}
-                                className="w-full pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-                              />
-                            </div>
-                            <div className="flex items-center gap-0.5 shrink-0">
-                              <button
-                                type="button"
-                                disabled={festPage <= 1}
-                                onClick={() => setFestPage && setFestPage((p) => Math.max(1, p - 1))}
-                                className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
-                              >
-                                <ChevronLeft className="w-3.5 h-3.5" />
-                              </button>
-                              <span className="text-[10px] font-mono text-slate-400 px-1">
-                                {festPage}/{festTotalPages}
-                              </span>
-                              <button
-                                type="button"
-                                disabled={festPage >= festTotalPages}
-                                onClick={() => setFestPage && setFestPage((p) => Math.min(festTotalPages, p + 1))}
-                                className="p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition cursor-pointer"
-                              >
-                                <ChevronRight className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                  <div className="flex items-center gap-2">
+                    {/* Category Search */}
+                    <div className="relative">
+                      <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" />
+                      <input
+                        type="text"
+                        placeholder="Search categories..."
+                        value={catSearch}
+                        onChange={(e) => {
+                          if (setCatSearch) setCatSearch(e.target.value);
+                          if (setCatPage) setCatPage(1);
+                        }}
+                        className="pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-32 sm:w-36"
+                      />
                     </div>
 
-                    {/* Horizontal Pill Row */}
-                    {activeFilterTab === "CATEGORIES" ? (
-                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedCategory("");
-                            setTemplatePage(1);
-                          }}
-                          className={`px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold transition shrink-0 flex items-center gap-1 cursor-pointer ${
-                            !selectedCategory
-                              ? "bg-amber-500 text-slate-950 shadow-glow"
-                              : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                          }`}
-                        >
-                          <span>🎨 All</span>
-                        </button>
-
-                        {selectedCategory && !paginatedCategories.some((cat) => cat.name === selectedCategory) && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedCategory("");
-                              setTemplatePage(1);
-                            }}
-                            className="px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold transition shrink-0 flex items-center gap-1 bg-amber-500 text-slate-950 shadow-glow"
-                            title="Currently active category filter (click to reset)"
-                          >
-                            <span>✓</span>
-                            <span>{selectedCategory}</span>
-                            <span className="text-[10px] opacity-75">✕</span>
-                          </button>
-                        )}
-
-                        {isLoadingCategories ? (
-                          <div className="flex items-center gap-1.5 animate-pulse">
-                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
-                            <div className="h-6 w-20 bg-slate-800 rounded-lg" />
-                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
-                          </div>
-                        ) : paginatedCategories.length === 0 ? (
-                          <span className="text-[11px] text-slate-500 italic px-2 py-0.5">No categories found</span>
-                        ) : (
-                          paginatedCategories.map((cat) => {
-                            const isSelected = selectedCategory === cat.name;
-                            return (
-                              <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedCategory(cat.name);
-                                  setTemplatePage(1);
-                                }}
-                                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition shrink-0 flex items-center gap-1 cursor-pointer ${
-                                  isSelected
-                                    ? "bg-amber-500 text-slate-950 shadow-glow font-extrabold"
-                                    : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                                }`}
-                              >
-                                <span>{cat.icon || "🎨"}</span>
-                                <span>{cat.name}</span>
-                              </button>
-                            );
-                          })
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedFestival("");
-                            setTemplatePage(1);
-                          }}
-                          className={`px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold transition shrink-0 flex items-center gap-1 cursor-pointer ${
-                            !selectedFestival
-                              ? "bg-emerald-500 text-slate-950 shadow-glow"
-                              : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                          }`}
-                        >
-                          <span>🎉 All</span>
-                        </button>
-
-                        {selectedFestival && !paginatedFestivals.some((f) => f.id === selectedFestival) && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedFestival("");
-                              setTemplatePage(1);
-                            }}
-                            className="px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold transition shrink-0 flex items-center gap-1 bg-emerald-500 text-slate-950 shadow-glow"
-                            title="Currently active festival filter (click to reset)"
-                          >
-                            <span>✓</span>
-                            <span>Selected Festival</span>
-                            <span className="text-[10px] opacity-75">✕</span>
-                          </button>
-                        )}
-
-                        {isLoadingFestivals ? (
-                          <div className="flex items-center gap-1.5 animate-pulse">
-                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
-                            <div className="h-6 w-20 bg-slate-800 rounded-lg" />
-                            <div className="h-6 w-16 bg-slate-800 rounded-lg" />
-                          </div>
-                        ) : paginatedFestivals.length === 0 ? (
-                          <span className="text-[11px] text-slate-500 italic px-2 py-0.5">No festivals found</span>
-                        ) : (
-                          paginatedFestivals.map((f) => {
-                            const isSelected = selectedFestival === f.id;
-                            return (
-                              <button
-                                key={f.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedFestival(f.id);
-                                  setTemplatePage(1);
-                                }}
-                                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition shrink-0 flex items-center gap-1 cursor-pointer ${
-                                  isSelected
-                                    ? "bg-emerald-500 text-slate-950 shadow-glow font-extrabold"
-                                    : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-                                }`}
-                              >
-                                <span>🪔</span>
-                                <span>{f.name}</span>
-                              </button>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
+                    {/* Category Pagination Controls */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={catPage <= 1}
+                        onClick={() => setCatPage && setCatPage((p) => Math.max(1, p - 1))}
+                        className="px-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition text-xs flex items-center gap-1 cursor-pointer"
+                        title="Previous Categories"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline text-[11px]">Prev</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={catPage >= catTotalPages}
+                        onClick={() => setCatPage && setCatPage((p) => Math.min(catTotalPages, p + 1))}
+                        className="px-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition text-xs flex items-center gap-1 cursor-pointer"
+                        title="Next Categories"
+                      >
+                        <span className="hidden sm:inline text-[11px]">Next</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                )}
+                </div>
+
+                {/* Category Pills (Max 8 shown per page) */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-2 custom-scrollbar">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory("");
+                      setTemplatePage(1);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 cursor-pointer ${
+                      !selectedCategory
+                        ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
+                        : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                    }`}
+                  >
+                    <span>🎨 All Categories</span>
+                  </button>
+
+                  {isLoadingCategories && (
+                    <span className="text-xs text-slate-400 animate-pulse px-2">
+                      Searching categories...
+                    </span>
+                  )}
+
+                  {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
+                    <span className="text-xs text-slate-400 italic px-2">
+                      No categories matching "{catSearch}"
+                    </span>
+                  )}
+
+                  {categoriesList.map((cat) => {
+                    const isSelected = selectedCategory === cat.name || selectedCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(cat.name);
+                          setTemplatePage(1);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                          isSelected
+                            ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
+                            : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                        }`}
+                      >
+                        <span>{cat.icon || "🎨"}</span>
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Festival Navigation (8 Items per Page + Search) */}
+              <div className="space-y-2 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                    <h4 className="font-heading font-extrabold text-xs text-white">
+                      Festivals Navigation
+                    </h4>
+                    <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.2 rounded-full">
+                      {festivalMeta?.totalItems ?? festivals.length} Festivals
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.2 rounded-full border border-slate-700 font-mono">
+                      Page {festPage} of {festTotalPages}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* Festival Search */}
+                    <div className="relative">
+                      <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" />
+                      <input
+                        type="text"
+                        placeholder="Search festivals..."
+                        value={festSearch}
+                        onChange={(e) => {
+                          if (setFestSearch) setFestSearch(e.target.value);
+                          if (setFestPage) setFestPage(1);
+                        }}
+                        className="pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-32 sm:w-36"
+                      />
+                    </div>
+
+                    {/* Festival Pagination Controls */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={festPage <= 1}
+                        onClick={() => setFestPage && setFestPage((p) => Math.max(1, p - 1))}
+                        className="px-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition text-xs flex items-center gap-1 cursor-pointer"
+                        title="Previous Festivals"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline text-[11px]">Prev</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={festPage >= festTotalPages}
+                        onClick={() => setFestPage && setFestPage((p) => Math.min(festTotalPages, p + 1))}
+                        className="px-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition text-xs flex items-center gap-1 cursor-pointer"
+                        title="Next Festivals"
+                      >
+                        <span className="hidden sm:inline text-[11px]">Next</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Festival Pills (Max 8 shown per page) */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-2 custom-scrollbar">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFestival("");
+                      setTemplatePage(1);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1 cursor-pointer ${
+                      !selectedFestival
+                        ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
+                        : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                    }`}
+                  >
+                    <span>🎉 All Festivals</span>
+                  </button>
+
+                  {isLoadingFestivals && (
+                    <span className="text-xs text-slate-400 animate-pulse px-2">
+                      Searching festivals...
+                    </span>
+                  )}
+
+                  {!isLoadingFestivals && festivals.length === 0 && festSearch && (
+                    <span className="text-xs text-slate-400 italic px-2">
+                      No festivals matching "{festSearch}"
+                    </span>
+                  )}
+
+                  {festivals.map((f) => {
+                    const isSelected = selectedFestival === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedFestival(f.id);
+                          setTemplatePage(1);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                          isSelected
+                            ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
+                            : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                        }`}
+                      >
+                        <span>{f.targetRegion ? `📍 ${f.targetRegion}` : "🪔"}</span>
+                        <span>{f.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Graphic Template Search Bar & Active Filters */}
@@ -940,12 +897,14 @@ export const PostStudioEditorView = ({
                 <div className="mt-auto pt-2 border-t border-[#2C384E] shrink-0">
                   <Pagination
                     meta={templatesMeta}
+                    currentPage={templatePage}
+                    totalPages={templatesMeta?.totalPages || 1}
                     onPageChange={(p) => setTemplatePage(p)}
                     onLimitChange={(l) => {
                       setTemplateLimit(l);
                       setTemplatePage(1);
                     }}
-                    pageSizeOptions={[3, 6, 12]}
+                    pageSizeOptions={[6, 8, 12, 24]}
                     className="flex flex-col sm:flex-row items-center justify-between gap-2 py-2 px-3 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-slate-300 shadow-sm mt-1"
                   />
                 </div>
@@ -955,7 +914,7 @@ export const PostStudioEditorView = ({
 
           {/* STEP 2: CHOOSE BRAND FRAME */}
           {currentStep === 2 && (
-            <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between h-[570px] min-h-[570px] max-h-[570px] overflow-hidden shrink-0 gap-2.5">
+            <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[570px] gap-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
                 <div>
                   <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2 truncate">
@@ -1021,6 +980,33 @@ export const PostStudioEditorView = ({
                 </button>
               </div>
 
+              {/* Brand Frame Search Bar */}
+              <div className="relative shrink-0">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search brand frames by title..."
+                  value={frameSearch}
+                  onChange={(e) => {
+                    setFrameSearch && setFrameSearch(e.target.value);
+                    setFramePage && setFramePage(1);
+                  }}
+                  className="w-full pl-8 pr-8 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
+                />
+                {frameSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFrameSearch && setFrameSearch("");
+                      setFramePage && setFramePage(1);
+                    }}
+                    className="absolute right-3 top-2 text-slate-400 hover:text-white text-xs"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+
               {/* Scrollable Frame Grid Viewport (Flex Fill Viewport Height - 100% Locked Card Height) */}
               <div className="w-full flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar my-1">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -1028,7 +1014,7 @@ export const PostStudioEditorView = ({
                     <div className="col-span-3 p-12 text-center text-slate-400 text-xs">Loading brand frames...</div>
                   ) : frames.length === 0 ? (
                     <div className="col-span-3 p-8 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-xl">
-                      No custom brand frames created yet.
+                      {frameSearch ? `No custom brand frames matching "${frameSearch}".` : "No custom brand frames created yet."}
                     </div>
                   ) : (
                     frames.map((frame) => (
@@ -1080,12 +1066,14 @@ export const PostStudioEditorView = ({
                 <div className="mt-auto pt-2 border-t border-[#2C384E] shrink-0">
                   <Pagination
                     meta={framesMeta}
+                    currentPage={framePage}
+                    totalPages={framesMeta?.totalPages || 1}
                     onPageChange={(p) => setFramePage(p)}
                     onLimitChange={(l) => {
                       setFrameLimit(l);
                       setFramePage(1);
                     }}
-                    pageSizeOptions={[3, 6, 12]}
+                    pageSizeOptions={[6, 8, 12, 24]}
                     className="flex flex-col sm:flex-row items-center justify-between gap-2 py-2 px-3 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-slate-300 shadow-sm mt-1"
                   />
                 </div>

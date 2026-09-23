@@ -146,15 +146,27 @@ export const PostStudioContainer = () => {
     }
   }, [festivalIdParam, location.state]);
 
-  // Template Search & Central Pagination State
+  // Template Search & Central Pagination State (Default 8 items for standard 4x2 grid)
   const [templatePage, setTemplatePage] = useState(1);
-  const [templateLimit, setTemplateLimit] = useState(3);
+  const [templateLimit, setTemplateLimit] = useState(8);
   const [templateSearch, setTemplateSearch] = useState("");
+  const debouncedTemplateSearch = useDebounce(templateSearch, 300);
 
-  // Canva Frames Central Pagination State
+  // Canva Frames Central Pagination State (Default 8 items for standard 4x2 grid)
   const [framePage, setFramePage] = useState(1);
-  const [frameLimit, setFrameLimit] = useState(3);
+  const [frameLimit, setFrameLimit] = useState(8);
   const [frameSearch, setFrameSearch] = useState("");
+  const debouncedFrameSearch = useDebounce(frameSearch, 300);
+
+  // Auto-reset template page to 1 on search or filter change
+  useEffect(() => {
+    setTemplatePage(1);
+  }, [debouncedTemplateSearch, selectedCategory, selectedFestival]);
+
+  // Auto-reset frame page to 1 on frame search change
+  useEffect(() => {
+    setFramePage(1);
+  }, [debouncedFrameSearch]);
 
   // Modular Hook for Graphic Templates (Combined category + festival filtering)
   const {
@@ -164,7 +176,7 @@ export const PostStudioContainer = () => {
   } = useTemplates({
     page: templatePage,
     limit: templateLimit,
-    search: templateSearch,
+    search: debouncedTemplateSearch,
     category: selectedCategory,
     templateCategoryId: selectedCategory,
     festivalId: selectedFestival,
@@ -178,7 +190,7 @@ export const PostStudioContainer = () => {
   } = useFrames({
     page: framePage,
     limit: frameLimit,
-    search: frameSearch,
+    search: debouncedFrameSearch,
   });
 
   // Step 1 Category & Festival Server Pagination & Search
@@ -562,12 +574,18 @@ export const PostStudioContainer = () => {
         isLoadingTemplates={isLoadingTemplates}
         templateSearch={templateSearch}
         setTemplateSearch={setTemplateSearch}
+        templatePage={templatePage}
         setTemplatePage={setTemplatePage}
+        templateLimit={templateLimit}
         setTemplateLimit={setTemplateLimit}
         frames={frames}
         framesMeta={framesMeta}
         isLoadingFrames={isLoadingFrames}
+        frameSearch={frameSearch}
+        setFrameSearch={setFrameSearch}
+        framePage={framePage}
         setFramePage={setFramePage}
+        frameLimit={frameLimit}
         setFrameLimit={setFrameLimit}
         customDetails={customDetails}
         setCustomDetails={setCustomDetails}

@@ -11,6 +11,7 @@ import {
   Clock,
   CheckCircle2,
   CreditCard,
+  Activity,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { ADMIN_TABS } from "../../../constants/theme.constants";
@@ -75,6 +76,7 @@ export const AdminDashboardView = ({
   categoryMeta,
   isLoadingCategories,
   createCategoryMutation,
+  updateCategoryMutation,
   deleteCategoryMutation,
   createSubAdminMutation,
   updateSubAdminMutation,
@@ -189,6 +191,30 @@ export const AdminDashboardView = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   {
+                    id: "users",
+                    label: "Business Users Directory",
+                    desc: "Registered business accounts, payment plans & tenant monitoring",
+                    icon: Users,
+                    color: "text-blue-400",
+                    borderColor: "hover:border-blue-500/50",
+                  },
+                  {
+                    id: "subadmins",
+                    label: "SubAdmin Accounts",
+                    desc: "SuperAdmin governance, staff management & RBAC privileges",
+                    icon: Shield,
+                    color: "text-amber-400",
+                    borderColor: "hover:border-amber-500/50",
+                  },
+                  {
+                    id: "subadmin-activity",
+                    label: "SubAdmin Activity Feed",
+                    desc: "Real-time audit log of templates, frames, events & categories created",
+                    icon: Activity,
+                    color: "text-purple-400",
+                    borderColor: "hover:border-purple-500/50",
+                  },
+                  {
                     id: "finance",
                     label: "Finance & Revenue",
                     desc: "Executive MRR/ARR, total revenue & transaction ledger",
@@ -197,12 +223,12 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-emerald-500/50",
                   },
                   {
-                    id: "templates",
-                    label: "Graphic Templates",
-                    desc: "Upload & manage graphic background templates",
-                    icon: FileCode2,
-                    color: "text-amber-400",
-                    borderColor: "hover:border-amber-500/50",
+                    id: "posts",
+                    label: "Generated Posts Audit",
+                    desc: "Audit & track posts by category, frame, template & festival",
+                    icon: Sparkles,
+                    color: "text-indigo-400",
+                    borderColor: "hover:border-indigo-500/50",
                   },
                   {
                     id: "festivals",
@@ -211,38 +237,6 @@ export const AdminDashboardView = ({
                     icon: Calendar,
                     color: "text-teal-400",
                     borderColor: "hover:border-teal-500/50",
-                  },
-                  {
-                    id: "frames",
-                    label: "Brand Frames Studio",
-                    desc: "Design & manage custom brand frame overlays",
-                    icon: Layers,
-                    color: "text-indigo-400",
-                    borderColor: "hover:border-indigo-500/50",
-                  },
-                  {
-                    id: "categories",
-                    label: "Business Categories",
-                    desc: "System-wide industry tags & classification",
-                    icon: FolderKanban,
-                    color: "text-purple-400",
-                    borderColor: "hover:border-purple-500/50",
-                  },
-                  {
-                    id: "posts",
-                    label: "Generated Posts Audit",
-                    desc: "Audit & track posts by category, frame, template & festival",
-                    icon: Sparkles,
-                    color: "text-amber-400",
-                    borderColor: "hover:border-amber-500/50",
-                  },
-                  {
-                    id: "users",
-                    label: "Business User Directory",
-                    desc: "Registered business accounts & tenant monitoring",
-                    icon: Users,
-                    color: "text-blue-400",
-                    borderColor: "hover:border-blue-500/50",
                   },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -302,6 +296,7 @@ export const AdminDashboardView = ({
             setCategoryLimit={setCategoryLimit}
             handleAddCategory={handleAddCategory}
             createCategoryMutation={createCategoryMutation}
+            updateCategoryMutation={updateCategoryMutation}
             deleteCategoryMutation={deleteCategoryMutation}
           />
         )}

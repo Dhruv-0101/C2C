@@ -281,8 +281,9 @@ export const AdminPostsTab = ({
 
           <SearchBar
             value={postSearch}
-            onChange={(e) => {
-              setPostSearch(e.target.value);
+            onChange={(val) => {
+              const query = typeof val === "string" ? val : (val?.target?.value ?? "");
+              setPostSearch(query);
               setPostPage(1);
             }}
             placeholder="Search by user name, email, or occasion..."
@@ -608,7 +609,13 @@ export const AdminPostsTab = ({
           <Pagination
             meta={postMeta}
             currentPage={postPage}
+            totalPages={postMeta?.totalPages || 1}
             onPageChange={(p) => setPostPage(p)}
+            onLimitChange={(l) => {
+              if (setPostLimit) setPostLimit(l);
+              setPostPage(1);
+            }}
+            pageSizeOptions={[10, 20, 50, 100]}
           />
         </div>
       )}

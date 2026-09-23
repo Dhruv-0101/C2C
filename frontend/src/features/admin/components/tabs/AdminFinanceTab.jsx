@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   CreditCard,
@@ -36,18 +36,25 @@ import { Input } from "../../../../components/ui/Input";
 import { Alert } from "../../../../components/ui/Alert";
 import Pagination from "../../../../components/common/Pagination";
 import { useAdminFinance } from "../../../../hooks/useAdminFinance";
+import { useDebounce } from "../../../../hooks/useDebounce";
 
 export const AdminFinanceTab = () => {
   // Search & Filter State
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [status, setStatus] = useState("");
   const [paymentGateway, setPaymentGateway] = useState("");
   const [currency, setCurrency] = useState("");
   const [plan, setPlan] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Auto-reset page to 1 whenever any filter or debounced search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, status, paymentGateway, currency, plan, startDate, endDate]);
 
   // Modal State for Manual Transaction Logging
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -79,7 +86,7 @@ export const AdminFinanceTab = () => {
   } = useAdminFinance({
     page,
     limit,
-    search,
+    search: debouncedSearch,
     status,
     paymentGateway,
     currency,
@@ -900,15 +907,15 @@ export const AdminFinanceTab = () => {
 
         {/* Pagination Bar */}
         <Pagination
-          currentPage={meta.currentPage}
-          totalPages={meta.totalPages}
+          meta={meta}
+          currentPage={meta?.page || page}
+          totalPages={meta?.totalPages || 1}
           onPageChange={(p) => setPage(p)}
-          limit={limit}
           onLimitChange={(l) => {
             setLimit(l);
             setPage(1);
           }}
-          totalItems={meta.totalItems}
+          pageSizeOptions={[10, 20, 50, 100]}
         />
       </Card>
 

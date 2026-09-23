@@ -52,8 +52,9 @@ export const AdminUsersTab = ({
 
         <SearchBar
           value={userSearch}
-          onChange={(e) => {
-            setUserSearch(e.target.value);
+          onChange={(val) => {
+            const query = typeof val === "string" ? val : (val?.target?.value ?? "");
+            setUserSearch(query);
             setUserPage(1);
           }}
           placeholder="Search by name, email, or business..."
@@ -332,6 +333,7 @@ export const AdminUsersTab = ({
               setUserLimit(newLimit);
               setUserPage(1);
             }}
+            pageSizeOptions={[10, 20, 50, 100]}
           />
         </div>
       )}

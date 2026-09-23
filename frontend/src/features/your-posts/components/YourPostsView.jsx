@@ -31,16 +31,20 @@ export const YourPostsView = ({
   postsMeta,
   isLoadingPosts,
   postsError,
-  postsPage,
+  postsPage = 1,
   setPostsPage,
+  postsLimit = 10,
   setPostsLimit,
   scheduledPosts = [],
   scheduledMeta,
   isLoadingScheduled,
   scheduledError,
-  scheduledPage,
+  scheduledPage = 1,
   setScheduledPage,
+  scheduledLimit = 10,
   setScheduledLimit,
+  activeTab: propActiveTab,
+  setActiveTab: propSetActiveTab,
   searchQuery,
   setSearchQuery,
   onDeletePost,
@@ -48,7 +52,9 @@ export const YourPostsView = ({
   const navigate = useNavigate();
   const isLoading = isLoadingPosts || isLoadingScheduled;
   const error = postsError || scheduledError;
-  const [activeTab, setActiveTab] = useState("ALL"); // 'ALL' | 'SCHEDULED' | 'PUBLISHED' | 'DRAFTS'
+  const [localActiveTab, setLocalActiveTab] = useState("ALL"); // 'ALL' | 'SCHEDULED' | 'PUBLISHED' | 'DRAFTS'
+  const activeTab = propActiveTab !== undefined ? propActiveTab : localActiveTab;
+  const setActiveTab = propSetActiveTab !== undefined ? propSetActiveTab : setLocalActiveTab;
   const [lightboxImage, setLightboxImage] = useState(null);
 
   // Filter posts based on search and active tab
@@ -85,7 +91,7 @@ export const YourPostsView = ({
   const filteredScheduledPosts = filteredScheduled;
 
   const publishedCount = posts.filter((p) => p.status === "PUBLISHED").length;
-  const scheduledCount = scheduledPosts.length;
+  const scheduledCount = scheduledMeta?.totalItems ?? scheduledPosts.length;
   const draftCount = posts.filter((p) => p.status === "DRAFT").length;
 
   return (
@@ -115,7 +121,7 @@ export const YourPostsView = ({
           </div>
           <div>
             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Portfolio</p>
-            <p className="text-xl font-heading font-extrabold text-white">{posts.length}</p>
+            <p className="text-xl font-heading font-extrabold text-white">{postsMeta?.totalItems ?? posts.length}</p>
           </div>
         </Card>
 
@@ -205,7 +211,10 @@ export const YourPostsView = ({
         <div className="w-full sm:w-64">
           <SearchBar
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(val) => {
+              const query = typeof val === "string" ? val : (val?.target?.value ?? "");
+              setSearchQuery(query);
+            }}
             placeholder="Search posts..."
           />
         </div>
@@ -435,15 +444,19 @@ export const YourPostsView = ({
         <Pagination
           meta={scheduledMeta}
           currentPage={scheduledPage}
+          totalPages={scheduledMeta?.totalPages || 1}
           onPageChange={setScheduledPage}
           onLimitChange={setScheduledLimit}
+          pageSizeOptions={[10, 20, 50]}
         />
       ) : (
         <Pagination
           meta={postsMeta}
           currentPage={postsPage}
+          totalPages={postsMeta?.totalPages || 1}
           onPageChange={setPostsPage}
           onLimitChange={setPostsLimit}
+          pageSizeOptions={[10, 20, 50]}
         />
       )}
 

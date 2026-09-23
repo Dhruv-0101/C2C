@@ -86,21 +86,25 @@ export const GraphicCard = ({
         )}
       </div>
 
-      {/* Info & Action Buttons */}
-      <div className="space-y-2 pt-1">
-        <div className="flex items-start justify-between gap-2">
-          <div className="truncate">
-            <h4 className="font-heading font-bold text-xs text-white truncate">
+      {/* Info & Action Controls Footer */}
+      <div className="pt-1">
+        <div className="flex items-center justify-between gap-2">
+          {/* Title & Metadata (Left) */}
+          <div className="min-w-0 flex-1">
+            <h4
+              className="font-heading font-bold text-xs text-white truncate"
+              title={title || "Social Graphic"}
+            >
               {title || "Social Graphic"}
             </h4>
             {date && (
               <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                <Calendar className="w-3 h-3 text-amber-400" />
-                {date}
+                <Calendar className="w-3 h-3 text-amber-400 shrink-0" />
+                <span className="truncate">{date}</span>
               </p>
             )}
             {creator && (
-              <div className="pt-1 flex items-center gap-1">
+              <div className="pt-0.5 flex items-center gap-1">
                 <span
                   className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border ${
                     creator.role === "SUB_ADMIN"
@@ -109,8 +113,8 @@ export const GraphicCard = ({
                   }`}
                   title={`Author: ${creator.fullName} (${creator.email})`}
                 >
-                  <User className="w-2.5 h-2.5" />
-                  <span className="truncate max-w-[110px]">
+                  <User className="w-2.5 h-2.5 shrink-0" />
+                  <span className="truncate max-w-[100px]">
                     {creator.role === "SUB_ADMIN" ? "SubAdmin: " : "Admin: "}
                     {creator.fullName}
                   </span>
@@ -118,42 +122,53 @@ export const GraphicCard = ({
               </div>
             )}
           </div>
-        </div>
 
-        {/* Action Controls Bar */}
-        {(onDownload || onEdit || onDelete) && (
-          <div className="flex items-center gap-2 pt-2 border-t border-[#2C384E]">
-            {onDownload && (
-              <Button
-                variant="outline"
-                onClick={() => onDownload(imageUrl, title)}
-                className="py-1.5 px-2.5 text-xs text-amber-400 border-[#2C384E] hover:bg-amber-500/10"
-                title="Download HD PNG"
-              >
-                <Download className="w-3.5 h-3.5" />
-              </Button>
-            )}
-            {onEdit && (
-              <button
-                onClick={onEdit}
-                className="p-2 rounded-lg bg-[#131B2A] hover:bg-slate-800 text-slate-300 hover:text-white border border-[#2C384E] transition"
-                title="Edit Details"
-              >
-                <Edit className="w-3.5 h-3.5" />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={onDelete}
-                disabled={isDeleting}
-                className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition"
-                title="Delete"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        )}
+          {/* Action Buttons (Right) */}
+          {(onDownload || onEdit || onDelete) && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              {onDownload && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownload(imageUrl, title);
+                  }}
+                  className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition cursor-pointer"
+                  title="Download HD PNG"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onEdit && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-500 transition cursor-pointer"
+                  title="Edit Details"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  disabled={isDeleting}
+                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/20 hover:border-rose-600 transition cursor-pointer disabled:opacity-50"
+                  title="Delete Template"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </Card>
   );

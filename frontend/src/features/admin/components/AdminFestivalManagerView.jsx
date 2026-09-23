@@ -24,6 +24,7 @@ import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
 import Pagination from "../../../components/common/Pagination";
+import { SearchBar } from "../../../components/common/SearchBar";
 import { useFestivals } from "../../../hooks/useFestivals";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { FeedbackModal } from "../../../components/common/FeedbackModal";
@@ -301,19 +302,15 @@ export const AdminFestivalManagerView = () => {
         <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
           {/* Search Bar & Action Header */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-              <input
-                type="text"
-                placeholder="Search festival by name or region..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-500"
-              />
-            </div>
+            <SearchBar
+              placeholder="Search festival by name, description, or region..."
+              value={search}
+              onChange={(val) => {
+                setSearch(val);
+                setPage(1);
+              }}
+              className="w-full sm:max-w-md"
+            />
 
             <div className="text-xs text-slate-400 font-mono">
               Showing {paginatedFestivals.length} of {totalFiltered} festivals
@@ -324,8 +321,24 @@ export const AdminFestivalManagerView = () => {
           {isLoading ? (
             <div className="p-16 text-center text-slate-400 text-xs">Loading festivals...</div>
           ) : paginatedFestivals.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-2xl">
-              No matching festivals found. Click "Add Festival" to create one.
+            <div className="p-12 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-2xl space-y-2">
+              <p>
+                {search
+                  ? `No festivals found matching "${search}".`
+                  : 'No festivals found. Click "Add Festival" to create one.'}
+              </p>
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setPage(1);
+                  }}
+                  className="text-amber-400 hover:underline font-semibold cursor-pointer"
+                >
+                  Clear Search Filter
+                </button>
+              )}
             </div>
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
@@ -380,11 +393,6 @@ export const AdminFestivalManagerView = () => {
                           </span>
                         </div>
 
-                        {fest.description && (
-                          <p className="text-xs text-slate-400 line-clamp-2 mt-1">
-                            {fest.description}
-                          </p>
-                        )}
 
                         <div className="pt-2 flex items-center gap-1.5">
                           {fest.creator ? (
@@ -446,12 +454,14 @@ export const AdminFestivalManagerView = () => {
           <div className="pt-4 border-t border-[#2C384E]">
             <Pagination
               meta={meta}
+              currentPage={meta?.page || page}
+              totalPages={meta?.totalPages || 1}
               onPageChange={(p) => setPage(p)}
               onLimitChange={(l) => {
                 setLimit(l);
                 setPage(1);
               }}
-              pageSizeOptions={[8, 16, 24]}
+              pageSizeOptions={[8, 12, 24, 48]}
             />
           </div>
         </Card>

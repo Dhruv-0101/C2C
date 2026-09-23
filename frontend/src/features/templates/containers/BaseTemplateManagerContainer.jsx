@@ -40,8 +40,14 @@ export const BaseTemplateManagerContainer = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(8);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [selectedFestival, setSelectedFestival] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+
+  // Reset page to 1 whenever debounced search or filter selection changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, selectedFestival, selectedCategory]);
 
   const {
     templates,
@@ -50,10 +56,10 @@ export const BaseTemplateManagerContainer = () => {
   } = useTemplates({
     page,
     limit,
-    search,
-    festivalId: selectedFestival,
-    category: selectedCategory,
-    templateCategoryId: selectedCategory,
+    search: debouncedSearch || undefined,
+    festivalId: selectedFestival || undefined,
+    category: selectedCategory || undefined,
+    templateCategoryId: selectedCategory || undefined,
   });
 
   // Server-Side Category Selector State (8 per page)

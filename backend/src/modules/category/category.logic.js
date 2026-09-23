@@ -3,6 +3,7 @@ import { parsePaginationParams, buildPaginatedResponse } from '../../common/help
 import * as categoryRepository from './category.repository.js';
 import * as templateCategoryRepository from '../template/templateCategory.repository.js';
 import { sanitizeCategory } from './category.helper.js';
+import { DEFAULT_CATEGORY_SORT_BY, DEFAULT_CATEGORY_SORT_ORDER } from './category.constants.js';
 
 /**
  * Generate a clean URL slug from category name
@@ -22,7 +23,11 @@ function slugify(text) {
  */
 export async function getCategories(queryParams = {}) {
   const pagination = parsePaginationParams(queryParams, 100, 100);
-  const { categories, totalCount } = await categoryRepository.findPaginatedCategories(pagination);
+  const { categories, totalCount } = await categoryRepository.findPaginatedCategories({
+    ...pagination,
+    sortBy: queryParams.sortBy || DEFAULT_CATEGORY_SORT_BY,
+    sortOrder: queryParams.sortOrder ? (queryParams.sortOrder === 'asc' ? 'asc' : 'desc') : DEFAULT_CATEGORY_SORT_ORDER,
+  });
 
   const sanitizedCategories = categories.map(sanitizeCategory);
 
@@ -141,6 +146,20 @@ export async function updateCategory(id, { name, description }) {
   }
 
   const updatedCategory = await categoryRepository.updateCategory(id, updateData);
+
+  // Sync update to corresponding TemplateCategory if exists
+  try {
+    const existingTemplateCat = await templateCategoryRepository.findTemplateCategoryByNameOrSlug(existingCategory.name);
+    if (existingTemplateCat) {
+      await templateCategoryRepository.updateTemplateCategory(existingTemplateCat.id, {
+        ...(updateData.name && { name: updateData.name, slug: updateData.slug }),
+        ...(updateData.description !== undefined && { description: updateData.description }),
+      });
+    }
+  } catch (_syncErr) {
+    // Non-blocking sync
+  }
+
   return sanitizeCategory(updatedCategory);
 }
 
@@ -154,6 +173,17 @@ export async function deleteCategory(id) {
   }
 
   await categoryRepository.deleteCategory(id);
+
+  // Sync deletion of corresponding TemplateCategory if not a system category
+  try {
+    const existingTemplateCat = await templateCategoryRepository.findTemplateCategoryByNameOrSlug(category.name);
+    if (existingTemplateCat && !existingTemplateCat.isSystem) {
+      await templateCategoryRepository.deleteTemplateCategory(existingTemplateCat.id);
+    }
+  } catch (_syncErr) {
+    // Non-blocking sync
+  }
+
   return {
     id,
     name: category.name,

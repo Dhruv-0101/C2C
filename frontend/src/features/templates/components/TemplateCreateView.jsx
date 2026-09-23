@@ -240,7 +240,7 @@ export const TemplateCreateView = ({
                 </div>
 
                 {/* Category Pills with custom scrollbar and padding bottom */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 custom-scrollbar">
+                <div className="flex items-center gap-2 overflow-x-auto pt-2 pb-4 custom-scrollbar">
                   {/* PROMINENTLY HIGHLIGHTED NEW CATEGORY BUTTON */}
                   <button
                     type="button"
@@ -395,7 +395,7 @@ export const TemplateCreateView = ({
                 </div>
 
                 {/* Festival Pills with custom scrollbar and padding bottom */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 custom-scrollbar">
+                <div className="flex items-center gap-2 overflow-x-auto pt-2 pb-4 custom-scrollbar">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, festivalId: "", selectedFestivalObj: null })}

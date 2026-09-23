@@ -127,6 +127,17 @@ export async function findTemplateCategoryByNameOrSlug(nameOrSlug) {
 }
 
 /**
+ * Update a template category
+ */
+export async function updateTemplateCategory(id, data) {
+  return prisma.templateCategory.update({
+    where: { id },
+    data,
+    include: CATEGORY_INCLUDE,
+  });
+}
+
+/**
  * Delete a template category
  */
 export async function deleteTemplateCategory(id) {

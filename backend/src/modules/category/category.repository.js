@@ -46,6 +46,7 @@ export async function findPaginatedCategories({
     ? {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
           { description: { contains: search, mode: 'insensitive' } },
         ],
       }
