@@ -54,9 +54,10 @@ export const createFestivalSchema = z.object({
       .max(FESTIVAL_TARGET_REGION_MAX_LENGTH, `Region cannot exceed ${FESTIVAL_TARGET_REGION_MAX_LENGTH} characters`)
       .optional()
       .default(DEFAULT_TARGET_REGION),
-    bannerUrl: z.string().trim().optional(),
-    base64Banner: z.string().optional(),
-    isActive: z.boolean().optional().default(true),
+    isActive: z
+      .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
+      .optional()
+      .transform((val) => (val !== undefined ? val === true || val === 'true' || val === '1' : true)),
   }),
 });
 
@@ -89,9 +90,14 @@ export const updateFestivalSchema = z.object({
         .trim()
         .max(FESTIVAL_TARGET_REGION_MAX_LENGTH, `Region cannot exceed ${FESTIVAL_TARGET_REGION_MAX_LENGTH} characters`)
         .optional(),
-      bannerUrl: z.string().trim().optional(),
-      base64Banner: z.string().optional(),
-      isActive: z.boolean().optional(),
+      clearBanner: z
+        .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
+        .optional()
+        .transform((val) => (val !== undefined ? val === true || val === 'true' || val === '1' : undefined)),
+      isActive: z
+        .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
+        .optional()
+        .transform((val) => (val !== undefined ? val === true || val === 'true' || val === '1' : undefined)),
     })
     .refine(
       (data) =>
@@ -99,8 +105,7 @@ export const updateFestivalSchema = z.object({
         data.date !== undefined ||
         data.description !== undefined ||
         data.targetRegion !== undefined ||
-        data.bannerUrl !== undefined ||
-        data.base64Banner !== undefined ||
+        data.clearBanner !== undefined ||
         data.isActive !== undefined,
       {
         message: 'At least one field must be provided for update',

@@ -19,9 +19,7 @@ export const updateBrandKitSchema = z.object({
       ),
     categoryId: z.string().trim().optional().nullable().or(z.literal('')),
     logoUrl: z.string().trim().optional().nullable().or(z.literal('')),
-    base64Logo: z.string().optional().nullable(),
     avatarUrl: z.string().trim().optional().nullable().or(z.literal('')),
-    base64Avatar: z.string().optional().nullable(),
     phone: z
       .string()
       .trim()
@@ -132,7 +130,6 @@ export const updateBrandKitSchema = z.object({
       .optional()
       .nullable(),
     upiQrUrl: z.string().trim().optional().nullable().or(z.literal('')),
-    base64UpiQr: z.string().optional().nullable(),
     workingHours: z
       .string()
       .trim()

@@ -216,6 +216,7 @@ export async function findAllSubAdmins() {
           templatesCreated: true,
           festivalsCreated: true,
           categoriesCreated: true,
+          templateCategoriesCreated: true,
           framesCreated: true,
         },
       },
@@ -253,6 +254,7 @@ export async function findPaginatedSubAdmins({ skip, take, search, sortBy = 'cre
         templatesCreated: true,
         festivalsCreated: true,
         categoriesCreated: true,
+        templateCategoriesCreated: true,
         framesCreated: true,
       },
     },
@@ -461,6 +463,7 @@ export async function findSubAdminActivity({
           templatesCreated: true,
           festivalsCreated: true,
           categoriesCreated: true,
+          templateCategoriesCreated: true,
           framesCreated: true,
         },
       },
@@ -512,13 +515,18 @@ export async function findSubAdminActivity({
     createdBy: { in: targetCreatorIds },
     ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
   };
+  const templateCategoryWhere = {
+    createdBy: { in: targetCreatorIds },
+    ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
+  };
 
   // Compute counts
-  const [templatesCount, framesCount, festivalsCount, categoriesCount] = await Promise.all([
+  const [templatesCount, framesCount, festivalsCount, categoriesCount, templateCategoriesCount] = await Promise.all([
     prisma.template.count({ where: templateWhere }),
     prisma.frame.count({ where: frameWhere }),
     prisma.festival.count({ where: festivalWhere }),
     prisma.category.count({ where: categoryWhere }),
+    prisma.templateCategory.count({ where: templateCategoryWhere }),
   ]);
 
   let items = [];
@@ -612,13 +620,35 @@ export async function findSubAdminActivity({
       updatedAt: item.updatedAt,
       creator: item.creator,
     }));
+  } else if (type === 'templateCategory') {
+    totalCount = templateCategoriesCount;
+    const records = await prisma.templateCategory.findMany({
+      where: templateCategoryWhere,
+      include: { creator: creatorSelect },
+      skip,
+      take: limit,
+      orderBy: { createdAt: sortOrder },
+    });
+    items = records.map((item) => ({
+      id: item.id,
+      itemType: 'templateCategory',
+      title: item.name,
+      description: item.description,
+      subtitle: `Slug: /${item.slug}`,
+      previewUrl: null,
+      eventDate: null,
+      isActive: true,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      creator: item.creator,
+    }));
   } else {
     // type === 'all'
-    totalCount = templatesCount + framesCount + festivalsCount + categoriesCount;
+    totalCount = templatesCount + framesCount + festivalsCount + categoriesCount + templateCategoriesCount;
 
     // Fetch up to (skip + limit) from each category to ensure accurate sorting across models
     const fetchLimit = skip + limit;
-    const [templates, frames, festivals, categories] = await Promise.all([
+    const [templates, frames, festivals, categories, templateCategories] = await Promise.all([
       prisma.template.findMany({
         where: templateWhere,
         include: { creator: creatorSelect, templateCategory: true },
@@ -639,6 +669,12 @@ export async function findSubAdminActivity({
       }),
       prisma.category.findMany({
         where: categoryWhere,
+        include: { creator: creatorSelect },
+        take: fetchLimit,
+        orderBy: { createdAt: sortOrder },
+      }),
+      prisma.templateCategory.findMany({
+        where: templateCategoryWhere,
         include: { creator: creatorSelect },
         take: fetchLimit,
         orderBy: { createdAt: sortOrder },
@@ -698,6 +734,19 @@ export async function findSubAdminActivity({
         updatedAt: item.updatedAt,
         creator: item.creator,
       })),
+      ...templateCategories.map((item) => ({
+        id: item.id,
+        itemType: 'templateCategory',
+        title: item.name,
+        description: item.description,
+        subtitle: `Slug: /${item.slug}`,
+        previewUrl: null,
+        eventDate: null,
+        isActive: true,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        creator: item.creator,
+      })),
     ];
 
     // Sort unified items
@@ -714,12 +763,13 @@ export async function findSubAdminActivity({
     items,
     totalCount,
     summary: {
-      totalCreations: templatesCount + framesCount + festivalsCount + categoriesCount,
+      totalCreations: templatesCount + framesCount + festivalsCount + categoriesCount + templateCategoriesCount,
       byType: {
         templates: templatesCount,
         frames: framesCount,
         festivals: festivalsCount,
         categories: categoriesCount,
+        templateCategories: templateCategoriesCount,
       },
       subAdmins: subAdmins.map((s) => ({
         id: s.id,
@@ -733,11 +783,13 @@ export async function findSubAdminActivity({
           frames: s._count.framesCreated,
           festivals: s._count.festivalsCreated,
           categories: s._count.categoriesCreated,
+          templateCategories: s._count.templateCategoriesCreated,
           total:
             s._count.templatesCreated +
             s._count.framesCreated +
             s._count.festivalsCreated +
-            s._count.categoriesCreated,
+            s._count.categoriesCreated +
+            s._count.templateCategoriesCreated,
         },
       })),
     },

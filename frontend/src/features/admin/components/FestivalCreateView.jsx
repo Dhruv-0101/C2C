@@ -16,10 +16,9 @@ export const FestivalCreateView = ({
   editingFestival,
   handleSaveSubmit,
   handleBannerFileChange,
-  base64Banner,
-  setBase64Banner,
   bannerPreview,
   setBannerPreview,
+  setBannerFile,
   isSubmitting,
   formError,
 }) => {
@@ -189,9 +188,9 @@ export const FestivalCreateView = ({
                     <button
                       type="button"
                       onClick={() => {
-                        setBase64Banner("");
+                        if (setBannerFile) setBannerFile(null);
                         setBannerPreview("");
-                        setFormData({ ...formData, bannerUrl: "" });
+                        setFormData({ ...formData, clearBanner: true });
                       }}
                       className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs transition"
                       title="Remove Banner"
@@ -201,22 +200,6 @@ export const FestivalCreateView = ({
                   </div>
                 </div>
               )}
-
-              <div className="pt-2">
-                <label className="text-xs font-semibold text-slate-400 block mb-1">
-                  Or Direct Banner Image URL
-                </label>
-                <input
-                  type="text"
-                  placeholder="Paste direct URL e.g. https://res.cloudinary.com/..."
-                  value={formData.bannerUrl || ""}
-                  onChange={(e) => {
-                    setFormData({ ...formData, bannerUrl: e.target.value });
-                    if (e.target.value) setBannerPreview(e.target.value);
-                  }}
-                  className="w-full px-4 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-500 placeholder:text-slate-600"
-                />
-              </div>
             </div>
 
             {/* Step 3: Status & Visibility */}

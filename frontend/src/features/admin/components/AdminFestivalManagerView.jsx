@@ -29,7 +29,7 @@ import { useFestivals } from "../../../hooks/useFestivals";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { FeedbackModal } from "../../../components/common/FeedbackModal";
 import { FestivalCalendarContainer } from "../../calendar/containers/FestivalCalendarContainer";
-import { readImageAsBase64 } from "../../../utils/file.utils";
+import { createImagePreview } from "../../../utils/file.utils";
 import { FestivalCreateView } from "./FestivalCreateView";
 
 /**
@@ -85,17 +85,18 @@ export const AdminFestivalManagerView = () => {
     bannerUrl: "",
     isActive: true,
   });
-  const [base64Banner, setBase64Banner] = useState("");
+  const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState("");
 
-  // Handle Banner Image File Selection
-  const handleBannerFileChange = async (e) => {
+  // Handle Banner Image File Selection using zero-copy Object URL
+  const handleBannerFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const base64 = await readImageAsBase64(file, 5);
-      setBase64Banner(base64);
-      setBannerPreview(base64);
+      const preview = createImagePreview(file, 10);
+      setBannerFile(file);
+      setBannerPreview(preview);
+      setFormError("");
     } catch (err) {
       setFormError(err.message || "Failed to process image file.");
     }
@@ -116,7 +117,7 @@ export const AdminFestivalManagerView = () => {
       bannerUrl: "",
       isActive: true,
     });
-    setBase64Banner("");
+    setBannerFile(null);
     setBannerPreview("");
     setFormError("");
     setDisplayMode("form");
@@ -137,7 +138,7 @@ export const AdminFestivalManagerView = () => {
       bannerUrl: fest.bannerUrl || "",
       isActive: fest.isActive !== undefined ? fest.isActive : true,
     });
-    setBase64Banner("");
+    setBannerFile(null);
     setBannerPreview(fest.bannerUrl || "");
     setFormError("");
     setDisplayMode("form");
@@ -158,15 +159,29 @@ export const AdminFestivalManagerView = () => {
     }
 
     try {
-      const festivalPayload = {
-        name: formData.name.trim(),
-        date: formData.date,
-        description: formData.description?.trim() || "",
-        targetRegion: formData.targetRegion?.trim() || "India",
-        bannerUrl: formData.bannerUrl?.trim() || undefined,
-        base64Banner: base64Banner || undefined,
-        isActive: formData.isActive,
-      };
+      let festivalPayload;
+
+      // If user selected a new image file, send as standard multipart/form-data
+      if (bannerFile) {
+        const fd = new FormData();
+        fd.append("name", formData.name.trim());
+        fd.append("date", formData.date);
+        if (formData.description?.trim()) fd.append("description", formData.description.trim());
+        if (formData.targetRegion?.trim()) fd.append("targetRegion", formData.targetRegion.trim());
+        fd.append("isActive", String(formData.isActive));
+        fd.append("banner", bannerFile);
+        festivalPayload = fd;
+      } else {
+        // Metadata update (preserves existing banner on backend unless clearBanner is set)
+        festivalPayload = {
+          name: formData.name.trim(),
+          date: formData.date,
+          description: formData.description?.trim() || "",
+          targetRegion: formData.targetRegion?.trim() || "India",
+          clearBanner: formData.clearBanner || undefined,
+          isActive: formData.isActive,
+        };
+      }
 
       if (editingFestival) {
         await updateFestival({
@@ -230,8 +245,7 @@ export const AdminFestivalManagerView = () => {
         editingFestival={editingFestival}
         handleSaveSubmit={handleSaveSubmit}
         handleBannerFileChange={handleBannerFileChange}
-        base64Banner={base64Banner}
-        setBase64Banner={setBase64Banner}
+        setBannerFile={setBannerFile}
         bannerPreview={bannerPreview}
         setBannerPreview={setBannerPreview}
         isSubmitting={isCreating || isUpdating}

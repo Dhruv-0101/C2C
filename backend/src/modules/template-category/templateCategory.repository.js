@@ -3,13 +3,14 @@ import {
   TEMPLATE_CATEGORY_ALLOWED_SORT_FIELDS,
   DEFAULT_TEMPLATE_CATEGORY_SORT_BY,
   DEFAULT_TEMPLATE_CATEGORY_SORT_ORDER,
-} from './template.constants.js';
+} from './templateCategory.constants.js';
 
 const CREATOR_SELECT = Object.freeze({
   id: true,
   fullName: true,
   email: true,
   role: true,
+  avatarUrl: true,
 });
 
 const CATEGORY_INCLUDE = Object.freeze({
@@ -22,21 +23,13 @@ const CATEGORY_INCLUDE = Object.freeze({
 });
 
 /**
- * Create a new template category record
+ * Create a new template category record in PostgreSQL
  */
 export async function createTemplateCategory(data) {
-  const slug =
-    data.slug ||
-    data.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-
   return prisma.templateCategory.create({
     data: {
       name: data.name.trim(),
-      slug,
+      slug: data.slug,
       description: data.description?.trim() || null,
       isSystem: Boolean(data.isSystem),
       createdBy: data.createdBy || null,
@@ -46,7 +39,7 @@ export async function createTemplateCategory(data) {
 }
 
 /**
- * Fetch paginated template categories with search and sorting
+ * Fetch paginated template categories with live search and sorting
  */
 export async function findPaginatedTemplateCategories({
   skip = 0,
@@ -68,7 +61,7 @@ export async function findPaginatedTemplateCategories({
   const validSortBy = TEMPLATE_CATEGORY_ALLOWED_SORT_FIELDS.includes(sortBy)
     ? sortBy
     : DEFAULT_TEMPLATE_CATEGORY_SORT_BY;
-  const validSortOrder = sortOrder === 'desc' ? 'desc' : DEFAULT_TEMPLATE_CATEGORY_SORT_ORDER;
+  const validSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
 
   const [categories, totalCount] = await prisma.$transaction([
     prisma.templateCategory.findMany({
@@ -85,7 +78,7 @@ export async function findPaginatedTemplateCategories({
 }
 
 /**
- * Fetch all template categories ordered by name
+ * Fetch all active template categories ordered by name ascending
  */
 export async function findManyTemplateCategories() {
   return prisma.templateCategory.findMany({
@@ -100,6 +93,32 @@ export async function findManyTemplateCategories() {
 export async function findTemplateCategoryById(id) {
   return prisma.templateCategory.findUnique({
     where: { id },
+    include: CATEGORY_INCLUDE,
+  });
+}
+
+/**
+ * Find template category by exact name (case-insensitive)
+ */
+export async function findTemplateCategoryByName(name) {
+  if (!name) return null;
+  return prisma.templateCategory.findFirst({
+    where: {
+      name: { equals: name.trim(), mode: 'insensitive' },
+    },
+    include: CATEGORY_INCLUDE,
+  });
+}
+
+/**
+ * Find template category by slug
+ */
+export async function findTemplateCategoryBySlug(slug) {
+  if (!slug) return null;
+  return prisma.templateCategory.findFirst({
+    where: {
+      slug: { equals: slug.trim(), mode: 'insensitive' },
+    },
     include: CATEGORY_INCLUDE,
   });
 }
@@ -127,7 +146,7 @@ export async function findTemplateCategoryByNameOrSlug(nameOrSlug) {
 }
 
 /**
- * Update a template category
+ * Update an existing template category
  */
 export async function updateTemplateCategory(id, data) {
   return prisma.templateCategory.update({

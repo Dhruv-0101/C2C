@@ -15,6 +15,7 @@ import {
   Zap,
   Share2,
   FolderKanban,
+  FolderTree,
   Calendar,
   Search,
   ZoomIn,
@@ -509,16 +510,16 @@ export const PostStudioEditorView = ({
                     </div>
                   </div>
                 </div>
-              )}              {/* 1. Category Navigation (8 Items per Page + Search) */}
+              )}              {/* 1. Template Category Navigation (8 Items per Page + Search) */}
               <div className="space-y-2 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <FolderKanban className="w-3.5 h-3.5 text-amber-400" />
+                    <FolderTree className="w-3.5 h-3.5 text-amber-400" />
                     <h4 className="font-heading font-extrabold text-xs text-white">
-                      Category Navigation
+                      Template Category Navigation
                     </h4>
                     <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.2 rounded-full">
-                      {categoryMeta?.totalItems ?? categoriesList.length} Categories
+                      {categoryMeta?.totalItems ?? categoriesList.length} Template Categories
                     </span>
                     <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.2 rounded-full border border-slate-700 font-mono">
                       Page {catPage} of {catTotalPages}
@@ -526,29 +527,29 @@ export const PostStudioEditorView = ({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Category Search */}
+                    {/* Template Category Search */}
                     <div className="relative">
                       <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" />
                       <input
                         type="text"
-                        placeholder="Search categories..."
+                        placeholder="Search template categories..."
                         value={catSearch}
                         onChange={(e) => {
                           if (setCatSearch) setCatSearch(e.target.value);
                           if (setCatPage) setCatPage(1);
                         }}
-                        className="pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-32 sm:w-36"
+                        className="pl-7 pr-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-36 sm:w-44"
                       />
                     </div>
 
-                    {/* Category Pagination Controls */}
+                    {/* Template Category Pagination Controls */}
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
                         disabled={catPage <= 1}
                         onClick={() => setCatPage && setCatPage((p) => Math.max(1, p - 1))}
                         className="px-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition text-xs flex items-center gap-1 cursor-pointer"
-                        title="Previous Categories"
+                        title="Previous Template Categories"
                       >
                         <ChevronLeft className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline text-[11px]">Prev</span>
@@ -558,7 +559,7 @@ export const PostStudioEditorView = ({
                         disabled={catPage >= catTotalPages}
                         onClick={() => setCatPage && setCatPage((p) => Math.min(catTotalPages, p + 1))}
                         className="px-2 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 transition text-xs flex items-center gap-1 cursor-pointer"
-                        title="Next Categories"
+                        title="Next Template Categories"
                       >
                         <span className="hidden sm:inline text-[11px]">Next</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -567,7 +568,7 @@ export const PostStudioEditorView = ({
                   </div>
                 </div>
 
-                {/* Category Pills (Max 8 shown per page) */}
+                {/* Template Category Pills (Max 8 shown per page) */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-2 custom-scrollbar">
                   <button
                     type="button"
@@ -581,18 +582,18 @@ export const PostStudioEditorView = ({
                         : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
                     }`}
                   >
-                    <span>🎨 All Categories</span>
+                    <span>🎨 All Template Categories</span>
                   </button>
 
                   {isLoadingCategories && (
                     <span className="text-xs text-slate-400 animate-pulse px-2">
-                      Searching categories...
+                      Searching template categories...
                     </span>
                   )}
 
                   {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
                     <span className="text-xs text-slate-400 italic px-2">
-                      No categories matching "{catSearch}"
+                      No template categories matching "{catSearch}"
                     </span>
                   )}
 

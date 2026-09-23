@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { brandKitSchema } from "@/validations/brandkit.validation";
 import { useBrandKit } from "@/hooks/useBrandKit";
 import { useCategories } from "@/hooks/useCategories";
-import { readImageAsBase64 } from "@/utils/file.utils";
+import { createImagePreview } from "@/utils/file.utils";
 import { BrandKitView } from "../components/BrandKitView";
 
 /**
@@ -21,11 +21,11 @@ export const BrandKitContainer = () => {
   const [scheduledNotice, setScheduledNotice] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [logoPreview, setLogoPreview] = useState(null);
-  const [base64Logo, setBase64Logo] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
-  const [base64Avatar, setBase64Avatar] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
   const [upiQrPreview, setUpiQrPreview] = useState(null);
-  const [base64UpiQr, setBase64UpiQr] = useState(null);
+  const [upiQrFile, setUpiQrFile] = useState(null);
 
   const {
     register,
@@ -97,47 +97,48 @@ export const BrandKitContainer = () => {
   }, [brandKit, reset]);
 
   // Handle Logo Upload
-  const handleLogoChange = async (e) => {
+  // Handle Logo Upload
+  const handleLogoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       setErrorMsg("");
-      const base64 = await readImageAsBase64(file, 5);
-      setLogoPreview(base64);
-      setBase64Logo(base64);
+      const preview = createImagePreview(file, 5);
+      setLogoPreview(preview);
+      setLogoFile(file);
     } catch (err) {
-      setErrorMsg(err.message || "Failed to read logo image.");
+      setErrorMsg(err.message || "Failed to process logo image.");
     }
   };
 
   // Handle Avatar Upload
-  const handleAvatarChange = async (e) => {
+  const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       setErrorMsg("");
-      const base64 = await readImageAsBase64(file, 5);
-      setAvatarPreview(base64);
-      setBase64Avatar(base64);
+      const preview = createImagePreview(file, 5);
+      setAvatarPreview(preview);
+      setAvatarFile(file);
     } catch (err) {
-      setErrorMsg(err.message || "Failed to read profile photo.");
+      setErrorMsg(err.message || "Failed to process profile photo.");
     }
   };
 
   // Handle UPI QR Upload
-  const handleUpiQrChange = async (e) => {
+  const handleUpiQrChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       setErrorMsg("");
-      const base64 = await readImageAsBase64(file, 5);
-      setUpiQrPreview(base64);
-      setBase64UpiQr(base64);
+      const preview = createImagePreview(file, 5);
+      setUpiQrPreview(preview);
+      setUpiQrFile(file);
     } catch (err) {
-      setErrorMsg(err.message || "Failed to read UPI QR image.");
+      setErrorMsg(err.message || "Failed to process UPI QR image.");
     }
   };
 
@@ -145,12 +146,24 @@ export const BrandKitContainer = () => {
     try {
       setErrorMsg("");
       setScheduledNotice(null);
-      const res = await saveBrandKit({
-        ...data,
-        base64Logo: base64Logo || undefined,
-        base64Avatar: base64Avatar || undefined,
-        base64UpiQr: base64UpiQr || undefined,
-      });
+
+      let payload;
+      if (logoFile || avatarFile || upiQrFile) {
+        const fd = new FormData();
+        Object.entries(data).forEach(([key, val]) => {
+          if (val !== undefined && val !== null && val !== "") {
+            fd.append(key, val);
+          }
+        });
+        if (logoFile) fd.append("logo", logoFile);
+        if (avatarFile) fd.append("avatar", avatarFile);
+        if (upiQrFile) fd.append("upiQr", upiQrFile);
+        payload = fd;
+      } else {
+        payload = { ...data };
+      }
+
+      const res = await saveBrandKit(payload);
 
       const syncedCount = res?.data?.syncedPostsCount ?? res?.syncedPostsCount ?? 0;
       if (syncedCount > 0) {
@@ -182,13 +195,13 @@ export const BrandKitContainer = () => {
       categories={categories}
       logoPreview={logoPreview}
       setLogoPreview={setLogoPreview}
-      setBase64Logo={setBase64Logo}
+      setLogoFile={setLogoFile}
       avatarPreview={avatarPreview}
       setAvatarPreview={setAvatarPreview}
-      setBase64Avatar={setBase64Avatar}
+      setAvatarFile={setAvatarFile}
       upiQrPreview={upiQrPreview}
       setUpiQrPreview={setUpiQrPreview}
-      setBase64UpiQr={setBase64UpiQr}
+      setUpiQrFile={setUpiQrFile}
       handleLogoChange={handleLogoChange}
       handleAvatarChange={handleAvatarChange}
       handleUpiQrChange={handleUpiQrChange}

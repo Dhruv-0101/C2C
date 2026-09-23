@@ -5,6 +5,7 @@ import authRoutes from '../modules/auth/auth.routes.js';
 import categoryRoutes from '../modules/category/category.routes.js';
 import festivalRoutes from '../modules/festival/festival.routes.js';
 import templateRoutes from '../modules/template/template.routes.js';
+import templateCategoryRoutes from '../modules/template-category/templateCategory.routes.js';
 import brandKitRoutes from '../modules/brandkit/brandkit.routes.js';
 import frameRoutes from '../modules/frame/frame.routes.js';
 import postRoutes from '../modules/post/post.routes.js';
@@ -32,6 +33,7 @@ router.get('/health', (req, res) => {
 // Register Module Routes
 router.use('/auth', authRoutes);
 router.use('/categories', categoryRoutes);
+router.use('/template-categories', templateCategoryRoutes);
 router.use('/festivals', festivalRoutes);
 router.use('/templates', templateRoutes);
 router.use('/brandkit', brandKitRoutes);

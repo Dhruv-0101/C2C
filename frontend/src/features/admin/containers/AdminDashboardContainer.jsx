@@ -10,10 +10,11 @@ import { useSubAdmins } from "../../../hooks/useSubAdmins";
 import { useUsers } from "../../../hooks/useUsers";
 import { useAdminPosts, useAdminPostAnalytics } from "../../../hooks/useAdminPosts";
 import { useFrames } from "../../../hooks/useFrames";
-import { useTemplateCategories } from "../../../hooks/useTemplates";
+import { useTemplateCategories } from "../../../hooks/useTemplateCategories";
 import { useFestivals } from "../../../hooks/useFestivals";
 import { authApi } from "../../../services/auth.api";
 import { categoryApi } from "../../../services/category.api";
+import { templateCategoryApi } from "../../../services/templateCategory.api";
 import { billingApi } from "../../../services/billing.api";
 import { subAdminSchema } from "../../../validations/auth.validation";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
@@ -130,6 +131,28 @@ export const AdminDashboardContainer = () => {
     search: debouncedCategorySearch,
   });
 
+  // 3b. Master Template Categories Query
+  const [templateCategoryPage, setTemplateCategoryPage] = useState(1);
+  const [templateCategoryLimit, setTemplateCategoryLimit] = useState(10);
+  const [templateCategorySearch, setTemplateCategorySearch] = useState("");
+  const [templateCategoryError, setTemplateCategoryError] = useState("");
+  const debouncedTemplateCategorySearch = useDebounce(templateCategorySearch, 300);
+
+  useEffect(() => {
+    setTemplateCategoryPage(1);
+  }, [debouncedTemplateCategorySearch]);
+
+  const {
+    templateCategories,
+    meta: templateCategoryMeta,
+    isLoading: isLoadingTemplateCategories,
+    error: templateCategoriesFetchError,
+  } = useTemplateCategories({
+    page: templateCategoryPage,
+    limit: templateCategoryLimit,
+    search: debouncedTemplateCategorySearch,
+  });
+
   // 4. Generated Posts Audit Query (with Multi-Filters)
   const [postPage, setPostPage] = useState(1);
   const [postLimit, setPostLimit] = useState(10);
@@ -231,6 +254,74 @@ export const AdminDashboardContainer = () => {
     },
     onError: (err) => {
       showError("Delete Error ⚠️", err.message || "Failed to delete category.");
+    },
+  });
+
+  // Create Template Category Mutation
+  const createTemplateCategoryMutation = useMutation({
+    mutationFn: (data) =>
+      typeof data === "string"
+        ? templateCategoryApi.createTemplateCategory({ name: data })
+        : templateCategoryApi.createTemplateCategory(data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ACTIVITY });
+      setTemplateCategoryPage(1);
+      setTemplateCategoryError("");
+      const catName = typeof variables === "string" ? variables : variables.name;
+      showSuccess(
+        "Template Category Added! 🎉",
+        `Master template category "${catName}" has been created successfully.`,
+      );
+    },
+    onError: (err) => {
+      setTemplateCategoryError(err.message || "Failed to create template category.");
+      showError(
+        "Template Category Error ⚠️",
+        err.message || "Could not create template category. Please try again.",
+      );
+    },
+  });
+
+  // Update Template Category Mutation
+  const updateTemplateCategoryMutation = useMutation({
+    mutationFn: ({ id, data }) => templateCategoryApi.updateTemplateCategory(id, data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      setTemplateCategoryError("");
+      showSuccess(
+        "Template Category Updated! ✏️",
+        `Template category "${variables.data.name || "item"}" has been updated successfully.`,
+      );
+    },
+    onError: (err) => {
+      setTemplateCategoryError(err.message || "Failed to update template category.");
+      showError(
+        "Update Error ⚠️",
+        err.message || "Failed to update template category.",
+      );
+    },
+  });
+
+  // Delete Template Category Mutation
+  const deleteTemplateCategoryMutation = useMutation({
+    mutationFn: (id) => templateCategoryApi.deleteTemplateCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ACTIVITY });
+      showSuccess(
+        "Template Category Removed 🗑️",
+        "Template category deleted successfully from database.",
+      );
+    },
+    onError: (err) => {
+      showError("Delete Error ⚠️", err.message || "Failed to delete template category.");
     },
   });
 
@@ -416,6 +507,20 @@ export const AdminDashboardContainer = () => {
         categoryMeta={categoryMeta}
         isLoadingCategories={isLoadingCategories}
         categoriesFetchError={categoriesFetchError}
+        // Template Categories Props
+        templateCategoryPage={templateCategoryPage}
+        setTemplateCategoryPage={setTemplateCategoryPage}
+        templateCategoryLimit={templateCategoryLimit}
+        setTemplateCategoryLimit={setTemplateCategoryLimit}
+        templateCategorySearch={templateCategorySearch}
+        setTemplateCategorySearch={setTemplateCategorySearch}
+        templateCategories={templateCategories}
+        templateCategoryMeta={templateCategoryMeta}
+        isLoadingTemplateCategories={isLoadingTemplateCategories}
+        templateCategoryError={templateCategoryError || templateCategoriesFetchError?.message}
+        createTemplateCategoryMutation={createTemplateCategoryMutation}
+        updateTemplateCategoryMutation={updateTemplateCategoryMutation}
+        deleteTemplateCategoryMutation={deleteTemplateCategoryMutation}
         // Generated Posts Audit Props
         posts={posts}
         postMeta={postMeta}

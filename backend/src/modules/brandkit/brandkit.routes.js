@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as brandKitController from './brandkit.controller.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { validateOptionalImageUpload } from '../../common/middleware/upload.middleware.js';
+import { uploadBrandKitFiles } from '../../common/middleware/upload.middleware.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { updateBrandKitSchema } from './brandkit.validator.js';
 
@@ -17,10 +17,10 @@ router.use(authenticate);
 // 🔍 Fetch active user's BrandKit
 router.get('/', brandKitController.getBrandKit);
 
-// ✏️ Create or update user's BrandKit
+// ✏️ Create or update user's BrandKit (multipart/form-data with logo, avatar, upiQr)
 router.put(
   '/',
-  validateOptionalImageUpload,
+  uploadBrandKitFiles,
   validate(updateBrandKitSchema),
   brandKitController.updateBrandKit
 );

@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Upload,
   FolderKanban,
+  FolderTree,
   Calendar,
   Sparkles,
   ChevronLeft,
@@ -144,25 +145,25 @@ export const TemplateCreateView = ({
               </div>
             </div>
 
-            {/* Step 2: Category Selector (5 per page + Search + Highlighted New Creation) */}
+            {/* Step 2: Template Category Selector (8 per page + Search + Highlighted New Creation) */}
             <div className="space-y-3">
               <div className="flex items-center gap-2 border-b border-[#2C384E] pb-3">
                 <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold">
                   2
                 </span>
                 <h3 className="font-heading font-bold text-base text-white">
-                  Assign Category & Type
+                  Assign Template Category & Type
                 </h3>
               </div>
 
               <div className="space-y-2.5 p-4 rounded-2xl bg-[#0B0F17]/80 border border-[#2C384E]">
-                {/* Active Category Selection Banner */}
+                {/* Active Template Category Selection Banner */}
                 {selectedCategoryObj && formData.category !== "NEW" && (
                   <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold animate-in fade-in">
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-amber-400" />
                       <span>
-                        Selected Category: <strong className="text-white">{selectedCategoryObj.icon || "🎨"} {selectedCategoryObj.name}</strong>
+                        Selected Template Category: <strong className="text-white">{selectedCategoryObj.icon || "🎨"} {selectedCategoryObj.name}</strong>
                       </span>
                     </div>
                     <button
@@ -179,7 +180,7 @@ export const TemplateCreateView = ({
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-amber-400" />
                       <span>
-                        Creating New Custom Category: <strong className="text-white">{formData.newCategoryName || "(enter name below)"}</strong>
+                        Creating New Custom Template Category: <strong className="text-white">{formData.newCategoryName || "(enter name below)"}</strong>
                       </span>
                     </div>
                     <button
@@ -194,9 +195,9 @@ export const TemplateCreateView = ({
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <FolderKanban className="w-4 h-4 text-amber-400" />
+                    <FolderTree className="w-4 h-4 text-amber-400" />
                     <label className="text-xs font-bold text-white uppercase tracking-wider">
-                      Categories Navigation (8 per page)
+                      Template Categories Navigation (8 per page)
                     </label>
                     <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                       Page {catPage} of {catTotalPages}
@@ -208,13 +209,13 @@ export const TemplateCreateView = ({
                       <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                       <input
                         type="text"
-                        placeholder="Search categories..."
+                        placeholder="Search template categories..."
                         value={catSearch}
                         onChange={(e) => {
                           setCatSearch(e.target.value);
                           setCatPage(1);
                         }}
-                        className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-44"
+                        className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-48"
                       />
                     </div>
 
@@ -239,9 +240,9 @@ export const TemplateCreateView = ({
                   </div>
                 </div>
 
-                {/* Category Pills with custom scrollbar and padding bottom */}
+                {/* Template Category Pills with custom scrollbar and padding bottom */}
                 <div className="flex items-center gap-2 overflow-x-auto pt-2 pb-4 custom-scrollbar">
-                  {/* PROMINENTLY HIGHLIGHTED NEW CATEGORY BUTTON */}
+                  {/* PROMINENTLY HIGHLIGHTED NEW TEMPLATE CATEGORY BUTTON */}
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, category: "NEW", templateCategoryId: "", selectedCategoryObj: null })}
@@ -252,19 +253,19 @@ export const TemplateCreateView = ({
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-                    <span>+ Create New Category</span>
+                    <span>+ Create New Template Category</span>
                     <span className="text-[9px] bg-amber-400 text-slate-950 px-1 rounded font-black uppercase">NEW</span>
                   </button>
 
                   {isLoadingCategories && (
                     <span className="text-xs text-slate-400 animate-pulse px-2">
-                      Searching categories...
+                      Searching template categories...
                     </span>
                   )}
 
                   {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
                     <span className="text-xs text-slate-400 italic px-2">
-                      No categories matching "{catSearch}"
+                      No template categories matching "{catSearch}"
                     </span>
                   )}
 
@@ -289,15 +290,15 @@ export const TemplateCreateView = ({
                 </div>
               </div>
 
-              {/* Custom Category Input */}
+              {/* Custom Template Category Input */}
               {formData.category === "NEW" && (
                 <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 to-amber-600/10 border border-amber-500/40 space-y-2 animate-in fade-in shadow-glow">
                   <label className="text-xs font-extrabold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
                     <Sparkles className="w-4 h-4" />
-                    <span>Enter New Custom Category Name</span>
+                    <span>Enter New Custom Template Category Name</span>
                   </label>
                   <Input
-                    placeholder="e.g. Real Estate Deals, Gym & Fitness..."
+                    placeholder="e.g. Festival Wishes, Mega Sale, Quotes, Hiring Promo..."
                     value={formData.newCategoryName || ""}
                     onChange={(e) => setFormData({ ...formData, newCategoryName: e.target.value })}
                     required
@@ -505,7 +506,7 @@ export const TemplateCreateView = ({
                     </label>
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, baseImageUrl: null })}
+                      onClick={() => setFormData({ ...formData, baseImageUrl: null, imageFile: null })}
                       className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs transition"
                       title="Remove Image"
                     >

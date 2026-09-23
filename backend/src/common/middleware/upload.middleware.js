@@ -1,7 +1,24 @@
+import multer from 'multer';
 import { BadRequestError } from '../errors/custom-errors.js';
 
 // Maximum image size limit: 10MB (Cloudinary standard payload limit)
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
+const storage = multer.memoryStorage();
+
+const imageFileFilter = (req, file, cb) => {
+  if (file.mimetype && file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new BadRequestError('Only image files (PNG, JPG, JPEG, WEBP, SVG) are allowed.'), false);
+  }
+};
+
+const multerInstance = multer({
+  storage,
+  limits: { fileSize: MAX_IMAGE_SIZE_BYTES },
+  fileFilter: imageFileFilter,
+});
 
 /**
  * Core image buffer extractor and validator
@@ -14,24 +31,23 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
   const isRequired = options.required ?? true;
   const maxSize = options.maxSize ?? MAX_IMAGE_SIZE_BYTES;
 
-  // 1. Process Base64 image payload (supports all domain-specific keys across BrandFlow)
+  // 1. Process Multipart file buffer attachment (e.g. from multer)
+  if (req.file && req.file.buffer) {
+    if (req.file.buffer.length > maxSize) {
+      const sizeMb = (maxSize / (1024 * 1024)).toFixed(0);
+      return next(new BadRequestError(`Uploaded file size exceeds maximum allowed limit of ${sizeMb}MB.`));
+    }
+
+    req.fileBuffer = req.file.buffer;
+    return next();
+  }
+
+  // 2. Process Base64 image payload (STRICTLY for HTML5 Canvas exports: Post Studio & Frame Studio)
   const base64Candidate =
+    req.body?.base64Graphic ||
     req.body?.base64Overlay ||
     req.body?.base64Image ||
-    req.body?.base64Logo ||
-    req.body?.base64Avatar ||
-    req.body?.base64Banner ||
-    req.body?.base64Graphic ||
-    req.body?.image ||
-    (typeof req.body?.baseImageUrl === 'string' && req.body.baseImageUrl.includes(';base64,')
-      ? req.body.baseImageUrl
-      : null) ||
-    (typeof req.body?.bannerUrl === 'string' && req.body.bannerUrl.includes(';base64,')
-      ? req.body.bannerUrl
-      : null) ||
-    (typeof req.body?.imageUrl === 'string' && req.body.imageUrl.includes(';base64,')
-      ? req.body.imageUrl
-      : null);
+    null;
 
   if (base64Candidate && typeof base64Candidate === 'string') {
     let base64String = base64Candidate;
@@ -60,15 +76,11 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
     return next();
   }
 
-  // 2. Direct CDN / Cloudinary URL passed (bypasses buffer parsing)
+  // 3. Direct CDN / Cloudinary URL passed (bypasses buffer parsing for system asset linkages)
   const directUrlCandidate =
-    req.body?.baseImageUrl ||
     req.body?.imageUrl ||
     req.body?.overlayPngUrl ||
-    req.body?.bannerUrl ||
     req.body?.fileUrl ||
-    req.body?.logoUrl ||
-    req.body?.avatarUrl ||
     req.body?.customImageUrl ||
     req.body?.finalGraphicUrl ||
     req.body?.url;
@@ -81,17 +93,6 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
       directUrlCandidate.startsWith('/'));
 
   if (hasDirectUrl) {
-    return next();
-  }
-
-  // 3. Multipart file buffer attachment (e.g. from multer or raw binary stream)
-  if (req.file && req.file.buffer) {
-    if (req.file.buffer.length > maxSize) {
-      const sizeMb = (maxSize / (1024 * 1024)).toFixed(0);
-      return next(new BadRequestError(`Uploaded file size exceeds maximum allowed limit of ${sizeMb}MB.`));
-    }
-
-    req.fileBuffer = req.file.buffer;
     return next();
   }
 
@@ -111,10 +112,6 @@ function processImageUpload(req, res, next, options = { required: true, maxSize:
 
 /**
  * Universal Image Upload Validator Middleware
- * 
- * Usage:
- * - Default mandatory: router.post('/', validateImageUpload, controller)
- * - Configurable factory: router.put('/', validateImageUpload({ required: false }), controller)
  */
 export function validateImageUpload(arg1, arg2, arg3) {
   // If invoked directly as Express middleware: (req, res, next)
@@ -132,6 +129,98 @@ export function validateImageUpload(arg1, arg2, arg3) {
  * Allows non-image updates to pass without error
  */
 export const validateOptionalImageUpload = validateImageUpload({ required: false });
+
+/**
+ * Higher-order middleware creating a multipart handler for a single image field.
+ * Handles multipart/form-data via Multer, or falls back to Base64/URL JSON processing.
+ *
+ * @param {string} fieldName - Primary expected multipart field name (e.g. 'banner', 'image', 'overlay')
+ * @param {{ required?: boolean }} [options={ required: false }]
+ */
+export function uploadSingleImage(fieldName = 'image', options = { required: false }) {
+  const handler = multerInstance.fields([
+    { name: fieldName, maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+    { name: 'file', maxCount: 1 },
+    { name: 'banner', maxCount: 1 },
+    { name: 'overlay', maxCount: 1 },
+  ]);
+
+  return (req, res, next) => {
+    const contentType = req.headers['content-type'] || '';
+    if (!contentType.includes('multipart/form-data')) {
+      return processImageUpload(req, res, next, options);
+    }
+
+    handler(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return next(new BadRequestError('Uploaded image exceeds the 10MB size limit.'));
+        }
+        return next(new BadRequestError(`File upload error: ${err.message}`));
+      } else if (err) {
+        return next(err);
+      }
+
+      // Extract uploaded file from specified or fallback fields
+      const uploadedFile =
+        req.files?.[fieldName]?.[0] ||
+        req.files?.image?.[0] ||
+        req.files?.file?.[0] ||
+        req.files?.banner?.[0] ||
+        req.files?.overlay?.[0];
+
+      if (uploadedFile) {
+        req.file = uploadedFile;
+        req.fileBuffer = uploadedFile.buffer;
+      }
+
+      processImageUpload(req, res, next, options);
+    });
+  };
+}
+
+/**
+ * Multipart upload handler for BrandKit multi-field assets (logo, avatar, upiQr)
+ */
+export function uploadBrandKitFiles(req, res, next) {
+  const contentType = req.headers['content-type'] || '';
+  if (!contentType.includes('multipart/form-data')) {
+    return next();
+  }
+
+  const handler = multerInstance.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'avatar', maxCount: 1 },
+    { name: 'upiQr', maxCount: 1 },
+  ]);
+
+  handler(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return next(new BadRequestError('Uploaded image exceeds the 10MB size limit.'));
+      }
+      return next(new BadRequestError(`File upload error: ${err.message}`));
+    } else if (err) {
+      return next(err);
+    }
+
+    if (req.files) {
+      req.brandKitFiles = {
+        logo: req.files.logo?.[0]?.buffer || null,
+        avatar: req.files.avatar?.[0]?.buffer || null,
+        upiQr: req.files.upiQr?.[0]?.buffer || null,
+      };
+
+      if (req.files.logo?.[0]) {
+        req.file = req.files.logo[0];
+        req.fileBuffer = req.files.logo[0].buffer;
+      }
+    }
+
+    return next();
+  });
+}
 
 /**
  * ==================================================================================================

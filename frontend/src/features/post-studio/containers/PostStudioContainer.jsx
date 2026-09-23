@@ -5,9 +5,9 @@ import { brandKitApi } from "../../../services/brandkit.api";
 import { templateApi } from "../../../services/template.api";
 import { festivalApi } from "../../../services/festival.api";
 import { postApi } from "../../../services/post.api";
-import { useTemplates, useTemplateCategories } from "../../../hooks/useTemplates";
+import { useTemplates } from "../../../hooks/useTemplates";
+import { useTemplateCategories } from "../../../hooks/useTemplateCategories";
 import { useFrames } from "../../../hooks/useFrames";
-import { useCategories } from "../../../hooks/useCategories";
 import { useFestivals } from "../../../hooks/useFestivals";
 import { useBrandKit } from "../../../hooks/useBrandKit";
 import { useCanvasCompositor } from "../../../hooks/useCanvasCompositor";
@@ -210,7 +210,7 @@ export const PostStudioContainer = () => {
     setFestPage(1);
   }, [debouncedFestSearch]);
 
-  // Fetch Categories List for Filter Bar (Prefer Template Categories, fallback to Business)
+  // Fetch Template Categories List for Filter Bar (Strict visual artwork themes)
   const {
     categories: templateCategories = [],
     meta: categoryMeta,
@@ -220,8 +220,7 @@ export const PostStudioContainer = () => {
     limit: 8,
     search: debouncedCatSearch || undefined,
   });
-  const { categories: masterCategories = [] } = useCategories();
-  const categoriesList = templateCategories.length > 0 ? templateCategories : masterCategories;
+  const categoriesList = templateCategories;
 
   // Fetch Upcoming Festivals List for Filter Bar
   const {

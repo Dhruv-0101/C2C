@@ -41,18 +41,22 @@ export const useAdminFinance = ({
       'transactions',
       { page, limit, search, status, paymentGateway, currency, plan, startDate, endDate },
     ],
-    queryFn: () =>
-      adminFinanceApi.getTransactions({
-        page,
-        limit,
-        search,
-        status,
-        paymentGateway,
-        currency,
-        plan,
-        startDate,
-        endDate,
-      }),
+    queryFn: () => {
+      const cleanParams = Object.fromEntries(
+        Object.entries({
+          page,
+          limit,
+          search: search?.trim() || undefined,
+          status: status || undefined,
+          paymentGateway: paymentGateway || undefined,
+          currency: currency || undefined,
+          plan: plan || undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+        }).filter(([_, v]) => v !== undefined)
+      );
+      return adminFinanceApi.getTransactions(cleanParams);
+    },
     placeholderData: keepPreviousData,
     staleTime: 30 * 1000,
   });
@@ -69,15 +73,18 @@ export const useAdminFinance = ({
   const handleExportCsv = async () => {
     try {
       setIsExporting(true);
-      const blob = await adminFinanceApi.exportTransactionsCsv({
-        search,
-        status,
-        paymentGateway,
-        currency,
-        plan,
-        startDate,
-        endDate,
-      });
+      const cleanParams = Object.fromEntries(
+        Object.entries({
+          search: search?.trim() || undefined,
+          status: status || undefined,
+          paymentGateway: paymentGateway || undefined,
+          currency: currency || undefined,
+          plan: plan || undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+        }).filter(([_, v]) => v !== undefined)
+      );
+      const blob = await adminFinanceApi.exportTransactionsCsv(cleanParams);
 
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement('a');

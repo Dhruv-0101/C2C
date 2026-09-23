@@ -7,6 +7,7 @@ import {
   Layers,
   Palette,
   FolderKanban,
+  FolderTree,
   Building2,
   ShieldAlert,
   ChevronLeft,
@@ -71,6 +72,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
 
   const adminConsoleAllSubItems = [
     { id: 'templates', label: 'Graphic Templates', path: '/admin?tab=templates', icon: PlusCircle },
+    { id: 'template-categories', label: 'Template Categories', path: '/admin?tab=template-categories', icon: FolderTree },
     { id: 'festivals', label: 'Festival Calendar', path: '/admin?tab=festivals', icon: Calendar },
     { id: 'frames', label: 'Brand Frames Studio', path: '/admin?tab=frames', icon: Layers },
     { id: 'styles', label: 'Design System & Palettes', path: '/admin?tab=styles', icon: Palette },

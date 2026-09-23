@@ -17,12 +17,15 @@ export const api = axios.create({
   },
 });
 
-// Request Interceptor: Attach Access Token if present
+// Request Interceptor: Attach Access Token if present & auto-handle FormData
 api.interceptors.request.use(
   (config) => {
     const token = storage.get(STORAGE_KEYS.ACCESS_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
     }
     return config;
   },

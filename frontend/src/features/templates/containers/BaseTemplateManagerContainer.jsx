@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { templateApi } from "../../../services/template.api";
-import { useTemplates, useTemplateCategories } from "../../../hooks/useTemplates";
+import { useTemplates } from "../../../hooks/useTemplates";
+import { useTemplateCategories } from "../../../hooks/useTemplateCategories";
 import { useFestivals } from "../../../hooks/useFestivals";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
-import { readImageAsBase64 } from "../../../utils/file.utils";
+import { createImagePreview } from "../../../utils/file.utils";
 import { BaseTemplateManagerView } from "../components/BaseTemplateManagerView";
 
 import { TemplateCreateView } from "../components/TemplateCreateView";
@@ -34,6 +35,7 @@ export const BaseTemplateManagerContainer = () => {
     selectedFestivalObj: null,
     newCategoryName: "",
     baseImageUrl: "",
+    imageFile: null,
   });
 
   // Templates Grid server pagination & filters
@@ -101,14 +103,14 @@ export const BaseTemplateManagerContainer = () => {
     includeInactive: true,
   });
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       setErrorMsg("");
-      const base64 = await readImageAsBase64(file, 5);
-      setFormData((prev) => ({ ...prev, baseImageUrl: base64 }));
+      const previewUrl = createImagePreview(file, 10);
+      setFormData((prev) => ({ ...prev, baseImageUrl: previewUrl, imageFile: file }));
     } catch (err) {
       setErrorMsg(err.message || "Failed to read image file.");
     }
@@ -118,14 +120,13 @@ export const BaseTemplateManagerContainer = () => {
     mutationFn: (data) => templateApi.createTemplate(data),
     onSuccess: (res, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
       setIsModalOpen(false);
       setViewMode("list");
       resetForm();
       showSuccess(
         "Base Template Published! 🎨",
-        `Graphic background template "${variables.title}" uploaded to Cloudinary and saved to database.`,
+        `Graphic background template "${variables?.title || formData.title || 'Template'}" uploaded to Cloudinary and saved to database.`,
       );
     },
     onError: (err) => {
@@ -141,6 +142,7 @@ export const BaseTemplateManagerContainer = () => {
     mutationFn: (id) => templateApi.deleteTemplate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
       showSuccess(
         "Template Deleted 🗑️",
         "Base graphic template removed from database.",
@@ -165,6 +167,7 @@ export const BaseTemplateManagerContainer = () => {
       festivalId: "",
       selectedFestivalObj: null,
       baseImageUrl: "",
+      imageFile: null,
     });
     setErrorMsg("");
   };
@@ -188,7 +191,7 @@ export const BaseTemplateManagerContainer = () => {
 
   const handleFormSubmit = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!formData.title.trim() || !formData.baseImageUrl) {
+    if (!formData.title.trim() || !formData.imageFile) {
       setErrorMsg(
         "Please enter a template title and upload an image from your computer.",
       );
@@ -199,17 +202,22 @@ export const BaseTemplateManagerContainer = () => {
       return;
     }
 
-    const payload = {
-      title: formData.title.trim(),
-      description: formData.description?.trim() || undefined,
-      baseImageUrl: formData.baseImageUrl,
-      festivalId: formData.festivalId || undefined,
-      templateCategoryId: formData.category === "NEW" ? undefined : (formData.templateCategoryId || undefined),
-      category: formData.category === "NEW" ? formData.newCategoryName.trim() : formData.category,
-      newCategoryName: formData.category === "NEW" ? formData.newCategoryName.trim() : undefined,
-    };
-
-    createTemplateMutation.mutate(payload);
+    const fd = new FormData();
+    fd.append("title", formData.title.trim());
+    if (formData.description?.trim()) fd.append("description", formData.description.trim());
+    if (formData.festivalId) fd.append("festivalId", formData.festivalId);
+    if (formData.category !== "NEW" && formData.templateCategoryId) {
+      fd.append("templateCategoryId", formData.templateCategoryId);
+    }
+    const categoryVal = formData.category === "NEW" ? formData.newCategoryName.trim() : formData.category;
+    if (categoryVal) {
+      fd.append("category", categoryVal);
+    }
+    if (formData.category === "NEW" && formData.newCategoryName?.trim()) {
+      fd.append("newCategoryName", formData.newCategoryName.trim());
+    }
+    fd.append("image", formData.imageFile);
+    createTemplateMutation.mutate(fd);
   };
 
   if (viewMode === "create") {

@@ -29,9 +29,9 @@ export async function updateBrandKit(req, res, next) {
   try {
     const userId = req.user.id;
     const payload = req.body;
-    const fileBuffer = req.fileBuffer || req.file?.buffer;
+    const fileBuffers = req.brandKitFiles || (req.fileBuffer ? { logo: req.fileBuffer } : {});
 
-    const brandKit = await brandKitLogic.updateBrandKit(userId, payload, fileBuffer);
+    const brandKit = await brandKitLogic.updateBrandKit(userId, payload, fileBuffers);
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,

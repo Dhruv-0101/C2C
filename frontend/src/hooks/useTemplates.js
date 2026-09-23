@@ -24,26 +24,6 @@ export function useTemplates(params = {}, queryOptions = {}) {
   };
 }
 
-/**
- * Modular Hook for fetching Master Template Categories
- *
- * @param {Object} [queryOptions={}] - Additional TanStack Query options
- * @returns {Object} `{ categories, isLoading, error, refetch, ... }`
- */
-export function useTemplateCategories(params = { limit: 100 }, queryOptions = {}) {
-  const result = useQuery({
-    queryKey: [...QUERY_KEYS.TEMPLATES.CATEGORIES, params],
-    queryFn: () => templateApi.getTemplateCategories(params),
-    staleTime: 5 * 60 * 1000,
-    ...queryOptions,
-  });
-
-  const rawList = result.data?.data?.categories || result.data?.categories || [];
-  const meta = result.data?.meta || result.data?.data?.meta || null;
-  return {
-    ...result,
-    categories: Array.isArray(rawList) ? rawList : [],
-    meta,
-  };
-}
+// Re-export canonical useTemplateCategories hook
+export { useTemplateCategories } from './useTemplateCategories.js';
 

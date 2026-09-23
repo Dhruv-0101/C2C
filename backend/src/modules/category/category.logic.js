@@ -1,7 +1,6 @@
 import { ConflictError, NotFoundError, BadRequestError } from '../../common/errors/custom-errors.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import * as categoryRepository from './category.repository.js';
-import * as templateCategoryRepository from '../template/templateCategory.repository.js';
 import { sanitizeCategory } from './category.helper.js';
 import { DEFAULT_CATEGORY_SORT_BY, DEFAULT_CATEGORY_SORT_ORDER } from './category.constants.js';
 
@@ -87,22 +86,6 @@ export async function createCategory({ name, description, createdBy }) {
     createdBy: createdBy || null,
   });
 
-  // Keep TemplateCategory in sync so newly created categories immediately appear in Graphic Template Manager
-  try {
-    const existingTemplateCat = await templateCategoryRepository.findTemplateCategoryByNameOrSlug(cleanName);
-    if (!existingTemplateCat) {
-      await templateCategoryRepository.createTemplateCategory({
-        name: cleanName,
-        slug,
-        description: description?.trim() || null,
-        isSystem: false,
-        createdBy: createdBy || null,
-      });
-    }
-  } catch (_syncErr) {
-    // Non-blocking sync to avoid disrupting primary category creation
-  }
-
   return sanitizeCategory(newCategory);
 }
 
@@ -147,19 +130,6 @@ export async function updateCategory(id, { name, description }) {
 
   const updatedCategory = await categoryRepository.updateCategory(id, updateData);
 
-  // Sync update to corresponding TemplateCategory if exists
-  try {
-    const existingTemplateCat = await templateCategoryRepository.findTemplateCategoryByNameOrSlug(existingCategory.name);
-    if (existingTemplateCat) {
-      await templateCategoryRepository.updateTemplateCategory(existingTemplateCat.id, {
-        ...(updateData.name && { name: updateData.name, slug: updateData.slug }),
-        ...(updateData.description !== undefined && { description: updateData.description }),
-      });
-    }
-  } catch (_syncErr) {
-    // Non-blocking sync
-  }
-
   return sanitizeCategory(updatedCategory);
 }
 
@@ -173,16 +143,6 @@ export async function deleteCategory(id) {
   }
 
   await categoryRepository.deleteCategory(id);
-
-  // Sync deletion of corresponding TemplateCategory if not a system category
-  try {
-    const existingTemplateCat = await templateCategoryRepository.findTemplateCategoryByNameOrSlug(category.name);
-    if (existingTemplateCat && !existingTemplateCat.isSystem) {
-      await templateCategoryRepository.deleteTemplateCategory(existingTemplateCat.id);
-    }
-  } catch (_syncErr) {
-    // Non-blocking sync
-  }
 
   return {
     id,

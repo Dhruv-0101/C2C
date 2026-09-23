@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { validateOptionalImageUpload } from '../../common/middleware/upload.middleware.js';
+import { uploadSingleImage } from '../../common/middleware/upload.middleware.js';
 import { FESTIVAL_TAB_PERMISSION } from './festival.constants.js';
 import {
   getFestivalsQuerySchema,
@@ -26,7 +26,7 @@ router.post(
   '/',
   authenticate,
   requireTabPermission(FESTIVAL_TAB_PERMISSION),
-  validateOptionalImageUpload,
+  uploadSingleImage('banner'),
   validate(createFestivalSchema),
   festivalController.createFestival
 );
@@ -35,7 +35,7 @@ router.put(
   '/:id',
   authenticate,
   requireTabPermission(FESTIVAL_TAB_PERMISSION),
-  validateOptionalImageUpload,
+  uploadSingleImage('banner'),
   validate(updateFestivalSchema),
   festivalController.updateFestival
 );

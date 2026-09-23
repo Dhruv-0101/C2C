@@ -12,6 +12,7 @@ const TAB_BADGE_STYLES = {
   [ADMIN_TABS.FESTIVALS]: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
   [ADMIN_TABS.FRAMES]: "bg-sky-500/20 text-sky-300 border-sky-500/40",
   [ADMIN_TABS.CATEGORIES]: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
+  [ADMIN_TABS.TEMPLATE_CATEGORIES]: "bg-teal-500/20 text-teal-300 border-teal-500/40",
   [ADMIN_TABS.POSTS]: "bg-pink-500/20 text-pink-300 border-pink-500/40",
   [ADMIN_TABS.USERS]: "bg-amber-500/20 text-amber-300 border-amber-500/40",
 };
@@ -119,7 +120,8 @@ export const AdminSubAdminsTab = ({
                     (counts.templatesCreated || 0) +
                     (counts.festivalsCreated || 0) +
                     (counts.framesCreated || 0) +
-                    (counts.categoriesCreated || 0);
+                    (counts.categoriesCreated || 0) +
+                    (counts.templateCategoriesCreated || 0);
 
                   return (
                     <tr key={admin.id} className="hover:bg-slate-900/40 transition">
@@ -169,6 +171,11 @@ export const AdminSubAdminsTab = ({
                               {counts.categoriesCreated > 0 && (
                                 <span className="px-1.5 py-0.5 rounded-md border text-[10px] bg-indigo-500/10 text-indigo-300 border-indigo-500/30" title="Categories Created">
                                   🏬 {counts.categoriesCreated} Cat
+                                </span>
+                              )}
+                              {counts.templateCategoriesCreated > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md border text-[10px] bg-teal-500/10 text-teal-300 border-teal-500/30" title="Template Categories Created">
+                                  🏷️ {counts.templateCategoriesCreated} TplCat
                                 </span>
                               )}
                               {counts.framesCreated > 0 && (

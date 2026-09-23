@@ -33,9 +33,11 @@ export function requireAdmin(req, res, next) {
 
 /**
  * Require tab permission for SubAdmins (SuperAdmin bypasses automatically)
- * @param {string} tabId - Tab identifier (e.g. 'festivals', 'categories', 'frames', 'templates')
+ * @param {string|string[]} tabId - Tab identifier or array of acceptable tab identifiers
  */
 export function requireTabPermission(tabId) {
+  const acceptableTabs = Array.isArray(tabId) ? tabId : [tabId];
+
   return (req, res, next) => {
     if (!req.user) {
       return next(new UnauthorizedError('User authentication required'));
@@ -48,13 +50,16 @@ export function requireTabPermission(tabId) {
 
     // SubAdmin must possess granular tab clearance
     if (req.user.isSubAdmin || req.user.role === 'SUB_ADMIN') {
-      const allowed = Array.isArray(req.user.allowedTabs) && req.user.allowedTabs.includes(tabId);
+      const allowed =
+        Array.isArray(req.user.allowedTabs) &&
+        acceptableTabs.some((t) => req.user.allowedTabs.includes(t));
+
       if (allowed) {
         return next();
       }
       return next(
         new ForbiddenError(
-          `Access denied. You do not have permission to access or modify the '${tabId}' section.`
+          `Access denied. You do not have permission to access or modify this section.`
         )
       );
     }

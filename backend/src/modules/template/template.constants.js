@@ -24,10 +24,5 @@ export const TEMPLATE_ALLOWED_SORT_FIELDS = Object.freeze(['createdAt', 'title',
 export const DEFAULT_TEMPLATE_SORT_BY = 'createdAt';
 export const DEFAULT_TEMPLATE_SORT_ORDER = 'desc';
 
-// Template Category Sorting Constraints
-export const TEMPLATE_CATEGORY_ALLOWED_SORT_FIELDS = Object.freeze(['name', 'createdAt', 'updatedAt']);
-export const DEFAULT_TEMPLATE_CATEGORY_SORT_BY = 'name';
-export const DEFAULT_TEMPLATE_CATEGORY_SORT_ORDER = 'asc';
-
 // Fallback category name when none provided
 export const DEFAULT_TEMPLATE_CATEGORY_NAME = 'General Business';

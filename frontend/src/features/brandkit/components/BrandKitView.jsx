@@ -37,13 +37,13 @@ export const BrandKitView = ({
   categories,
   logoPreview,
   setLogoPreview,
-  setBase64Logo,
+  setLogoFile,
   avatarPreview,
   setAvatarPreview,
-  setBase64Avatar,
+  setAvatarFile,
   upiQrPreview,
   setUpiQrPreview,
-  setBase64UpiQr,
+  setUpiQrFile,
   handleLogoChange,
   handleAvatarChange,
   handleUpiQrChange,
@@ -155,7 +155,7 @@ export const BrandKitView = ({
                       type="button"
                       onClick={() => {
                         setLogoPreview(null);
-                        setBase64Logo(null);
+                        if (setLogoFile) setLogoFile(null);
                         if (setValue) setValue("logoUrl", "");
                       }}
                       className="absolute top-1 right-1 p-1 rounded-full bg-black/80 hover:bg-rose-600 text-white transition"
@@ -196,7 +196,7 @@ export const BrandKitView = ({
                       type="button"
                       onClick={() => {
                         setAvatarPreview(null);
-                        setBase64Avatar(null);
+                        if (setAvatarFile) setAvatarFile(null);
                         if (setValue) setValue("avatarUrl", "");
                       }}
                       className="absolute top-0 right-0 p-1 rounded-full bg-black/80 hover:bg-rose-600 text-white transition"
@@ -443,7 +443,7 @@ export const BrandKitView = ({
                       type="button"
                       onClick={() => {
                         setUpiQrPreview(null);
-                        setBase64UpiQr(null);
+                        if (setUpiQrFile) setUpiQrFile(null);
                         if (setValue) setValue("upiQrUrl", "");
                       }}
                       className="absolute top-1 right-1 p-1 rounded-full bg-black/80 hover:bg-rose-600 text-white transition"

@@ -27,57 +27,7 @@ export async function createTemplate(req, res, next) {
 }
 
 
-/**
- * 📂 GET /api/v1/templates/categories
- * Get Master Template Categories List
- */
-export async function getCategories(req, res, next) {
-  try {
-    const result = await templateLogic.getCategories(req.query);
-    return sendSuccessResponse(res, {
-      statusCode: HTTP_STATUS.OK,
-      message: 'Template categories retrieved successfully',
-      data: result.data,
-      meta: result.meta,
-    });
-  } catch (error) {
-    next(error);
-  }
-}
 
-/**
- * 🏷️ POST /api/v1/templates/categories
- * Create Master Template Category (Admin / SubAdmin)
- */
-export async function createCategory(req, res, next) {
-  try {
-    const category = await templateLogic.createCategory(req.body, req.user?.id);
-    return sendSuccessResponse(res, {
-      statusCode: HTTP_STATUS.CREATED,
-      message: 'Template category created successfully.',
-      data: { category },
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-/**
- * 🗑️ DELETE /api/v1/templates/categories/:id
- * Delete Master Template Category (Admin Restricted)
- */
-export async function deleteCategory(req, res, next) {
-  try {
-    const result = await templateLogic.deleteCategory(req.params.id);
-    return sendSuccessResponse(res, {
-      statusCode: HTTP_STATUS.OK,
-      message: 'Template category deleted successfully.',
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-}
 
 /**
  * 🔍 GET /api/v1/templates

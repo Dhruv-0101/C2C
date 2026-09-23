@@ -6,6 +6,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useFeedbackModal } from "@/hooks/useFeedbackModal";
 import { useFrameCanvasEngine, drawVectorShapePath } from "@/hooks/useFrameCanvasEngine";
 import { QUERY_KEYS } from "@/constants/queryKeys";
+import { createImagePreview } from "@/utils/file.utils";
 import { FrameManagerView } from "../components/FrameManagerView";
 import { MASTER_FRAME_PRESETS } from "../../../constants/framePresets";
 
@@ -65,7 +66,7 @@ export const FrameManagerContainer = () => {
   const [uploadData, setUploadData] = useState({
     title: "",
     description: "",
-    base64Overlay: "",
+    overlayFile: null,
     overlayPreview: "",
   });
 
@@ -99,7 +100,7 @@ export const FrameManagerContainer = () => {
       setUploadData({
         title: "",
         description: "",
-        base64Overlay: "",
+        overlayFile: null,
         overlayPreview: "",
       });
       showSuccess(
@@ -214,29 +215,30 @@ export const FrameManagerContainer = () => {
   const handleOverlayFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
+    try {
+      setErrorMsg("");
+      const preview = createImagePreview(file, 10);
       setUploadData((prev) => ({
         ...prev,
-        base64Overlay: reader.result,
-        overlayPreview: reader.result,
+        overlayFile: file,
+        overlayPreview: preview,
       }));
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setErrorMsg(err.message || "Failed to process transparent overlay image.");
+    }
   };
 
   const handleSaveUploadFrame = (e) => {
     e.preventDefault();
-    if (!uploadData.title.trim() || !uploadData.base64Overlay) {
+    if (!uploadData.title.trim() || !uploadData.overlayFile) {
       setErrorMsg("Please enter a title and select a transparent PNG image file.");
       return;
     }
-    createFrameMutation.mutate({
-      title: uploadData.title,
-      description: uploadData.description,
-      base64Overlay: uploadData.base64Overlay,
-      base64Image: uploadData.base64Overlay,
-    });
+    const fd = new FormData();
+    fd.append("title", uploadData.title.trim());
+    if (uploadData.description?.trim()) fd.append("description", uploadData.description.trim());
+    fd.append("overlay", uploadData.overlayFile);
+    createFrameMutation.mutate(fd);
   };
 
   return (

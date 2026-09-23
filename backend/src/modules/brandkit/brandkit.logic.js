@@ -47,24 +47,24 @@ export async function getBrandKit(userId) {
  * @param {Buffer} [fileBuffer] - Optional multipart file buffer for logo
  * @returns {Promise<Object>} Sanitized BrandKit object with synced post counts
  */
-export async function updateBrandKit(userId, payload, fileBuffer) {
+export async function updateBrandKit(userId, payload, fileBufferOrFiles) {
   // Fetch existing BrandKit to check for previous logo/avatar for clean deletion
   const existingBrandKit = await brandKitRepository.findBrandKitByUserId(userId);
 
   let logoUrl = payload.logoUrl?.trim() || null;
   let avatarUrl = payload.avatarUrl?.trim() || null;
+  let upiQrUrl = payload.upiQrUrl?.trim() || null;
 
-  // 1. Process Brand Logo upload (fileBuffer or Base64 string) -> Cloudinary brandflow/logos
-  if (fileBuffer) {
-    const uploadResult = await uploadLogoBuffer(fileBuffer);
-    logoUrl = uploadResult.url;
-  } else if (payload.base64Logo) {
-    let cleanBase64 = payload.base64Logo;
-    if (cleanBase64.includes(';base64,')) {
-      cleanBase64 = cleanBase64.split(';base64,').pop();
-    }
-    const buffer = Buffer.from(cleanBase64, 'base64');
-    const uploadResult = await uploadLogoBuffer(buffer);
+  // Resolve file buffers whether passed as single buffer or object
+  const logoBuffer = Buffer.isBuffer(fileBufferOrFiles)
+    ? fileBufferOrFiles
+    : fileBufferOrFiles?.logo || null;
+  const avatarBuffer = fileBufferOrFiles?.avatar || null;
+  const upiQrBuffer = fileBufferOrFiles?.upiQr || null;
+
+  // 1. Process Brand Logo upload from multipart buffer -> Cloudinary brandflow/logos
+  if (logoBuffer) {
+    const uploadResult = await uploadLogoBuffer(logoBuffer);
     logoUrl = uploadResult.url;
   }
 
@@ -75,14 +75,9 @@ export async function updateBrandKit(userId, payload, fileBuffer) {
     );
   }
 
-  // 2. Process User Avatar / Profile photo upload (Base64 string) -> Cloudinary brandflow/avatars
-  if (payload.base64Avatar) {
-    let cleanBase64 = payload.base64Avatar;
-    if (cleanBase64.includes(';base64,')) {
-      cleanBase64 = cleanBase64.split(';base64,').pop();
-    }
-    const buffer = Buffer.from(cleanBase64, 'base64');
-    const uploadResult = await uploadAvatarBuffer(buffer);
+  // 2. Process User Avatar / Profile photo upload from multipart buffer -> Cloudinary brandflow/avatars
+  if (avatarBuffer) {
+    const uploadResult = await uploadAvatarBuffer(avatarBuffer);
     avatarUrl = uploadResult.url;
   }
 
@@ -93,16 +88,9 @@ export async function updateBrandKit(userId, payload, fileBuffer) {
     );
   }
 
-  let upiQrUrl = payload.upiQrUrl?.trim() || null;
-
-  // 3. Process UPI QR Image upload (Base64 string) -> Cloudinary brandflow/logos
-  if (payload.base64UpiQr) {
-    let cleanBase64 = payload.base64UpiQr;
-    if (cleanBase64.includes(';base64,')) {
-      cleanBase64 = cleanBase64.split(';base64,').pop();
-    }
-    const buffer = Buffer.from(cleanBase64, 'base64');
-    const uploadResult = await uploadLogoBuffer(buffer);
+  // 3. Process UPI QR Image upload from multipart buffer -> Cloudinary brandflow/logos
+  if (upiQrBuffer) {
+    const uploadResult = await uploadLogoBuffer(upiQrBuffer);
     upiQrUrl = uploadResult.url;
   }
 

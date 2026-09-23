@@ -71,8 +71,6 @@ export async function createFestival({
   description,
   date,
   targetRegion,
-  bannerUrl,
-  base64Banner,
   fileBuffer,
   isActive,
   createdBy,
@@ -84,19 +82,11 @@ export async function createFestival({
     throw new BadRequestError('Invalid date format.');
   }
 
-  let finalBannerUrl = bannerUrl?.trim() || null;
+  let finalBannerUrl = null;
 
-  // Process File Buffer or Base64 upload -> Cloudinary brandflow/festivals
+  // Process File Buffer upload -> Cloudinary brandflow/festivals
   if (fileBuffer) {
     const uploadResult = await uploadFestivalBannerBuffer(fileBuffer);
-    finalBannerUrl = uploadResult.url;
-  } else if (base64Banner) {
-    let cleanBase64 = base64Banner;
-    if (cleanBase64.includes(';base64,')) {
-      cleanBase64 = cleanBase64.split(';base64,').pop();
-    }
-    const buffer = Buffer.from(cleanBase64, 'base64');
-    const uploadResult = await uploadFestivalBannerBuffer(buffer);
     finalBannerUrl = uploadResult.url;
   }
 
@@ -147,31 +137,23 @@ export async function updateFestival(id, data, fileBuffer) {
   }
 
   // Process Banner Image Upload -> Cloudinary brandflow/festivals
-  let newBannerUrl = null;
   if (fileBuffer) {
     const uploadResult = await uploadFestivalBannerBuffer(fileBuffer);
-    newBannerUrl = uploadResult.url;
-  } else if (data.base64Banner) {
-    let cleanBase64 = data.base64Banner;
-    if (cleanBase64.includes(';base64,')) {
-      cleanBase64 = cleanBase64.split(';base64,').pop();
-    }
-    const buffer = Buffer.from(cleanBase64, 'base64');
-    const uploadResult = await uploadFestivalBannerBuffer(buffer);
-    newBannerUrl = uploadResult.url;
-  } else if (data.bannerUrl !== undefined) {
-    newBannerUrl = data.bannerUrl ? data.bannerUrl.trim() : null;
-  }
+    updatePayload.bannerUrl = uploadResult.url;
 
-  if (newBannerUrl !== null) {
-    updatePayload.bannerUrl = newBannerUrl;
-
-    // Delete old festival banner from Cloudinary if updated
-    if (existing.bannerUrl && existing.bannerUrl !== newBannerUrl) {
+    // Delete old festival banner from Cloudinary if replaced
+    if (existing.bannerUrl && existing.bannerUrl !== uploadResult.url) {
       deleteFromCloudinary(existing.bannerUrl).catch((err) =>
         logger.warn(`Failed to cleanup old festival banner from Cloudinary: ${err.message}`)
       );
     }
+  } else if (data.clearBanner) {
+    if (existing.bannerUrl) {
+      deleteFromCloudinary(existing.bannerUrl).catch((err) =>
+        logger.warn(`Failed to cleanup removed festival banner from Cloudinary: ${err.message}`)
+      );
+    }
+    updatePayload.bannerUrl = null;
   }
 
   if (data.isActive !== undefined) {

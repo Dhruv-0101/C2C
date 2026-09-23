@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Search,
   FolderKanban,
+  FolderTree,
   Calendar,
   Sparkles,
   Trash2,
@@ -108,16 +109,16 @@ export const BaseTemplateManagerView = ({
 
       {/* Filter and Template Grid Card */}
       <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
-        {/* 1. Category Section (5 Items per Page + Search) */}
+        {/* 1. Template Category Section (8 Items per Page + Search) */}
         <div className="space-y-3 p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <FolderKanban className="w-4 h-4 text-amber-400" />
+              <FolderTree className="w-4 h-4 text-amber-400" />
               <h4 className="font-heading font-extrabold text-sm text-white">
-                Categories Navigation
+                Template Categories Navigation
               </h4>
               <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
-                {categoryMeta?.totalItems ?? categoriesList.length} Categories
+                {categoryMeta?.totalItems ?? categoriesList.length} Template Categories
               </span>
               <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                 Page {catPage} of {catTotalPages}
@@ -125,29 +126,29 @@ export const BaseTemplateManagerView = ({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Category Search */}
+              {/* Template Category Search */}
               <div className="relative">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
                 <input
                   type="text"
-                  placeholder="Search categories..."
+                  placeholder="Search template categories..."
                   value={catSearch}
                   onChange={(e) => {
                     setCatSearch(e.target.value);
                     setCatPage(1);
                   }}
-                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-40"
+                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-48"
                 />
               </div>
 
-              {/* Category Pagination Controls */}
+              {/* Template Category Pagination Controls */}
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   disabled={catPage <= 1}
                   onClick={() => setCatPage((p) => Math.max(1, p - 1))}
                   className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
-                  title="Previous Categories"
+                  title="Previous Template Categories"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Prev</span>
@@ -157,7 +158,7 @@ export const BaseTemplateManagerView = ({
                   disabled={catPage >= catTotalPages}
                   onClick={() => setCatPage((p) => Math.min(catTotalPages, p + 1))}
                   className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
-                  title="Next Categories"
+                  title="Next Template Categories"
                 >
                   <span className="hidden sm:inline">Next</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -166,7 +167,7 @@ export const BaseTemplateManagerView = ({
             </div>
           </div>
 
-          {/* Category Pills (Max 8 shown per page) */}
+          {/* Template Category Pills (Max 8 shown per page) */}
           <div className="flex items-center gap-2 overflow-x-auto pt-1.5 pb-3.5 custom-scrollbar">
             <button
               type="button"
@@ -180,18 +181,18 @@ export const BaseTemplateManagerView = ({
                   : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
               }`}
             >
-              <span>🎨 All Categories</span>
+              <span>🎨 All Template Categories</span>
             </button>
 
             {isLoadingCategories && (
               <span className="text-xs text-slate-400 animate-pulse px-2">
-                Searching categories...
+                Searching template categories...
               </span>
             )}
 
             {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
               <span className="text-xs text-slate-400 italic px-2">
-                No categories matching "{catSearch}"
+                No template categories matching "{catSearch}"
               </span>
             )}
 

@@ -6,6 +6,7 @@ import {
   Calendar,
   Layers,
   FolderKanban,
+  FolderTree,
   Users,
   Shield,
   Clock,
@@ -23,6 +24,7 @@ import { AdminTemplatesTab } from "./tabs/AdminTemplatesTab";
 import { AdminFestivalsTab } from "./tabs/AdminFestivalsTab";
 import { AdminFramesTab } from "./tabs/AdminFramesTab";
 import { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
+import { AdminTemplateCategoriesTab } from "./tabs/AdminTemplateCategoriesTab";
 import { AdminUsersTab } from "./tabs/AdminUsersTab";
 import { AdminPostsTab } from "./tabs/AdminPostsTab";
 import { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
@@ -75,6 +77,19 @@ export const AdminDashboardView = ({
   categories = [],
   categoryMeta,
   isLoadingCategories,
+  // Master Template Categories Props
+  templateCategories = [],
+  templateCategoryMeta,
+  isLoadingTemplateCategories,
+  templateCategoryError,
+  templateCategorySearch,
+  setTemplateCategorySearch,
+  templateCategoryPage,
+  setTemplateCategoryPage,
+  setTemplateCategoryLimit,
+  createTemplateCategoryMutation,
+  updateTemplateCategoryMutation,
+  deleteTemplateCategoryMutation,
   createCategoryMutation,
   updateCategoryMutation,
   deleteCategoryMutation,
@@ -231,6 +246,14 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-indigo-500/50",
                   },
                   {
+                    id: ADMIN_TABS.TEMPLATE_CATEGORIES,
+                    label: "Template Categories",
+                    desc: "Organize visual themes, promotional styles & design classifications",
+                    icon: FolderTree,
+                    color: "text-teal-400",
+                    borderColor: "hover:border-teal-500/50",
+                  },
+                  {
                     id: ADMIN_TABS.FESTIVALS,
                     label: "Festival Calendar",
                     desc: "Configure upcoming cultural events & marketing days",
@@ -271,6 +294,24 @@ export const AdminDashboardView = ({
 
         {/* 1. AI Base Graphic Templates Tab */}
         {activeTab === ADMIN_TABS.TEMPLATES && <AdminTemplatesTab />}
+
+        {/* Master Template Categories Tab */}
+        {activeTab === ADMIN_TABS.TEMPLATE_CATEGORIES && (
+          <AdminTemplateCategoriesTab
+            templateCategories={templateCategories}
+            templateCategoryMeta={templateCategoryMeta}
+            isLoadingTemplateCategories={isLoadingTemplateCategories}
+            templateCategoryError={templateCategoryError}
+            templateCategorySearch={templateCategorySearch}
+            setTemplateCategorySearch={setTemplateCategorySearch}
+            templateCategoryPage={templateCategoryPage}
+            setTemplateCategoryPage={setTemplateCategoryPage}
+            setTemplateCategoryLimit={setTemplateCategoryLimit}
+            createTemplateCategoryMutation={createTemplateCategoryMutation}
+            updateTemplateCategoryMutation={updateTemplateCategoryMutation}
+            deleteTemplateCategoryMutation={deleteTemplateCategoryMutation}
+          />
+        )}
 
         {/* 2. Festival & Special Days Manager Tab */}
         {(activeTab === ADMIN_TABS.FESTIVALS || activeTab === "calendar") && (

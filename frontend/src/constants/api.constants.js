@@ -109,6 +109,12 @@ export const API_ENDPOINTS = {
     BY_ID: (id) => `/categories/${id}`,
   },
 
+  // Master Template Category Endpoints
+  TEMPLATE_CATEGORIES: {
+    BASE: '/template-categories',
+    BY_ID: (id) => `/template-categories/${id}`,
+  },
+
   // Design Style & Color Palette Endpoints
   DESIGN_STYLES: {
     BASE: '/design-styles',
@@ -142,7 +148,6 @@ export const API_ENDPOINTS = {
   // Base Master Templates Endpoints
   TEMPLATES: {
     BASE: '/templates',
-    CATEGORIES: '/templates/categories',
     UPLOAD: '/templates/upload',
     BY_ID: (id) => `/templates/${id}`,
   },

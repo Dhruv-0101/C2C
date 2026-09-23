@@ -1,18 +1,15 @@
 import { Router } from 'express';
 import * as templateController from './template.controller.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { validateImageUpload } from '../../common/middleware/upload.middleware.js';
+import { uploadSingleImage } from '../../common/middleware/upload.middleware.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { TEMPLATE_TAB_PERMISSION } from './template.constants.js';
 import {
   getTemplatesQuerySchema,
-  getTemplateCategoriesQuerySchema,
   getTemplateByIdSchema,
   createTemplateSchema,
-  createTemplateCategorySchema,
   deleteTemplateSchema,
-  deleteTemplateCategorySchema,
 } from './template.validator.js';
 
 const router = Router();
@@ -20,13 +17,6 @@ const router = Router();
 // ==============================================================================
 // 🌐 PUBLIC / AUTHENTICATED USER ENDPOINTS
 // ==============================================================================
-
-// 📂 Get Paginated Template Categories
-router.get(
-  '/categories',
-  validate(getTemplateCategoriesQuerySchema),
-  templateController.getCategories
-);
 
 // 🔍 Get Paginated System Templates with Filters
 router.get(
@@ -46,31 +36,13 @@ router.get(
 // 🛡️ ADMIN & SUB-ADMIN MANAGEMENT ENDPOINTS (Dynamically linked RBAC)
 // ==============================================================================
 
-// 🏷️ Create Master Template Category
-router.post(
-  '/categories',
-  authenticate,
-  requireTabPermission(TEMPLATE_TAB_PERMISSION),
-  validate(createTemplateCategorySchema),
-  templateController.createCategory
-);
-
-// 🗑️ Delete Master Template Category
-router.delete(
-  '/categories/:id',
-  authenticate,
-  requireTabPermission(TEMPLATE_TAB_PERMISSION),
-  validate(deleteTemplateCategorySchema),
-  templateController.deleteCategory
-);
-
 
 // 🎨 Master Graphic Template Creation
 router.post(
   '/',
   authenticate,
   requireTabPermission(TEMPLATE_TAB_PERMISSION),
-  validateImageUpload,
+  uploadSingleImage('image', { required: true }),
   validate(createTemplateSchema),
   templateController.createTemplate
 );

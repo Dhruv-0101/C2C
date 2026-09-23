@@ -100,6 +100,7 @@ export const activateFreePlan = async (userId) => {
   });
 
   // Log transaction and dispatch BullMQ Invoice Email job
+  const timestamp = Date.now();
   const freeTx = await createTransaction({
     userId,
     plan: BILLING_PLANS.FREE,
@@ -108,6 +109,8 @@ export const activateFreePlan = async (userId) => {
     pricePaid: 0,
     currency: BILLING_CURRENCIES.INR,
     postCount: FREE_PLAN_LIMITS.POST_LIMIT,
+    orderId: `FREE_ORD_${timestamp}`,
+    paymentId: `FREE_ACT_${timestamp}`,
     status: TRANSACTION_STATUSES.COMPLETED,
   }).catch(() => null);
 

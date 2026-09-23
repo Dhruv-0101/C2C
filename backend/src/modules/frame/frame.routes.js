@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as frameController from './frame.controller.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { validateImageUpload } from '../../common/middleware/upload.middleware.js';
+import { uploadSingleImage } from '../../common/middleware/upload.middleware.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { FRAME_TAB_PERMISSION } from './frame.constants.js';
@@ -26,7 +26,7 @@ router.get('/:id', validate(frameIdParamSchema), frameController.getFrameById);
 router.post(
   '/',
   requireTabPermission(FRAME_TAB_PERMISSION),
-  validateImageUpload,
+  uploadSingleImage('overlay'),
   validate(createFrameSchema),
   frameController.createFrame
 );

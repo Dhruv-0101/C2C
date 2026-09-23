@@ -5,6 +5,7 @@ import {
   Calendar,
   Layers,
   FolderKanban,
+  FolderTree,
   Users,
   Shield,
   LayoutDashboard,
@@ -38,6 +39,7 @@ const ADMIN_NAVIGATION_SECTIONS = [
     title: "Creative Library",
     items: [
       { id: ADMIN_TABS.TEMPLATES, label: "Graphic Templates", icon: FileCode2 },
+      { id: ADMIN_TABS.TEMPLATE_CATEGORIES, label: "Template Categories", icon: FolderTree },
       { id: ADMIN_TABS.FESTIVALS, label: "Festival Calendar", icon: Calendar },
       { id: ADMIN_TABS.FRAMES, label: "Brand Frames Studio", icon: Layers },
       { id: ADMIN_TABS.CATEGORIES, label: "Business Categories", icon: FolderKanban },

@@ -5,6 +5,7 @@ import {
   Layers,
   Calendar,
   FolderKanban,
+  FolderTree,
   Shield,
   Search,
   RefreshCw,
@@ -54,6 +55,13 @@ const TYPE_CONFIG = {
     badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
     dotColor: "bg-indigo-400",
     targetTab: ADMIN_TABS.CATEGORIES,
+  },
+  templateCategory: {
+    label: "Template Category",
+    icon: FolderTree,
+    badgeColor: "bg-teal-500/20 text-teal-300 border-teal-500/40",
+    dotColor: "bg-teal-400",
+    targetTab: ADMIN_TABS.TEMPLATE_CATEGORIES,
   },
 };
 
@@ -179,7 +187,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
       </div>
 
       {/* 2. Top Summary Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Total Creations */}
         <div className="p-4 rounded-2xl bg-gradient-to-br from-[#131B2A] to-[#0B0F17] border border-amber-500/30 shadow-lg relative overflow-hidden group">
           <div className="flex items-center justify-between">
@@ -275,6 +283,27 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
               {typeCounts.categories}
             </span>
             <span className="text-[10px] text-indigo-400 font-medium">Niches</span>
+          </div>
+        </div>
+
+        {/* Template Categories */}
+        <div
+          onClick={() => handleTypeSelect(selectedType === "templateCategory" ? "all" : "templateCategory")}
+          className={`p-4 rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-teal-500/60 ${
+            selectedType === "templateCategory"
+              ? "border-teal-500 bg-teal-500/10 shadow-lg"
+              : "border-[#2C384E]"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-teal-300">Tpl Categories</span>
+            <FolderTree className="w-4 h-4 text-teal-400" />
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl font-black text-white font-heading">
+              {typeCounts.templateCategories || 0}
+            </span>
+            <span className="text-[10px] text-teal-400 font-medium">Themes</span>
           </div>
         </div>
       </div>

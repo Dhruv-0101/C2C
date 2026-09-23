@@ -32,6 +32,7 @@ export const ADMIN_TABS = Object.freeze({
   FESTIVALS: 'festivals',
   FRAMES: 'frames',
   CATEGORIES: 'categories',
+  TEMPLATE_CATEGORIES: 'template-categories',
   USERS: 'users',
   SUB_ADMINS: 'subadmins',
   SUB_ADMIN_ACTIVITY: 'subadmin-activity',
@@ -44,8 +45,10 @@ export const ADMIN_TAB_LIST = Object.freeze(Object.values(ADMIN_TABS));
 export const SUBADMIN_PERMITTED_TABS = Object.freeze([
   ADMIN_TABS.FESTIVALS,
   ADMIN_TABS.CATEGORIES,
+  ADMIN_TABS.TEMPLATE_CATEGORIES,
   ADMIN_TABS.FRAMES,
   ADMIN_TABS.TEMPLATES,
   ADMIN_TABS.POSTS,
 ]);
+
 

@@ -30,6 +30,11 @@ export const QUERY_KEYS = {
     ALL: ['categories'],
     LIST: (params = {}) => ['categories', 'list', params],
   },
+  TEMPLATE_CATEGORIES: {
+    ALL: ['templateCategories'],
+    LIST: (params = {}) => ['templateCategories', 'list', params],
+    BY_ID: (id) => ['templateCategories', id],
+  },
   DESIGN_STYLES: {
     ALL: ['designStyles'],
     LIST: (params = {}) => ['designStyles', 'list', params],

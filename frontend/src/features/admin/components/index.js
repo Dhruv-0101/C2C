@@ -10,6 +10,7 @@ export { AdminTemplatesTab } from "./tabs/AdminTemplatesTab";
 export { AdminFestivalsTab } from "./tabs/AdminFestivalsTab";
 export { AdminFramesTab } from "./tabs/AdminFramesTab";
 export { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
+export { AdminTemplateCategoriesTab } from "./tabs/AdminTemplateCategoriesTab";
 export { AdminUsersTab } from "./tabs/AdminUsersTab";
 export { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
 export { AdminSubAdminActivityTab } from "./tabs/AdminSubAdminActivityTab";

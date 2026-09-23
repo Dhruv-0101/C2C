@@ -86,27 +86,29 @@ export const downloadInvoiceParamSchema = z.object({
   }),
 });
 
+const emptyToUndefined = (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val);
+
 export const getBillingHistoryQuerySchema = z.object({
   query: z.object({
-    page: z.coerce.number().int().positive().optional(),
-    limit: z.coerce.number().int().positive().max(100).optional(),
-    sortBy: z.enum(BILLING_ALLOWED_SORT_FIELDS).optional(),
-    sortOrder: z.enum(['asc', 'desc']).optional(),
+    page: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().optional()),
+    limit: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().max(100).optional()),
+    sortBy: z.preprocess(emptyToUndefined, z.enum(BILLING_ALLOWED_SORT_FIELDS).optional()),
+    sortOrder: z.preprocess(emptyToUndefined, z.enum(['asc', 'desc']).optional()),
   }),
 });
 
 export const getAdminTransactionsQuerySchema = z.object({
   query: z.object({
-    page: z.coerce.number().int().positive().optional(),
-    limit: z.coerce.number().int().positive().max(100).optional(),
-    search: z.string().optional(),
-    status: z.string().optional(),
-    paymentGateway: z.string().optional(),
-    currency: z.enum(BILLING_CURRENCY_LIST).optional(),
-    plan: z.enum(BILLING_PLAN_LIST).optional(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
-    sortBy: z.enum(BILLING_ALLOWED_SORT_FIELDS).optional(),
-    sortOrder: z.enum(['asc', 'desc']).optional(),
+    page: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().optional()),
+    limit: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().max(100).optional()),
+    search: z.preprocess(emptyToUndefined, z.string().trim().optional()),
+    status: z.preprocess(emptyToUndefined, z.string().trim().optional()),
+    paymentGateway: z.preprocess(emptyToUndefined, z.string().trim().optional()),
+    currency: z.preprocess(emptyToUndefined, z.enum(BILLING_CURRENCY_LIST).optional()),
+    plan: z.preprocess(emptyToUndefined, z.enum(BILLING_PLAN_LIST).optional()),
+    startDate: z.preprocess(emptyToUndefined, z.string().trim().optional()),
+    endDate: z.preprocess(emptyToUndefined, z.string().trim().optional()),
+    sortBy: z.preprocess(emptyToUndefined, z.enum(BILLING_ALLOWED_SORT_FIELDS).optional()),
+    sortOrder: z.preprocess(emptyToUndefined, z.enum(['asc', 'desc']).optional()),
   }),
 });
