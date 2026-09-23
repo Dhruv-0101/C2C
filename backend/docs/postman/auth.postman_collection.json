@@ -1,28 +1,13 @@
 {
   "info": {
-    "_postman_id": "bf-auth-module-v4",
-    "name": "BrandFlow — Auth Collection",
-    "description": "Comprehensive API collection for Auth & Access Control: Public Signup/Login, Google OAuth, Password Reset, TOTP 2FA, SuperAdmin SubAdmin delegation, and Admin User Directory.",
+    "_postman_id": "bf-auth-v2",
+    "name": "BrandFlow — Auth & User Management Collection",
+    "description": "API endpoints for User Authentication, RBAC, SubAdmin Management, 2FA, and Profile.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "1. Signup User",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "var jsonData = pm.response.json();",
-              "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
-              "    pm.environment.set('access_token', jsonData.data.accessToken);",
-              "    console.log('✅ Access Token stored in access_token');",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
       "request": {
         "method": "POST",
         "header": [
@@ -34,7 +19,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"fullName\": \"Dhruv Sharma\",\n  \"email\": \"user@brandflow.ai\",\n  \"password\": \"Password123!\"\n}"
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\",\n  \"name\": \"John Doe\",\n  \"businessName\": \"Apex Enterprises\",\n  \"mobileNumber\": \"+91 9876543210\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/signup",
@@ -46,30 +31,11 @@
             "signup"
           ]
         },
-        "description": "Registers a new public user. Returns JWT Access Token & sets HTTP-Only refresh cookie."
+        "description": "Registers a new user and returns JWT access & refresh tokens."
       }
     },
     {
       "name": "2. Login User",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "var jsonData = pm.response.json();",
-              "if (jsonData.success && jsonData.data && jsonData.data.accessToken) {",
-              "    pm.environment.set('access_token', jsonData.data.accessToken);",
-              "    console.log('✅ Access Token stored in access_token');",
-              "}",
-              "if (jsonData.data && jsonData.data.require2FA) {",
-              "    pm.environment.set('mfa_token', jsonData.data.mfaToken);",
-              "    console.log('🔐 2FA Required! MFA Token stored in mfa_token');",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
       "request": {
         "method": "POST",
         "header": [
@@ -81,7 +47,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"superadmin@brandflow.com\",\n  \"password\": \"SuperAdmin123!\"\n}"
+          "raw": "{\n  \"email\": \"admin1@gmail.com\",\n  \"password\": \"admin1\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/login",
@@ -93,7 +59,7 @@
             "login"
           ]
         },
-        "description": "Authenticates user credentials. If 2FA is enabled, returns require2FA: true and mfaToken."
+        "description": "Logs in user or admin, returns tokens and profile data."
       }
     },
     {
@@ -109,7 +75,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"idToken\": \"google_id_token_from_client_here\"\n}"
+          "raw": "{\n  \"credential\": \"google_id_token_jwt_from_client\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/google",
@@ -121,7 +87,7 @@
             "google"
           ]
         },
-        "description": "Authenticates user using Google One-Tap / OAuth ID Token."
+        "description": "Verifies Google OAuth ID token and creates or logs in the user."
       }
     },
     {
@@ -137,7 +103,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"user@brandflow.ai\"\n}"
+          "raw": "{\n  \"email\": \"user@example.com\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/forgot-password",
@@ -149,7 +115,7 @@
             "forgot-password"
           ]
         },
-        "description": "Sends password reset instructions to user's registered email."
+        "description": "Generates and emails a 15-minute secure password reset token."
       }
     },
     {
@@ -165,7 +131,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"token\": \"reset_token_from_email_here\",\n  \"newPassword\": \"NewSecurePass123!\"\n}"
+          "raw": "{\n  \"token\": \"reset_token_from_email\",\n  \"password\": \"NewPassword@123\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/reset-password",
@@ -177,11 +143,11 @@
             "reset-password"
           ]
         },
-        "description": "Resets user password using reset token."
+        "description": "Resets the password with a valid token."
       }
     },
     {
-      "name": "6. Verify 2FA Login Challenge",
+      "name": "6. 2FA Verify Login",
       "request": {
         "method": "POST",
         "header": [
@@ -193,7 +159,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"mfaToken\": \"{{mfa_token}}\",\n  \"code\": \"123456\"\n}"
+          "raw": "{\n  \"email\": \"admin1@gmail.com\",\n  \"token\": \"123456\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/2fa/verify-login",
@@ -206,7 +172,7 @@
             "verify-login"
           ]
         },
-        "description": "Verifies 6-digit TOTP code or recovery code during 2FA login challenge."
+        "description": "Verifies TOTP token for 2FA-enabled accounts."
       }
     },
     {
@@ -220,6 +186,10 @@
             "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"refresh_token_string\"\n}"
+        },
         "url": {
           "raw": "{{base_url}}/auth/refresh",
           "host": [
@@ -230,11 +200,11 @@
             "refresh"
           ]
         },
-        "description": "Rotates refresh token and returns a new Access Token using HTTP-Only cookie."
+        "description": "Rotates and provides a new access token."
       }
     },
     {
-      "name": "8. Logout Session",
+      "name": "8. Logout",
       "request": {
         "method": "POST",
         "header": [],
@@ -248,11 +218,11 @@
             "logout"
           ]
         },
-        "description": "Revokes refresh token in database and clears HTTP-Only refresh cookie."
+        "description": "Clears authentication cookies."
       }
     },
     {
-      "name": "9. Get Profile",
+      "name": "9. Get User Profile (/me)",
       "request": {
         "method": "GET",
         "header": [
@@ -272,7 +242,7 @@
             "me"
           ]
         },
-        "description": "Fetches currently logged-in user profile, role flags, and 2FA status."
+        "description": "Returns profile details of the authenticated user."
       }
     },
     {
@@ -297,7 +267,7 @@
             "setup"
           ]
         },
-        "description": "Generates TOTP secret and QR code Data URL for authenticator setup."
+        "description": "Generates TOTP secret and QR code for authenticator apps."
       }
     },
     {
@@ -318,7 +288,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"code\": \"123456\"\n}"
+          "raw": "{\n  \"token\": \"123456\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/2fa/enable",
@@ -331,7 +301,7 @@
             "enable"
           ]
         },
-        "description": "Confirms TOTP code, enables 2FA, and returns single-use backup recovery codes."
+        "description": "Enables 2FA by verifying the 6-digit TOTP code."
       }
     },
     {
@@ -356,11 +326,11 @@
             "disable"
           ]
         },
-        "description": "Disables 2FA security on authenticated account."
+        "description": "Disables two-factor authentication on the active account."
       }
     },
     {
-      "name": "13. Create SubAdmin",
+      "name": "13. SuperAdmin — Create SubAdmin",
       "request": {
         "method": "POST",
         "header": [
@@ -377,7 +347,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"fullName\": \"Jane Smith (SubAdmin)\",\n  \"email\": \"subadmin@brandflow.com\",\n  \"password\": \"SubAdminPass123!\",\n  \"allowedTabs\": [\"festivals\", \"categories\", \"frames\", \"templates\"]\n}"
+          "raw": "{\n  \"name\": \"SubAdmin Manager\",\n  \"email\": \"subadmin@brandflow.com\",\n  \"password\": \"SubAdmin@123\",\n  \"permissions\": [\n    \"festivals\",\n    \"templates\",\n    \"frames\",\n    \"categories\"\n  ]\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/subadmin",
@@ -389,11 +359,11 @@
             "subadmin"
           ]
         },
-        "description": "Creates a new SubAdmin account. Strictly restricted to 4 permitted tabs: 'festivals', 'categories', 'frames', 'templates' (SuperAdmin only)."
+        "description": "Creates a new SubAdmin with granular RBAC permissions. (SuperAdmin only)"
       }
     },
     {
-      "name": "14. List SubAdmins",
+      "name": "14. SuperAdmin — Get SubAdmins List",
       "request": {
         "method": "GET",
         "header": [
@@ -404,7 +374,7 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/auth/subadmins?page=1&limit=20",
+          "raw": "{{base_url}}/auth/subadmins?page=1&limit=10",
           "host": [
             "{{base_url}}"
           ],
@@ -419,15 +389,20 @@
             },
             {
               "key": "limit",
-              "value": "20"
+              "value": "10"
+            },
+            {
+              "key": "search",
+              "value": "",
+              "disabled": true
             }
           ]
         },
-        "description": "Fetches paginated list of all created SubAdmins with creation statistics (_count: templates, festivals, categories, frames) (SuperAdmin only)."
+        "description": "Fetches paginated list of subadmins with assigned permissions. (SuperAdmin only)"
       }
     },
     {
-      "name": "15. SubAdmin Activity & Creations Audit",
+      "name": "15. SuperAdmin — SubAdmin Activity Audit",
       "request": {
         "method": "GET",
         "header": [
@@ -438,7 +413,7 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/auth/subadmins/activity?subAdminId=&type=all&search=&page=1&limit=20",
+          "raw": "{{base_url}}/auth/subadmins/activity?page=1&limit=20",
           "host": [
             "{{base_url}}"
           ],
@@ -449,35 +424,35 @@
           ],
           "query": [
             {
-              "key": "subAdminId",
-              "value": "",
-              "description": "Optional UUID of specific SubAdmin to filter creations"
-            },
-            {
-              "key": "type",
-              "value": "all",
-              "description": "Filter by item type: 'all' | 'template' | 'frame' | 'festival' | 'category'"
-            },
-            {
-              "key": "search",
-              "value": "",
-              "description": "Search items by title or name"
-            },
-            {
               "key": "page",
               "value": "1"
             },
             {
               "key": "limit",
               "value": "20"
+            },
+            {
+              "key": "subAdminId",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "type",
+              "value": "all",
+              "disabled": true
+            },
+            {
+              "key": "search",
+              "value": "",
+              "disabled": true
             }
           ]
         },
-        "description": "SuperAdmin exclusive: Retrieves aggregated activity feed of all creations made by SubAdmins across Graphic Templates, Brand Frames, Festivals, and Categories, including author profiles, thumbnails, timestamps, and summary breakdown metrics."
+        "description": "Audits entities created by subadmins across categories, festivals, templates, and frames. (SuperAdmin only)"
       }
     },
     {
-      "name": "16. Update SubAdmin",
+      "name": "16. SuperAdmin — Update SubAdmin",
       "request": {
         "method": "PUT",
         "header": [
@@ -494,7 +469,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"allowedTabs\": [\"festivals\", \"categories\", \"frames\", \"templates\"]\n}"
+          "raw": "{\n  \"name\": \"Updated SubAdmin Name\",\n  \"permissions\": [\n    \"festivals\",\n    \"templates\"\n  ]\n}"
         },
         "url": {
           "raw": "{{base_url}}/auth/subadmin/:id",
@@ -509,15 +484,15 @@
           "variable": [
             {
               "key": "id",
-              "value": "subadmin_id_here"
+              "value": "subadmin_user_uuid"
             }
           ]
         },
-        "description": "Updates allowedTabs permissions for an existing SubAdmin. Permitted tabs strictly: 'festivals', 'categories', 'frames', 'templates' (SuperAdmin only)."
+        "description": "Updates SubAdmin details and tab permissions. (SuperAdmin only)"
       }
     },
     {
-      "name": "17. Delete SubAdmin",
+      "name": "17. SuperAdmin — Delete SubAdmin",
       "request": {
         "method": "DELETE",
         "header": [
@@ -540,15 +515,15 @@
           "variable": [
             {
               "key": "id",
-              "value": "subadmin_id_here"
+              "value": "subadmin_user_uuid"
             }
           ]
         },
-        "description": "Deletes a SubAdmin account by ID (SuperAdmin only)."
+        "description": "Deletes a SubAdmin account. (SuperAdmin only)"
       }
     },
     {
-      "name": "17. Get Users Directory",
+      "name": "18. Admin — User Directory",
       "request": {
         "method": "GET",
         "header": [
@@ -559,7 +534,7 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/auth/users?page=1&limit=20",
+          "raw": "{{base_url}}/auth/users?page=1&limit=10",
           "host": [
             "{{base_url}}"
           ],
@@ -574,16 +549,62 @@
             },
             {
               "key": "limit",
-              "value": "20"
+              "value": "10"
             },
             {
               "key": "search",
-              "value": "dhruv",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "role",
+              "value": "USER",
               "disabled": true
             }
           ]
         },
-        "description": "Fetches paginated directory of registered users (Admin / SuperAdmin only)."
+        "description": "Fetches paginated list of registered users. (Admin & SuperAdmin)"
+      }
+    },
+    {
+      "name": "19. Admin — Toggle User Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isActive\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/users/:userId/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "users",
+            ":userId",
+            "status"
+          ],
+          "variable": [
+            {
+              "key": "userId",
+              "value": "target_user_uuid"
+            }
+          ]
+        },
+        "description": "Activates or suspends a user account. (Admin & SuperAdmin)"
       }
     }
   ]

@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-categories-v1",
-    "name": "BrandFlow — Category Collection",
-    "description": "API endpoints for Business Categories management.",
+    "_postman_id": "bf-category-v2",
+    "name": "BrandFlow — Business Categories Collection",
+    "description": "API endpoints for managing 35+ Master Business Categories.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -12,7 +12,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/categories?page=1&limit=20",
+          "raw": "{{base_url}}/categories?page=1&limit=50",
           "host": [
             "{{base_url}}"
           ],
@@ -26,29 +26,61 @@
             },
             {
               "key": "limit",
-              "value": "20"
+              "value": "50"
+            },
+            {
+              "key": "search",
+              "value": "",
+              "disabled": true
             }
           ]
-        }
+        },
+        "description": "Fetches paginated business categories."
       }
     },
     {
-      "name": "2. Create Category",
+      "name": "2. Get Category By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/categories/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "category_uuid_here"
+            }
+          ]
+        },
+        "description": "Fetches a single business category by its UUID."
+      }
+    },
+    {
+      "name": "3. Create Category (Admin)",
       "request": {
         "method": "POST",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Real Estate & Property\",\n  \"slug\": \"real-estate\",\n  \"description\": \"Real estate agents, property consultants, and construction companies.\"\n}"
+          "raw": "{\n  \"name\": \"Real Estate & Property Management\",\n  \"slug\": \"real-estate-property\",\n  \"description\": \"Real estate brokers, residential builders, property rentals, and construction businesses.\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/categories",
@@ -59,17 +91,57 @@
             "categories"
           ]
         },
-        "description": "Creates a new business category. Accessible by SuperAdmin or SubAdmin with 'categories' tab permission. Stores createdBy with authenticated user ID and returns creator details."
+        "description": "Creates a new master business category. Requires admin or categories tab permission."
       }
     },
     {
-      "name": "3. Delete Category",
+      "name": "4. Update Category (Admin)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Real Estate & Property Consultancy\",\n  \"slug\": \"real-estate-property-consultancy\",\n  \"description\": \"Updated description for real estate and infrastructure businesses.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/categories/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "categories",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "category_uuid_here"
+            }
+          ]
+        },
+        "description": "Updates a business category name, slug, or description."
+      }
+    },
+    {
+      "name": "5. Delete Category (Admin)",
       "request": {
         "method": "DELETE",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -84,11 +156,11 @@
           "variable": [
             {
               "key": "id",
-              "value": "category_id_here"
+              "value": "category_uuid_here"
             }
           ]
         },
-        "description": "Deletes a business category by ID. Accessible by SuperAdmin or SubAdmin with 'categories' tab permission."
+        "description": "Deletes a business category by ID."
       }
     }
   ]

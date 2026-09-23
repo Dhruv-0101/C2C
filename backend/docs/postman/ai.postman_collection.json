@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-ai-v1",
+    "_postman_id": "bf-ai-v2",
     "name": "BrandFlow — AI Generation Collection",
-    "description": "API endpoints for AI Caption Generation and Trending Hashtag Suggestions.",
+    "description": "API endpoints for AI Caption Generation, Tone Customization, and Multi-Platform Copywriting.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -13,16 +13,18 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"topic\": \"Navratri Special Offer 20% Off on Real Estate Booking\",\n  \"tone\": \"Professional\",\n  \"platform\": \"INSTAGRAM\",\n  \"language\": \"English\"\n}"
+          "raw": "{\n  \"topic\": \"Festive Flash Sale Announcement\",\n  \"occasionName\": \"Diwali Mega Sale 2026\",\n  \"festivalName\": \"Diwali\",\n  \"customText\": \"Get flat 40% discount on all premium electronics\",\n  \"offerText\": \"FLAT40\",\n  \"tone\": \"EXCITED\",\n  \"language\": \"ENGLISH\",\n  \"platform\": \"INSTAGRAM\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/ai/generate-caption",
@@ -34,38 +36,7 @@
             "generate-caption"
           ]
         },
-        "description": "Generates AI caption tailored to platform, tone, and user brand kit."
-      }
-    },
-    {
-      "name": "2. Suggest Trending Hashtags",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"topic\": \"Festival Offer Real Estate Sale\",\n  \"platform\": \"INSTAGRAM\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/ai/suggest-hashtags",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "ai",
-            "suggest-hashtags"
-          ]
-        },
-        "description": "Returns curated list of high-converting, trending hashtags."
+        "description": "Generates creative social media captions and trending hashtags."
       }
     }
   ]

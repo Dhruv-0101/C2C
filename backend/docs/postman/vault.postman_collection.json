@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "bf-vault-v1",
+    "_postman_id": "bf-vault-v2",
     "name": "BrandFlow — Vault Collection",
     "description": "API endpoints for User Graphic Vault & Saved Designs.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -13,7 +13,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -32,9 +33,15 @@
             {
               "key": "limit",
               "value": "20"
+            },
+            {
+              "key": "search",
+              "value": "",
+              "disabled": true
             }
           ]
-        }
+        },
+        "description": "Fetches saved graphic designs in the user vault."
       }
     },
     {
@@ -44,7 +51,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -59,10 +67,11 @@
           "variable": [
             {
               "key": "id",
-              "value": "vault_item_id_here"
+              "value": "vault_item_uuid"
             }
           ]
-        }
+        },
+        "description": "Fetches single vault graphic design details."
       }
     },
     {
@@ -72,16 +81,18 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"occasionName\": \"Updated Diwali Festival Banner\"\n}"
+          "raw": "{\n  \"occasionName\": \"Updated Festival Marketing Banner\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/vault/:id",
@@ -95,10 +106,11 @@
           "variable": [
             {
               "key": "id",
-              "value": "vault_item_id_here"
+              "value": "vault_item_uuid"
             }
           ]
-        }
+        },
+        "description": "Updates metadata of a vault item."
       }
     },
     {
@@ -108,7 +120,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -123,10 +136,44 @@
           "variable": [
             {
               "key": "id",
-              "value": "vault_item_id_here"
+              "value": "vault_item_uuid"
             }
           ]
-        }
+        },
+        "description": "Deletes a single item from the vault."
+      }
+    },
+    {
+      "name": "5. Bulk Delete Vault Items",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ids\": [\n    \"vault_id_1\",\n    \"vault_id_2\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/vault/bulk-delete",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "vault",
+            "bulk-delete"
+          ]
+        },
+        "description": "Deletes multiple vault items in a single transaction."
       }
     }
   ]

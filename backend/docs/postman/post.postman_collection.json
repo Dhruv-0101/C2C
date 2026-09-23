@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-posts-module-v2",
-    "name": "BrandFlow — Post Collection",
-    "description": "API endpoints for saving, scheduling, instant publishing, and deleting user-composited social media marketing posts.",
+    "_postman_id": "bf-post-v2",
+    "name": "BrandFlow — User Generated Posts Collection",
+    "description": "API endpoints for creating, scheduling, rendering, updating, and publishing posts.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -13,7 +13,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -32,10 +33,15 @@
             {
               "key": "limit",
               "value": "10"
+            },
+            {
+              "key": "status",
+              "value": "PUBLISHED",
+              "disabled": true
             }
           ]
         },
-        "description": "Fetches paginated composited posts created by the authenticated user."
+        "description": "Fetches the authenticated user's posts."
       }
     },
     {
@@ -45,49 +51,74 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/posts/scheduled?page=1&limit=10",
+          "raw": "{{base_url}}/posts/scheduled",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "posts",
             "scheduled"
-          ],
-          "query": [
-            {
-              "key": "page",
-              "value": "1"
-            },
-            {
-              "key": "limit",
-              "value": "10"
-            }
           ]
         },
-        "description": "Fetches the scheduled posts queue for the authenticated user."
+        "description": "Fetches pending queued scheduled posts for user."
       }
     },
     {
-      "name": "3. Publish Post Now",
+      "name": "3. Create Post (Save Draft / Generated)",
       "request": {
         "method": "POST",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"postContent\": \"Celebrating Diwali with our valued customers! 🪔✨\",\n  \"graphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"targetPlatforms\": [\"INSTAGRAM\", \"FACEBOOK\", \"LINKEDIN\"]\n}"
+          "raw": "{\n  \"templateId\": null,\n  \"festivalId\": null,\n  \"frameId\": null,\n  \"categoryId\": null,\n  \"occasionName\": \"Diwali Special Offer 2026\",\n  \"caption\": \"May this Diwali bring boundless joy and prosperity to your business! 🪔✨\",\n  \"hashtags\": [\n    \"#Diwali2026\",\n    \"#HappyDiwali\",\n    \"#BrandFlow\"\n  ],\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"status\": \"DRAFT\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        },
+        "description": "Saves a rendered post graphic and deducts subscription credit quota."
+      }
+    },
+    {
+      "name": "4. Publish Post Now",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"caption\": \"Live announcement from BrandFlow AI! 🚀\",\n  \"targetPlatforms\": [\n    \"INSTAGRAM\",\n    \"LINKEDIN\"\n  ],\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/posts/publish-now",
@@ -99,26 +130,28 @@
             "publish-now"
           ]
         },
-        "description": "Instantly publishes a composited graphic post across connected social media platforms."
+        "description": "Immediately publishes the graphic post to connected social media channels."
       }
     },
     {
-      "name": "4. Schedule Post",
+      "name": "5. Schedule Post for Future",
       "request": {
         "method": "POST",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"postId\": \"post_id_here\",\n  \"postContent\": \"Exclusive Festive Discounts on MG Road!\",\n  \"graphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"scheduledFor\": \"2026-11-08T09:00:00.000Z\",\n  \"targetPlatforms\": [\"INSTAGRAM\", \"LINKEDIN\"]\n}"
+          "raw": "{\n  \"caption\": \"Scheduled morning greetings for Diwali!\",\n  \"targetPlatforms\": [\n    \"INSTAGRAM\"\n  ],\n  \"scheduledAt\": \"2026-11-08T09:00:00.000Z\",\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/posts/schedule",
@@ -130,60 +163,47 @@
             "schedule"
           ]
         },
-        "description": "Schedules a composited post for automatic social media publishing at a future date & time."
+        "description": "Queues post for background BullMQ worker execution at scheduled timestamp."
       }
     },
     {
-      "name": "5. Trigger Scheduled Jobs Dispatcher",
+      "name": "6. Re-render & Update Post Graphic",
       "request": {
-        "method": "POST",
+        "method": "PUT",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"base64Graphic\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+        },
         "url": {
-          "raw": "{{base_url}}/posts/trigger-scheduled-jobs",
+          "raw": "{{base_url}}/posts/:id/graphic",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "posts",
-            "trigger-scheduled-jobs"
-          ]
-        },
-        "description": "Manually triggers the background cron dispatcher cycle to process due scheduled posts."
-      }
-    },
-    {
-      "name": "6. Create Post",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"templateId\": \"clx123templateid\",\n  \"festivalId\": \"clx789festivalid\",\n  \"categoryId\": \"clx111categoryid\",\n  \"frameId\": \"clx456frameid\",\n  \"occasionName\": \"Diwali Celebration Post\",\n  \"caption\": \"Happy Diwali from Sunrise Real Estate! #Diwali2026\",\n  \"finalGraphicUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.png\",\n  \"status\": \"DRAFT\",\n  \"userConfigJson\": {\n    \"businessName\": \"Sunrise Real Estate\",\n    \"phone\": \"+91 99999 88888\",\n    \"address\": \"MG Road, Mumbai\",\n    \"tagline\": \"Premium Housing Solutions\"\n  }\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/posts",
-          "host": [
-            "{{base_url}}"
+            ":id",
+            "graphic"
           ],
-          "path": [
-            "posts"
+          "variable": [
+            {
+              "key": "id",
+              "value": "post_uuid_here"
+            }
           ]
         },
-        "description": "Saves a composited 1080x1080 post image strictly to Cloudinary 'brandflow/posts', database, and Vault with optional categoryId, frameId, templateId, and festivalId references."
+        "description": "Updates and re-uploads graphic for an existing post without deducting extra subscription quota."
       }
     },
     {
@@ -193,7 +213,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -208,25 +229,26 @@
           "variable": [
             {
               "key": "id",
-              "value": "post_id_here"
+              "value": "post_uuid_here"
             }
           ]
         },
-        "description": "Deletes a composited post by ID and cleans up associated image from Cloudinary storage."
+        "description": "Deletes a post record and deletes image from Cloudinary."
       }
     },
     {
-      "name": "8. Admin — Get All Generated Posts (Audit & Filter)",
+      "name": "8. Admin — Get All Generated Posts",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/posts/admin/all?page=1&limit=10&categoryId=&frameId=&templateCategoryId=&festivalId=&status=&search=",
+          "raw": "{{base_url}}/posts/admin/all?page=1&limit=10",
           "host": [
             "{{base_url}}"
           ],
@@ -266,27 +288,23 @@
             },
             {
               "key": "status",
-              "value": "DRAFT",
-              "disabled": true
-            },
-            {
-              "key": "search",
               "value": "",
               "disabled": true
             }
           ]
         },
-        "description": "Admin & SubAdmin audit endpoint to view all user-generated posts across the platform with cross-dimensional filtering by business category, frame overlay, template category, festival, and publishing status."
+        "description": "Global audit of all posts created across the system. (Admin only)"
       }
     },
     {
-      "name": "9. Admin — Get Post Analytics & Volume Breakdown",
+      "name": "9. Admin — Post Analytics",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -300,7 +318,7 @@
             "analytics"
           ]
         },
-        "description": "Fetches aggregated platform post counts (total, draft, scheduled, published) and volume distribution breakdowns grouped by business category, frame, template category, and festival."
+        "description": "Aggregated volume breakdown of generated posts. (Admin only)"
       }
     }
   ]
