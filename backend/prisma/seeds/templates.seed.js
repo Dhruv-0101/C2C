@@ -346,3 +346,19 @@ export async function seedTemplates(prisma) {
 
   console.log(`✅ Seeded ${templatesData.length} master default templates with relational template categories & festivals.`);
 }
+
+// Allow running directly via CLI: `node prisma/seeds/templates.seed.js`
+if (process.argv[1]?.endsWith('templates.seed.js')) {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+  seedTemplates(prisma)
+    .then(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    })
+    .catch(async (e) => {
+      console.error('❌ Error executing templates seed:', e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}

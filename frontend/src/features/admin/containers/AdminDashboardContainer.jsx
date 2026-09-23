@@ -18,6 +18,7 @@ import { billingApi } from "../../../services/billing.api";
 import { subAdminSchema } from "../../../validations/auth.validation";
 import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
 import { QUERY_KEYS } from "../../../constants/queryKeys";
+import { ADMIN_TABS, SUBADMIN_PERMITTED_TABS } from "../../../constants/tabs.constants";
 import { AdminDashboardView } from "../components/AdminDashboardView";
 import { CelebrationWelcomeModal } from "../../../components/common/CelebrationWelcomeModal";
 
@@ -35,13 +36,13 @@ export const AdminDashboardContainer = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Enforce SubAdmin RBAC tab access: if requested tab is unpermitted, auto-select first allowed tab
-  const requestedTab = searchParams.get("tab") || "dashboard";
+  const requestedTab = searchParams.get("tab") || ADMIN_TABS.DASHBOARD;
   const activeTab =
     isSuperAdmin
       ? requestedTab
       : userAllowedTabs.length > 0 && userAllowedTabs.includes(requestedTab)
         ? requestedTab
-        : userAllowedTabs[0] || "dashboard";
+        : userAllowedTabs[0] || ADMIN_TABS.DASHBOARD;
 
   const handleTabChange = (tabId) => {
     setSearchParams({ tab: tabId });
@@ -336,7 +337,7 @@ export const AdminDashboardContainer = () => {
       fullName: "",
       email: "",
       password: "",
-      allowedTabs: ["festivals", "categories", "frames", "templates", "posts"],
+      allowedTabs: [...SUBADMIN_PERMITTED_TABS],
     },
   });
 

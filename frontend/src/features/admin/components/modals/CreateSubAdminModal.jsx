@@ -2,6 +2,7 @@ import React from "react";
 import { UserPlus, X, CheckCircle2 } from "lucide-react";
 import { Button } from "../../../../components/ui/Button";
 import { Input } from "../../../../components/ui/Input";
+import { SUBADMIN_TAB_CONFIG } from "../../../../constants/tabs.constants";
 
 /**
  * CreateSubAdminModal Component
@@ -67,12 +68,7 @@ export const CreateSubAdminModal = ({
             </p>
 
             <div className="grid grid-cols-2 gap-2 pt-2">
-              {[
-                { id: "festivals", label: "Festival Calendar" },
-                { id: "categories", label: "Business Categories" },
-                { id: "frames", label: "Brand Frame Studio" },
-                { id: "templates", label: "Graphic Templates" },
-              ].map((tab) => {
+              {SUBADMIN_TAB_CONFIG.map((tab) => {
                 const isChecked = selectedTabs.includes(tab.id);
                 return (
                   <label

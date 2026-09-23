@@ -397,3 +397,19 @@ export async function seedFestivals(prisma) {
 
   console.log(`✅ Master Annual Festivals seeded successfully (${DEFAULT_FESTIVALS.length} festivals across all 12 months).`);
 }
+
+// Allow running directly via CLI: `node prisma/seeds/festivals.seed.js`
+if (process.argv[1]?.endsWith('festivals.seed.js')) {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+  seedFestivals(prisma)
+    .then(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    })
+    .catch(async (e) => {
+      console.error('❌ Error executing festivals seed:', e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}

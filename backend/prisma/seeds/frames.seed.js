@@ -668,3 +668,19 @@ export async function seedFrames(prisma) {
 
   console.log(`✅ Seeded ${masterFrames.length} Master Ultra-Premium Categorized Vector Frames.`);
 }
+
+// Allow running directly via CLI: `node prisma/seeds/frames.seed.js`
+if (process.argv[1]?.endsWith('frames.seed.js')) {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+  seedFrames(prisma)
+    .then(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    })
+    .catch(async (e) => {
+      console.error('❌ Error executing frames seed:', e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}

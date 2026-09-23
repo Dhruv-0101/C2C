@@ -181,3 +181,19 @@ export async function seedTemplateCategories(prisma) {
 
   console.log(`✅ Master Template Categories seeded successfully (${DEFAULT_TEMPLATE_CATEGORIES.length} categories).`);
 }
+
+// Allow running directly via CLI: `node prisma/seeds/templateCategories.seed.js`
+if (process.argv[1]?.endsWith('templateCategories.seed.js')) {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+  seedTemplateCategories(prisma)
+    .then(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    })
+    .catch(async (e) => {
+      console.error('❌ Error executing template categories seed:', e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}

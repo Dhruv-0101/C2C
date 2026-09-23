@@ -14,7 +14,7 @@ import {
   Activity,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
-import { ADMIN_TABS } from "../../../constants/theme.constants";
+import { ADMIN_TABS } from "../../../constants/tabs.constants";
 
 // Extracted Sub-Components & Standardized Tabs
 import { AdminStatsHeader } from "./AdminStatsHeader";
@@ -150,7 +150,7 @@ export const AdminDashboardView = ({
       {/* Dynamic Tab Module Viewports */}
       <div className="w-full space-y-6">
         {/* 0. Main Executive Statistics Dashboard Tab */}
-        {activeTab === "dashboard" && (
+        {activeTab === ADMIN_TABS.DASHBOARD && (
           <div className="space-y-6">
             {/* Dashboard Welcome Header */}
             <div className="p-6 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17] flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -191,7 +191,7 @@ export const AdminDashboardView = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   {
-                    id: "users",
+                    id: ADMIN_TABS.USERS,
                     label: "Business Users Directory",
                     desc: "Registered business accounts, payment plans & tenant monitoring",
                     icon: Users,
@@ -199,7 +199,7 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-blue-500/50",
                   },
                   {
-                    id: "subadmins",
+                    id: ADMIN_TABS.SUB_ADMINS,
                     label: "SubAdmin Accounts",
                     desc: "SuperAdmin governance, staff management & RBAC privileges",
                     icon: Shield,
@@ -207,7 +207,7 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-amber-500/50",
                   },
                   {
-                    id: "subadmin-activity",
+                    id: ADMIN_TABS.SUB_ADMIN_ACTIVITY,
                     label: "SubAdmin Activity Feed",
                     desc: "Real-time audit log of templates, frames, events & categories created",
                     icon: Activity,
@@ -215,7 +215,7 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-purple-500/50",
                   },
                   {
-                    id: "finance",
+                    id: ADMIN_TABS.FINANCE,
                     label: "Finance & Revenue",
                     desc: "Executive MRR/ARR, total revenue & transaction ledger",
                     icon: CreditCard,
@@ -223,7 +223,7 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-emerald-500/50",
                   },
                   {
-                    id: "posts",
+                    id: ADMIN_TABS.POSTS,
                     label: "Generated Posts Audit",
                     desc: "Audit & track posts by category, frame, template & festival",
                     icon: Sparkles,
@@ -231,7 +231,7 @@ export const AdminDashboardView = ({
                     borderColor: "hover:border-indigo-500/50",
                   },
                   {
-                    id: "festivals",
+                    id: ADMIN_TABS.FESTIVALS,
                     label: "Festival Calendar",
                     desc: "Configure upcoming cultural events & marketing days",
                     icon: Calendar,
@@ -267,21 +267,21 @@ export const AdminDashboardView = ({
         )}
 
         {/* Executive Finance & Revenue Management Tab */}
-        {activeTab === "finance" && <AdminFinanceTab />}
+        {activeTab === ADMIN_TABS.FINANCE && <AdminFinanceTab />}
 
         {/* 1. AI Base Graphic Templates Tab */}
-        {activeTab === "templates" && <AdminTemplatesTab />}
+        {activeTab === ADMIN_TABS.TEMPLATES && <AdminTemplatesTab />}
 
         {/* 2. Festival & Special Days Manager Tab */}
-        {(activeTab === "festivals" || activeTab === "calendar") && (
+        {(activeTab === ADMIN_TABS.FESTIVALS || activeTab === "calendar") && (
           <AdminFestivalsTab />
         )}
 
         {/* 3. Brand Frames Studio Tab */}
-        {activeTab === "frames" && <AdminFramesTab />}
+        {activeTab === ADMIN_TABS.FRAMES && <AdminFramesTab />}
 
         {/* 4. Master Business Categories Tab */}
-        {activeTab === "categories" && (
+        {activeTab === ADMIN_TABS.CATEGORIES && (
           <AdminCategoriesTab
             categories={categories}
             categoryMeta={categoryMeta}
@@ -302,7 +302,7 @@ export const AdminDashboardView = ({
         )}
 
         {/* 5. Generated Posts Audit Tab */}
-        {activeTab === "posts" && (
+        {activeTab === ADMIN_TABS.POSTS && (
           <AdminPostsTab
             posts={posts}
             postMeta={postMeta}
@@ -333,7 +333,7 @@ export const AdminDashboardView = ({
         )}
 
         {/* 6. SubAdmin Directory Tab (SuperAdmin Only) */}
-        {activeTab === "subadmins" && isSuperAdmin && (
+        {activeTab === ADMIN_TABS.SUB_ADMINS && isSuperAdmin && (
           <AdminSubAdminsTab
             subAdmins={subAdmins}
             subAdminMeta={subAdminMeta}
@@ -352,12 +352,12 @@ export const AdminDashboardView = ({
         )}
 
         {/* 7. SubAdmin Activity & Creations Audit Tab (SuperAdmin Only) */}
-        {activeTab === "subadmin-activity" && isSuperAdmin && (
+        {activeTab === ADMIN_TABS.SUB_ADMIN_ACTIVITY && isSuperAdmin && (
           <AdminSubAdminActivityTab onNavigateTab={handleTabChange} />
         )}
 
         {/* 8. Business User Directory Tab */}
-        {activeTab === "users" && (
+        {activeTab === ADMIN_TABS.USERS && (
           <AdminUsersTab
             users={users}
             userMeta={userMeta}

@@ -10,6 +10,7 @@ import {
 import { Card } from "../../../components/ui/Card";
 import { FestivalCalendarContainer } from "../../calendar/containers/FestivalCalendarContainer";
 import { BaseTemplateManagerContainer } from "../../templates/containers/BaseTemplateManagerContainer";
+import { ADMIN_TABS } from "../../../constants/tabs.constants";
 
 /**
  * SubAdminDashboardView
@@ -68,7 +69,7 @@ export const SubAdminDashboardView = ({
 
       {/* Tab Content Display */}
       <div className="space-y-6">
-        {activeTab === "users" && (
+        {activeTab === ADMIN_TABS.USERS && (
           <Card className="border-slate-800 space-y-4">
             <h3 className="font-heading font-bold text-lg text-white flex items-center gap-2">
               <Users className="w-5 h-5 text-teal-400" />
@@ -105,14 +106,14 @@ export const SubAdminDashboardView = ({
           </Card>
         )}
 
-        {activeTab === "templates" && (
+        {activeTab === ADMIN_TABS.TEMPLATES && (
           <div className="space-y-6">
             <BaseTemplateManagerContainer />
             <FestivalCalendarContainer />
           </div>
         )}
 
-        {activeTab === "posts" && (
+        {activeTab === ADMIN_TABS.POSTS && (
           <Card className="border-slate-800 space-y-4">
             <h3 className="font-heading font-bold text-lg text-white flex items-center gap-2">
               <Activity className="w-5 h-5 text-teal-400" />

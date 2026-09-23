@@ -204,3 +204,20 @@ export async function seedCategories(prisma) {
 
   console.log(`✅ Master Business Categories seeded successfully (${DEFAULT_CATEGORIES.length} categories).`);
 }
+
+// Allow running directly via CLI: `node prisma/seeds/categories.seed.js`
+if (process.argv[1]?.endsWith('categories.seed.js')) {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+  seedCategories(prisma)
+    .then(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    })
+    .catch(async (e) => {
+      console.error('❌ Error executing categories seed:', e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}
+

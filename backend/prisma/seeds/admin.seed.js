@@ -35,3 +35,18 @@ export async function seedAdmin(prisma) {
   console.log(`🚀 SuperAdmin account verified/created from .env: ${adminUser.email}`);
 }
 
+// Allow running directly via CLI: `node prisma/seeds/admin.seed.js`
+if (process.argv[1]?.endsWith('admin.seed.js')) {
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+  seedAdmin(prisma)
+    .then(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    })
+    .catch(async (e) => {
+      console.error('❌ Error executing admin seed:', e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}

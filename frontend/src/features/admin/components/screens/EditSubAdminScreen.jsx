@@ -3,6 +3,7 @@ import { Pencil, ArrowLeft, CheckCircle2, Shield } from "lucide-react";
 import { Card } from "../../../../components/ui/Card";
 import { Button } from "../../../../components/ui/Button";
 import { Input } from "../../../../components/ui/Input";
+import { SUBADMIN_TAB_CONFIG } from "../../../../constants/tabs.constants";
 
 /**
  * EditSubAdminScreen Component
@@ -99,13 +100,7 @@ export const EditSubAdminScreen = ({ subAdmin, onBack, updateSubAdminMutation })
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                {[
-                  { id: "festivals", label: "Festival Calendar" },
-                  { id: "categories", label: "Business Categories" },
-                  { id: "frames", label: "Brand Frame Studio" },
-                  { id: "templates", label: "Graphic Templates" },
-                  { id: "posts", label: "Generated Posts Audit" },
-                ].map((tab) => {
+                {SUBADMIN_TAB_CONFIG.map((tab) => {
                   const isChecked = editTabs.includes(tab.id);
                   return (
                     <div

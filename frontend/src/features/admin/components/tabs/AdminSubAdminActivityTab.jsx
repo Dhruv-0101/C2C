@@ -23,6 +23,7 @@ import { SearchBar } from "../../../../components/common/SearchBar";
 import Pagination from "../../../../components/common/Pagination";
 import { useSubAdminActivity } from "../../../../hooks/useSubAdminActivity";
 import { useDebounce } from "../../../../hooks/useDebounce";
+import { ADMIN_TABS } from "../../../../constants/tabs.constants";
 
 // Visual theme configurations for each creation type
 const TYPE_CONFIG = {
@@ -31,28 +32,28 @@ const TYPE_CONFIG = {
     icon: FileCode2,
     badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/40",
     dotColor: "bg-purple-400",
-    targetTab: "templates",
+    targetTab: ADMIN_TABS.TEMPLATES,
   },
   frame: {
     label: "Brand Frame",
     icon: Layers,
     badgeColor: "bg-sky-500/20 text-sky-300 border-sky-500/40",
     dotColor: "bg-sky-400",
-    targetTab: "frames",
+    targetTab: ADMIN_TABS.FRAMES,
   },
   festival: {
     label: "Festival Event",
     icon: Calendar,
     badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
     dotColor: "bg-emerald-400",
-    targetTab: "festivals",
+    targetTab: ADMIN_TABS.FESTIVALS,
   },
   category: {
     label: "Business Category",
     icon: FolderKanban,
     badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
     dotColor: "bg-indigo-400",
-    targetTab: "categories",
+    targetTab: ADMIN_TABS.CATEGORIES,
   },
 };
 

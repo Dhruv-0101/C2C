@@ -21,6 +21,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useLogout } from "../../auth/hooks/useLogout";
 import { TwoFactorSettingsModal } from "../../../components/common/TwoFactorSettingsModal";
 import { ThemeToggle } from "../../../components/common/ThemeToggle";
+import { ADMIN_TABS } from "../../../constants/tabs.constants";
 
 /**
  * Categorized Navigation Sections for Admin Console
@@ -30,31 +31,31 @@ const ADMIN_NAVIGATION_SECTIONS = [
   {
     title: "",
     items: [
-      { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard },
+      { id: ADMIN_TABS.DASHBOARD, label: "Dashboard Overview", icon: LayoutDashboard },
     ],
   },
   {
     title: "Creative Library",
     items: [
-      { id: "templates", label: "Graphic Templates", icon: FileCode2 },
-      { id: "festivals", label: "Festival Calendar", icon: Calendar },
-      { id: "frames", label: "Brand Frames Studio", icon: Layers },
-      { id: "categories", label: "Business Categories", icon: FolderKanban },
+      { id: ADMIN_TABS.TEMPLATES, label: "Graphic Templates", icon: FileCode2 },
+      { id: ADMIN_TABS.FESTIVALS, label: "Festival Calendar", icon: Calendar },
+      { id: ADMIN_TABS.FRAMES, label: "Brand Frames Studio", icon: Layers },
+      { id: ADMIN_TABS.CATEGORIES, label: "Business Categories", icon: FolderKanban },
     ],
   },
   {
     title: "Users & Governance",
     items: [
-      { id: "users", label: "Business Users Directory", icon: Users },
-      { id: "subadmins", label: "SubAdmin Accounts", icon: Shield, superAdminOnly: true },
-      { id: "subadmin-activity", label: "SubAdmin Activity Feed", icon: Activity, superAdminOnly: true },
+      { id: ADMIN_TABS.USERS, label: "Business Users Directory", icon: Users },
+      { id: ADMIN_TABS.SUB_ADMINS, label: "SubAdmin Accounts", icon: Shield, superAdminOnly: true },
+      { id: ADMIN_TABS.SUB_ADMIN_ACTIVITY, label: "SubAdmin Activity Feed", icon: Activity, superAdminOnly: true },
     ],
   },
   {
     title: "Finance & Post Audits",
     items: [
-      { id: "finance", label: "Finance & Revenue", icon: CreditCard, superAdminOnly: true },
-      { id: "posts", label: "Generated Posts Audit", icon: Sparkles },
+      { id: ADMIN_TABS.FINANCE, label: "Finance & Revenue", icon: CreditCard, superAdminOnly: true },
+      { id: ADMIN_TABS.POSTS, label: "Generated Posts Audit", icon: Sparkles },
     ],
   },
 ];
@@ -90,7 +91,7 @@ export const AdminSidebar = ({
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const currentTab = searchParams.get("tab") || "dashboard";
+  const currentTab = searchParams.get("tab") || ADMIN_TABS.DASHBOARD;
 
   const handleSelectTab = (tabId) => {
     setSearchParams({ tab: tabId });
@@ -207,7 +208,7 @@ export const AdminSidebar = ({
                 const Icon = item.icon;
                 const isActive =
                   currentTab === item.id ||
-                  (item.id === "festivals" && currentTab === "calendar");
+                  (item.id === ADMIN_TABS.FESTIVALS && currentTab === "calendar");
 
                 return (
                   <button

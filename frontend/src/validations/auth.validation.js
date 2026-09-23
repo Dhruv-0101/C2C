@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SUBADMIN_PERMITTED_TABS } from '../constants/tabs.constants';
 
 export const loginSchema = z.object({
   email: z
@@ -48,5 +49,8 @@ export const subAdminSchema = z.object({
     .string()
     .min(1, 'Password is required')
     .min(6, 'Password must be at least 6 characters'),
-  allowedTabs: z.array(z.string()).min(1, 'Select at least one allowed tab for SubAdmin'),
+  allowedTabs: z
+    .array(z.enum(SUBADMIN_PERMITTED_TABS))
+    .min(1, 'Select at least one allowed tab for SubAdmin'),
 });
+

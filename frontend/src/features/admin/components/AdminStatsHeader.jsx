@@ -1,6 +1,7 @@
 import React from "react";
 import { Users, Shield, FolderKanban } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
+import { ADMIN_TABS } from "../../../constants/tabs.constants";
 
 /**
  * AdminStatsHeader Component
@@ -21,7 +22,7 @@ export const AdminStatsHeader = ({
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {/* Business Tenants Stat Card */}
       <Card
-        onClick={() => onNavigateTab && onNavigateTab("users")}
+        onClick={() => onNavigateTab && onNavigateTab(ADMIN_TABS.USERS)}
         className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-amber-500/50 hover:shadow-lg transition-all duration-200 group"
       >
         <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
@@ -38,7 +39,7 @@ export const AdminStatsHeader = ({
 
       {/* SubAdmin Moderators Stat Card (Clickable for SuperAdmin) */}
       <Card
-        onClick={() => isSuperAdmin && onNavigateTab && onNavigateTab("subadmins")}
+        onClick={() => isSuperAdmin && onNavigateTab && onNavigateTab(ADMIN_TABS.SUB_ADMINS)}
         className={`p-5 border-[#2C384E] bg-[#131B2A] space-y-2 transition-all duration-200 group ${
           isSuperAdmin ? "cursor-pointer hover:border-teal-500/50 hover:shadow-lg" : "opacity-90"
         }`}
@@ -57,7 +58,7 @@ export const AdminStatsHeader = ({
 
       {/* Business Categories Stat Card */}
       <Card
-        onClick={() => onNavigateTab && onNavigateTab("categories")}
+        onClick={() => onNavigateTab && onNavigateTab(ADMIN_TABS.CATEGORIES)}
         className="p-5 border-[#2C384E] bg-[#131B2A] space-y-2 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all duration-200 group"
       >
         <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">

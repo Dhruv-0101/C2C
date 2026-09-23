@@ -4,15 +4,16 @@ import { Button } from "../../../../components/ui/Button";
 import { Alert } from "../../../../components/ui/Alert";
 import { SearchBar } from "../../../../components/common/SearchBar";
 import Pagination from "../../../../components/common/Pagination";
+import { ADMIN_TABS } from "../../../../constants/tabs.constants";
 
 // Color mapping helper for distinct visual RBAC permission pill badges
 const TAB_BADGE_STYLES = {
-  templates: "bg-purple-500/20 text-purple-300 border-purple-500/40",
-  festivals: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
-  frames: "bg-sky-500/20 text-sky-300 border-sky-500/40",
-  styles: "bg-pink-500/20 text-pink-300 border-pink-500/40",
-  categories: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
-  users: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+  [ADMIN_TABS.TEMPLATES]: "bg-purple-500/20 text-purple-300 border-purple-500/40",
+  [ADMIN_TABS.FESTIVALS]: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+  [ADMIN_TABS.FRAMES]: "bg-sky-500/20 text-sky-300 border-sky-500/40",
+  [ADMIN_TABS.CATEGORIES]: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
+  [ADMIN_TABS.POSTS]: "bg-pink-500/20 text-pink-300 border-pink-500/40",
+  [ADMIN_TABS.USERS]: "bg-amber-500/20 text-amber-300 border-amber-500/40",
 };
 
 /**
@@ -64,7 +65,7 @@ export const AdminSubAdminsTab = ({
             <Button
               variant="outline"
               icon={Activity}
-              onClick={() => onNavigateTab("subadmin-activity")}
+              onClick={() => onNavigateTab(ADMIN_TABS.SUB_ADMIN_ACTIVITY)}
               className="border-[#2C384E] text-amber-400 hover:text-amber-300 hover:border-amber-500/50"
             >
               View Works & Audit

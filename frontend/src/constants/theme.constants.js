@@ -7,19 +7,6 @@ export const USER_ROLES = {
   SUB_ADMIN: 'SUB_ADMIN',
 };
 
-export const ADMIN_TABS = [
-  { id: 'dashboard', label: 'Dashboard', description: 'System overview and real-time statistics' },
-  { id: 'finance', label: 'Finance & Revenue', description: 'Financial overview, transactions, MRR/ARR metrics, and gateway management' },
-  { id: 'templates', label: 'Graphic Templates', description: 'Manage graphic base templates' },
-  { id: 'festivals', label: 'Festival Calendar', description: 'Interactive monthly festival events & special days' },
-  { id: 'frames', label: 'Brand Frames Studio', description: 'Manage custom brand frames & overlays' },
-  { id: 'styles', label: 'Design System & Palettes', description: 'Manage brand color palettes & typography' },
-  { id: 'categories', label: 'Business Categories', description: 'Manage industry category tags' },
-  { id: 'posts', label: 'Generated Posts Audit', description: 'Monitor & track user generated posts by category, frame, template, and festival' },
-  { id: 'subadmins', label: 'SubAdmin Directory', description: 'Manage sub-admin privileges' },
-  { id: 'users', label: 'Business User Directory', description: 'Manage platform users and business accounts' },
-];
-
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'brandflow_access_token',
   USER_DATA: 'brandflow_user_data',

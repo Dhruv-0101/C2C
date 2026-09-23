@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
-import { ADMIN_TABS } from "../../../constants/theme.constants";
+import { ADMIN_TABS, SUBADMIN_TAB_CONFIG } from "../../../constants/tabs.constants";
 import { SubAdminDashboardView } from "../components/SubAdminDashboardView";
 
 /**
@@ -8,13 +8,13 @@ import { SubAdminDashboardView } from "../components/SubAdminDashboardView";
  * Container component handling SubAdmin authorization logic, assigned tabs filtering, and active tab state.
  */
 export const SubAdminDashboardContainer = () => {
-  const { user, allowedTabs } = useAuth();
+  const { user, allowedTabs = [] } = useAuth();
 
-  const availableTabs = ADMIN_TABS.filter(
+  const availableTabs = SUBADMIN_TAB_CONFIG.filter(
     (tab) => allowedTabs.includes("all") || allowedTabs.includes(tab.id),
   );
 
-  const [activeTab, setActiveTab] = useState(availableTabs[0]?.id || "users");
+  const [activeTab, setActiveTab] = useState(availableTabs[0]?.id || ADMIN_TABS.TEMPLATES);
 
   return (
     <SubAdminDashboardView
