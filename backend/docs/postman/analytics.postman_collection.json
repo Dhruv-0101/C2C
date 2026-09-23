@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-analytics-v1",
+    "_postman_id": "bf-analytics-v2",
     "name": "BrandFlow — Analytics & Reporting Collection",
-    "description": "API endpoints for Tenant Performance Metrics, Daily Trends, Platform Breakdown, Top Templates, and Demo Data Seeding.",
+    "description": "API endpoints for Performance Overview, Trends, Platform Breakdown, and Top Templates.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -13,20 +13,27 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/analytics/overview",
+          "raw": "{{base_url}}/analytics/overview?period=30d",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "analytics",
             "overview"
+          ],
+          "query": [
+            {
+              "key": "period",
+              "value": "30d"
+            }
           ]
         },
-        "description": "Returns high-level KPI cards data (totalPosts, totalViews, totalEngagement, engagementRate)."
+        "description": "Fetches total posts created, scheduled, published, and engagement KPIs."
       }
     },
     {
@@ -36,7 +43,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -55,7 +63,7 @@
             }
           ]
         },
-        "description": "Returns time-series daily metrics for line & area charts."
+        "description": "Fetches day-by-day creation and publication volume trends."
       }
     },
     {
@@ -65,20 +73,27 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/analytics/platform-breakdown",
+          "raw": "{{base_url}}/analytics/platform-breakdown?period=30d",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "analytics",
             "platform-breakdown"
+          ],
+          "query": [
+            {
+              "key": "period",
+              "value": "30d"
+            }
           ]
         },
-        "description": "Returns platform distribution (Instagram, Facebook, LinkedIn) for pie charts."
+        "description": "Distribution of published posts across Instagram and LinkedIn."
       }
     },
     {
@@ -88,20 +103,27 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/analytics/top-templates",
+          "raw": "{{base_url}}/analytics/top-templates?limit=5",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "analytics",
             "top-templates"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5"
+            }
           ]
         },
-        "description": "Returns top performing design templates used by tenant."
+        "description": "Fetches the most popular graphic templates by post creation volume."
       }
     },
     {
@@ -111,7 +133,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -124,7 +147,7 @@
             "demo-seed"
           ]
         },
-        "description": "Populates demo metrics records for testing line/pie charts."
+        "description": "Seeds realistic mock post and analytics records for testing and charts."
       }
     }
   ]

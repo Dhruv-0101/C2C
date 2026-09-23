@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-billing-v1",
+    "_postman_id": "bf-billing-v2",
     "name": "BrandFlow — Billing & Revenue Collection",
-    "description": "API endpoints for User Subscriptions, Razorpay/Stripe Payments, Invoice Downloads, and Admin Financial Ledgers & CSV Export.",
+    "description": "API endpoints for Subscription Plans, Razorpay, Stripe, Invoicing, and Admin Ledger.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -13,7 +13,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -26,7 +27,7 @@
             "status"
           ]
         },
-        "description": "Fetches current subscription status and post quota details for the user."
+        "description": "Fetches active user plan tier, remaining credits, and quota breakdown."
       }
     },
     {
@@ -36,7 +37,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -59,7 +61,7 @@
             }
           ]
         },
-        "description": "Fetches paginated billing transactions for the user."
+        "description": "Fetches paginated payment and billing transaction history for user."
       }
     },
     {
@@ -69,7 +71,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -83,7 +86,7 @@
             "activate"
           ]
         },
-        "description": "Activates 5 Free Posts Quota for a new tenant account."
+        "description": "Activates starter free plan with 5 complimentary post credits."
       }
     },
     {
@@ -93,16 +96,18 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"postCount\": 100\n}"
+          "raw": "{\n  \"postCount\": 30\n}"
         },
         "url": {
           "raw": "{{base_url}}/billing/razorpay/create-order",
@@ -115,7 +120,7 @@
             "create-order"
           ]
         },
-        "description": "Creates a Razorpay Order ID for INR (₹) subscription purchasing."
+        "description": "Initializes a dynamic Pro tier purchase order via Razorpay."
       }
     },
     {
@@ -125,16 +130,18 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"razorpay_order_id\": \"order_9A34zX9R8y\",\n  \"razorpay_payment_id\": \"pay_29384729384\",\n  \"razorpay_signature\": \"signature_hash_here\",\n  \"postCount\": 100\n}"
+          "raw": "{\n  \"orderId\": \"order_xxx\",\n  \"paymentId\": \"pay_xxx\",\n  \"signature\": \"razorpay_hmac_signature\",\n  \"postCount\": 30\n}"
         },
         "url": {
           "raw": "{{base_url}}/billing/razorpay/verify",
@@ -147,7 +154,7 @@
             "verify"
           ]
         },
-        "description": "Verifies HMAC signature for Razorpay payment and grants Pro plan quota."
+        "description": "Verifies HMAC SHA256 signature and upgrades user to PRO with allocated post credits."
       }
     },
     {
@@ -157,16 +164,18 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"postCount\": 100\n}"
+          "raw": "{\n  \"postCount\": 50\n}"
         },
         "url": {
           "raw": "{{base_url}}/billing/stripe/create-intent",
@@ -179,7 +188,7 @@
             "create-intent"
           ]
         },
-        "description": "Creates a Stripe PaymentIntent for USD ($) international checkout."
+        "description": "Creates a Stripe PaymentIntent for international credit card checkout."
       }
     },
     {
@@ -189,16 +198,18 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"paymentIntentId\": \"pi_3MtwBwLkdCwGaACc07YqcVqe\",\n  \"postCount\": 100\n}"
+          "raw": "{\n  \"intentId\": \"pi_xxx\",\n  \"postCount\": 50\n}"
         },
         "url": {
           "raw": "{{base_url}}/billing/stripe/verify",
@@ -211,7 +222,7 @@
             "verify"
           ]
         },
-        "description": "Verifies Stripe PaymentIntent status and grants USD Pro plan subscription."
+        "description": "Verifies Stripe payment intent and credits post quota."
       }
     },
     {
@@ -221,7 +232,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -238,21 +250,63 @@
           "variable": [
             {
               "key": "transactionId",
-              "value": "tx_id_here"
+              "value": "transaction_uuid_here"
             }
           ]
         },
-        "description": "Generates and streams a PDF Invoice for a billing transaction."
+        "description": "Generates and downloads a branded PDF tax invoice."
       }
     },
     {
-      "name": "9. Admin — Financial Overview",
+      "name": "9. Admin — Top-up Bonus Quota",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bonusPosts\": 20\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/billing/admin/topup/:userId",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "billing",
+            "admin",
+            "topup",
+            ":userId"
+          ],
+          "variable": [
+            {
+              "key": "userId",
+              "value": "target_user_uuid"
+            }
+          ]
+        },
+        "description": "Grants complimentary bonus post credits to a user. (Admin only)"
+      }
+    },
+    {
+      "name": "10. Admin — Financial Overview",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -266,21 +320,22 @@
             "overview"
           ]
         },
-        "description": "Executive revenue breakdown (mrrINR, mrrUSD, currencyBreakdown, gatewayBreakdown, planBreakdown)."
+        "description": "Financial KPI summary, MRR, gateway distribution, and subscription breakdown. (Admin only)"
       }
     },
     {
-      "name": "10. Admin — Billing Transactions Ledger",
+      "name": "11. Admin — Billing Transactions Ledger",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
-          "raw": "{{base_url}}/billing/admin/transactions?page=1&limit=10&currency=INR&paymentGateway=RAZORPAY",
+          "raw": "{{base_url}}/billing/admin/transactions?page=1&limit=10",
           "host": [
             "{{base_url}}"
           ],
@@ -300,34 +355,43 @@
             },
             {
               "key": "currency",
-              "value": "INR"
+              "value": "INR",
+              "disabled": true
+            },
+            {
+              "key": "plan",
+              "value": "PRO",
+              "disabled": true
             },
             {
               "key": "paymentGateway",
-              "value": "RAZORPAY"
+              "value": "RAZORPAY",
+              "disabled": true
             }
           ]
         },
-        "description": "Admin paginated transaction ledger with search and currency/gateway filters."
+        "description": "Immutable financial transactions ledger. (Admin only)"
       }
     },
     {
-      "name": "11. Admin — Record Manual Transaction",
+      "name": "12. Admin — Record Manual Transaction",
       "request": {
         "method": "POST",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": \"user_id_or_email\",\n  \"plan\": \"PRO\",\n  \"paymentGateway\": \"ADMIN_MANUAL\",\n  \"pricePaid\": 999,\n  \"currency\": \"INR\",\n  \"postCount\": 100,\n  \"paymentId\": \"MANUAL_123456\",\n  \"orderId\": \"ORD_123456\",\n  \"status\": \"COMPLETED\"\n}"
+          "raw": "{\n  \"userId\": \"user_uuid_here\",\n  \"plan\": \"PRO\",\n  \"transactionType\": \"PLAN_PURCHASE\",\n  \"paymentGateway\": \"ADMIN_MANUAL\",\n  \"pricePaid\": 999,\n  \"currency\": \"INR\",\n  \"postCount\": 100,\n  \"paymentId\": \"manual_offline_bank_transfer_001\",\n  \"status\": \"COMPLETED\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/billing/admin/manual-transaction",
@@ -340,17 +404,18 @@
             "manual-transaction"
           ]
         },
-        "description": "Allows Admin to log manual or offline payments for tenants."
+        "description": "Records an offline wire/cash transaction and allocates post quota. (Admin only)"
       }
     },
     {
-      "name": "12. Admin — Export Transactions CSV",
+      "name": "13. Admin — Export Transactions CSV",
       "request": {
         "method": "GET",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -370,7 +435,7 @@
             }
           ]
         },
-        "description": "Downloads CSV statement of all matching transactions."
+        "description": "Exports audit-compliant financial ledger CSV. (Admin only)"
       }
     }
   ]

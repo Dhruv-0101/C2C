@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-festivals-module-v1",
-    "name": "BrandFlow — Festival Collection",
-    "description": "API endpoints for managing national/cultural festival calendar events, dates, cover banners, and region mappings.",
+    "_postman_id": "bf-festival-v2",
+    "name": "BrandFlow — Festival Calendar Collection",
+    "description": "API endpoints for managing 40+ Annual Festival Calendar Events & Banners.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -10,27 +10,70 @@
       "name": "1. Get All Festivals",
       "request": {
         "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
-          }
-        ],
+        "header": [],
         "url": {
-          "raw": "{{base_url}}/festivals",
+          "raw": "{{base_url}}/festivals?page=1&limit=50",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "festivals"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "50"
+            },
+            {
+              "key": "year",
+              "value": "2026",
+              "disabled": true
+            },
+            {
+              "key": "month",
+              "value": "11",
+              "disabled": true
+            },
+            {
+              "key": "search",
+              "value": "",
+              "disabled": true
+            }
           ]
         },
-        "description": "Fetches all upcoming national and regional festival calendar events."
+        "description": "Fetches festival events with optional date and search filters."
       }
     },
     {
-      "name": "2. Create Festival Event",
+      "name": "2. Get Festival By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/festivals/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "festivals",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "festival_uuid_here"
+            }
+          ]
+        },
+        "description": "Fetches a single festival event by UUID."
+      }
+    },
+    {
+      "name": "3. Create Festival Event (Admin)",
       "request": {
         "method": "POST",
         "header": [
@@ -47,7 +90,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Diwali — Festival of Lights 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"description\": \"Grand celebration of light, prosperity, and wisdom.\",\n  \"region\": \"National (India)\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+          "raw": "{\n  \"name\": \"Diwali — Festival of Lights 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"description\": \"Grand celebration of prosperity, light, and wisdom.\",\n  \"region\": \"National (India)\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/festivals",
@@ -58,11 +101,11 @@
             "festivals"
           ]
         },
-        "description": "Adds a new festival calendar event with optional cover banner image upload to Cloudinary 'brandflow/festivals'. Accessible by SuperAdmin or SubAdmin with 'festivals' permission. Automatically tracks createdBy with authenticated user ID and returns creator details."
+        "description": "Creates a festival event with optional cover banner. (Admin / Festivals tab)"
       }
     },
     {
-      "name": "3. Update Festival Event",
+      "name": "4. Update Festival Event (Admin)",
       "request": {
         "method": "PUT",
         "header": [
@@ -79,7 +122,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Diwali — Grand Festival of Lights 2026\",\n  \"description\": \"Updated description for Diwali celebration.\",\n  \"region\": \"Maharashtra\"\n}"
+          "raw": "{\n  \"name\": \"Diwali — Grand Festival of Lights 2026\",\n  \"date\": \"2026-11-08T00:00:00.000Z\",\n  \"description\": \"Updated celebration notes for Diwali.\",\n  \"region\": \"National (India)\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/festivals/:id",
@@ -93,15 +136,15 @@
           "variable": [
             {
               "key": "id",
-              "value": "festival_id_here"
+              "value": "festival_uuid_here"
             }
           ]
         },
-        "description": "Updates festival details and cover banner image, cleaning up old cover banner from Cloudinary if replaced."
+        "description": "Updates festival event details and cover banner."
       }
     },
     {
-      "name": "4. Delete Festival Event",
+      "name": "5. Delete Festival Event (Admin)",
       "request": {
         "method": "DELETE",
         "header": [
@@ -123,11 +166,11 @@
           "variable": [
             {
               "key": "id",
-              "value": "festival_id_here"
+              "value": "festival_uuid_here"
             }
           ]
         },
-        "description": "Deletes a festival calendar event and removes associated cover banner image from Cloudinary storage."
+        "description": "Deletes a festival event and cleans up associated banner from Cloudinary."
       }
     }
   ]

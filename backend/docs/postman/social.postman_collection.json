@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "bf-social-v2",
-    "name": "BrandFlow — Social Collection",
-    "description": "API endpoints for Meta/Instagram and LinkedIn accounts, OAuth redirect flows, and manual account connections.",
+    "name": "BrandFlow — Social Media Accounts Collection",
+    "description": "API endpoints for Meta/Instagram & LinkedIn OAuth integration, connection URLs, and account disconnection.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -13,7 +13,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -26,7 +27,7 @@
             "accounts"
           ]
         },
-        "description": "Fetches list of all connected social media accounts for the user."
+        "description": "Fetches list of connected social accounts with token expiration status."
       }
     },
     {
@@ -36,7 +37,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -50,7 +52,7 @@
             "instagram"
           ]
         },
-        "description": "Generates Meta/Instagram OAuth login URL."
+        "description": "Generates Instagram Graph OAuth authorization URL."
       }
     },
     {
@@ -60,7 +62,8 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -74,7 +77,7 @@
             "linkedin"
           ]
         },
-        "description": "Generates LinkedIn OAuth authorization URL."
+        "description": "Generates LinkedIn OAuth 2.0 authorization URL."
       }
     },
     {
@@ -83,7 +86,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/social/meta/callback?code=auth_code_here&state=user_state_here",
+          "raw": "{{base_url}}/social/meta/callback?code=oauth_code_here&state=user_state_here",
           "host": [
             "{{base_url}}"
           ],
@@ -95,7 +98,7 @@
           "query": [
             {
               "key": "code",
-              "value": "auth_code_here"
+              "value": "oauth_code_here"
             },
             {
               "key": "state",
@@ -103,7 +106,7 @@
             }
           ]
         },
-        "description": "OAuth callback endpoint for Meta / Instagram OAuth code exchange."
+        "description": "Handles Meta OAuth redirection and exchanges code for long-lived page access tokens."
       }
     },
     {
@@ -112,7 +115,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/social/linkedin/callback?code=auth_code_here&state=user_state_here",
+          "raw": "{{base_url}}/social/linkedin/callback?code=oauth_code_here&state=user_state_here",
           "host": [
             "{{base_url}}"
           ],
@@ -124,7 +127,7 @@
           "query": [
             {
               "key": "code",
-              "value": "auth_code_here"
+              "value": "oauth_code_here"
             },
             {
               "key": "state",
@@ -132,17 +135,18 @@
             }
           ]
         },
-        "description": "OAuth callback endpoint for LinkedIn OAuth code exchange."
+        "description": "Handles LinkedIn OAuth redirection and persists access tokens."
       }
     },
     {
-      "name": "6. Disconnect Social Account",
+      "name": "6. Disconnect Account",
       "request": {
         "method": "DELETE",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}"
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
         "url": {
@@ -162,7 +166,7 @@
             }
           ]
         },
-        "description": "Disconnects a social media platform account by platform name."
+        "description": "Disconnects and wipes credentials for a social platform (INSTAGRAM, LINKEDIN)."
       }
     }
   ]

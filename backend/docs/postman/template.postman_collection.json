@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "bf-templates-module-v1",
-    "name": "BrandFlow — Template Collection",
-    "description": "API endpoints for fetching festival/marketing graphic base templates, uploading Cloudinary master templates, and deleting template records.",
+    "_postman_id": "bf-template-v2",
+    "name": "BrandFlow — Master Templates Collection",
+    "description": "API endpoints for managing Graphic Base Templates & Template Categories.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -10,13 +10,55 @@
       "name": "1. Get Template Categories",
       "request": {
         "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/templates/categories?page=1&limit=50",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "categories"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "50"
+            },
+            {
+              "key": "search",
+              "value": "",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "Fetches template categories (e.g. Festival Celebrations, Daily Quotes, Offers)."
+      }
+    },
+    {
+      "name": "2. Create Template Category (Admin)",
+      "request": {
+        "method": "POST",
         "header": [
           {
             "key": "Authorization",
             "value": "Bearer {{access_token}}",
             "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
           }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Festive Mega Sales\",\n  \"description\": \"Templates designed for holiday flash discounts and retail promotions.\"\n}"
+        },
         "url": {
           "raw": "{{base_url}}/templates/categories",
           "host": [
@@ -27,13 +69,13 @@
             "categories"
           ]
         },
-        "description": "Fetches predefined graphic template categories."
+        "description": "Creates a new template category taxonomy item. (Admin / Templates tab)"
       }
     },
     {
-      "name": "2. Get All Templates",
+      "name": "3. Delete Template Category (Admin)",
       "request": {
-        "method": "GET",
+        "method": "DELETE",
         "header": [
           {
             "key": "Authorization",
@@ -41,6 +83,31 @@
             "type": "text"
           }
         ],
+        "url": {
+          "raw": "{{base_url}}/templates/categories/:id",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "templates",
+            "categories",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "template_category_uuid"
+            }
+          ]
+        },
+        "description": "Deletes a template category by ID."
+      }
+    },
+    {
+      "name": "4. Get All Templates",
+      "request": {
+        "method": "GET",
+        "header": [],
         "url": {
           "raw": "{{base_url}}/templates?page=1&limit=20",
           "host": [
@@ -59,55 +126,56 @@
               "value": "20"
             },
             {
-              "key": "category",
-              "value": "BUSINESS",
+              "key": "categoryId",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "templateCategoryId",
+              "value": "",
               "disabled": true
             },
             {
               "key": "festivalId",
-              "value": "festival_id_here",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "search",
+              "value": "",
               "disabled": true
             }
           ]
         },
-        "description": "Fetches paginated festival and marketing graphic base templates."
+        "description": "Fetches paginated system templates with optional category, template category, or festival filters."
       }
     },
     {
-      "name": "3. Upload Cloudinary Template",
+      "name": "5. Get Template By ID",
       "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}",
-            "type": "text"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"Diwali Golden Lights Master Graphic\",\n  \"description\": \"Base 1080x1080 graphic background for Diwali 2026 festival.\",\n  \"category\": \"FESTIVAL\",\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
-        },
+        "method": "GET",
+        "header": [],
         "url": {
-          "raw": "{{base_url}}/templates/upload",
+          "raw": "{{base_url}}/templates/:id",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "templates",
-            "upload"
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "template_uuid_here"
+            }
           ]
         },
-        "description": "Uploads a base festival/marketing graphic background strictly to Cloudinary 'brandflow/festival-templates' and saves to database. Accessible by SuperAdmin or SubAdmin with 'templates' permission. Automatically records createdBy with authenticated user ID and returns creator details."
+        "description": "Fetches single template details by ID."
       }
     },
     {
-      "name": "4. Create Template",
+      "name": "6. Create Template (Admin)",
       "request": {
         "method": "POST",
         "header": [
@@ -124,7 +192,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"title\": \"Navratri Festive Graphic\",\n  \"description\": \"Base graphic template for Navratri celebration.\",\n  \"category\": \"FESTIVAL\",\n  \"baseImageUrl\": \"https://res.cloudinary.com/demo/image/upload/v1/sample.jpg\"\n}"
+          "raw": "{\n  \"title\": \"Diwali Golden Fireworks Template\",\n  \"description\": \"Ultra high-definition festive template for Diwali 2026\",\n  \"templateCategoryId\": null,\n  \"festivalId\": null,\n  \"categoryId\": null,\n  \"base64Image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/templates",
@@ -135,11 +203,11 @@
             "templates"
           ]
         },
-        "description": "Creates a master system graphic template with a direct image URL or base64. Accessible by SuperAdmin or SubAdmin with 'templates' permission. Automatically records createdBy and returns creator details."
+        "description": "Uploads a graphic template (supports Base64 or baseImageUrl) to Cloudinary and saves database record."
       }
     },
     {
-      "name": "5. Delete Template",
+      "name": "7. Delete Template (Admin)",
       "request": {
         "method": "DELETE",
         "header": [
@@ -161,72 +229,11 @@
           "variable": [
             {
               "key": "id",
-              "value": "template_id_here"
+              "value": "template_uuid_here"
             }
           ]
         },
-        "description": "Deletes a graphic base template by ID and cleans up associated image from Cloudinary storage."
-      }
-    },
-    {
-      "name": "6. Create Template Category (Admin)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Festival Celebrations\",\n  \"slug\": \"festival-celebrations\",\n  \"description\": \"Graphics and greetings tailored for major festivals.\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/templates/categories",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "templates",
-            "categories"
-          ]
-        },
-        "description": "Creates a new template category taxonomy item. Stores createdBy with authenticated user ID and returns creator details."
-      }
-    },
-    {
-      "name": "7. Delete Template Category (Admin)",
-      "request": {
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/templates/categories/:id",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "templates",
-            "categories",
-            ":id"
-          ],
-          "variable": [
-            {
-              "key": "id",
-              "value": "template_category_id_here"
-            }
-          ]
-        },
-        "description": "Deletes a template category by ID. Accessible by SuperAdmin or SubAdmin with 'templates' tab permission."
+        "description": "Deletes a graphic template and removes image from Cloudinary."
       }
     }
   ]

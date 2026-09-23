@@ -1,13 +1,13 @@
 {
   "info": {
-    "_postman_id": "bf-brandkit-module-v1",
+    "_postman_id": "bf-brandkit-v2",
     "name": "BrandFlow — BrandKit Collection",
-    "description": "API endpoints for managing user business profiles, branding details, logo uploads, headshot avatar images, and primary colors.",
+    "description": "API endpoints for managing User BrandKit, logo, avatar, contact details, and brand styling.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Get BrandKit Profile",
+      "name": "1. Get BrandKit",
       "request": {
         "method": "GET",
         "header": [
@@ -26,11 +26,11 @@
             "brandkit"
           ]
         },
-        "description": "Fetches the authenticated user's active BrandKit profile."
+        "description": "Fetches the authenticated user's brand identity configuration."
       }
     },
     {
-      "name": "2. Update BrandKit Profile",
+      "name": "2. Update BrandKit",
       "request": {
         "method": "PUT",
         "header": [
@@ -47,7 +47,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"businessName\": \"Sunrise Real Estate Ltd.\",\n  \"tagline\": \"Premium & Commercial Property Leaders\",\n  \"phone\": \"+91 98765 43210\",\n  \"whatsapp\": \"+91 98765 43210\",\n  \"email\": \"contact@sunriserealestate.com\",\n  \"address\": \"Suite 402, MG Road\",\n  \"city\": \"Mumbai\",\n  \"primaryColor\": \"#EAB308\",\n  \"secondaryColor\": \"#0F172A\",\n  \"base64Logo\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Avatar\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+          "raw": "{\n  \"businessName\": \"Apex Digital Solutions\",\n  \"tagline\": \"Empowering local businesses with AI\",\n  \"primaryColor\": \"#6366F1\",\n  \"secondaryColor\": \"#EC4899\",\n  \"mobileNumber\": \"+91 9876543210\",\n  \"altMobileNumber\": \"+91 9123456789\",\n  \"email\": \"contact@apexdigital.com\",\n  \"website\": \"https://apexdigital.com\",\n  \"address\": \"101 Tech Hub, Silicon Valley, CA\",\n  \"instagramHandle\": \"apexdigital\",\n  \"facebookHandle\": \"apexdigital.official\",\n  \"linkedinHandle\": \"apex-digital-solutions\",\n  \"youtubeHandle\": \"ApexDigitalTech\",\n  \"base64Logo\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"base64Avatar\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/brandkit",
@@ -58,7 +58,7 @@
             "brandkit"
           ]
         },
-        "description": "Updates user BrandKit profile and uploads logo/avatar to Cloudinary."
+        "description": "Creates or updates user BrandKit details, logo, avatar, and social handles."
       }
     }
   ]
