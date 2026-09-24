@@ -131,7 +131,7 @@ export const exportTransactionsCsv = async (queryParams = {}) => {
     `"${(tx.user?.brandKit?.businessName || 'N/A').replace(/"/g, '""')}"`,
     tx.plan,
     tx.paymentGateway,
-    tx.pricePaid,
+    Number(tx.pricePaid || 0).toFixed(2),
     tx.currency || BILLING_CURRENCIES.INR,
     tx.status,
     `"${tx.paymentId || ''}"`,

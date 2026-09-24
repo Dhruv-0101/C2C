@@ -79,35 +79,52 @@ export const getFinancialOverview = async () => {
   twelveMonthsAgo.setDate(1);
   twelveMonthsAgo.setHours(0, 0, 0, 0);
 
-  const recentTransactions = await prisma.billingTransaction.findMany({
-    where: {
-      status: TRANSACTION_STATUSES.COMPLETED,
-      createdAt: { gte: twelveMonthsAgo },
-    },
-    select: {
-      pricePaid: true,
-      currency: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: 'asc' },
-  });
+  const [recentTransactions, earliestTx, latestTx] = await Promise.all([
+    prisma.billingTransaction.findMany({
+      where: {
+        status: TRANSACTION_STATUSES.COMPLETED,
+        createdAt: { gte: twelveMonthsAgo },
+      },
+      select: {
+        pricePaid: true,
+        currency: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.billingTransaction.findFirst({
+      where: { status: TRANSACTION_STATUSES.COMPLETED },
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    }),
+    prisma.billingTransaction.findFirst({
+      where: { status: TRANSACTION_STATUSES.COMPLETED },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    }),
+  ]);
 
-  // Group transactions by YYYY-MM
+  // Group transactions by YYYY-MM with currency separation and exact decimals
   const monthlyMap = {};
   recentTransactions.forEach((tx) => {
     const monthKey = `${tx.createdAt.getFullYear()}-${String(tx.createdAt.getMonth() + 1).padStart(2, '0')}`;
     if (!monthlyMap[monthKey]) {
-      monthlyMap[monthKey] = 0;
+      monthlyMap[monthKey] = { month: monthKey, revenue: 0, inr: 0, usd: 0, count: 0 };
     }
-    monthlyMap[monthKey] += tx.pricePaid;
+    const curr = (tx.currency || BILLING_CURRENCIES.INR).toUpperCase();
+    const amount = Number(tx.pricePaid) || 0;
+    if (curr === BILLING_CURRENCIES.USD) {
+      monthlyMap[monthKey].usd = Number((monthlyMap[monthKey].usd + amount).toFixed(2));
+    } else {
+      monthlyMap[monthKey].inr = Number((monthlyMap[monthKey].inr + amount).toFixed(2));
+    }
+    monthlyMap[monthKey].revenue = Number((monthlyMap[monthKey].revenue + amount).toFixed(2));
+    monthlyMap[monthKey].count += 1;
   });
 
-  const monthlyRevenueTrends = Object.entries(monthlyMap).map(([month, revenue]) => ({
-    month,
-    revenue,
-  }));
+  const monthlyRevenueTrends = Object.values(monthlyMap);
 
-  // 6. MRR & ARR Calculations (Separated strictly by Currency)
+  // 6. MRR & ARR Calculations (Separated strictly by Currency with exact 2 decimals)
   const activePaidSubs = await prisma.subscription.findMany({
     where: {
       status: SUBSCRIPTION_STATUSES.ACTIVE,
@@ -121,20 +138,39 @@ export const getFinancialOverview = async () => {
 
   activePaidSubs.forEach((sub) => {
     const c = (sub.currency || BILLING_CURRENCIES.INR).toUpperCase();
+    const amount = Number(sub.pricePaid) || 0;
     if (c === BILLING_CURRENCIES.USD) {
-      mrrUSD += sub.pricePaid || 0;
+      mrrUSD += amount;
     } else {
-      mrrINR += sub.pricePaid || 0;
+      mrrINR += amount;
     }
   });
 
-  const arrINR = mrrINR * 12;
-  const arrUSD = mrrUSD * 12;
+  mrrINR = Number(mrrINR.toFixed(2));
+  mrrUSD = Number(mrrUSD.toFixed(2));
+  const arrINR = Number((mrrINR * 12).toFixed(2));
+  const arrUSD = Number((mrrUSD * 12).toFixed(2));
 
   const paidUsersCount = activePaidSubs.length;
 
+  // 7. Calculate exact Data Scope (How many days of data exists)
+  const firstTxDate = earliestTx?.createdAt || null;
+  const lastTxDate = latestTx?.createdAt || null;
+  let totalDaysSpan = 0;
+  if (firstTxDate && lastTxDate) {
+    const diffMs = new Date(lastTxDate).getTime() - new Date(firstTxDate).getTime();
+    totalDaysSpan = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  }
+
+  const dataScope = {
+    firstTransactionDate: firstTxDate,
+    lastTransactionDate: lastTxDate,
+    totalDaysSpan,
+    trendsDurationMonths: 12,
+  };
+
   return {
-    totalRevenue,
+    totalRevenue: Number(totalRevenue.toFixed(2)),
     totalCompletedTransactions,
     activeSubsCount,
     expiredSubsCount,
@@ -148,6 +184,7 @@ export const getFinancialOverview = async () => {
     currencyBreakdown,
     planBreakdown,
     monthlyRevenueTrends,
+    dataScope,
   };
 };
 

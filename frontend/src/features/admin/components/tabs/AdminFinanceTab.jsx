@@ -15,6 +15,10 @@ import {
   Activity,
   Layers,
   ArrowUpRight,
+  Calendar,
+  CalendarRange,
+  Clock,
+  Filter,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -144,16 +148,183 @@ export const AdminFinanceTab = () => {
     };
     const targetCurrency = (curr || "INR").toUpperCase();
     const targetLocale = localeMap[targetCurrency] || "en-US";
+    const num = Number(val) || 0;
     try {
       return new Intl.NumberFormat(targetLocale, {
         style: "currency",
         currency: targetCurrency,
-        maximumFractionDigits: 0,
-      }).format(val || 0);
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(num);
     } catch (e) {
-      return `${targetCurrency} ${val || 0}`;
+      const sym = targetCurrency === "INR" ? "₹" : targetCurrency === "USD" ? "$" : `${targetCurrency} `;
+      return `${sym}${num.toFixed(2)}`;
     }
   };
+
+  // Helper to determine the active reporting date scope and exact duration in days
+  const scopeInfo = useMemo(() => {
+    const today = new Date();
+    const formatDate = (d) =>
+      d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1);
+      return {
+        label: `${formatDate(start)} – ${formatDate(end)}`,
+        daysText: `${diffDays} Day${diffDays > 1 ? "s" : ""}`,
+        daysCount: diffDays,
+        isFiltered: true,
+        tag: `${diffDays} Days Data`,
+      };
+    }
+
+    if (startDate && !endDate) {
+      const start = new Date(startDate);
+      const diffTime = Math.abs(today.getTime() - start.getTime());
+      const diffDays = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1);
+      return {
+        label: `Since ${formatDate(start)}`,
+        daysText: `Past ${diffDays} Day${diffDays > 1 ? "s" : ""}`,
+        daysCount: diffDays,
+        isFiltered: true,
+        tag: `Since Date (${diffDays} Days)`,
+      };
+    }
+
+    if (!startDate && endDate) {
+      const end = new Date(endDate);
+      return {
+        label: `Up to ${formatDate(end)}`,
+        daysText: `Filtered Range`,
+        daysCount: null,
+        isFiltered: true,
+        tag: `Filtered Until ${formatDate(end)}`,
+      };
+    }
+
+    // Unfiltered / All Time
+    const totalDays = overview?.dataScope?.totalDaysSpan;
+    const firstDate = overview?.dataScope?.firstTransactionDate
+      ? formatDate(new Date(overview.dataScope.firstTransactionDate))
+      : null;
+
+    if (firstDate && totalDays !== undefined && totalDays !== null) {
+      return {
+        label: `All-Time Records (Since ${firstDate})`,
+        daysText: `${totalDays} Day${totalDays > 1 ? "s" : ""} of Activity`,
+        daysCount: totalDays,
+        isFiltered: false,
+        tag: `Lifetime (${totalDays} Days)`,
+      };
+    }
+
+    return {
+      label: "All-Time Complete Records",
+      daysText: "Lifetime Data",
+      daysCount: null,
+      isFiltered: false,
+      tag: "All Time",
+    };
+  }, [startDate, endDate, overview]);
+
+  // Quick Preset handler
+  const handleApplyPreset = (presetKey) => {
+    const now = new Date();
+    const toYMD = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    if (presetKey === "ALL") {
+      setStartDate("");
+      setEndDate("");
+      setPage(1);
+      return;
+    }
+
+    if (presetKey === "TODAY") {
+      const todayStr = toYMD(now);
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+      setPage(1);
+      return;
+    }
+
+    if (presetKey === "7_DAYS") {
+      const past = new Date();
+      past.setDate(past.getDate() - 6);
+      setStartDate(toYMD(past));
+      setEndDate(toYMD(now));
+      setPage(1);
+      return;
+    }
+
+    if (presetKey === "30_DAYS") {
+      const past = new Date();
+      past.setDate(past.getDate() - 29);
+      setStartDate(toYMD(past));
+      setEndDate(toYMD(now));
+      setPage(1);
+      return;
+    }
+
+    if (presetKey === "90_DAYS") {
+      const past = new Date();
+      past.setDate(past.getDate() - 89);
+      setStartDate(toYMD(past));
+      setEndDate(toYMD(now));
+      setPage(1);
+      return;
+    }
+
+    if (presetKey === "YEAR") {
+      const past = new Date();
+      past.setFullYear(past.getFullYear() - 1);
+      setStartDate(toYMD(past));
+      setEndDate(toYMD(now));
+      setPage(1);
+      return;
+    }
+  };
+
+  // Detect which preset is currently active
+  const activePreset = useMemo(() => {
+    if (!startDate && !endDate) return "ALL";
+    const now = new Date();
+    const toYMD = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+    const todayStr = toYMD(now);
+
+    if (startDate === todayStr && endDate === todayStr) return "TODAY";
+
+    const d7 = new Date();
+    d7.setDate(d7.getDate() - 6);
+    if (startDate === toYMD(d7) && endDate === todayStr) return "7_DAYS";
+
+    const d30 = new Date();
+    d30.setDate(d30.getDate() - 29);
+    if (startDate === toYMD(d30) && endDate === todayStr) return "30_DAYS";
+
+    const d90 = new Date();
+    d90.setDate(d90.getDate() - 89);
+    if (startDate === toYMD(d90) && endDate === todayStr) return "90_DAYS";
+
+    const dYear = new Date();
+    dYear.setFullYear(dYear.getFullYear() - 1);
+    if (startDate === toYMD(dYear) && endDate === todayStr) return "YEAR";
+
+    return "CUSTOM";
+  }, [startDate, endDate]);
 
   // Helper to extract specific currency totals from overview breakdown
   const getCurrencyRevenue = (currCode) => {
@@ -168,44 +339,57 @@ export const AdminFinanceTab = () => {
 
   // 1. Revenue Timeline Chart Data (Grouped by Date/Time)
   const timelineChartData = useMemo(() => {
-    if (!transactions || transactions.length === 0) {
-      // Fallback demo points based on current totals for aesthetic rendering
-      return [
-        { date: "Day 1", inr: 0, usd: 0 },
-        { date: "Day 2", inr: (overview?.mrrINR || 540) * 0.3, usd: (overview?.mrrUSD || 29) * 0.2 },
-        { date: "Day 3", inr: (overview?.mrrINR || 540) * 0.6, usd: (overview?.mrrUSD || 29) * 0.5 },
-        { date: "Day 4", inr: overview?.mrrINR || 540, usd: overview?.mrrUSD || 29 },
-      ];
+    // If date filter is active or we have loaded transactions:
+    if (transactions && transactions.length > 0) {
+      const dateMap = {};
+      const sortedTx = [...transactions].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+      sortedTx.forEach((tx) => {
+        const dateStr = new Date(tx.createdAt).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        });
+        if (!dateMap[dateStr]) {
+          dateMap[dateStr] = { date: dateStr, inr: 0, usd: 0, count: 0 };
+        }
+        const amt = Number(tx.pricePaid) || 0;
+        if ((tx.currency || "").toUpperCase() === "USD") {
+          dateMap[dateStr].usd = Number((dateMap[dateStr].usd + amt).toFixed(2));
+        } else {
+          dateMap[dateStr].inr = Number((dateMap[dateStr].inr + amt).toFixed(2));
+        }
+        dateMap[dateStr].count += 1;
+      });
+
+      const result = Object.values(dateMap);
+      if (result.length > 0) return result;
     }
 
-    const dateMap = {};
-    const sortedTx = [...transactions].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-    sortedTx.forEach((tx) => {
-      const dateStr = new Date(tx.createdAt).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
+    // If overview has 12-month aggregated trends from backend:
+    if (overview?.monthlyRevenueTrends && overview.monthlyRevenueTrends.length > 0) {
+      return overview.monthlyRevenueTrends.map((m) => {
+        const [year, month] = (m.month || "").split("-");
+        let label = m.month;
+        if (year && month) {
+          const dateObj = new Date(Number(year), Number(month) - 1, 1);
+          label = dateObj.toLocaleDateString(undefined, { month: "short", year: "2-digit" });
+        }
+        return {
+          date: label,
+          inr: m.inr || 0,
+          usd: m.usd || 0,
+          count: m.count || 0,
+        };
       });
-      if (!dateMap[dateStr]) {
-        dateMap[dateStr] = { date: dateStr, inr: 0, usd: 0, count: 0 };
-      }
-      if ((tx.currency || "").toUpperCase() === "USD") {
-        dateMap[dateStr].usd += tx.pricePaid || 0;
-      } else {
-        dateMap[dateStr].inr += tx.pricePaid || 0;
-      }
-      dateMap[dateStr].count += 1;
-    });
+    }
 
-    const result = Object.values(dateMap);
-    return result.length > 0
-      ? result
-      : [
-          { date: "Sep 14", inr: 0, usd: 0 },
-          { date: "Sep 15", inr: 200, usd: 10 },
-          { date: "Sep 16", inr: 400, usd: 20 },
-          { date: "Sep 17", inr: 540, usd: 29 },
-        ];
+    // Aesthetic initial fallback
+    return [
+      { date: "Day 1", inr: 0, usd: 0 },
+      { date: "Day 2", inr: (overview?.mrrINR || 540) * 0.3, usd: (overview?.mrrUSD || 29) * 0.2 },
+      { date: "Day 3", inr: (overview?.mrrINR || 540) * 0.6, usd: (overview?.mrrUSD || 29) * 0.5 },
+      { date: "Day 4", inr: overview?.mrrINR || 540, usd: overview?.mrrUSD || 29 },
+    ];
   }, [transactions, overview]);
 
   // 2. Gateway Revenue Chart Data (Pie / Donut Chart)
@@ -321,6 +505,70 @@ export const AdminFinanceTab = () => {
         </div>
       </div>
 
+      {/* Prominent Reporting Time Horizon & Data Scope Control Banner */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#182335] via-[#131B2A] to-[#0F172A] border border-[#2C384E] flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-xl">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
+            <CalendarRange className="w-5 h-5" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Reporting Data Scope:
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-extrabold flex items-center gap-1.5 shadow-sm">
+                <Clock className="w-3 h-3 text-emerald-400" />
+                <span>{scopeInfo.daysText}</span>
+              </span>
+              {scopeInfo.isFiltered && (
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px] font-mono font-bold">
+                  Filtered Period
+                </span>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm font-heading font-extrabold text-white flex items-center gap-1.5">
+              <span>{scopeInfo.label}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Range Presets & Action Buttons */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {[
+            { id: "ALL", label: "🌐 All Time" },
+            { id: "TODAY", label: "Today (1d)" },
+            { id: "7_DAYS", label: "Last 7 Days" },
+            { id: "30_DAYS", label: "Last 30 Days" },
+            { id: "90_DAYS", label: "Last 90 Days" },
+            { id: "YEAR", label: "Past 1 Year" },
+          ].map((preset) => {
+            const isActive = activePreset === preset.id;
+            return (
+              <button
+                key={preset.id}
+                onClick={() => handleApplyPreset(preset.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                  isActive
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md font-extrabold"
+                    : "bg-[#0B0F17] text-slate-400 hover:text-white hover:bg-slate-800 border border-[#2C384E]"
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+          {scopeInfo.isFiltered && (
+            <button
+              onClick={() => handleApplyPreset("ALL")}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 transition flex items-center gap-1"
+            >
+              <X className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Dedicated Currency Sub-Tabs Navigator */}
       <div className="flex items-center gap-2 p-1.5 bg-[#131B2A] border border-[#2C384E] rounded-2xl overflow-x-auto text-xs font-bold">
         {[
@@ -378,10 +626,15 @@ export const AdminFinanceTab = () => {
             <h3 className="text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono">
               {isLoadingOverview ? "..." : formatCurrency(getCurrencyRevenue("INR"), "INR")}
             </h3>
-            <p className="text-[11px] text-slate-400 font-mono mt-1 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0" />
-              <span className="truncate">Domestic Volume</span>
-            </p>
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-1">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0" />
+                <span className="truncate">Domestic Volume</span>
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 font-semibold border border-amber-500/20">
+                {scopeInfo.daysText}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -406,10 +659,15 @@ export const AdminFinanceTab = () => {
             <h3 className="text-2xl xl:text-3xl font-extrabold text-amber-400 tracking-tight font-mono">
               {isLoadingOverview ? "..." : formatCurrency(overview?.mrrINR, "INR")}
             </h3>
-            <p className="text-[11px] text-slate-400 font-mono mt-1 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0" />
-              <span className="truncate">INR Run Rate</span>
-            </p>
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-1">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0" />
+                <span className="truncate">INR Run Rate</span>
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">
+                30-Day Rate
+              </span>
+            </div>
           </div>
         </div>
 
@@ -434,10 +692,15 @@ export const AdminFinanceTab = () => {
             <h3 className="text-2xl xl:text-3xl font-extrabold text-purple-200 tracking-tight font-mono">
               {isLoadingOverview ? "..." : formatCurrency(getCurrencyRevenue("USD"), "USD")}
             </h3>
-            <p className="text-[11px] text-slate-400 font-mono mt-1 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block shrink-0" />
-              <span className="truncate">Int'l Volume</span>
-            </p>
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-1">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block shrink-0" />
+                <span className="truncate">Int'l Volume</span>
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-semibold border border-purple-500/20">
+                {scopeInfo.daysText}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -462,10 +725,15 @@ export const AdminFinanceTab = () => {
             <h3 className="text-2xl xl:text-3xl font-extrabold text-purple-300 tracking-tight font-mono">
               {isLoadingOverview ? "..." : formatCurrency(overview?.mrrUSD, "USD")}
             </h3>
-            <p className="text-[11px] text-slate-400 font-mono mt-1 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block shrink-0" />
-              <span className="truncate">USD Run Rate</span>
-            </p>
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-1">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block shrink-0" />
+                <span className="truncate">USD Run Rate</span>
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">
+                30-Day Rate
+              </span>
+            </div>
           </div>
         </div>
 
@@ -483,12 +751,17 @@ export const AdminFinanceTab = () => {
             <h3 className="text-2xl xl:text-3xl font-extrabold text-emerald-400 tracking-tight font-mono">
               {isLoadingOverview ? "..." : `${overview?.activeSubsCount || 0} Active`}
             </h3>
-            <p className="text-[11px] text-slate-400 font-mono mt-1 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0" />
-              <span className="truncate">
-                {overview?.paidUsersCount || 0} Paid | {overview?.expiredSubsCount || 0} Expired
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-1">
+              <span className="flex items-center gap-1 truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0" />
+                <span className="truncate">
+                  {overview?.paidUsersCount || 0} Paid | {overview?.expiredSubsCount || 0} Expired
+                </span>
               </span>
-            </p>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-semibold border border-emerald-500/20">
+                Current
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -497,12 +770,17 @@ export const AdminFinanceTab = () => {
       <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2C384E] pb-3">
           <div>
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-400" />
-              <span>Revenue Growth & Trajectory Graph</span>
-            </h3>
-            <p className="text-xs text-slate-400">
-              Multi-currency revenue volume trajectory over time.
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
+                <Activity className="w-4 h-4 text-emerald-400" />
+                <span>Revenue Growth & Trajectory Graph</span>
+              </h3>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono font-semibold">
+                {scopeInfo.daysText}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Multi-currency revenue trajectory over {scopeInfo.label}.
             </p>
           </div>
           <div className="flex items-center gap-4 text-xs font-mono font-bold">
@@ -682,118 +960,171 @@ export const AdminFinanceTab = () => {
         </Card>
       </div>
 
-      {/* --- Billing & Payment Transactions Ledger Table (UNTOUCHED / EXACT SAME) --- */}
+      {/* --- Billing & Payment Transactions Ledger Table --- */}
       <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-4">
           <div>
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-              <span>Billing & Payment Transactions Ledger</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
+                <span>Billing & Payment Transactions Ledger</span>
+              </h3>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono font-bold">
-                {meta.totalItems} Total
+                {meta.totalItems} Total Records
               </span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Comprehensive transaction history with user accounts, gateway references, and payment status.
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-bold">
+                {scopeInfo.daysText}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Historical ledger of customer subscriptions, gateways, and payments covering {scopeInfo.label}.
             </p>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refetchTransactions()}
-            className="text-slate-400 hover:text-white"
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1" /> Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetchTransactions()}
+              className="text-slate-400 hover:text-white"
+            >
+              <RefreshCw className="w-3.5 h-3.5 mr-1" /> Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 p-3 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs">
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
-            <Input
-              value={search}
+        <div className="space-y-3 p-3.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs">
+          {/* Row 1: Search, Currency, Gateway, Status, Plan */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+              <Input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search user, email, payment ID..."
+                className="bg-[#131B2A] border-[#2C384E] text-xs text-white pl-8 py-1.5"
+              />
+            </div>
+
+            {/* Currency Filter */}
+            <select
+              value={currency}
               onChange={(e) => {
-                setSearch(e.target.value);
+                setCurrency(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search user, email, payment ID..."
-              className="bg-[#131B2A] border-[#2C384E] text-xs text-white pl-8 py-1.5"
-            />
+              className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
+            >
+              <option value="">All Currencies</option>
+              <option value="INR">🇮🇳 INR (₹)</option>
+              <option value="USD">🇺🇸 USD ($)</option>
+            </select>
+
+            {/* Gateway Filter */}
+            <select
+              value={paymentGateway}
+              onChange={(e) => {
+                setPaymentGateway(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
+            >
+              <option value="">All Gateways</option>
+              <option value="RAZORPAY">Razorpay</option>
+              <option value="STRIPE">Stripe</option>
+              <option value="UPI">UPI Direct</option>
+              <option value="FREE">Free Tier</option>
+              <option value="ADMIN_MANUAL">Admin Manual</option>
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
+            >
+              <option value="">All Statuses</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="PENDING">Pending</option>
+              <option value="FAILED">Failed</option>
+              <option value="REFUNDED">Refunded</option>
+            </select>
+
+            {/* Plan Filter */}
+            <select
+              value={plan}
+              onChange={(e) => {
+                setPlan(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
+            >
+              <option value="">All Plans</option>
+              <option value="FREE">Free</option>
+              <option value="PRO">Pro</option>
+            </select>
           </div>
 
-          {/* Currency Filter */}
-          <select
-            value={currency}
-            onChange={(e) => {
-              setCurrency(e.target.value);
-              setPage(1);
-            }}
-            className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
-          >
-            <option value="">All Currencies</option>
-            <option value="INR">🇮🇳 INR (₹)</option>
-            <option value="USD">🇺🇸 USD ($)</option>
-          </select>
+          {/* Row 2: Date Filters & Timeframe Scope Indicator */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#2C384E]/60">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                <span>Date Range:</span>
+              </span>
 
-          {/* Gateway Filter */}
-          <select
-            value={paymentGateway}
-            onChange={(e) => {
-              setPaymentGateway(e.target.value);
-              setPage(1);
-            }}
-            className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
-          >
-            <option value="">All Gateways</option>
-            <option value="RAZORPAY">Razorpay</option>
-            <option value="STRIPE">Stripe</option>
-            <option value="UPI">UPI Direct</option>
-            <option value="FREE">Free Tier</option>
-            <option value="ADMIN_MANUAL">Admin Manual</option>
-          </select>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-slate-500 uppercase font-mono">From:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-[#131B2A] border border-[#2C384E] rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-amber-500"
+                />
+              </div>
 
-          {/* Status Filter */}
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-            className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
-          >
-            <option value="">All Statuses</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="PENDING">Pending</option>
-            <option value="FAILED">Failed</option>
-            <option value="REFUNDED">Refunded</option>
-          </select>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-slate-500 uppercase font-mono">To:</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-[#131B2A] border border-[#2C384E] rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-amber-500"
+                />
+              </div>
 
-          {/* Plan Filter */}
-          <select
-            value={plan}
-            onChange={(e) => {
-              setPlan(e.target.value);
-              setPage(1);
-            }}
-            className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
-          >
-            <option value="">All Plans</option>
-            <option value="FREE">Free</option>
-            <option value="PRO">Pro</option>
-          </select>
+              {(startDate || endDate) && (
+                <button
+                  onClick={() => {
+                    setStartDate("");
+                    setEndDate("");
+                    setPage(1);
+                  }}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-rose-400 hover:text-white hover:bg-rose-500/20 border border-rose-500/30 transition flex items-center gap-1"
+                >
+                  <X className="w-3 h-3" />
+                  <span>Clear Dates</span>
+                </button>
+              )}
+            </div>
 
-          {/* Date Start Filter */}
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => {
-              setStartDate(e.target.value);
-              setPage(1);
-            }}
-            className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-amber-500"
-          />
+            <div className="text-[11px] text-slate-400 font-mono">
+              Covering: <span className="text-emerald-400 font-bold">{scopeInfo.daysText}</span> ({scopeInfo.label})
+            </div>
+          </div>
         </div>
 
         {/* Transactions Table */}
@@ -1008,12 +1339,19 @@ export const AdminFinanceTab = () => {
                   </div>
 
                   <div>
-                    <label className="block text-slate-300 font-bold mb-1">Amount Paid</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-slate-300 font-bold">Amount Paid</label>
+                      <span className="text-[10px] text-amber-400 font-mono font-semibold">
+                        Preview: {formatCurrency(manualData.pricePaid, manualData.currency)}
+                      </span>
+                    </div>
                     <Input
                       type="number"
+                      step="0.01"
+                      min="0"
                       value={manualData.pricePaid}
                       onChange={(e) => setManualData({ ...manualData, pricePaid: e.target.value })}
-                      placeholder="e.g. 999"
+                      placeholder="e.g. 999.00"
                       className="bg-[#0B0F17] border-[#2C384E] text-xs text-white"
                     />
                   </div>
