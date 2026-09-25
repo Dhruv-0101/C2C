@@ -15,22 +15,22 @@ import {
   Activity,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
-import { ADMIN_TABS } from "../../../constants/tabs.constants";
+import { ADMIN_TABS } from '@/shared/constants';
 
 // Extracted Sub-Components & Standardized Tabs
 import { AdminStatsHeader } from "./AdminStatsHeader";
-import { AdminFinanceTab } from "./tabs/AdminFinanceTab";
-import { AdminTemplatesTab } from "./tabs/AdminTemplatesTab";
-import { AdminFestivalsTab } from "./tabs/AdminFestivalsTab";
-import { AdminFramesTab } from "./tabs/AdminFramesTab";
-import { AdminCategoriesTab } from "./tabs/AdminCategoriesTab";
-import { AdminTemplateCategoriesTab } from "./tabs/AdminTemplateCategoriesTab";
-import { AdminUsersTab } from "./tabs/AdminUsersTab";
-import { AdminPostsTab } from "./tabs/AdminPostsTab";
-import { AdminSubAdminsTab } from "./tabs/AdminSubAdminsTab";
-import { AdminSubAdminActivityTab } from "./tabs/AdminSubAdminActivityTab";
-import { CreateSubAdminScreen } from "./screens/CreateSubAdminScreen";
-import { EditSubAdminScreen } from "./screens/EditSubAdminScreen";
+import { AdminFinanceTab } from "@/features/admin/finance/AdminFinanceTab";
+import { AdminTemplatesTab } from "@/features/admin/templates/AdminTemplatesTab";
+import { AdminFestivalsTab } from "@/features/admin/festivals/AdminFestivalsTab";
+import { AdminFramesTab } from "@/features/admin/frames/AdminFramesTab";
+import { AdminCategoriesTab } from "@/features/admin/categories/AdminCategoriesTab";
+import { AdminTemplateCategoriesTab } from "@/features/admin/template-categories/AdminTemplateCategoriesTab";
+import { AdminUsersTab } from "@/features/admin/users/AdminUsersTab";
+import { AdminPostsTab } from "@/features/admin/posts/AdminPostsTab";
+import { AdminSubAdminsTab } from "@/features/admin/sub-admins/AdminSubAdminsTab";
+import { AdminSubAdminActivityTab } from "@/features/admin/sub-admins/AdminSubAdminActivityTab";
+import { CreateSubAdminModal } from "@/features/admin/sub-admins/components/CreateSubAdminModal";
+import { EditSubAdminModal } from "@/features/admin/sub-admins/components/EditSubAdminModal";
 
 /**
  * AdminDashboardView Component
@@ -134,11 +134,11 @@ export const AdminDashboardView = ({
 }) => {
   const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN";
 
-  // Render in-page full-screen screens when active
+  // Render modals/dialogs when active
   if (isModalOpen) {
     return (
-      <CreateSubAdminScreen
-        onBack={() => setIsModalOpen(false)}
+      <CreateSubAdminModal
+        onClose={() => setIsModalOpen(false)}
         handleSubmit={handleSubmit}
         onCreateSubAdmin={onCreateSubAdmin}
         register={register}
@@ -152,9 +152,9 @@ export const AdminDashboardView = ({
 
   if (editingSubAdmin) {
     return (
-      <EditSubAdminScreen
+      <EditSubAdminModal
         subAdmin={editingSubAdmin}
-        onBack={() => setEditingSubAdmin(null)}
+        onClose={() => setEditingSubAdmin(null)}
         updateSubAdminMutation={updateSubAdminMutation}
       />
     );

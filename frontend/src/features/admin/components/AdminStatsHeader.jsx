@@ -1,7 +1,7 @@
 import React from "react";
 import { Users, Shield, FolderKanban } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
-import { ADMIN_TABS } from "../../../constants/tabs.constants";
+import { ADMIN_TABS } from '@/shared/constants';
 
 /**
  * AdminStatsHeader Component

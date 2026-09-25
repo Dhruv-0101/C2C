@@ -73,10 +73,14 @@ export function createSvgOverlayUri(elementsOrConfig) {
     const svgShapes = elements
       .filter(
         (el) =>
-          el.slotCategory === 'STATIC_SHAPE' ||
-          el.dynamicSlot === 'NONE' ||
-          el.dynamicSlot === 'AVATAR_CIRCLE' ||
-          (el.type !== 'TEXT' && el.type !== 'IMAGE_SLOT')
+          (el.slotCategory === 'STATIC_SHAPE' || el.dynamicSlot === 'NONE' || el.dynamicSlot === 'AVATAR_CIRCLE') &&
+          el.slotCategory !== 'IMAGE_SLOT' &&
+          el.slotCategory !== 'DYNAMIC_IMAGE' &&
+          el.slotCategory !== 'TEXT_INPUT' &&
+          el.type !== 'TEXT' &&
+          el.type !== 'IMAGE_SLOT' &&
+          el.dynamicSlot !== 'LOGO_BOX' &&
+          el.dynamicSlot !== 'UPI_QR'
       )
       .map((el) => {
         const fill = encodeURIComponent(el.fillColor || 'none');

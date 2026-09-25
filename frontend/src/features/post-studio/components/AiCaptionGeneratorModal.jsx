@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   Sparkles,
@@ -15,11 +15,15 @@ import {
   Plus,
   Trash2,
   Edit3,
+  Bot,
+  Users,
+  Target,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
-import { useAiCaption } from "../../../hooks/useAiCaption";
+import { useAiCaption } from '@/features/post-studio/hooks/useAiCaption';
+import { useBrandKit } from '@/features/brandkit/hooks/useBrandKit';
 
 const TONES = [
   { id: "PROMOTIONAL", label: "Promotional", icon: "🚀", desc: "High conversion & sales pitch" },
@@ -30,10 +34,19 @@ const TONES = [
   { id: "FRIENDLY", label: "Friendly", icon: "😊", desc: "Casual & community building" },
 ];
 
+// All 11 Supported Indian & Regional Languages
 const LANGUAGES = [
   { id: "ENGLISH", label: "English 🇬🇧" },
   { id: "HINGLISH", label: "Hinglish 🇮🇳" },
   { id: "HINDI", label: "Hindi 🟧" },
+  { id: "GUJARATI", label: "Gujarati 🟠" },
+  { id: "MARATHI", label: "Marathi 🚩" },
+  { id: "BENGALI", label: "Bengali 🟣" },
+  { id: "TAMIL", label: "Tamil 🟡" },
+  { id: "TELUGU", label: "Telugu 🔵" },
+  { id: "KANNADA", label: "Kannada 🟢" },
+  { id: "MALAYALAM", label: "Malayalam 🟤" },
+  { id: "PUNJABI", label: "Punjabi 🔶" },
 ];
 
 const PLATFORMS = [
@@ -50,6 +63,7 @@ export const AiCaptionGeneratorModal = ({
   initialOffer = "",
   onSelectCaption,
 }) => {
+  const { brandKit } = useBrandKit();
   const [topic, setTopic] = useState(initialTopic || "");
   const [offerText, setOfferText] = useState(initialOffer || "");
   const [customText, setCustomText] = useState("");
@@ -66,6 +80,18 @@ export const AiCaptionGeneratorModal = ({
 
   const { generateCaption, isGenerating, captionError } = useAiCaption();
 
+  // Initialize Default AI Caption Language from BrandKit preferences
+  useEffect(() => {
+    if (brandKit?.captionLanguage) {
+      const match = LANGUAGES.find(
+        (l) => l.id.toUpperCase() === brandKit.captionLanguage.toUpperCase()
+      );
+      if (match) {
+        setLanguage(match.id);
+      }
+    }
+  }, [brandKit?.captionLanguage]);
+
   if (!isOpen) return null;
 
   const handleGenerate = async (e) => {
@@ -78,6 +104,8 @@ export const AiCaptionGeneratorModal = ({
         tone,
         language,
         platform,
+        targetAudience: brandKit?.targetAudience || undefined,
+        businessUsps: brandKit?.businessUsps || undefined,
       });
 
       // API Response Envelope: resData = { success: true, message: "...", data: { source, captionText, hashtags } }
@@ -130,7 +158,7 @@ export const AiCaptionGeneratorModal = ({
 
   return createPortal(
     <div className="fixed inset-0 w-screen h-screen z-[10000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in overflow-y-auto font-sans">
-      <div className="w-full max-w-3xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-6 shadow-2xl my-auto text-slate-100 max-h-[92vh] flex flex-col justify-between">
+      <div className="w-full max-w-3xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl my-auto text-slate-100 max-h-[92vh] flex flex-col justify-between">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">
           <div className="flex items-center gap-3">
@@ -140,14 +168,9 @@ export const AiCaptionGeneratorModal = ({
             <div>
               <h3 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
                 <span>AI Caption & Hashtag Studio</span>
-                {/* {aiSource && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30 uppercase">
-                    {aiSource.replace(/_/g, " ")}
-                  </span>
-                )} */}
               </h3>
               <p className="text-xs text-slate-400">
-                Craft viral, high-converting social media captions. Edit captions & manage hashtags in real-time.
+                Craft high-converting social media captions fueled by your BrandKit identity, audience & USPs.
               </p>
             </div>
           </div>
@@ -158,6 +181,39 @@ export const AiCaptionGeneratorModal = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Live BrandKit Context Banner */}
+        {brandKit && (
+          <div className="p-3 rounded-xl bg-[#0B0F17] border border-amber-500/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold text-white">
+                {brandKit.businessName || "Your Brand"}
+              </span>
+              {brandKit.category?.name && (
+                <span className="text-[11px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  {brandKit.category.name}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+              {brandKit.targetAudience && (
+                <span className="truncate max-w-[200px]" title={brandKit.targetAudience}>
+                  👥 <strong className="text-slate-300">Audience:</strong> {brandKit.targetAudience}
+                </span>
+              )}
+              {brandKit.businessUsps && (
+                <span className="truncate max-w-[200px]" title={brandKit.businessUsps}>
+                  ⭐ <strong className="text-slate-300">USPs:</strong> {brandKit.businessUsps}
+                </span>
+              )}
+              <span className="text-amber-400 font-medium">
+                🌐 Language: {language}
+              </span>
+            </div>
+          </div>
+        )}
 
         {captionError && (
           <Alert variant="error" message={captionError.message || "Failed to generate AI caption."} />
@@ -211,7 +267,7 @@ export const AiCaptionGeneratorModal = ({
               </div>
             </div>
 
-            {/* Language & Platform */}
+            {/* Language & Platform (Includes all 11 Indian & Regional Languages) */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">Language</label>
@@ -253,7 +309,7 @@ export const AiCaptionGeneratorModal = ({
               {isGenerating ? (
                 <>
                   <Wand2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Generating AI Copy...</span>
+                  <span>Generating AI Copy with BrandKit...</span>
                 </>
               ) : (
                 <>

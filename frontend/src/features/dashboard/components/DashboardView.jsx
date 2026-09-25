@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
-import { FestivalCalendarContainer } from "../../../features/calendar/containers/FestivalCalendarContainer";
+import { DashboardQuickStats } from "./DashboardQuickStats";
+import { RecentActivityFeed } from "./RecentActivityFeed";
 
 /**
  * DashboardView
@@ -71,75 +72,12 @@ export const DashboardView = ({
           <span>Workspace Performance Metrics</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {/* Box 1: Generated Posts & Portfolio */}
-          <Card
-            onClick={() => navigate("/your-posts")}
-            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-amber-500/50 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
-              <span className="group-hover:text-amber-400 transition-colors">Generated Posts</span>
-              <div className="p-1 rounded-lg bg-amber-500/10 text-amber-400">
-                <Sparkles className="w-3.5 h-3.5" />
-              </div>
-            </div>
-            <p className="font-heading text-xl font-extrabold text-white">{totalPostsCount}</p>
-            <p className="text-[10px] text-amber-400 font-medium flex items-center gap-1">
-              <span>View Post Portfolio &rarr;</span>
-            </p>
-          </Card>
+        <DashboardQuickStats
+          totalPostsCount={totalPostsCount}
+          scheduledCount={scheduledCount}
+          activeChannelsCount={activeChannelsCount}
+        />
 
-          {/* Box 2: Scheduled Queue & Calendar */}
-          <Card
-            onClick={() => navigate("/calendar")}
-            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-teal-500/50 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
-              <span className="group-hover:text-teal-400 transition-colors">Scheduled Queue</span>
-              <div className="p-1 rounded-lg bg-teal-500/10 text-teal-400">
-                <Calendar className="w-3.5 h-3.5" />
-              </div>
-            </div>
-            <p className="font-heading text-xl font-extrabold text-teal-400">{scheduledCount}</p>
-            <p className="text-[10px] text-teal-400 font-medium">
-              <span>Manage Content Calendar &rarr;</span>
-            </p>
-          </Card>
-
-          {/* Box 3: Social Channels Connection */}
-          <Card
-            onClick={() => navigate("/connections")}
-            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
-              <span className="group-hover:text-indigo-400 transition-colors">Social Channels</span>
-              <div className="p-1 rounded-lg bg-indigo-500/10 text-indigo-400">
-                <Share2 className="w-3.5 h-3.5" />
-              </div>
-            </div>
-            <p className="font-heading text-xl font-extrabold text-white">{activeChannelsCount} Active</p>
-            <p className="text-[10px] text-indigo-400 font-medium">
-              <span>{activeChannelsCount > 0 ? "Manage Channels &rarr;" : "Connect Social Channels &rarr;"}</span>
-            </p>
-          </Card>
-
-          {/* Box 4: Master BrandKit Setup */}
-          <Card
-            onClick={() => navigate("/brandkit")}
-            className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-emerald-500/50 hover:shadow-lg transition-all duration-200 group"
-          >
-            <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
-              <span className="group-hover:text-emerald-400 transition-colors">Master BrandKit</span>
-              <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-400">
-                <Building2 className="w-3.5 h-3.5" />
-              </div>
-            </div>
-            <p className="font-heading text-lg font-extrabold text-emerald-400">Brand Profile</p>
-            <p className="text-[10px] text-emerald-400 font-medium">
-              <span>Manage Brand Assets &rarr;</span>
-            </p>
-          </Card>
-        </div>
       </div>
 
       {/* Quick Access Feature Modules Grid */}
@@ -236,74 +174,12 @@ export const DashboardView = ({
           )}
         </div>
 
-        {recentPosts.length === 0 ? (
-          <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-dashed border-[#2C384E] flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                <Wand2 className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-200">No recent graphics created yet</p>
-                <p className="text-[11px] text-slate-400">Start creating branded post graphics with AI Post Studio.</p>
-              </div>
-            </div>
-            <Button variant="primary" size="sm" icon={Plus} onClick={() => handleOpenNewPost(null)} className="text-xs shrink-0 font-bold py-1.5 px-3">
-              Create First Post
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {recentPosts.map((post) => (
-              <div
-                key={post.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  {post.finalGraphicUrl && (
-                    <img
-                      src={post.finalGraphicUrl}
-                      alt="Graphic Thumbnail"
-                      className="w-10 h-10 rounded-lg object-cover border border-[#2C384E]"
-                    />
-                  )}
-                  <div>
-                    <p className="text-xs font-semibold text-slate-200">
-                      {post.occasionName || post.template?.title || post.festival?.name || "Branded Graphic Post"}
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Created {new Date(post.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                    post.status === "PUBLISHED"
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                      : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
-                  }`}
-                >
-                  {post.status}
-                </span>
-              </div>
-            ))}
+        <RecentActivityFeed
+          recentPosts={recentPosts}
+          totalPostsCount={totalPostsCount}
+          onOpenNewPost={handleOpenNewPost}
+        />
 
-            {totalPostsCount > 4 && (
-              <div className="pt-2 border-t border-[#2C384E] flex items-center justify-between text-xs">
-                <span className="text-slate-400 text-[11px]">
-                  Showing 4 of {totalPostsCount} recent posts
-                </span>
-                <button
-                  type="button"
-                  onClick={() => navigate("/your-posts")}
-                  className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition cursor-pointer"
-                >
-                  <span>View All Posts & Queue</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </Card>
     </div>
   );

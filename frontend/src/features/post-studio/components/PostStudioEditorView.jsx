@@ -33,8 +33,10 @@ import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
-import Pagination from "../../../components/common/Pagination";
-import { ImageLightbox } from "../../../components/common/ImageLightbox";
+import Pagination from '@/components/ui/Pagination';
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import { FrameSelectorBar } from './FrameSelectorBar';
+import { CanvasPreview } from './CanvasPreview';
 
 /**
  * PostStudioEditorView
@@ -981,6 +983,16 @@ export const PostStudioEditorView = ({
                 </button>
               </div>
 
+              {/* Quick Frame Switcher Ribbon */}
+              <FrameSelectorBar
+                frames={frames}
+                selectedFrameId={selectedFrame?.id}
+                onSelectFrame={(frame) => {
+                  setSelectedFrame(frame);
+                  if (frame) setZoomedFrame(frame);
+                }}
+              />
+
               {/* Brand Frame Search Bar */}
               <div className="relative shrink-0">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -1119,23 +1131,55 @@ export const PostStudioEditorView = ({
                   isImageCategory ||
                   slot === "LOGO_BOX" ||
                   slot === "AVATAR_CIRCLE" ||
+                  slot === "UPI_QR" ||
                   slot === "CUSTOM_IMAGE" ||
                   slot === "MANUAL_INPUT"
                 ) {
-                  const isPrimaryAvatar = slot === "AVATAR_CIRCLE" && (el.id === "el-avatar-circle" || el.name === "Profile Photo");
-                  const isPrimaryLogo = slot === "LOGO_BOX" && (el.id === "el-logo-box" || el.name === "Brand Logo");
+                  const isPrimaryAvatar = slot === "AVATAR_CIRCLE" || el.fieldKey === "avatarUrl";
+                  const isPrimaryLogo = slot === "LOGO_BOX" || el.fieldKey === "logoUrl";
+                  const isPrimaryUpi = slot === "UPI_QR" || el.fieldKey === "upiQrUrl";
 
                   if (isPrimaryAvatar) {
                     const fieldKey = "showAvatar";
                     if (!seenKeys.has(fieldKey)) {
                       seenKeys.add(fieldKey);
-                      imageToggles.push({ id: el.id, key: "showAvatar", label: el.customLabel || el.name || "Render Profile Photo", type: "AVATAR", fieldKey, rawElement: el });
+                      imageToggles.push({
+                        id: el.id,
+                        key: "showAvatar",
+                        label: el.customLabel || el.name || "Render Profile Photo",
+                        type: "AVATAR",
+                        fieldKey,
+                        rawElement: el,
+                        previewUrl: customDetails.avatarUrl || brandKit?.avatarUrl,
+                      });
                     }
                   } else if (isPrimaryLogo) {
                     const fieldKey = "showLogo";
                     if (!seenKeys.has(fieldKey)) {
                       seenKeys.add(fieldKey);
-                      imageToggles.push({ id: el.id, key: "showLogo", label: el.customLabel || el.name || "Render Brand Logo", type: "LOGO", fieldKey, rawElement: el });
+                      imageToggles.push({
+                        id: el.id,
+                        key: "showLogo",
+                        label: el.customLabel || el.name || "Render Brand Logo",
+                        type: "LOGO",
+                        fieldKey,
+                        rawElement: el,
+                        previewUrl: customDetails.logoUrl || brandKit?.logoUrl,
+                      });
+                    }
+                  } else if (isPrimaryUpi) {
+                    const fieldKey = "showUpiQr";
+                    if (!seenKeys.has(fieldKey)) {
+                      seenKeys.add(fieldKey);
+                      imageToggles.push({
+                        id: el.id,
+                        key: "showUpiQr",
+                        label: el.customLabel || el.name || "Render UPI Payment QR",
+                        type: "UPI_QR",
+                        fieldKey,
+                        rawElement: el,
+                        previewUrl: customDetails.upiQrUrl || brandKit?.upiQrUrl,
+                      });
                     }
                   } else {
                     const fieldKey = el.fieldKey || el.id || `custom_img_${el.type || 'slot'}`;
@@ -1195,6 +1239,9 @@ export const PostStudioEditorView = ({
                   } else if (slot === "COUNTRY") {
                     fieldKey = "country";
                     label = "Country";
+                  } else if (slot === "UPI_VPA") {
+                    fieldKey = "upiVpa";
+                    label = "UPI Payment ID / VPA";
                   } else {
                     fieldKey = el.fieldKey || el.id || (el.name ? el.name.toLowerCase().replace(/[^a-z0-9]/g, "_") : "custom_text_field");
                     label = el.customLabel || el.name || el.text || "Custom Text Field";
@@ -1293,8 +1340,16 @@ export const PostStudioEditorView = ({
                           else if (fk === "city") updated.city = brandKit?.city || tf.placeholder || "Mumbai";
                           else if (fk === "state") updated.state = brandKit?.state || tf.placeholder || "Maharashtra";
                           else if (fk === "country") updated.country = brandKit?.country || tf.placeholder || "India";
+                          else if (fk === "upiVpa") updated.upiVpa = brandKit?.upiVpa || tf.placeholder || "";
                           else updated[fk] = brandKit?.[fk] || tf.placeholder || "Sample Text";
                         });
+                        if (brandKit?.upiQrUrl) {
+                          updated.upiQrUrl = brandKit.upiQrUrl;
+                          updated.showUpiQr = true;
+                        }
+                        if (brandKit?.upiVpa) {
+                          updated.upiVpa = brandKit.upiVpa;
+                        }
                         setCustomDetails(updated);
                       }}
                       className="px-2 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition flex items-center gap-1 shrink-0 cursor-pointer"
@@ -1347,23 +1402,37 @@ export const PostStudioEditorView = ({
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                         {imageToggles.map((it) => (
-                          <label
+                          <div
                             key={it.fieldKey}
-                            className="flex items-center gap-2 p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 cursor-pointer hover:border-slate-500 transition"
+                            className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:border-slate-500 transition"
                           >
-                            <input
-                              type="checkbox"
-                              checked={customDetails[it.fieldKey] !== undefined ? customDetails[it.fieldKey] : true}
-                              onChange={(e) =>
-                                setCustomDetails((prev) => ({
-                                  ...prev,
-                                  [it.fieldKey]: e.target.checked,
-                                }))
-                              }
-                              className="rounded accent-amber-500"
-                            />
-                            <span className="font-semibold">{it.label}</span>
-                          </label>
+                            <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={customDetails[it.fieldKey] !== undefined ? customDetails[it.fieldKey] : true}
+                                onChange={(e) =>
+                                  setCustomDetails((prev) => ({
+                                    ...prev,
+                                    [it.fieldKey]: e.target.checked,
+                                  }))
+                                }
+                                className="rounded accent-amber-500 shrink-0"
+                              />
+                              <span className="font-semibold truncate">{it.label}</span>
+                            </label>
+                            {it.previewUrl ? (
+                              <img
+                                src={it.previewUrl}
+                                alt={it.label}
+                                className="w-7 h-7 rounded-md object-contain bg-slate-900 border border-[#2C384E] shrink-0 ml-2"
+                                title="Auto-filled from BrandKit"
+                              />
+                            ) : (
+                              <span className="text-[10px] text-amber-400/80 font-medium px-1.5 py-0.5 rounded bg-amber-500/10 shrink-0 ml-2 border border-amber-500/20">
+                                {it.type === 'UPI_QR' ? 'No QR in BrandKit' : 'Default'}
+                              </span>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -1570,16 +1639,7 @@ export const PostStudioEditorView = ({
             </div>
 
             {/* Center Canvas Box (Fixed 370px size - Zero Shrink Between Steps) */}
-            <div className="relative aspect-square w-full max-w-[370px] max-h-[370px] rounded-2xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center my-auto mx-auto shrink-0">
-              {isRendering && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
-                  <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full" />
-                  <span>Compositing 1080x1080 HD Canvas...</span>
-                </div>
-              )}
-
-              <canvas ref={canvasRef} className="w-full h-full object-contain" />
-            </div>
+            <CanvasPreview canvasRef={canvasRef} isRendering={isRendering} />
 
             {/* Interactive Carousel Slide Navigator Bar matching Left Footer */}
             <div className="mt-auto shrink-0 pt-2 border-t border-[#2C384E] w-full flex justify-center">

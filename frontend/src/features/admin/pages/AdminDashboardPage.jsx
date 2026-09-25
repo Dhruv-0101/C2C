@@ -1,12 +1,576 @@
-import React from "react";
-import { AdminDashboardContainer } from "../containers/AdminDashboardContainer";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useCategories } from '@/features/admin/categories/hooks/useCategories';
+import { useSubAdmins } from '@/features/admin/sub-admins/hooks/useSubAdmins';
+import { useUsers } from '@/features/admin/users/hooks/useUsers';
+import { useAdminPosts, useAdminPostAnalytics } from '@/features/admin/posts/hooks/useAdminPosts';
+import { useFrames } from '@/features/admin/frames/hooks/useFrames';
+import { useTemplateCategories } from '@/features/admin/template-categories/hooks/useTemplateCategories';
+import { useFestivals } from '@/features/calendar/hooks/useFestivals';
+import { authApi } from '@/features/auth/api/auth.api';
+import { categoryApi } from '@/features/admin/categories/api/category.api';
+import { templateCategoryApi } from '@/features/admin/template-categories/api/templateCategory.api';
+import { billingApi } from '@/features/billing/api/billing.api';
+import { subAdminSchema } from '@/features/auth/validations/auth.validation';
+import { useFeedbackModal } from '@/components/feedback/FeedbackModal';
+import { QUERY_KEYS } from '@/shared/constants';
+import { ADMIN_TABS, SUBADMIN_PERMITTED_TABS } from '@/shared/constants';
+import { AdminDashboardView } from "../components/AdminDashboardView";
+import { CelebrationWelcomeModal } from '@/features/welcome/components/CelebrationWelcomeModal';
 
 /**
- * AdminDashboardPage Component
- * Route page rendering the AdminDashboardContainer.
+ * AdminDashboardContainer
+ * Container component handling queries, mutations, state management, RBAC allowedTabs permissions,
+ * and form validation logic for SuperAdmin & SubAdmin users.
  */
 export const AdminDashboardPage = () => {
-  return <AdminDashboardContainer />;
-};
+  const { user } = useAuth();
+  const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN";
+  const userAllowedTabs = user?.allowedTabs || [];
 
-export default AdminDashboardPage;
+  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Enforce SubAdmin RBAC tab access: if requested tab is unpermitted, auto-select first allowed tab
+  const requestedTab = searchParams.get("tab") || ADMIN_TABS.DASHBOARD;
+  const activeTab =
+    isSuperAdmin
+      ? requestedTab
+      : userAllowedTabs.length > 0 && userAllowedTabs.includes(requestedTab)
+        ? requestedTab
+        : userAllowedTabs[0] || ADMIN_TABS.DASHBOARD;
+
+  const handleTabChange = (tabId) => {
+    setSearchParams({ tab: tabId });
+  };
+
+  const { modalProps, showSuccess, showError } = useFeedbackModal();
+
+  const [welcomeAuthType, setWelcomeAuthType] = useState(null);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+
+  useEffect(() => {
+    const justAuth = sessionStorage.getItem("just_authenticated");
+    if (justAuth) {
+      setWelcomeAuthType(justAuth);
+      setIsWelcomeModalOpen(true);
+      sessionStorage.removeItem("just_authenticated");
+    }
+  }, []);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSubAdmin, setEditingSubAdmin] = useState(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isMetricsOpen, setIsMetricsOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+
+  // 1. SubAdmins Directory Query (SuperAdmin Only)
+  const [subAdminPage, setSubAdminPage] = useState(1);
+  const [subAdminLimit, setSubAdminLimit] = useState(5);
+  const [subAdminSearch, setSubAdminSearch] = useState("");
+  const debouncedSubAdminSearch = useDebounce(subAdminSearch, 300);
+
+  useEffect(() => {
+    setSubAdminPage(1);
+  }, [debouncedSubAdminSearch]);
+
+  const {
+    subAdmins,
+    meta: subAdminMeta,
+    isLoading: isLoadingSubAdmins,
+    error: subAdminFetchError,
+  } = useSubAdmins(
+    { page: subAdminPage, limit: subAdminLimit, search: debouncedSubAdminSearch },
+    { enabled: isSuperAdmin },
+  );
+
+  // 2. Registered Users Directory Query
+  const [userPage, setUserPage] = useState(1);
+  const [userLimit, setUserLimit] = useState(10);
+  const [userSearch, setUserSearch] = useState("");
+  const debouncedUserSearch = useDebounce(userSearch, 300);
+
+  useEffect(() => {
+    setUserPage(1);
+  }, [debouncedUserSearch]);
+
+  const {
+    users,
+    meta: userMeta,
+    isLoading: isLoadingUsers,
+    error: usersFetchError,
+  } = useUsers(
+    { page: userPage, limit: userLimit, search: debouncedUserSearch },
+    { enabled: true },
+  );
+
+  // 3. Master Business Categories Query
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [categoryLimit, setCategoryLimit] = useState(10);
+  const [categorySearch, setCategorySearch] = useState("");
+  const debouncedCategorySearch = useDebounce(categorySearch, 300);
+
+  useEffect(() => {
+    setCategoryPage(1);
+  }, [debouncedCategorySearch]);
+
+  const {
+    categories,
+    meta: categoryMeta,
+    isLoading: isLoadingCategories,
+    error: categoriesFetchError,
+  } = useCategories({
+    page: categoryPage,
+    limit: categoryLimit,
+    search: debouncedCategorySearch,
+  });
+
+  // 3b. Master Template Categories Query
+  const [templateCategoryPage, setTemplateCategoryPage] = useState(1);
+  const [templateCategoryLimit, setTemplateCategoryLimit] = useState(10);
+  const [templateCategorySearch, setTemplateCategorySearch] = useState("");
+  const [templateCategoryError, setTemplateCategoryError] = useState("");
+  const debouncedTemplateCategorySearch = useDebounce(templateCategorySearch, 300);
+
+  useEffect(() => {
+    setTemplateCategoryPage(1);
+  }, [debouncedTemplateCategorySearch]);
+
+  const {
+    templateCategories,
+    meta: templateCategoryMeta,
+    isLoading: isLoadingTemplateCategories,
+    error: templateCategoriesFetchError,
+  } = useTemplateCategories({
+    page: templateCategoryPage,
+    limit: templateCategoryLimit,
+    search: debouncedTemplateCategorySearch,
+  });
+
+  // 4. Generated Posts Audit Query (with Multi-Filters)
+  const [postPage, setPostPage] = useState(1);
+  const [postLimit, setPostLimit] = useState(10);
+  const [postSearch, setPostSearch] = useState("");
+  const debouncedPostSearch = useDebounce(postSearch, 300);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [frameFilter, setFrameFilter] = useState("");
+  const [templateCategoryFilter, setTemplateCategoryFilter] = useState("");
+  const [festivalFilter, setFestivalFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  useEffect(() => {
+    setPostPage(1);
+  }, [debouncedPostSearch, categoryFilter, frameFilter, templateCategoryFilter, festivalFilter, statusFilter]);
+
+  const {
+    posts,
+    meta: postMeta,
+    isLoading: isLoadingPosts,
+    error: postsFetchError,
+  } = useAdminPosts({
+    page: postPage,
+    limit: postLimit,
+    search: debouncedPostSearch,
+    categoryId: categoryFilter,
+    frameId: frameFilter,
+    templateCategoryId: templateCategoryFilter,
+    festivalId: festivalFilter,
+    status: statusFilter,
+  });
+
+  const {
+    analytics: postAnalytics,
+    isLoading: isLoadingPostAnalytics,
+  } = useAdminPostAnalytics();
+
+  // Auxiliary dropdown collections for filters
+  const { frames: allFrames } = useFrames({ limit: 100 });
+  const { categories: allTemplateCategories } = useTemplateCategories();
+  const { festivals: allFestivals } = useFestivals({ limit: 100 });
+
+  // Create Category Mutation
+  const createCategoryMutation = useMutation({
+    mutationFn: (data) =>
+      typeof data === "string"
+        ? categoryApi.createCategory({ name: data })
+        : categoryApi.createCategory(data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      setCategoryPage(1);
+      setNewCategory("");
+      setCategoryError("");
+      const catName = typeof variables === "string" ? variables : variables.name;
+      showSuccess(
+        "Category Added! 🎉",
+        `Master category "${catName}" has been created successfully.`,
+      );
+    },
+    onError: (err) => {
+      setCategoryError(err.message || "Failed to create business category.");
+      showError(
+        "Category Error ⚠️",
+        err.message || "Could not create business category. Please try again.",
+      );
+    },
+  });
+
+  // Update Category Mutation
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, data }) => categoryApi.updateCategory(id, data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      setCategoryError("");
+      showSuccess(
+        "Category Updated! ✏️",
+        `Business category "${variables.data.name || "item"}" has been updated successfully.`,
+      );
+    },
+    onError: (err) => {
+      showError(
+        "Update Failed ⚠️",
+        err.message || "Failed to update business category.",
+      );
+    },
+  });
+
+  // Delete Category Mutation
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id) => categoryApi.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      showSuccess(
+        "Category Removed 🗑️",
+        "Business category deleted successfully from database.",
+      );
+    },
+    onError: (err) => {
+      showError("Delete Error ⚠️", err.message || "Failed to delete category.");
+    },
+  });
+
+  // Create Template Category Mutation
+  const createTemplateCategoryMutation = useMutation({
+    mutationFn: (data) =>
+      typeof data === "string"
+        ? templateCategoryApi.createTemplateCategory({ name: data })
+        : templateCategoryApi.createTemplateCategory(data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ACTIVITY });
+      setTemplateCategoryPage(1);
+      setTemplateCategoryError("");
+      const catName = typeof variables === "string" ? variables : variables.name;
+      showSuccess(
+        "Template Category Added! 🎉",
+        `Master template category "${catName}" has been created successfully.`,
+      );
+    },
+    onError: (err) => {
+      setTemplateCategoryError(err.message || "Failed to create template category.");
+      showError(
+        "Template Category Error ⚠️",
+        err.message || "Could not create template category. Please try again.",
+      );
+    },
+  });
+
+  // Update Template Category Mutation
+  const updateTemplateCategoryMutation = useMutation({
+    mutationFn: ({ id, data }) => templateCategoryApi.updateTemplateCategory(id, data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      setTemplateCategoryError("");
+      showSuccess(
+        "Template Category Updated! ✏️",
+        `Template category "${variables.data.name || "item"}" has been updated successfully.`,
+      );
+    },
+    onError: (err) => {
+      setTemplateCategoryError(err.message || "Failed to update template category.");
+      showError(
+        "Update Error ⚠️",
+        err.message || "Failed to update template category.",
+      );
+    },
+  });
+
+  // Delete Template Category Mutation
+  const deleteTemplateCategoryMutation = useMutation({
+    mutationFn: (id) => templateCategoryApi.deleteTemplateCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ACTIVITY });
+      showSuccess(
+        "Template Category Removed 🗑️",
+        "Template category deleted successfully from database.",
+      );
+    },
+    onError: (err) => {
+      showError("Delete Error ⚠️", err.message || "Failed to delete template category.");
+    },
+  });
+
+  // Create SubAdmin Mutation
+  const createSubAdminMutation = useMutation({
+    mutationFn: (data) => authApi.createSubAdmin(data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
+      setIsModalOpen(false);
+      reset();
+      showSuccess(
+        "SubAdmin Created! 🛡️",
+        `SubAdmin account "${variables.fullName}" has been created with assigned RBAC tab permissions.`,
+      );
+    },
+    onError: (err) => {
+      showError(
+        "SubAdmin Creation Failed ⚠️",
+        err.message || "Failed to create SubAdmin account.",
+      );
+    },
+  });
+
+  // Update SubAdmin Permissions Mutation
+  const updateSubAdminMutation = useMutation({
+    mutationFn: ({ id, data }) => authApi.updateSubAdmin(id, data),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
+      setEditingSubAdmin(null);
+      showSuccess(
+        "Permissions Updated! 🛡️",
+        "SubAdmin allowed tab permissions have been updated successfully.",
+      );
+    },
+    onError: (err) => {
+      showError(
+        "Update Failed ⚠️",
+        err.message || "Failed to update SubAdmin permissions.",
+      );
+    },
+  });
+
+  // Delete SubAdmin Mutation
+  const deleteSubAdminMutation = useMutation({
+    mutationFn: (id) => authApi.deleteSubAdmin(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
+      showSuccess(
+        "SubAdmin Access Revoked 🗑️",
+        "SubAdmin account has been removed from database.",
+      );
+    },
+    onError: (err) => {
+      showError("Revoke Error ⚠️", err.message || "Failed to revoke SubAdmin.");
+    },
+  });
+
+  // Toggle User Active Account Status Mutation
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: ({ userId, isActive }) => authApi.toggleUserStatus(userId, isActive),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USERS.ALL });
+      if (variables.isActive) {
+        showSuccess("Account Activated! 🟢", "User account has been activated successfully.");
+      } else {
+        showSuccess(
+          "Account Deactivated! 🚫",
+          "User account deactivated. All post creation & publishing capabilities have been blocked for this user.",
+        );
+      }
+    },
+    onError: (err) => {
+      showError("Action Failed ⚠️", err.message || "Failed to update user account status.");
+    },
+  });
+
+  // Admin Quota Top-Up Mutation
+  const topUpUserQuotaMutation = useMutation({
+    mutationFn: ({ userId, bonusPosts }) => billingApi.adminTopUpQuota(userId, bonusPosts),
+    onSuccess: (res, variables) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USERS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUBSCRIPTION.ALL });
+      showSuccess(
+        "Quota Top-Up Granted! 🎉",
+        `Successfully granted +${variables.bonusPosts || 10} bonus post quota to user.`,
+      );
+    },
+    onError: (err) => {
+      showError("Top-Up Failed ⚠️", err.message || "Failed to grant bonus post quota.");
+    },
+  });
+
+  // React Hook Form for SubAdmin Creation
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(subAdminSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      allowedTabs: [...SUBADMIN_PERMITTED_TABS],
+    },
+  });
+
+  const selectedTabs = watch("allowedTabs") || [];
+
+  const handleTabToggle = (tabId) => {
+    if (selectedTabs.includes(tabId)) {
+      setValue(
+        "allowedTabs",
+        selectedTabs.filter((t) => t !== tabId),
+        { shouldValidate: true },
+      );
+    } else {
+      setValue("allowedTabs", [...selectedTabs, tabId], {
+        shouldValidate: true,
+      });
+    }
+  };
+
+  const handleAddCategory = (e) => {
+    e.preventDefault();
+    setCategoryError("");
+    if (!newCategory.trim()) return;
+    createCategoryMutation.mutate(newCategory.trim());
+  };
+
+  const onCreateSubAdmin = (data) => {
+    createSubAdminMutation.mutate(data);
+  };
+
+  return (
+    <>
+      <AdminDashboardView
+        user={user}
+        activeTab={activeTab}
+        handleTabChange={handleTabChange}
+        modalProps={modalProps}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        editingSubAdmin={editingSubAdmin}
+        setEditingSubAdmin={setEditingSubAdmin}
+        isUploadModalOpen={isUploadModalOpen}
+        setIsUploadModalOpen={setIsUploadModalOpen}
+        isMetricsOpen={isMetricsOpen}
+        setIsMetricsOpen={setIsMetricsOpen}
+        newCategory={newCategory}
+        setNewCategory={setNewCategory}
+        categoryError={categoryError}
+        subAdminPage={subAdminPage}
+        setSubAdminPage={setSubAdminPage}
+        subAdminLimit={subAdminLimit}
+        setSubAdminLimit={setSubAdminLimit}
+        subAdminSearch={subAdminSearch}
+        setSubAdminSearch={setSubAdminSearch}
+        subAdmins={subAdmins}
+        subAdminMeta={subAdminMeta}
+        isLoadingSubAdmins={isLoadingSubAdmins}
+        subAdminFetchError={subAdminFetchError}
+        userPage={userPage}
+        setUserPage={setUserPage}
+        userLimit={userLimit}
+        setUserLimit={setUserLimit}
+        userSearch={userSearch}
+        setUserSearch={setUserSearch}
+        users={users}
+        userMeta={userMeta}
+        isLoadingUsers={isLoadingUsers}
+        usersFetchError={usersFetchError}
+        categoryPage={categoryPage}
+        setCategoryPage={setCategoryPage}
+        categoryLimit={categoryLimit}
+        setCategoryLimit={setCategoryLimit}
+        categorySearch={categorySearch}
+        setCategorySearch={setCategorySearch}
+        categories={categories}
+        categoryMeta={categoryMeta}
+        isLoadingCategories={isLoadingCategories}
+        categoriesFetchError={categoriesFetchError}
+        // Template Categories Props
+        templateCategoryPage={templateCategoryPage}
+        setTemplateCategoryPage={setTemplateCategoryPage}
+        templateCategoryLimit={templateCategoryLimit}
+        setTemplateCategoryLimit={setTemplateCategoryLimit}
+        templateCategorySearch={templateCategorySearch}
+        setTemplateCategorySearch={setTemplateCategorySearch}
+        templateCategories={templateCategories}
+        templateCategoryMeta={templateCategoryMeta}
+        isLoadingTemplateCategories={isLoadingTemplateCategories}
+        templateCategoryError={templateCategoryError || templateCategoriesFetchError?.message}
+        createTemplateCategoryMutation={createTemplateCategoryMutation}
+        updateTemplateCategoryMutation={updateTemplateCategoryMutation}
+        deleteTemplateCategoryMutation={deleteTemplateCategoryMutation}
+        // Generated Posts Audit Props
+        posts={posts}
+        postMeta={postMeta}
+        isLoadingPosts={isLoadingPosts}
+        postsFetchError={postsFetchError}
+        postPage={postPage}
+        setPostPage={setPostPage}
+        setPostLimit={setPostLimit}
+        categoryFilter={categoryFilter}
+        setCategoryFilter={setCategoryFilter}
+        frameFilter={frameFilter}
+        setFrameFilter={setFrameFilter}
+        templateCategoryFilter={templateCategoryFilter}
+        setTemplateCategoryFilter={setTemplateCategoryFilter}
+        festivalFilter={festivalFilter}
+        setFestivalFilter={setFestivalFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        postSearch={postSearch}
+        setPostSearch={setPostSearch}
+        allCategories={categories}
+        allFrames={allFrames}
+        allTemplateCategories={allTemplateCategories}
+        allFestivals={allFestivals}
+        postAnalytics={postAnalytics}
+        isLoadingPostAnalytics={isLoadingPostAnalytics}
+        createCategoryMutation={createCategoryMutation}
+        updateCategoryMutation={updateCategoryMutation}
+        deleteCategoryMutation={deleteCategoryMutation}
+        createSubAdminMutation={createSubAdminMutation}
+        updateSubAdminMutation={updateSubAdminMutation}
+        deleteSubAdminMutation={deleteSubAdminMutation}
+        toggleUserStatusMutation={toggleUserStatusMutation}
+        topUpUserQuotaMutation={topUpUserQuotaMutation}
+        register={register}
+        handleSubmit={handleSubmit}
+        errors={errors}
+        selectedTabs={selectedTabs}
+        handleTabToggle={handleTabToggle}
+        handleAddCategory={handleAddCategory}
+        onCreateSubAdmin={onCreateSubAdmin}
+        queryClient={queryClient}
+        showSuccess={showSuccess}
+      />
+      <CelebrationWelcomeModal
+        isOpen={isWelcomeModalOpen}
+        onClose={() => setIsWelcomeModalOpen(false)}
+        authType={welcomeAuthType}
+        user={user}
+      />
+    </>
+  );
+};

@@ -26,3 +26,5 @@ export const Spinner = ({ size = 'md', className = '' }) => {
     </div>
   );
 };
+
+export default Spinner;

@@ -19,10 +19,10 @@ import {
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
-import { Header } from "../../../components/common/Header";
-import { Footer } from "../../../components/common/Footer";
-import { InteractiveWorkflowDemo } from "../../../components/common/InteractiveWorkflowDemo";
-import { ScrollReveal } from "../../../components/common/ScrollReveal";
+import { Header } from '@/layouts/AppLayout/components/Header';
+import { Footer } from '@/layouts/AppLayout/components/Footer';
+import { InteractiveWorkflowDemo } from '@/features/welcome/components/InteractiveWorkflowDemo';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 /**
  * WelcomeSplashPage Component

@@ -1,12 +1,24 @@
 import React from "react";
-import { ProfileContainer } from "../containers/ProfileContainer";
+import { useProfile } from '@/features/profile/hooks/useProfile';
+import { ProfileView } from "../components/ProfileView";
 
 /**
- * ProfilePage
- * Lazy-loaded page component rendering user profile and subscription details.
+ * ProfilePage Component
+ * Canonical Route Page (/profile) displaying user profile, brand kit summary, and account security.
  */
 export const ProfilePage = () => {
-  return <ProfileContainer />;
+  const { profile, subscription, brandKit, isLoading, error } = useProfile();
+
+  return (
+    <ProfileView
+      profile={profile}
+      subscription={subscription}
+      brandKit={brandKit}
+      isLoading={isLoading}
+      error={error}
+    />
+  );
 };
 
+export { ProfilePage as ProfileContainer };
 export default ProfilePage;

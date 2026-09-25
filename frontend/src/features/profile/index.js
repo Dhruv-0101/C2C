@@ -1,3 +1,5 @@
-export { ProfilePage } from './pages/ProfilePage';
-export { ProfileContainer } from './containers/ProfileContainer';
-export { ProfileView } from './components/ProfileView';
+export * from './pages/ProfilePage';
+export { default } from './pages/ProfilePage';
+export * from './hooks/useProfile';
+export * from './components/AccountSecurityCard';
+export * from './components/ProfileView';

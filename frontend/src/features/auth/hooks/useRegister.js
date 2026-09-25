@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../../../services/auth.api';
+import { authApi } from '@/features/auth/api/auth.api';
 import { setCredentials } from '../../../store/slices/authSlice';
-import { USER_ROLES } from '../../../constants/theme.constants';
+import { USER_ROLES } from '@/shared/constants';
 
 /**
  * Custom hook for User Registration using TanStack Query & 2.5s success notification delay

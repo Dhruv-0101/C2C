@@ -13,8 +13,8 @@ import {
   IndianRupee,
 } from 'lucide-react';
 import Button from '../../../components/ui/Button';
-import { billingApi } from '../../../services/billing.api';
-import StripeElementsCheckoutModal from './StripeElementsCheckoutModal';
+import { billingApi } from '@/features/billing/api/billing.api';
+import StripeElementsModal from './StripeElementsModal';
 
 // Dynamic pricing calculation constants for frontend slider
 const BASE_PRICES = { INR: 15, USD: 0.17 };
@@ -401,7 +401,7 @@ export const PlanSelectionModal = ({
       </div>
 
       {/* Official Stripe Card Checkout Modal */}
-      <StripeElementsCheckoutModal
+      <StripeElementsModal
         isOpen={showStripeModal}
         onClose={() => setShowStripeModal(false)}
         clientSecret={stripeIntentData?.clientSecret}

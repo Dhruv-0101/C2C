@@ -4,10 +4,10 @@ import { Clock, Calendar, Sparkles, AlertCircle } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
-import { SearchBar } from "../../../components/common/SearchBar";
-import Pagination from "../../../components/common/Pagination";
-import { useYourPosts } from "../../../hooks/useYourPosts";
-import { useDebounce } from "../../../hooks/useDebounce";
+import { SearchBar } from '@/components/ui/SearchBar';
+import Pagination from '@/components/ui/Pagination';
+import { useYourPosts } from '@/features/your-posts/hooks/useYourPosts';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 
 /**
  * ScheduledPostsQueueView

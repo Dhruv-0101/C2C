@@ -6,11 +6,12 @@ import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
-import Pagination from "../../../components/common/Pagination";
-import { FeedbackModal } from "../../../components/common/FeedbackModal";
-import { SearchBar } from "../../../components/common/SearchBar";
-import { GraphicCard } from "../../../components/common/GraphicCard";
-import { ImageLightbox } from "../../../components/common/ImageLightbox";
+import Pagination from '@/components/ui/Pagination';
+import { FeedbackModal } from '@/components/feedback/FeedbackModal';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { GraphicCard } from "./VaultAssetGrid";
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import { VaultAssetGrid } from "./VaultAssetGrid";
 
 /**
  * VaultView
@@ -119,37 +120,24 @@ export const VaultView = ({
           </p>
         </Card>
       ) : (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {vaultItems.map((item) => (
-              <GraphicCard
-                key={item.id}
-                imageUrl={item.post?.finalGraphicUrl || item.graphicUrl}
-                title={item.post?.occasionName || item.post?.template?.title || item.occasionName || "Social Graphic"}
-                category={item.post?.category?.name || item.post?.festival?.name || item.categoryName || "General"}
-                date={new Date(item.createdAt).toLocaleDateString()}
-                onPreview={() => setFullscreenItem(item)}
-                onDownload={() => handleDownload(item.post?.finalGraphicUrl || item.graphicUrl, item.post?.occasionName || item.occasionName)}
-                onEdit={() => handleOpenEdit(item)}
-                onDelete={() => deleteMutation.mutate(item.id)}
-                isDeleting={deleteMutation.isPending}
-                isSelected={selectedIds.includes(item.id)}
-                onToggleSelect={() => handleToggleSelect(item.id)}
-              />
-            ))}
-          </div>
-
-          <Pagination
-            meta={meta}
-            onPageChange={(newPage) => setPage(newPage)}
-            onLimitChange={(newLimit) => {
-              setLimit(newLimit);
-              setPage(1);
-            }}
-            pageSizeOptions={[4, 8, 12, 24]}
-          />
-        </div>
+        <VaultAssetGrid
+          vaultItems={vaultItems}
+          meta={meta}
+          isLoading={isLoading}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onPreview={setFullscreenItem}
+          onDownload={handleDownload}
+          onEdit={handleOpenEdit}
+          onDelete={(id) => deleteMutation.mutate(id)}
+          isDeleting={deleteMutation.isPending}
+          page={page}
+          setPage={setPage}
+          limit={limit}
+          setLimit={setLimit}
+        />
       )}
+
 
       {/* Floating Sticky Bulk Actions Bar */}
       {selectedIds.length > 0 && (

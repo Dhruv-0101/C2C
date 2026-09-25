@@ -22,15 +22,16 @@ import {
   Loader2,
   FileText,
 } from "lucide-react";
+import { QUERY_KEYS } from "@/shared/constants";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
-import { TwoFactorSettingsModal } from "../../../components/common/TwoFactorSettingsModal";
-import { FeedbackModal } from "../../../components/common/FeedbackModal";
-import Pagination from "../../../components/common/Pagination";
-import { useFeedbackModal } from "../../../hooks/useFeedbackModal";
-import { usePaginatedQuery } from "../../../hooks/usePaginatedQuery";
-import { billingApi } from "../../../services/billing.api";
-import { USER_PROFILE_QUERY_KEY } from "../../../hooks/useProfile";
+import { TwoFactorSettingsModal } from '@/features/auth/components/TwoFactorSettingsModal';
+import { FeedbackModal } from '@/components/feedback/FeedbackModal';
+import Pagination from '@/components/ui/Pagination';
+import { useFeedbackModal } from '@/components/feedback/FeedbackModal';
+import { usePaginatedQuery } from '@/shared/hooks/usePaginatedQuery';
+import { billingApi } from '@/features/billing/api/billing.api';
+import { USER_PROFILE_QUERY_KEY } from '@/features/profile/hooks/useProfile';
 
 /**
  * ProfileView
@@ -69,7 +70,7 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
     meta: historyMeta,
     isLoading: isLoadingHistory,
   } = usePaginatedQuery({
-    queryKey: ['billingHistory'],
+    queryKey: QUERY_KEYS.BILLING.ALL,
     queryFn: (params) => billingApi.getHistory(params),
     params: { page: historyPage, limit: historyLimit },
   });

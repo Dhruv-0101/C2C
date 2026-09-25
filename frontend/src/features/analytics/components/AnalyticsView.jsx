@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
+import { AnalyticsKpiCards } from './AnalyticsKpiCards';
+import { EngagementChart } from './EngagementChart';
 
 // Platform Color Palette
 const PLATFORM_COLORS = {
@@ -179,177 +181,12 @@ export const AnalyticsView = ({
         </Card>
       ) : (
         <>
-          {/* KPI Summary Cards Grid (4 Columns) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1: Total Impressions */}
-            <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-3 relative overflow-hidden">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
-                <span>Total Impressions</span>
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  <Eye className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-extrabold text-white font-mono">
-                  {formatNumber(kpi.totalImpressions || 0)}
-                </div>
-                <div className="flex items-center gap-1.5 text-xs">
-                  {kpi.impressionsGrowth >= 0 ? (
-                    <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-                      <TrendingUp className="w-3.5 h-3.5" /> +{kpi.impressionsGrowth}%
-                    </span>
-                  ) : (
-                    <span className="text-rose-400 font-bold flex items-center gap-0.5">
-                      <TrendingDown className="w-3.5 h-3.5" /> {kpi.impressionsGrowth}%
-                    </span>
-                  )}
-                  <span className="text-slate-500">vs prior period</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Card 2: Total Reach */}
-            <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-3 relative overflow-hidden">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
-                <span>Total Audience Reach</span>
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  <Users className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-extrabold text-white font-mono">
-                  {formatNumber(kpi.totalReach || 0)}
-                </div>
-                <div className="flex items-center gap-1.5 text-xs">
-                  {kpi.reachGrowth >= 0 ? (
-                    <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-                      <TrendingUp className="w-3.5 h-3.5" /> +{kpi.reachGrowth}%
-                    </span>
-                  ) : (
-                    <span className="text-rose-400 font-bold flex items-center gap-0.5">
-                      <TrendingDown className="w-3.5 h-3.5" /> {kpi.reachGrowth}%
-                    </span>
-                  )}
-                  <span className="text-slate-500">vs prior period</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Card 3: Avg Engagement Rate */}
-            <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-3 relative overflow-hidden">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
-                <span>Avg Engagement Rate</span>
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-extrabold text-emerald-400 font-mono">
-                  {kpi.avgEngagementRate || 0}%
-                </div>
-                <div className="flex items-center gap-1.5 text-xs">
-                  {kpi.engagementGrowth >= 0 ? (
-                    <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-                      <TrendingUp className="w-3.5 h-3.5" /> +{kpi.engagementGrowth}%
-                    </span>
-                  ) : (
-                    <span className="text-rose-400 font-bold flex items-center gap-0.5">
-                      <TrendingDown className="w-3.5 h-3.5" /> {kpi.engagementGrowth}%
-                    </span>
-                  )}
-                  <span className="text-slate-500">vs prior period</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Card 4: Total Engagements (Likes + Comments + Shares) */}
-            <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-3 relative overflow-hidden">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
-                <span>Total Interactions</span>
-                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                  <Heart className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-extrabold text-white font-mono">
-                  {formatNumber((kpi.totalLikes || 0) + (kpi.totalComments || 0) + (kpi.totalShares || 0))}
-                </div>
-                <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
-                  <span>❤️ {formatNumber(kpi.totalLikes || 0)}</span>
-                  <span>💬 {formatNumber(kpi.totalComments || 0)}</span>
-                  <span>🔄 {formatNumber(kpi.totalShares || 0)}</span>
-                </div>
-              </div>
-            </Card>
-          </div>
+          {/* KPI Summary Cards */}
+          <AnalyticsKpiCards kpi={kpi} />
 
           {/* Time Series Area Chart: Daily Impressions & Reach Trend */}
-          <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
-            <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
-              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-indigo-400" />
-                <span>Performance Trend Over Time</span>
-              </h3>
-              <div className="flex items-center gap-4 text-xs font-mono">
-                <span className="flex items-center gap-1.5 text-indigo-400 font-bold">
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Impressions
-                </span>
-                <span className="flex items-center gap-1.5 text-amber-400 font-bold">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Audience Reach
-                </span>
-              </div>
-            </div>
+          <EngagementChart trends={trends} />
 
-            <div className="h-72 w-full pt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorImpressions" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorReach" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis
-                    dataKey="displayDate"
-                    stroke="#64748B"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="#64748B"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={formatNumber}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area
-                    type="monotone"
-                    dataKey="impressions"
-                    name="Impressions"
-                    stroke="#4F46E5"
-                    strokeWidth={2.5}
-                    fillOpacity={1}
-                    fill="url(#colorImpressions)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="reach"
-                    name="Reach"
-                    stroke="#F59E0B"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorReach)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
 
           {/* Two-Column Grid: Platform Breakdown & Top Design Templates */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

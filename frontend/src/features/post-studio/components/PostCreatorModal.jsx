@@ -1,0 +1,742 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import {
+  Download,
+  X,
+  Sparkles,
+  CheckCircle2,
+  Building2,
+  BookmarkCheck,
+  Layers,
+  Image as ImageIcon,
+  Edit3,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Trash2,
+  Eye,
+} from 'lucide-react';
+import { useCanvasCompositor } from '@/features/post-studio/hooks/useCanvasCompositor';
+import { usePostCreator } from '@/features/post-studio/hooks/usePostCreator';
+import { useSubscription } from '@/features/billing/hooks/useSubscription';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import PlanSelectionModal from '@/features/billing/components/PlanSelectionModal';
+import PaymentSuccessModal from '@/features/billing/components/PaymentSuccessModal';
+
+/**
+ * Interactive Enterprise Post Studio & Creator Modal for End-Users
+ * Features Real-time 1080x1080 Canvas Compositing with PNG Frames & Editable Details
+ */
+export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) => {
+  const canvasRef = useRef(null);
+  const {
+    brandKit,
+    frames,
+    templates,
+    saveSuccess,
+    savePost,
+    isSaving,
+  } = usePostCreator(isOpen);
+
+  const {
+    postsRemaining,
+    isExpired,
+    planName,
+    isPlanModalOpen,
+    openPlanModal,
+    closePlanModal,
+    successData,
+    setSuccessData,
+  } = useSubscription();
+
+  const [selectedFrame, setSelectedFrame] = useState(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplate?.id || '');
+  const [customBaseImage, setCustomBaseImage] = useState(null);
+  const [previewCustomImageModal, setPreviewCustomImageModal] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(true);
+
+  // Sync selectedTemplateId whenever modal opens or initialTemplate changes
+  useEffect(() => {
+    if (isOpen && initialTemplate?.id) {
+      setSelectedTemplateId(initialTemplate.id);
+    }
+  }, [isOpen, initialTemplate]);
+
+  // Live Overrides for Business Details
+  const [customDetails, setCustomDetails] = useState({
+    businessName: '',
+    phone: '',
+    address: '',
+    tagline: '',
+    showLogo: true,
+    showAvatar: true,
+    showPhone: true,
+    showAddress: true,
+  });
+
+  // Sort templates so festival-associated templates and initialTemplate come first!
+  const sortedTemplates = [...templates].sort((a, b) => {
+    if (a.id === initialTemplate?.id || a.id === selectedTemplateId) return -1;
+    if (b.id === initialTemplate?.id || b.id === selectedTemplateId) return 1;
+    if (a.festivalId && !b.festivalId) return -1;
+    if (!a.festivalId && b.festivalId) return 1;
+    return 0;
+  });
+
+  // Populate customDetails whenever brandKit or selectedFrame loads
+  useEffect(() => {
+    const newDetails = {};
+
+    // 1. First map standard keys from BrandKit
+    if (brandKit?.businessName) newDetails.businessName = brandKit.businessName;
+    if (brandKit?.phone || brandKit?.whatsapp) newDetails.phone = brandKit.phone || brandKit.whatsapp;
+    if (brandKit?.address) newDetails.address = `${brandKit.address}${brandKit.city ? `, ${brandKit.city}` : ''}`;
+    if (brandKit?.tagline) newDetails.tagline = brandKit.tagline;
+    if (brandKit?.email) newDetails.email = brandKit.email;
+    if (brandKit?.instagramHandle) newDetails.instagramHandle = brandKit.instagramHandle;
+    if (brandKit?.facebookHandle) newDetails.facebookHandle = brandKit.facebookHandle;
+    if (brandKit?.linkedinHandle) newDetails.linkedinHandle = brandKit.linkedinHandle;
+    if (brandKit?.gmbReviewUrl) newDetails.gmbReviewUrl = brandKit.gmbReviewUrl;
+    if (brandKit?.upiVpa) newDetails.upiVpa = brandKit.upiVpa;
+    if (brandKit?.upiQrUrl) newDetails.upiQrUrl = brandKit.upiQrUrl;
+    if (brandKit?.workingHours) newDetails.workingHours = brandKit.workingHours;
+
+    // Map UPI QR and other brand kit image slots to frame element IDs
+    if (selectedFrame?.configJson?.elements) {
+      selectedFrame.configJson.elements.forEach((el) => {
+        if (el.dynamicSlot === 'UPI_QR' || el.fieldKey === 'upiQrUrl') {
+          if (brandKit?.upiQrUrl) {
+            newDetails[el.id] = brandKit.upiQrUrl;
+            if (el.fieldKey) newDetails[el.fieldKey] = brandKit.upiQrUrl;
+          }
+        }
+      });
+    }
+
+    // 2. Map sample text from selectedFrame.configJson.elements if field is still empty
+    if (selectedFrame?.configJson?.elements) {
+      selectedFrame.configJson.elements
+        .filter((el) => el.type === 'TEXT' || el.slotCategory === 'TEXT_INPUT')
+        .forEach((el) => {
+          const key = el.fieldKey || el.dynamicSlot || el.id;
+          const valKey =
+            el.dynamicSlot === 'BUSINESS_NAME'
+              ? 'businessName'
+              : el.dynamicSlot === 'PHONE'
+              ? 'phone'
+              : el.dynamicSlot === 'ADDRESS'
+              ? 'address'
+              : (el.dynamicSlot === 'TAGLINE' || el.dynamicSlot === 'SLOGAN')
+              ? 'tagline'
+              : key;
+
+          const sampleVal = el.text || el.customLabel || el.name || '';
+
+          if (!newDetails[valKey] && sampleVal) {
+            newDetails[valKey] = sampleVal;
+          }
+          if (key !== valKey && !newDetails[key] && sampleVal) {
+            newDetails[key] = sampleVal;
+          }
+        });
+    }
+
+    setCustomDetails((prev) => ({
+      ...prev,
+      ...newDetails,
+    }));
+  }, [brandKit, selectedFrame]);
+
+  const currentTemplate =
+    templates.find((t) => t.id === selectedTemplateId) ||
+    initialTemplate ||
+    templates[0];
+
+  // Default select first template & first frame when data loads
+  useEffect(() => {
+    if (currentTemplate && !selectedTemplateId) {
+      setSelectedTemplateId(currentTemplate.id);
+    }
+  }, [currentTemplate, selectedTemplateId]);
+
+  // Default selectedFrame is null (No Frame selected by default)
+
+
+  // Base Graphic Image URL
+  const baseImageUrl = customBaseImage || currentTemplate?.baseImageUrl || currentTemplate?.imageUrl || currentTemplate?.fileUrl;
+
+  // HTML5 Canvas Compositor Engine Hook
+  const { isRendering, dataUrl } = useCanvasCompositor(
+    canvasRef,
+    baseImageUrl,
+    selectedFrame,
+    brandKit,
+    customDetails
+  );
+
+  // Handle Save Post to DB
+  const handleSaveToDb = () => {
+    if (isExpired || postsRemaining <= 0) {
+      openPlanModal();
+      return;
+    }
+    if (!dataUrl) return;
+    savePost({
+      templateId: currentTemplate?.id || null,
+      festivalId: currentTemplate?.festivalId || null,
+      frameId: selectedFrame?.id || null,
+      base64Graphic: dataUrl,
+      userConfigJson: customDetails,
+      status: 'DRAFT',
+    });
+  };
+
+  // Handle Download HD PNG & Save to Cloud/DB
+  const handleDownloadHD = () => {
+    if (isExpired || postsRemaining <= 0) {
+      openPlanModal();
+      return;
+    }
+    if (!dataUrl) return;
+
+    // 1. Trigger client browser file download
+    const link = document.createElement('a');
+    link.download = `${currentTemplate?.title || 'BrandFlow-Post'}-1080x1080.png`;
+    link.href = dataUrl;
+    link.click();
+
+    // 2. Save pre-rendered PNG to Cloudinary CDN & Database for future scheduling
+    handleSaveToDb();
+  };
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <>
+      <div className="fixed inset-0 w-screen h-screen z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+        <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]">
+          {/* Left Column: Live Canvas Preview */}
+          <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">
+            <div className="relative aspect-square w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center">
+              {isRendering && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
+                  <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full" />
+                  <span>Compositing 1080x1080 HD Graphic...</span>
+                </div>
+              )}
+              <canvas ref={canvasRef} className="w-full h-full object-contain" />
+            </div>
+
+            {isExpired || postsRemaining <= 0 ? (
+              <button
+                type="button"
+                onClick={openPlanModal}
+                className="text-xs text-rose-400 hover:text-rose-300 mt-4 text-center flex items-center justify-center gap-1 font-bold bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/30 transition cursor-pointer"
+              >
+                <Lock className="w-3.5 h-3.5 text-rose-400" />
+                <span>🔒 Plan Required ({postsRemaining} Posts Left) - Click to Unlock</span>
+              </button>
+            ) : (
+              <p className="text-xs text-slate-400 mt-4 text-center flex items-center gap-1 font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                1080x1080 HD Square Post Graphic ({postsRemaining} Posts Remaining)
+              </p>
+            )}
+          </div>
+
+          {/* Right Column: Customization Controls */}
+          <div className="md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto space-y-5">
+            <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+              <div>
+                <h3 className="font-heading font-extrabold text-lg text-white">Create Custom Graphic Post</h3>
+                <p className="text-xs text-slate-400">Customize template & details for instant export.</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {saveSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-semibold flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" /> Post saved to database successfully!
+                </span>
+              </div>
+            )}
+
+            {/* Visual Base Graphic Template & Custom Image Upload Selector */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Choose Base Graphic Template</span>
+                </label>
+                <div className="flex items-center gap-1.5">
+                  {customBaseImage && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomBaseImage(null)}
+                      className="text-[11px] text-rose-400 hover:text-rose-300 font-semibold bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 flex items-center gap-1 transition cursor-pointer"
+                      title="Remove custom uploaded image"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Remove</span>
+                    </button>
+                  )}
+                  <label className="cursor-pointer text-[11px] text-amber-400 font-semibold hover:underline bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1 transition">
+                    <Plus className="w-3 h-3" />
+                    <span>Custom Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setCustomBaseImage(reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Grid of Graphic Base Templates */}
+              <div className="grid grid-cols-3 gap-2.5 max-h-44 overflow-y-auto pr-1">
+                {/* Active Custom Upload Preview if selected */}
+                {customBaseImage && (
+                  <div className="p-1 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-center relative aspect-square group overflow-hidden">
+                    <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
+                    <img src={customBaseImage} alt="Custom Background" className="w-full h-full object-cover rounded-lg" />
+                    
+                    {/* Hover controls for preview & remove */}
+                    <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1 rounded-lg z-20">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewCustomImageModal(true);
+                        }}
+                        className="p-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow transition cursor-pointer"
+                        title="Preview custom image"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCustomBaseImage(null);
+                        }}
+                        className="p-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow transition cursor-pointer"
+                        title="Remove custom image"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <span className="absolute bottom-1 left-1 right-1 text-[9px] font-bold bg-black/80 text-amber-400 py-0.5 rounded text-center truncate z-10">
+                      Custom Upload
+                    </span>
+                  </div>
+                )}
+
+                {/* DB Graphic Templates */}
+                {sortedTemplates.map((t) => {
+                  const isSelected = !customBaseImage && (selectedTemplateId === t.id || currentTemplate?.id === t.id);
+                  const imgUrl = t.baseImageUrl || t.imageUrl || t.fileUrl;
+                  const festName = t.festival?.name;
+
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTemplateId(t.id);
+                        setCustomBaseImage(null);
+                      }}
+                      className={`p-1.5 rounded-xl border text-center transition flex flex-col items-center justify-between relative aspect-square overflow-hidden group ${
+                        isSelected
+                          ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/50'
+                          : 'border-[#2C384E] bg-[#0B0F17] hover:border-slate-600'
+                      }`}
+                    >
+                      {isSelected && (
+                        <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
+                      )}
+                      {festName && (
+                        <span className="absolute top-1 left-1 z-10 px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-extrabold text-[8px] uppercase shadow truncate max-w-[80%]">
+                          🗓️ {festName}
+                        </span>
+                      )}
+                      {imgUrl ? (
+                        <img src={imgUrl} alt={t.title} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition" />
+                      ) : (
+                        <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center text-[10px] text-slate-400">
+                          {t.title}
+                        </div>
+                      )}
+                      <span className="absolute bottom-1 left-1 right-1 text-[9px] font-semibold bg-black/75 text-white py-0.5 px-1 rounded truncate">
+                        {t.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Visual Transparent PNG Frame Overlay Selector */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Choose Frame Overlay ({frames.length})</span>
+                </label>
+                <span className="text-[10px] text-amber-400 font-mono truncate max-w-[140px]">
+                  {selectedFrame ? selectedFrame.title : 'No Frame'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2.5 max-h-44 overflow-y-auto pr-1">
+                {/* Option 1: No Frame */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedFrame(null)}
+                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center relative aspect-square ${
+                    selectedFrame === null
+                      ? 'border-amber-500 bg-amber-500/10 text-white font-bold ring-2 ring-amber-500/50'
+                      : 'border-[#2C384E] bg-[#0B0F17] text-slate-400 hover:border-slate-600'
+                  }`}
+                >
+                  {selectedFrame === null && (
+                    <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5" />
+                  )}
+                  <X className="w-6 h-6 text-slate-500 mb-1" />
+                  <span className="text-[11px] leading-tight font-semibold">No Frame</span>
+                </button>
+
+                {/* Database PNG Frames */}
+                {frames.map((f) => {
+                  const isSelected = selectedFrame?.id === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setSelectedFrame(f)}
+                      className={`p-2 rounded-xl border text-left transition flex flex-col justify-between relative aspect-square group overflow-hidden ${
+                        isSelected
+                          ? 'border-amber-500 bg-amber-500/10 text-white font-bold ring-2 ring-amber-500/50'
+                          : 'border-[#2C384E] bg-[#0B0F17] text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      {isSelected && (
+                        <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5 z-10" />
+                      )}
+
+                      {/* PNG Frame Thumbnail Image */}
+                      <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-950/80 border border-slate-800 p-1">
+                        {(f.previewUrl || f.overlayPngUrl) ? (
+                          <img src={f.previewUrl || f.overlayPngUrl} alt={f.title} className="w-full h-full object-contain" />
+                        ) : (
+                          <span className="text-[10px] text-slate-500">PNG</span>
+                        )}
+                      </div>
+
+                      <span className="text-[10px] font-semibold text-white truncate w-full mt-1.5 text-center block">
+                        {f.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Editable Business Details Section */}
+            <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-amber-400 flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Business Frame Details</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingDetails(!isEditingDetails)}
+                  className="text-xs text-amber-400 hover:underline flex items-center gap-1 font-semibold"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>{isEditingDetails ? 'Done' : 'Customize Details'}</span>
+                  {isEditingDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </button>
+              </div>
+
+              {isEditingDetails ? (
+                <div className="space-y-3 pt-2 border-t border-[#2C384E]">
+                  {/* Dynamic Image Upload Slots defined by Admin */}
+                  {selectedFrame?.configJson?.elements?.some(
+                    (el) =>
+                      el.slotCategory === 'IMAGE_SLOT' ||
+                      el.slotCategory === 'DYNAMIC_IMAGE' ||
+                      el.dynamicSlot === 'LOGO_BOX' ||
+                      el.dynamicSlot === 'AVATAR_CIRCLE' ||
+                      el.dynamicSlot === 'UPI_QR' ||
+                      el.dynamicSlot === 'CUSTOM_IMAGE' ||
+                      el.dynamicSlot === 'MANUAL_INPUT'
+                  ) && (
+                    <div className="space-y-3 pt-2 border-t border-[#2C384E]">
+                      <p className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        <span>Required Frame Photo & Logo Slots:</span>
+                      </p>
+                      {selectedFrame.configJson.elements
+                        .filter(
+                          (el) =>
+                            el.slotCategory === 'IMAGE_SLOT' ||
+                            el.slotCategory === 'DYNAMIC_IMAGE' ||
+                            el.dynamicSlot === 'LOGO_BOX' ||
+                            el.dynamicSlot === 'AVATAR_CIRCLE' ||
+                            el.dynamicSlot === 'UPI_QR' ||
+                            el.dynamicSlot === 'CUSTOM_IMAGE' ||
+                            el.dynamicSlot === 'MANUAL_INPUT'
+                        )
+                        .map((el) => {
+                          const slotKey = el.id || el.fieldKey || el.dynamicSlot;
+                          const isAvatar = el.dynamicSlot === 'AVATAR_CIRCLE' || el.fieldKey === 'avatarUrl' || el.type === 'CIRCLE';
+                          const isLogo = el.dynamicSlot === 'LOGO_BOX' || el.fieldKey === 'logoUrl';
+                          const isUpi = el.dynamicSlot === 'UPI_QR' || el.fieldKey === 'upiQrUrl';
+                          const label = el.customLabel || el.name || (isAvatar ? 'Profile Headshot Photo' : isLogo ? 'Business Logo Box' : isUpi ? 'UPI Payment QR Code' : 'Custom Image / Photo Slot');
+
+                          const activeUrl =
+                            customDetails[slotKey] ||
+                            customDetails[el.fieldKey] ||
+                            customDetails[el.id] ||
+                            (isAvatar
+                              ? customDetails.avatarUrl || brandKit?.avatarUrl
+                              : isLogo
+                              ? customDetails.logoUrl || brandKit?.logoUrl
+                              : isUpi
+                              ? customDetails.upiQrUrl || brandKit?.upiQrUrl
+                              : null);
+
+                          return (
+                            <div key={el.id} className="p-3 rounded-xl bg-[#131B2A] border border-[#2C384E] space-y-2 text-xs">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-white flex items-center gap-1.5">
+                                  {isAvatar ? '👤' : isLogo ? '🏢' : isUpi ? '📱' : '🖼️'} {label}
+                                </span>
+                                <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                                  {isAvatar ? 'Circle Ring' : isLogo ? 'Logo Box' : isUpi ? 'UPI QR (Auto-Fill)' : 'Image Slot'}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                {activeUrl ? (
+                                  <img src={activeUrl} alt={label} className="w-10 h-10 rounded-lg object-contain bg-slate-900 border border-slate-700" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] text-slate-400">
+                                    No Image
+                                  </div>
+                                )}
+
+                                <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition">
+                                  Upload {label}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        setCustomDetails((prev) => ({
+                                          ...prev,
+                                          [slotKey]: reader.result,
+                                          [el.id]: reader.result,
+                                          ...(el.fieldKey ? { [el.fieldKey]: reader.result } : {}),
+                                          ...(isAvatar ? { avatarUrl: reader.result } : {}),
+                                          ...(isLogo ? { logoUrl: reader.result } : {}),
+                                          ...(isUpi ? { upiQrUrl: reader.result } : {}),
+                                        }));
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+
+                  {/* Render EXACT Dynamic Text Input Fields Configured by Admin */}
+                  {selectedFrame?.configJson?.elements
+                    ?.filter((el) => 
+                      (el.slotCategory === 'TEXT_INPUT' || el.type === 'TEXT') && 
+                      el.dynamicSlot !== 'NONE' &&
+                      el.slotCategory !== 'IMAGE_SLOT' &&
+                      el.slotCategory !== 'DYNAMIC_IMAGE'
+                    )
+                    .map((el) => {
+                      let key = el.fieldKey || el.dynamicSlot || el.id;
+                      let label = el.customLabel || el.name || 'Text Field';
+                      let valKey = key;
+
+                      if (el.dynamicSlot === 'BUSINESS_NAME') { label = 'Business Name'; valKey = 'businessName'; }
+                      else if (el.dynamicSlot === 'PHONE') { label = 'Phone / WhatsApp'; valKey = 'phone'; }
+                      else if (el.dynamicSlot === 'ADDRESS') { label = 'Address / Location'; valKey = 'address'; }
+                      else if (el.dynamicSlot === 'TAGLINE' || el.dynamicSlot === 'SLOGAN') { label = 'Tagline / Slogan'; valKey = 'tagline'; }
+
+                      return (
+                        <Input
+                          key={el.id}
+                          label={label}
+                          placeholder={`Enter ${label}...`}
+                          value={customDetails[valKey] !== undefined ? customDetails[valKey] : (customDetails[key] || '')}
+                          onChange={(e) => setCustomDetails({ ...customDetails, [valKey]: e.target.value, [key]: e.target.value })}
+                        />
+                      );
+                    })}
+
+                  {/* Fallback to standard fields if selectedFrame has no JSON config */}
+                  {(!selectedFrame?.configJson?.elements || selectedFrame.configJson.elements.length === 0) && (
+                    <>
+                      <Input
+                        label="Business Name"
+                        value={customDetails.businessName}
+                        onChange={(e) => setCustomDetails({ ...customDetails, businessName: e.target.value })}
+                      />
+                      <Input
+                        label="Phone / WhatsApp"
+                        value={customDetails.phone}
+                        onChange={(e) => setCustomDetails({ ...customDetails, phone: e.target.value })}
+                      />
+                      <Input
+                        label="Address / Location"
+                        value={customDetails.address}
+                        onChange={(e) => setCustomDetails({ ...customDetails, address: e.target.value })}
+                      />
+                      <Input
+                        label="Tagline / Designation"
+                        value={customDetails.tagline}
+                        onChange={(e) => setCustomDetails({ ...customDetails, tagline: e.target.value })}
+                      />
+                    </>
+                  )}
+
+                  {/* Element Toggles */}
+                  <div className="flex flex-wrap gap-4 pt-1 text-[11px] text-slate-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={customDetails.showLogo}
+                        onChange={(e) => setCustomDetails({ ...customDetails, showLogo: e.target.checked })}
+                        className="accent-amber-500 rounded"
+                      />
+                      <span>Show Logo</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={customDetails.showAvatar}
+                        onChange={(e) => setCustomDetails({ ...customDetails, showAvatar: e.target.checked })}
+                        className="accent-amber-500 rounded"
+                      />
+                      <span>Show Headshot</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={customDetails.showPhone}
+                        onChange={(e) => setCustomDetails({ ...customDetails, showPhone: e.target.checked })}
+                        className="accent-amber-500 rounded"
+                      />
+                      <span>Show Phone</span>
+                    </label>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#2C384E] text-right">
+                    <Link to="/brand-kit" className="text-[11px] text-amber-400 hover:underline">
+                      Update Master BrandKit in DB ➔
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-slate-300 space-y-0.5">
+                  <p className="font-bold text-white text-xs">{customDetails.businessName || brandKit?.businessName || 'Your Business Name'}</p>
+                  <p className="text-[11px] text-slate-400 truncate">
+                    📞 {customDetails.phone || 'No phone'} | 📍 {customDetails.address || 'No location'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Action Bar */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-[#2C384E]">
+            <Button
+              variant="outline"
+              size="lg"
+              icon={BookmarkCheck}
+              onClick={handleSaveToDb}
+              isLoading={isSaving}
+              disabled={!dataUrl || isRendering}
+              className="w-full sm:w-auto text-xs"
+            >
+              Save Post to DB
+            </Button>
+
+            <Button
+              variant="primary"
+              size="lg"
+              icon={Download}
+              onClick={handleDownloadHD}
+              disabled={!dataUrl || isRendering}
+              className="w-full sm:flex-1 text-xs"
+            >
+              Download HD Post (PNG)
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Subscription & Payment Modals */}
+      <PlanSelectionModal
+        isOpen={isPlanModalOpen}
+        onClose={closePlanModal}
+        currentPlan={planName}
+        postsRemaining={postsRemaining}
+        onSuccess={(resData) => setSuccessData(resData)}
+      />
+
+      <PaymentSuccessModal
+        isOpen={!!successData}
+        onClose={() => setSuccessData(null)}
+        data={successData}
+      />
+
+      {/* Lightbox for previewing uploaded custom graphic */}
+      <ImageLightbox
+        isOpen={Boolean(previewCustomImageModal)}
+        imageUrl={customBaseImage}
+        item={{ title: "Your Custom Uploaded Graphic", occasionName: "Master Background Graphic" }}
+        onClose={() => setPreviewCustomImageModal(false)}
+      />
+    </>,
+    document.body
+  );
+};
+
+export default PostCreatorModal;

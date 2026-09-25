@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
-import { usePostPublisher } from "../../../hooks/usePostPublisher";
-import { useSocialAccounts } from "../../../hooks/useSocialAccounts";
+import { usePostPublisher } from '@/features/social/hooks/usePostPublisher';
+import { useSocialAccounts } from '@/features/social/hooks/useSocialAccounts';
 import { AiCaptionGeneratorModal } from "./AiCaptionGeneratorModal";
 
 const SOCIAL_PLATFORMS = [

@@ -1,0 +1,670 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { drawVectorShapePath } from '@/features/admin/frames/hooks/useFrameCanvasEngine';
+
+const drawImageAspectCover = (ctx, img, dx, dy, dWidth, dHeight) => {
+  if (!img) return;
+  const imgW = img.naturalWidth || img.width || dWidth;
+  const imgH = img.naturalHeight || img.height || dHeight;
+  const imgRatio = imgW / imgH;
+  const targetRatio = dWidth / dHeight;
+
+  let sx = 0, sy = 0, sW = imgW, sH = imgH;
+
+  if (imgRatio > targetRatio) {
+    sW = imgH * targetRatio;
+    sx = (imgW - sW) / 2;
+  } else {
+    sH = imgW / targetRatio;
+    sy = (imgH - sH) / 2;
+  }
+
+  ctx.drawImage(img, sx, sy, sW, sH, dx, dy, dWidth, dHeight);
+};
+
+const drawImageAspectContain = (ctx, img, dx, dy, dWidth, dHeight) => {
+  if (!img) return;
+  const imgW = img.naturalWidth || img.width || dWidth;
+  const imgH = img.naturalHeight || img.height || dHeight;
+  const imgRatio = imgW / imgH;
+  const targetRatio = dWidth / dHeight;
+
+  let renderW = dWidth;
+  let renderH = dHeight;
+  let renderX = dx;
+  let renderY = dy;
+
+  if (imgRatio > targetRatio) {
+    renderH = dWidth / imgRatio;
+    renderY = dy + (dHeight - renderH) / 2;
+  } else {
+    renderW = dHeight * imgRatio;
+    renderX = dx + (dWidth - renderW) / 2;
+  }
+
+  ctx.fillStyle = '#0B0F17';
+  ctx.fillRect(dx, dy, dWidth, dHeight);
+  ctx.drawImage(img, 0, 0, imgW, imgH, renderX, renderY, renderW, renderH);
+};
+
+/**
+ * Enterprise HTML5 2D Canvas Compositor Hook
+ * Merges Base Template Graphic + Admin Frame (PNG/JSON Vector) + User BrandKit & Custom Details
+ */
+export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, brandKit, customDetails = {}) => {
+  const [isRendering, setIsRendering] = useState(false);
+  const [dataUrl, setDataUrl] = useState(null);
+
+  // In-memory HTMLImageElement Cache to eliminate network requests during frame switching
+  const imageCacheRef = useRef(new Map());
+  const MAX_CACHE_SIZE = 50;
+
+  const loadImageCached = useCallback((src) => {
+    if (!src) return Promise.resolve(null);
+    if (imageCacheRef.current.has(src)) {
+      return Promise.resolve(imageCacheRef.current.get(src));
+    }
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        // Enforce MAX_CACHE_SIZE cap (50 items) to prevent browser memory leaks
+        if (imageCacheRef.current.size >= MAX_CACHE_SIZE) {
+          const firstKey = imageCacheRef.current.keys().next().value;
+          if (firstKey) imageCacheRef.current.delete(firstKey);
+        }
+        imageCacheRef.current.set(src, img);
+        resolve(img);
+      };
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }, []);
+
+  const renderCanvas = useCallback(async () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !baseImageUrl) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    setIsRendering(true);
+
+    // Set canvas dimensions to standard high-res square (1080x1080)
+    if (canvas.width !== 1080 || canvas.height !== 1080) {
+      canvas.width = 1080;
+      canvas.height = 1080;
+    }
+
+    try {
+      // Effective brandkit data with live user overrides
+      const activeBusinessName = customDetails.businessName !== undefined ? customDetails.businessName : (brandKit?.businessName || '');
+      const activeTagline = customDetails.tagline !== undefined ? customDetails.tagline : (brandKit?.tagline || '');
+      const activePhone = customDetails.phone !== undefined ? customDetails.phone : (brandKit?.phone || brandKit?.whatsapp || '');
+      const activeAddress = customDetails.address !== undefined ? customDetails.address : (brandKit?.address ? `${brandKit.address}${brandKit.city ? `, ${brandKit.city}` : ''}` : '');
+      const activeLogoUrl = customDetails.logoUrl || brandKit?.logoUrl;
+      const activeAvatarUrl = customDetails.avatarUrl || brandKit?.avatarUrl;
+      const activeUpiQrUrl = customDetails.upiQrUrl !== undefined ? customDetails.upiQrUrl : (brandKit?.upiQrUrl || null);
+
+      const showLogo = customDetails.showLogo !== undefined ? customDetails.showLogo : true;
+      const showAvatar = customDetails.showAvatar !== undefined ? customDetails.showAvatar : true;
+      const showUpiQr = customDetails.showUpiQr !== undefined ? customDetails.showUpiQr : true;
+      const showPhone = customDetails.showPhone !== undefined ? customDetails.showPhone : true;
+      const showAddress = customDetails.showAddress !== undefined ? customDetails.showAddress : true;
+
+      // Safely extract JSON config elements array across all API formats (stringified or object)
+      let rawConfig = selectedFrame?.configJson || selectedFrame?.blueprint || selectedFrame?.layoutConfig || selectedFrame?.jsonConfig || selectedFrame?.config;
+      if (typeof rawConfig === 'string') {
+        try {
+          rawConfig = JSON.parse(rawConfig);
+        } catch (e) {
+          console.warn('Failed to parse frame configJson string:', e);
+        }
+      }
+
+      const parsedElements = Array.isArray(rawConfig)
+        ? rawConfig
+        : (rawConfig?.elements && Array.isArray(rawConfig.elements) ? rawConfig.elements : null);
+
+      const DEFAULT_FRAME_ELEMENTS = [
+        {
+          id: 'el-footer-bg',
+          name: 'Footer Bar Container',
+          type: 'RECTANGLE',
+          x: 0,
+          y: 940,
+          width: 1080,
+          height: 140,
+          fillColor: '#0B0F17',
+          borderColor: '#EAB308',
+          borderWidth: 3,
+          borderRadius: 0,
+          slotCategory: 'STATIC_SHAPE',
+          dynamicSlot: 'NONE',
+        },
+        {
+          id: 'el-logo-box',
+          name: 'Logo Container Box',
+          type: 'RECTANGLE',
+          x: 35,
+          y: 35,
+          width: 120,
+          height: 120,
+          fillColor: '#FFFFFF',
+          borderColor: '#CBD5E1',
+          borderWidth: 2,
+          borderRadius: 16,
+          slotCategory: 'IMAGE_SLOT',
+          dynamicSlot: 'LOGO_BOX',
+        },
+        {
+          id: 'el-avatar-circle',
+          name: 'Owner Headshot Ring',
+          type: 'CIRCLE',
+          x: 35,
+          y: 890,
+          width: 130,
+          height: 130,
+          fillColor: '#1E293B',
+          borderColor: '#EAB308',
+          borderWidth: 5,
+          borderRadius: 65,
+          slotCategory: 'IMAGE_SLOT',
+          dynamicSlot: 'AVATAR_CIRCLE',
+        },
+        {
+          id: 'el-business-name',
+          name: 'Business Name Text',
+          type: 'TEXT',
+          x: 185,
+          y: 965,
+          width: 450,
+          height: 40,
+          fillColor: '#FFFFFF',
+          fontSize: 28,
+          fontFamily: 'Space Grotesk',
+          fontWeight: 'bold',
+          fontColor: '#FFFFFF',
+          textAlign: 'left',
+          slotCategory: 'TEXT_INPUT',
+          dynamicSlot: 'BUSINESS_NAME',
+          text: 'SUNRISE REAL ESTATE',
+        },
+        {
+          id: 'el-phone-badge',
+          name: 'Phone Badge',
+          type: 'TEXT',
+          x: 700,
+          y: 965,
+          width: 340,
+          height: 40,
+          fillColor: '#EAB308',
+          fontSize: 22,
+          fontFamily: 'Space Grotesk',
+          fontWeight: 'bold',
+          fontColor: '#EAB308',
+          textAlign: 'right',
+          slotCategory: 'TEXT_INPUT',
+          dynamicSlot: 'PHONE',
+          text: '+91 98765 43210',
+        },
+        {
+          id: 'el-address-text',
+          name: 'Address Text',
+          type: 'TEXT',
+          x: 700,
+          y: 1010,
+          width: 340,
+          height: 30,
+          fillColor: '#CBD5E1',
+          fontSize: 15,
+          fontFamily: 'Plus Jakarta Sans',
+          fontWeight: 'normal',
+          fontColor: '#CBD5E1',
+          textAlign: 'right',
+          slotCategory: 'TEXT_INPUT',
+          dynamicSlot: 'ADDRESS',
+          text: 'Business Park, MG Road, Mumbai',
+        },
+      ];
+
+      const frameConfigElements = selectedFrame
+        ? (parsedElements && parsedElements.length > 0
+          ? parsedElements
+          : DEFAULT_FRAME_ELEMENTS)
+        : [];
+
+      // Load cached image assets
+      const [baseImg, logoImg, avatarImg, upiQrImg, frameOverlayImg] = await Promise.all([
+        loadImageCached(baseImageUrl),
+        loadImageCached(showLogo ? activeLogoUrl : null),
+        loadImageCached(showAvatar ? activeAvatarUrl : null),
+        loadImageCached(showUpiQr ? activeUpiQrUrl : null),
+        loadImageCached(selectedFrame?.overlayPngUrl),
+      ]);
+
+      // Clear previous canvas frame
+      ctx.clearRect(0, 0, 1080, 1080);
+
+      // 1. LAYER 1: Base Graphic Background (Aspect Cover for templates, Aspect Contain for custom uploaded images)
+      if (baseImg) {
+        if (baseImageUrl.startsWith('data:') || baseImageUrl.startsWith('blob:')) {
+          drawImageAspectContain(ctx, baseImg, 0, 0, 1080, 1080);
+        } else {
+          drawImageAspectCover(ctx, baseImg, 0, 0, 1080, 1080);
+        }
+      } else {
+        ctx.fillStyle = '#0B0F17';
+        ctx.fillRect(0, 0, 1080, 1080);
+      }
+
+      // 2. LAYER 2: Transparent PNG Frame Overlay & Static Vector Shapes
+      // A frame is strictly an OVERLAY on top of Layer 1 (Base Graphic). It must NEVER overwrite or blank out Layer 1.
+      const isOpaquePreviewUrl =
+        selectedFrame?.overlayPngUrl &&
+        selectedFrame?.previewUrl &&
+        selectedFrame.overlayPngUrl === selectedFrame.previewUrl &&
+        !selectedFrame.overlayPngUrl.startsWith('data:image/svg+xml');
+
+      const staticShapes =
+        frameConfigElements?.filter(
+          (el) =>
+            el.type !== 'TEXT' &&
+            el.type !== 'DYNAMIC_TEXT' &&
+            el.slotCategory !== 'TEXT_INPUT' &&
+            el.slotCategory !== 'IMAGE_SLOT' &&
+            el.slotCategory !== 'DYNAMIC_IMAGE' &&
+            el.type !== 'IMAGE_SLOT' &&
+            el.type !== 'IMAGE' &&
+            el.dynamicSlot !== 'AVATAR_CIRCLE' &&
+            el.dynamicSlot !== 'LOGO_BOX' &&
+            el.dynamicSlot !== 'UPI_QR' &&
+            el.dynamicSlot !== 'CUSTOM_IMAGE' &&
+            el.dynamicSlot !== 'MANUAL_INPUT'
+        ) || [];
+
+      // Render static shapes with vector paths whenever defined in frame config
+      if (staticShapes.length > 0) {
+        staticShapes.forEach((shape) => {
+          ctx.save();
+          const rotation = shape.rotation || 0;
+          if (rotation) {
+            const cx = shape.x + shape.width / 2;
+            const cy = shape.y + (shape.height || shape.width) / 2;
+            ctx.translate(cx, cy);
+            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.translate(-cx, -cy);
+          }
+
+          drawVectorShapePath(ctx, shape);
+
+          // Fill shape unless it's a line or frame border
+          if (
+            shape.type !== 'LINE' &&
+            shape.type !== 'FRAME_BORDER' &&
+            shape.fillColor &&
+            shape.fillColor !== 'transparent'
+          ) {
+            ctx.fillStyle = shape.fillColor;
+            ctx.fill();
+          }
+
+          // Stroke borders
+          if (shape.borderWidth > 0 || shape.type === 'FRAME_BORDER') {
+            ctx.strokeStyle = shape.borderColor || '#EAB308';
+            ctx.lineWidth = shape.borderWidth || (shape.type === 'FRAME_BORDER' ? 8 : 2);
+
+            if (shape.borderStyle === 'DASHED') {
+              ctx.setLineDash([ctx.lineWidth * 3, ctx.lineWidth * 2]);
+            } else if (shape.borderStyle === 'DOTTED') {
+              ctx.setLineDash([ctx.lineWidth, ctx.lineWidth]);
+            } else {
+              ctx.setLineDash([]);
+            }
+
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+
+          ctx.restore();
+        });
+      } else if (frameOverlayImg && !isOpaquePreviewUrl) {
+        // Only draw raster/SVG overlay if no vector static shapes are drawn and it's NOT an opaque preview image
+        ctx.drawImage(frameOverlayImg, 0, 0, 1080, 1080);
+      }
+
+      // 3. LAYER 3: Render All Configured Image Slots (Logos, Avatars, Image Slots)
+      const imageSlots = frameConfigElements?.filter(
+        (el) =>
+          el.slotCategory === 'IMAGE_SLOT' ||
+          el.slotCategory === 'DYNAMIC_IMAGE' ||
+          el.type === 'IMAGE_SLOT' ||
+          el.type === 'IMAGE' ||
+          el.dynamicSlot === 'LOGO_BOX' ||
+          el.dynamicSlot === 'AVATAR_CIRCLE' ||
+          el.dynamicSlot === 'UPI_QR' ||
+          el.dynamicSlot === 'CUSTOM_IMAGE' ||
+          el.dynamicSlot === 'MANUAL_INPUT'
+      ) || [];
+
+      let hasRenderedAvatarSlot = false;
+
+      if (imageSlots.length > 0) {
+        for (const slot of imageSlots) {
+          const slotKey = slot.id || slot.fieldKey || slot.dynamicSlot;
+          const isAvatarSlot = slot.dynamicSlot === 'AVATAR_CIRCLE' || slot.fieldKey === 'avatarUrl';
+          const isLogoSlot = slot.dynamicSlot === 'LOGO_BOX' || slot.fieldKey === 'logoUrl';
+          const isUpiSlot = slot.dynamicSlot === 'UPI_QR' || slot.fieldKey === 'upiQrUrl';
+
+          // 🛑 Toggle Visibility: Skip rendering slot completely if toggled OFF by user
+          if (isAvatarSlot && !showAvatar) continue;
+          if (isLogoSlot && !showLogo) continue;
+          if (isUpiSlot && !showUpiQr) continue;
+
+          let slotUrl = null;
+          if (isAvatarSlot) {
+            slotUrl = activeAvatarUrl;
+          } else if (isLogoSlot) {
+            slotUrl = activeLogoUrl;
+          } else if (isUpiSlot) {
+            slotUrl = activeUpiQrUrl;
+          } else {
+            slotUrl =
+              (typeof customDetails[slotKey] === 'string' ? customDetails[slotKey] : null) ||
+              (typeof customDetails[slot.fieldKey] === 'string' ? customDetails[slot.fieldKey] : null) ||
+              (typeof customDetails[slot.id] === 'string' ? customDetails[slot.id] : null) ||
+              (typeof slot.src === 'string' ? slot.src : (typeof slot.url === 'string' ? slot.url : null));
+          }
+
+          const slotImg = slotUrl ? await loadImageCached(slotUrl) : null;
+
+          if (slotImg) {
+            if (slot.dynamicSlot === 'AVATAR_CIRCLE') hasRenderedAvatarSlot = true;
+            const rotation = slot.rotation || 0;
+            if (rotation) {
+              const cx = slot.x + slot.width / 2;
+              const cy = slot.y + (slot.height || slot.width) / 2;
+              ctx.save();
+              ctx.translate(cx, cy);
+              ctx.rotate((rotation * Math.PI) / 180);
+              ctx.translate(-cx, -cy);
+            }
+
+            const targetH = slot.height || slot.width;
+            ctx.save();
+            drawVectorShapePath(ctx, slot);
+            ctx.clip();
+            drawImageAspectCover(ctx, slotImg, slot.x, slot.y, slot.width, targetH);
+            ctx.restore();
+
+            if (slot.borderWidth > 0 || slot.borderColor) {
+              ctx.save();
+              drawVectorShapePath(ctx, slot);
+              ctx.lineWidth = slot.borderWidth || 4;
+              ctx.strokeStyle = slot.borderColor || '#EAB308';
+              ctx.stroke();
+              ctx.restore();
+            }
+
+            if (rotation) ctx.restore();
+          } else if (slot.dynamicSlot === 'AVATAR_CIRCLE') {
+            hasRenderedAvatarSlot = true;
+            if (showAvatar) {
+              // Render clean default avatar placeholder inside avatar slot when user has not uploaded photo yet
+              const cx = slot.x + slot.width / 2;
+              const cy = slot.y + (slot.height || slot.width) / 2;
+              const r = slot.width / 2;
+
+              ctx.save();
+              ctx.fillStyle = slot.fillColor || '#1E293B';
+              ctx.beginPath();
+              ctx.arc(cx, cy, r, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.fillStyle = '#94A3B8';
+              ctx.beginPath();
+              ctx.arc(cx, cy - r * 0.2, r * 0.35, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(cx, cy + r * 0.7, r * 0.6, Math.PI, 0);
+              ctx.fill();
+
+              if (slot.borderWidth || slot.borderColor) {
+                ctx.lineWidth = slot.borderWidth || 5;
+                ctx.strokeStyle = slot.borderColor || '#EAB308';
+                ctx.stroke();
+              }
+              ctx.restore();
+            }
+          } else if (slot.dynamicSlot === 'LOGO_BOX') {
+            if (showLogo) {
+              // Render clean default logo placeholder box when user has not uploaded logo yet
+              ctx.save();
+              ctx.fillStyle = slot.fillColor || '#FFFFFF';
+              drawVectorShapePath(ctx, slot);
+              ctx.fill();
+
+              if (slot.borderWidth || slot.borderColor) {
+                ctx.lineWidth = slot.borderWidth || 2;
+                ctx.strokeStyle = slot.borderColor || '#CBD5E1';
+                ctx.stroke();
+              }
+
+              ctx.fillStyle = '#64748B';
+              ctx.font = 'bold 12px "Space Grotesk", sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              const cx = slot.x + slot.width / 2;
+              const cy = slot.y + (slot.height || slot.width) / 2;
+              ctx.fillText('🖼️ LOGO SLOT', cx, cy);
+              ctx.restore();
+            }
+          } else if (slot.dynamicSlot === 'UPI_QR' || slot.fieldKey === 'upiQrUrl') {
+            if (showUpiQr) {
+              // Render clean default UPI QR placeholder when user has not uploaded QR code yet
+              ctx.save();
+              ctx.fillStyle = '#FFFFFF';
+              drawVectorShapePath(ctx, slot);
+              ctx.fill();
+
+              if (slot.borderWidth || slot.borderColor) {
+                ctx.lineWidth = slot.borderWidth || 2;
+                ctx.strokeStyle = slot.borderColor || '#10B981';
+                ctx.stroke();
+              }
+
+              ctx.fillStyle = '#065F46';
+              ctx.font = 'bold 12px "Space Grotesk", sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              const cx = slot.x + slot.width / 2;
+              const cy = slot.y + (slot.height || slot.width) / 2;
+              ctx.fillText('📱 UPI QR', cx, cy);
+              ctx.restore();
+            }
+          } else {
+            // Render vector shape (e.g. Star, Polygon) directly if no custom image file uploaded
+            ctx.save();
+            if (slot.fillColor && slot.fillColor !== 'transparent') {
+              ctx.fillStyle = slot.fillColor;
+              drawVectorShapePath(ctx, slot);
+              ctx.fill();
+            }
+            if (slot.borderWidth || slot.borderColor) {
+              ctx.lineWidth = slot.borderWidth || 2;
+              ctx.strokeStyle = slot.borderColor || '#EAB308';
+              drawVectorShapePath(ctx, slot);
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+        }
+      }
+
+      // 4. LAYER 4: Dynamic Text Details & Elements Overlay
+      const textElementsInConfig = frameConfigElements?.filter(
+        (el) =>
+          (el.type === 'TEXT' || el.type === 'DYNAMIC_TEXT' || el.slotCategory === 'TEXT_INPUT' || (el.dynamicSlot && el.dynamicSlot !== 'NONE' && el.dynamicSlot !== 'STATIC')) &&
+          el.slotCategory !== 'IMAGE_SLOT' &&
+          el.slotCategory !== 'DYNAMIC_IMAGE' &&
+          el.dynamicSlot !== 'LOGO_BOX' &&
+          el.dynamicSlot !== 'AVATAR_CIRCLE' &&
+          el.dynamicSlot !== 'CUSTOM_IMAGE'
+      ) || [];
+
+      if (textElementsInConfig.length > 0) {
+        textElementsInConfig.forEach((textSlot) => {
+          let textVal = '';
+          const fieldKey = textSlot.fieldKey || textSlot.dynamicSlot || textSlot.id;
+          const icon = textSlot.iconPrefix ? `${textSlot.iconPrefix} ` : '';
+          const frameText = textSlot.text || textSlot.defaultText || '';
+
+          if (textSlot.dynamicSlot === 'BUSINESS_NAME') {
+            textVal = customDetails.businessName || brandKit?.businessName || frameText || 'Sunrise Real Estate';
+          } else if (textSlot.dynamicSlot === 'PHONE') {
+            if (showPhone) {
+              textVal = customDetails.phone || brandKit?.phone || brandKit?.whatsapp || frameText || '+91 98765 43210';
+            }
+          } else if (textSlot.dynamicSlot === 'WHATSAPP') {
+            textVal = customDetails.whatsapp || brandKit?.whatsapp || brandKit?.phone || frameText || '+91 98765 43210';
+          } else if (textSlot.dynamicSlot === 'EMAIL') {
+            textVal = customDetails.email || brandKit?.email || frameText || 'contact@business.com';
+          } else if (textSlot.dynamicSlot === 'INSTAGRAM') {
+            textVal = customDetails.instagramHandle || brandKit?.instagramHandle || frameText || '@yourbrand';
+          } else if (textSlot.dynamicSlot === 'FACEBOOK') {
+            textVal = customDetails.facebookHandle || brandKit?.facebookHandle || frameText || 'yourbrand';
+          } else if (textSlot.dynamicSlot === 'LINKEDIN') {
+            textVal = customDetails.linkedinHandle || brandKit?.linkedinHandle || frameText || 'in/yourcompany';
+          } else if (textSlot.dynamicSlot === 'TWITTER') {
+            textVal = customDetails.twitterHandle || brandKit?.twitterHandle || frameText || '@yourbrand';
+          } else if (textSlot.dynamicSlot === 'YOUTUBE') {
+            textVal = customDetails.youtubeHandle || brandKit?.youtubeHandle || frameText || '@yourchannel';
+          } else if (textSlot.dynamicSlot === 'ADDRESS') {
+            if (showAddress) {
+              textVal = customDetails.address || (brandKit?.address ? `${brandKit.address}${brandKit.city ? `, ${brandKit.city}` : ''}` : null) || frameText || 'Business Park, MG Road, Mumbai';
+            }
+          } else if (textSlot.dynamicSlot === 'CITY') {
+            textVal = customDetails.city || brandKit?.city || frameText || 'Mumbai';
+          } else if (textSlot.dynamicSlot === 'STATE') {
+            textVal = customDetails.state || brandKit?.state || frameText || 'Maharashtra';
+          } else if (textSlot.dynamicSlot === 'COUNTRY') {
+            textVal = customDetails.country || brandKit?.country || frameText || 'India';
+          } else if (textSlot.dynamicSlot === 'WEBSITE') {
+            textVal = customDetails.websiteUrl || brandKit?.websiteUrl || frameText || 'www.yourbusiness.com';
+          } else if (textSlot.dynamicSlot === 'TAGLINE' || textSlot.dynamicSlot === 'SLOGAN' || textSlot.text?.toLowerCase().includes('slogan')) {
+            textVal = customDetails.tagline || customDetails.slogan || brandKit?.tagline || brandKit?.slogan || frameText || 'Luxury Homes & Commercial Spaces';
+          } else if (textSlot.dynamicSlot === 'WORKING_HOURS') {
+            textVal = customDetails.workingHours || brandKit?.workingHours || frameText || 'Mon - Sat: 10:00 AM - 9:00 PM';
+          } else if (textSlot.dynamicSlot === 'GMB_REVIEW') {
+            textVal = customDetails.gmbReviewUrl || brandKit?.gmbReviewUrl || frameText || 'https://g.page/r/review-us';
+          } else if (textSlot.dynamicSlot === 'UPI_VPA') {
+            textVal = customDetails.upiVpa || brandKit?.upiVpa || frameText || 'storename@upi';
+          } else {
+            const customVal = customDetails[fieldKey] !== undefined && customDetails[fieldKey] !== ''
+              ? customDetails[fieldKey]
+              : (customDetails[textSlot.id] !== undefined && customDetails[textSlot.id] !== ''
+              ? customDetails[textSlot.id]
+              : (customDetails[textSlot.customLabel] !== undefined && customDetails[textSlot.customLabel] !== ''
+              ? customDetails[textSlot.customLabel]
+              : (customDetails[textSlot.name] !== undefined && customDetails[textSlot.name] !== ''
+              ? customDetails[textSlot.name]
+              : '')));
+            textVal = customVal || frameText || textSlot.label || textSlot.name || '';
+          }
+
+          if (textVal) {
+            if (icon && !textVal.startsWith(icon.trim())) {
+              textVal = `${icon}${textVal}`;
+            }
+
+            const rotation = textSlot.rotation || 0;
+            const isShape = textSlot.type !== 'TEXT' && textSlot.type !== 'DYNAMIC_TEXT';
+            const elH = isShape ? textSlot.height || textSlot.width : (textSlot.fontSize || 24) + 6;
+
+            if (rotation) {
+              const cx = textSlot.x + textSlot.width / 2;
+              const cy = textSlot.y + elH / 2;
+              ctx.save();
+              ctx.translate(cx, cy);
+              ctx.rotate((rotation * Math.PI) / 180);
+              ctx.translate(-cx, -cy);
+            }
+
+            ctx.save();
+            if (isShape) {
+              if (textSlot.fillColor && textSlot.fillColor !== 'transparent') {
+                ctx.save();
+                drawVectorShapePath(ctx, textSlot);
+                ctx.fillStyle = textSlot.fillColor;
+                ctx.fill();
+                if (textSlot.borderWidth > 0) {
+                  ctx.strokeStyle = textSlot.borderColor || '#EAB308';
+                  ctx.lineWidth = textSlot.borderWidth;
+                  ctx.stroke();
+                }
+                ctx.restore();
+              }
+              drawVectorShapePath(ctx, textSlot);
+              ctx.clip();
+            }
+
+            const fontFamily = textSlot.fontFamily || 'Space Grotesk';
+            const fontWeight = textSlot.fontWeight || 'bold';
+            const fontSize = textSlot.fontSize || (isShape ? Math.min(24, Math.max(12, Math.floor(elH * 0.28))) : 24);
+
+            // Determine text color properly: check fontColor, textColor, color, and fallback to fillColor or black
+            let textColor = textSlot.fontColor || textSlot.textColor || textSlot.color;
+            if (!textColor) {
+              if (textSlot.fillColor && textSlot.fillColor !== 'transparent') {
+                textColor = textSlot.fillColor;
+              } else {
+                textColor = '#000000'; // Default to black text if unspecified on canvas background
+              }
+            }
+
+            ctx.fillStyle = textColor;
+            const isSerif = fontFamily === 'Playfair Display' || fontFamily === 'Cinzel';
+            const fallback = isSerif ? 'serif' : 'sans-serif';
+            ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", ${fallback}`;
+
+            if (isShape) {
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              const tx = textSlot.x + textSlot.width / 2;
+              const ty = textSlot.y + elH / 2;
+              ctx.fillText(textVal, tx, ty, textSlot.width * 0.85);
+            } else {
+              ctx.textAlign = textSlot.textAlign || 'left';
+              ctx.textBaseline = 'top';
+              const tx =
+                textSlot.textAlign === 'center'
+                  ? textSlot.x + textSlot.width / 2
+                  : textSlot.textAlign === 'right'
+                  ? textSlot.x + textSlot.width
+                  : textSlot.x;
+              ctx.fillText(textVal, tx, textSlot.y);
+            }
+
+            ctx.restore();
+            if (rotation) ctx.restore();
+          }
+        });
+      }
+
+      // Update dataURL asynchronously for export
+      const url = canvas.toDataURL('image/png', 0.95);
+      setDataUrl(url);
+    } catch (err) {
+      console.error('Canvas compositing error:', err);
+    } finally {
+      setIsRendering(false);
+    }
+  }, [canvasRef, baseImageUrl, selectedFrame, brandKit, customDetails, loadImageCached]);
+
+  useEffect(() => {
+    renderCanvas();
+  }, [renderCanvas]);
+
+  return { isRendering, dataUrl, reRender: renderCanvas };
+};
+
+export default useCanvasCompositor;

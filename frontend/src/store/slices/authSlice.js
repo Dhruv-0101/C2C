@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { STORAGE_KEYS } from '../../constants/theme.constants';
-import { storage } from '../../utils/storage.util';
+import { STORAGE_KEYS } from '@/shared/constants';
+import { storage } from '@/shared/utils/storage.util';
 
 // Hydrate state from localStorage on load
 const initialUser = storage.get(STORAGE_KEYS.USER_DATA);

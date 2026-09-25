@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../../../services/auth.api';
+import { authApi } from '@/features/auth/api/auth.api';
 import { setCredentials } from '../../../store/slices/authSlice';
-import { getRoleRedirectPath } from '../../../utils/auth.util';
+import { getRoleRedirectPath } from '@/shared/utils/auth.util';
 
 /**
  * Custom hook for User Login supporting 2FA challenge redirect & 2.5s success notification delay

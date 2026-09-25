@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 /**
  * Route guard for authenticated pages with role & privilege checks

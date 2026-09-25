@@ -1,13 +1,13 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthLayout } from "../layouts/AuthLayout";
-import { MainLayout } from "../layouts/MainLayout";
-import { AdminLayout } from "../layouts/AdminLayout";
+import { AuthLayout } from "@/layouts/AuthLayout";
+import { AppLayout } from "@/layouts/AppLayout";
+import { AdminLayout } from "@/layouts/AdminLayout";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { PageLoader } from "../components/common/PageLoader";
-import { useAuth } from "../hooks/useAuth";
-import { getRoleRedirectPath } from "../utils/auth.util";
+import { PageLoader } from '@/components/feedback/PageLoader';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { getRoleRedirectPath } from '@/shared/utils/auth.util';
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import {
@@ -102,7 +102,7 @@ const ProfilePage = lazy(() =>
   }))
 );
 const AnalyticsPage = lazy(() =>
-  import("../features/analytics/AnalyticsPage").then((m) => ({
+  import("../features/analytics/pages/AnalyticsPage").then((m) => ({
     default: m.AnalyticsPage || m.default,
   }))
 );
@@ -147,7 +147,7 @@ export const AppRoutes = () => {
 
         {/* Protected Shared Workspace Routes (SuperAdmin, SubAdmin, Business Users) */}
         <Route element={<ProtectedRoute />}>
-          <Route element={<MainLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/create-post" element={<CreatePostPage />} />
             <Route path="/posts" element={<YourPostsPage />} />
@@ -211,3 +211,5 @@ export const AppRoutes = () => {
     </Suspense>
   );
 };
+
+export default AppRoutes;
