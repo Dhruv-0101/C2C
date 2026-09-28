@@ -1,3 +1,4 @@
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -96,25 +97,48 @@ app.use(
 );
 
 /**
- * 📥 4. REQUEST BODY & COOKIE PARSERS (PAYLOAD SECURITY & AUTH DECODING):
+ * ⚡ 4. HTTP PAYLOAD COMPRESSION (GZIP / DEFLATE):
  * 
- * A) express.json({ limit: '50mb' }):
- *    - Real World Analogy: Package Weight Scale at the Mailroom.
+ * - Real World Analogy: Vacuum-sealing packages before shipping to save 60-80% space and transit time.
+ * - Tech Reason: Compresses JSON API responses and static text assets before transmitting over the network.
+ * - Level 6: Industry gold-standard sweet spot balancing CPU efficiency with high compression ratio.
+ * - Threshold 1024 (1KB): Prevents wasting CPU cycles on tiny payloads where header overhead exceeds savings.
+ * - Filter: Respects 'x-no-compression' header if requested and defaults to compression.filter for MIME verification.
+ */
+app.use(
+  compression({
+    level: 6,
+    threshold: 1024,
+    filter: (req, res) => {
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+  })
+);
+
+/**
+ * 📥 5. REQUEST BODY & COOKIE PARSERS (PAYLOAD SECURITY & AUTH DECODING):
+ * 
+ * A) express.json({ limit: '10mb' }):
+ *    - Real World Analogy: Strict Package Weight Scale at the Mailroom.
  *    - USE CASE: Converts incoming JSON payloads into 'req.body'.
- *    - WHY 50MB: Caps memory allocation to allow high-resolution (1080x1080) canvas base64 image & logo uploads 
- *      while preventing Denial of Service (DoS) attacks where hackers send 500MB payload bombs to crash Node.js process memory.
+ *    - WHY 10MB: Drastically limits heap memory allocation compared to unsafe 50MB limits, preventing
+ *      Denial of Service (DoS) memory exhaustion attacks while easily supporting 1080x1080 canvas export payloads.
+ *    - Binary files (photos/logos) are streamed directly via Multer multipart handlers without JSON overhead.
  * 
- * B) express.urlencoded({ extended: true, limit: '50mb' }):
+ * B) express.urlencoded({ extended: true, limit: '10mb' }):
  *    - USE CASE: Converts standard HTML form submissions ('application/x-www-form-urlencoded') into 'req.body'.
- *    - WHY extended: true: Uses the rich 'qs' library to parse complex nested objects & arrays from form posts.
+ *    - WHY extended: true: Uses the rich 'qs' library to parse nested objects & arrays from form posts.
  * 
  * C) cookieParser():
  *    - Real World Analogy: Decoder Badge for Secret Messages.
  *    - USE CASE: Reads raw HTTP 'Cookie' headers ("brandflow_refresh_token=...") & decodes them into 'req.cookies'.
  *    - WHY: Essential for JWT Refresh Token rotation (req.cookies[REFRESH_TOKEN_COOKIE_NAME]) during silent re-auth.
  */
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 /**

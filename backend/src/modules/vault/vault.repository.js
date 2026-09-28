@@ -13,12 +13,54 @@ import {
 
 export const VAULT_INCLUDE = Object.freeze({
   post: {
-    include: {
-      template: true,
-      festival: true,
-      category: true,
-      frame: true,
-      captions: true,
+    select: {
+      id: true,
+      userId: true,
+      occasionName: true,
+      customImageUrl: true,
+      finalGraphicUrl: true,
+      userConfigJson: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      template: {
+        select: {
+          id: true,
+          title: true,
+          baseImageUrl: true,
+        },
+      },
+      festival: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          date: true,
+          bannerUrl: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      frame: {
+        select: {
+          id: true,
+          title: true,
+          previewUrl: true,
+          overlayPngUrl: true,
+        },
+      },
+      captions: {
+        select: {
+          id: true,
+          captionText: true,
+          hashtags: true,
+        },
+      },
     },
   },
 });

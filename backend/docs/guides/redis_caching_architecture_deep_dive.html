@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚡ BrandFlow Redis Caching Architecture — Complete Deep Dive & Visual Walkthrough</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0d14;
+      --bg-secondary: #111726;
+      --bg-card: rgba(22, 30, 49, 0.75);
+      --bg-card-hover: rgba(28, 38, 62, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.25);
+      --accent-primary: #6366f1;
+      --accent-secondary: #ec4899;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-cyan: #06b6d4;
+      --accent-red: #ef4444;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-code: #38bdf8;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* HEADER */
+    header {
+      padding: 60px 0 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+
+    h1 {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 70%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* NAV TABS */
+    .nav-sticky {
+      position: sticky;
+      top: 16px;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      background: rgba(17, 23, 38, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin-bottom: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .nav-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      background: var(--accent-primary);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 32px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .icon-purple { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+    .icon-emerald { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .icon-pink { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+    .icon-amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .icon-cyan { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin: 20px 0 10px;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+
+    /* INTERACTIVE SIMULATOR */
+    .simulator-wrapper {
+      background: #090d16;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sim-btn {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sim-btn:hover {
+      background: #334155;
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+    }
+
+    .sim-btn.danger {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+    }
+    .sim-btn.danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .sim-grid { grid-template-columns: 1fr; }
+    }
+
+    .sim-node {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+    }
+
+    .sim-node-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sim-node-body {
+      min-height: 120px;
+      background: #020617;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #cbd5e1;
+      overflow-y: auto;
+      max-height: 160px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 10px var(--accent-emerald);
+      display: inline-block;
+    }
+
+    .log-entry {
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .log-entry:last-child { border: none; }
+    .log-hit { color: #34d399; font-weight: bold; }
+    .log-miss { color: #fbbf24; font-weight: bold; }
+    .log-purge { color: #f87171; font-weight: bold; }
+    .log-db { color: #38bdf8; }
+
+    /* CODE BLOCKS */
+    pre {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      margin: 16px 0;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      color: var(--text-code);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .keyword { color: #c084fc; font-weight: 600; }
+    .func { color: #38bdf8; }
+    .string { color: #a7f3d0; }
+    .comment { color: #64748b; font-style: italic; }
+    .key-hl { color: #f472b6; font-weight: 600; }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    th {
+      background: rgba(30, 41, 59, 0.7);
+      text-align: left;
+      padding: 14px 16px;
+      color: #e2e8f0;
+      font-weight: 700;
+      border-bottom: 2px solid #334155;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-main);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .badge-ttl { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-key { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-pattern { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+
+    /* COMPARISON GRID */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    @media (max-width: 768px) {
+      .compare-grid { grid-template-columns: 1fr; }
+    }
+
+    .compare-box {
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .box-bad {
+      background: rgba(239, 68, 68, 0.05);
+      border-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .box-good {
+      background: rgba(16, 185, 129, 0.05);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .compare-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-bad { color: #f87171; }
+    .title-good { color: #34d399; }
+
+    /* HIGHLIGHT CALLOUT */
+    .callout {
+      border-left: 4px solid var(--accent-primary);
+      background: rgba(99, 102, 241, 0.08);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0;
+      color: #e0e7ff;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #a5b4fc;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">⚡ Enterprise Performance Optimization</div>
+      <h1>Redis Caching Architecture & Deep Dive</h1>
+      <p class="subtitle">Complete visual walkthrough, memory life cycle, non-blocking SCAN invalidations, and module-by-module breakdown for BrandFlow.</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- NAVIGATION TABS -->
+    <nav class="nav-sticky">
+      <a href="#simulator" class="nav-btn">🎮 Interactive Simulator</a>
+      <a href="#feel" class="nav-btn">🧠 The "Feel" & Mental Model</a>
+      <a href="#lifecycle" class="nav-btn">🔄 Cache-Aside Life Cycle</a>
+      <a href="#why-scan" class="nav-btn">🛡️ Why SCAN vs KEYS *</a>
+      <a href="#matrix" class="nav-btn">📊 Full Caching Matrix</a>
+      <a href="#modules" class="nav-btn">💻 Code Walkthrough</a>
+      <a href="#cli" class="nav-btn">🛠️ Redis CLI Commands</a>
+    </nav>
+
+    <!-- SECTION 1: INTERACTIVE SIMULATOR -->
+    <section id="simulator" class="card">
+      <div class="card-header">
+        <div class="icon-box icon-purple">🎮</div>
+        <div>
+          <h2>Interactive Caching Playground</h2>
+          <p>Click buttons below to simulate real user & admin actions. Observe how Redis and PostgreSQL interact in real time!</p>
+        </div>
+      </div>
+
+        <div class="sim-controls">
+          <button class="sim-btn" onclick="simFetchCategories1()">
+            <span>🔍</span> 1. User Requests Categories (1st time)
+          </button>
+          <button class="sim-btn" onclick="simFetchCategories1()">
+            <span>⚡</span> 2. User Requests Categories (2nd time — Hit)
+          </button>
+          <button class="sim-btn danger" onclick="simAdminMutate()">
+            <span>✏️</span> 3. Admin Creates "Festive Offers" Category
+          </button>
+          <button class="sim-btn" onclick="simFetchCategoriesAfterAdmin()" style="border-color: #38bdf8; background: rgba(56, 189, 248, 0.15); color: #bae6fd;">
+            <span>🔄</span> 4. User Requests Categories (After Admin Creation)
+          </button>
+          <button class="sim-btn" onclick="simFetchCategoriesAfterAdmin()">
+            <span>⚡</span> 5. User Requests Categories (Again — Hit with 19 items)
+          </button>
+          <button class="sim-btn" onclick="simUserQuotaCheck()">
+            <span>💳</span> 6. User Checks Quota (Initial)
+          </button>
+          <button class="sim-btn danger" onclick="simUserCreatePost()">
+            <span>🚀</span> 7. User Publishes Post (Quota Deducted)
+          </button>
+          <button class="sim-btn" onclick="simUserQuotaCheckAfterPost()" style="border-color: #34d399; background: rgba(16, 185, 129, 0.15); color: #a7f3d0;">
+            <span>🔄</span> 8. User Checks Quota (After Post — Refreshed)
+          </button>
+          <button class="sim-btn" onclick="simClearLogs()" style="margin-left: auto; background: #0f172a;">
+            <span>🧹</span> Clear Logs
+          </button>
+        </div>
+
+
+        <div class="sim-grid">
+          <!-- CLIENT VIEW -->
+          <div class="sim-node">
+            <div class="sim-node-header" style="color: #a5b4fc;">
+              <span>🌐 Web Browser (Client)</span>
+              <span class="pulse-dot"></span>
+            </div>
+            <div id="sim-client-log" class="sim-node-body">
+              <div class="log-entry">Client is ready...</div>
+            </div>
+          </div>
+
+          <!-- REDIS CACHE -->
+          <div class="sim-node">
+            <div class="sim-node-header" style="color: #f472b6;">
+              <span>⚡ Redis In-Memory Cache (RAM)</span>
+              <span id="redis-status" class="badge" style="background: #1e1b4b; color: #a5b4fc;">0 keys</span>
+            </div>
+            <div id="sim-redis-log" class="sim-node-body">
+              <div class="log-entry" style="color: #64748b;">Cache empty</div>
+            </div>
+          </div>
+
+          <!-- POSTGRES DATABASE -->
+          <div class="sim-node">
+            <div class="sim-node-header" style="color: #38bdf8;">
+              <span>🐘 PostgreSQL Database (Disk)</span>
+              <span class="pulse-dot" style="background: #38bdf8; box-shadow: 0 0 10px #38bdf8;"></span>
+            </div>
+            <div id="sim-db-log" class="sim-node-body">
+              <div class="log-entry" style="color: #64748b;">Idle...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: THE "FEEL" & MENTAL MODEL -->
+    <section id="feel" class="card">
+      <div class="card-header">
+        <div class="icon-box icon-pink">🧠</div>
+        <div>
+          <h2>The "Feel": Why Does Redis Feel Instant?</h2>
+          <p>Understanding physical storage latency differences between RAM and Database Disks.</p>
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-box box-bad">
+          <div class="compare-title title-bad">❌ PostgreSQL Query (Without Cache)</div>
+          <p>1. Express sends TCP query over socket.<br>
+             2. DB parses SQL, planner runs analysis.<br>
+             3. Joins <code>Category</code>, <code>Template</code>, and <code>User</code> tables.<br>
+             4. Disk I/O read operations from NVMe / SSD.<br>
+             5. Serializes rows into JSON and returns over network.<br>
+             <strong>⏱️ Latency: ~50ms to 250ms under concurrent load.</strong></p>
+        </div>
+
+        <div class="compare-box box-good">
+          <div class="compare-title title-good">✅ Redis Cached Read (RAM)</div>
+          <p>1. Express checks Redis key (e.g. <code>cache:categories:all</code>).<br>
+             2. Redis is pure in-memory Key-Value C-engine (RAM).<br>
+             3. O(1) hash table lookup.<br>
+             4. Returns pre-serialized JSON string directly.<br>
+             5. No SQL parsing, zero disk read, zero joins.<br>
+             <strong>⚡ Latency: ~0.8ms to 2ms (Over 100x Faster!)</strong></p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">💡 The Golden Rule of Caching:</div>
+        We only cache data that is <strong>read frequently</strong> but <strong>changes infrequently</strong> (Categories, Festival calendar, Master graphic templates, Transparent frame overlay paths, and BrandKit details).
+      </div>
+    </section>
+
+    <!-- SECTION 3: CACHE-ASIDE PATTERN -->
+    <section id="lifecycle" class="card">
+      <div class="card-header">
+        <div class="icon-box icon-emerald">🔄</div>
+        <div>
+          <h2>The Cache-Aside (Lazy Loading) Life Cycle</h2>
+          <p>How our <code>getOrSetCache(key, fetcherFn, ttl)</code> orchestrator works under the hood.</p>
+        </div>
+      </div>
+
+      <p>Every read request follows a strict 3-phase flow:</p>
+      
+      <pre>
+<span class="keyword">Client Request</span>
+      │
+      ▼
+<span class="func">getOrSetCache</span>(key, fetcherFn, ttl)
+      │
+      ├───► <span class="comment">Step 1: Check Redis</span>: <span class="func">redis.get</span>(key)
+      │        │
+      │        ├──► <span class="string">[HIT]</span>: Return cached JSON immediately! <span class="comment">(~1ms)</span>
+      │        │
+      │        └──► <span class="string">[MISS]</span>: Execute <span class="func">fetcherFn()</span> <span class="comment">(Prisma DB Query ~60ms)</span>
+      │                 │
+      │                 ├──► <span class="func">redis.set</span>(key, data, 'EX', ttl) <span class="comment">(Store for next time)</span>
+      │                 │
+      │                 └──► Return fresh data to Client!
+</pre>
+
+      <h3>What Happens on Data Updates (Mutation)?</h3>
+      <p>When an admin adds a new Category or user updates their BrandKit, we <strong>never</strong> wait for TTL expiration. We trigger instant, non-blocking pattern invalidation:</p>
+      <pre>
+<span class="keyword">await</span> <span class="func">deleteCachePattern</span>(<span class="key-hl">'cache:categories:*'</span>);
+<span class="comment">// Instantly purges list and detail keys so the very next request gets fresh data!</span>
+</pre>
+    </section>
+
+    <!-- SECTION 4: WHY SCAN VS KEYS * -->
+    <section id="why-scan" class="card">
+      <div class="card-header">
+        <div class="icon-box icon-amber">🛡️</div>
+        <div>
+          <h2>Why <code>SCAN</code> and NEVER <code>KEYS *</code> in Production</h2>
+          <p>A critical engineering standard for zero-downtime Redis operations.</p>
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-box box-bad">
+          <div class="compare-title title-bad">❌ The Beginner Mistake: <code>redis.keys('cache:*')</code></div>
+          <p>Redis is single-threaded. When <code>KEYS *</code> runs across 500,000 keys, Redis halts ALL incoming read/write operations for hundreds of milliseconds. <strong>Causes severe request timeouts and 504 Gateway errors in production!</strong></p>
+        </div>
+
+        <div class="compare-box box-good">
+          <div class="compare-title title-good">✅ The Senior Standard: <code>redis.scan(cursor)</code></div>
+          <p>Our <a href="#" style="color: #38bdf8;">deleteCachePattern</a> uses cursor-based <code>SCAN</code> in small batches (100 keys per iteration). Redis continues processing API traffic concurrently with <strong>zero event loop blocking</strong>!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: FULL CACHING MATRIX -->
+    <section id="matrix" class="card">
+      <div class="card-header">
+        <div class="icon-box icon-cyan">📊</div>
+        <div>
+          <h2>BrandFlow Redis Caching Master Matrix</h2>
+          <p>All 8 cached domains, key structures, TTL policies, and invalidation triggers.</p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Domain</th>
+            <th>Cache Key Pattern</th>
+            <th>TTL</th>
+            <th>Invalidation Trigger</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Business Categories</strong></td>
+            <td><span class="badge badge-key">cache:categories:list:{...}</span></td>
+            <td><span class="badge badge-ttl">1 Hour</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:categories:*')</span> on Create/Update/Delete</td>
+            <td><code>category.logic.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Template Categories</strong></td>
+            <td><span class="badge badge-key">cache:template-categories:list:{...}</span></td>
+            <td><span class="badge badge-ttl">1 Hour</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:template-categories:*')</span> on Mutation</td>
+            <td><code>templateCategory.logic.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Festival Calendar</strong></td>
+            <td><span class="badge badge-key">cache:festivals:list:{...}</span></td>
+            <td><span class="badge badge-ttl">1 Hour</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:festivals:*')</span> on Create/Update/Delete</td>
+            <td><code>festival.logic.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Transparent Frames</strong></td>
+            <td><span class="badge badge-key">cache:frames:list:{...}</span></td>
+            <td><span class="badge badge-ttl">1 Hour</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:frames:*')</span> on Upload/Delete</td>
+            <td><code>frame.logic.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Master Templates</strong></td>
+            <td><span class="badge badge-key">cache:templates:list:{...}</span></td>
+            <td><span class="badge badge-ttl">1 Hour</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:templates:*')</span> on Add/Delete</td>
+            <td><code>template.logic.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>User Brand Kit</strong></td>
+            <td><span class="badge badge-key">cache:brandkit:{userId}</span></td>
+            <td><span class="badge badge-ttl">24 Hours</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:brandkit:' + userId + '*')</span> on Update</td>
+            <td><code>brandkit.logic.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Subscription & Quotas</strong></td>
+            <td><span class="badge badge-key">cache:billing:sub:{userId}</span></td>
+            <td><span class="badge badge-ttl">15 Mins</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:billing:*:' + userId + '*')</span> on Plan purchase / Post creation</td>
+            <td><code>billing.logic.js</code> & <code>post.logic.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Connected Socials</strong></td>
+            <td><span class="badge badge-key">cache:social:list:{userId}:{...}</span></td>
+            <td><span class="badge badge-ttl">1 Hour</span></td>
+            <td><span class="badge badge-pattern">deleteCachePattern('cache:social:*:' + userId + '*')</span> on Connect/Disconnect</td>
+            <td><code>social.logic.js</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 6: CODE WALKTHROUGH -->
+    <section id="modules" class="card">
+      <div class="card-header">
+        <div class="icon-box icon-purple">💻</div>
+        <div>
+          <h2>Exact Code Implementation Examples</h2>
+          <p>See how the architecture keeps Controllers thin and Repositories pure while Logic orchestrates caching.</p>
+        </div>
+      </div>
+
+      <h3>1. Safe Cache Utility Wrapper (<code>src/common/utils/cache.util.js</code>)</h3>
+      <pre>
+<span class="keyword">export async function</span> <span class="func">getOrSetCache</span>(key, fetcherFn, ttlSeconds = <span class="func">CACHE_TTL.ONE_HOUR</span>) {
+  <span class="comment">// 1. Try reading from Redis</span>
+  <span class="keyword">const</span> cached = <span class="keyword">await</span> <span class="func">getCache</span>(key);
+  <span class="keyword">if</span> (cached !== <span class="keyword">null</span>) {
+    <span class="keyword">return</span> cached; <span class="comment">// Cache Hit!</span>
+  }
+
+  <span class="comment">// 2. Cache Miss: Execute primary DB logic</span>
+  <span class="keyword">const</span> freshData = <span class="keyword">await</span> <span class="func">fetcherFn</span>();
+  <span class="keyword">if</span> (freshData !== <span class="keyword">null</span> && freshData !== <span class="keyword">undefined</span>) {
+    <span class="keyword">await</span> <span class="func">setCache</span>(key, freshData, ttlSeconds);
+  }
+
+  <span class="keyword">return</span> freshData;
+}
+</pre>
+
+      <h3>2. User BrandKit Caching & Invalidation (<code>src/modules/brandkit/brandkit.logic.js</code>)</h3>
+      <pre>
+<span class="comment">// Read Operation: Fast 24-hour cache</span>
+<span class="keyword">export async function</span> <span class="func">getBrandKit</span>(userId) {
+  <span class="keyword">const</span> cacheKey = <span class="func">CACHE_KEYS.BRANDKIT_BY_USER_ID</span>(userId);
+
+  <span class="keyword">return</span> <span class="func">getOrSetCache</span>(
+    cacheKey,
+    <span class="keyword">async</span> () => {
+      <span class="keyword">const</span> brandKit = <span class="keyword">await</span> brandKitRepository.<span class="func">findBrandKitByUserId</span>(userId);
+      <span class="keyword">return</span> <span class="func">sanitizeBrandKit</span>(brandKit || { userId, ...DEFAULT_BRAND_KIT_FALLBACK });
+    },
+    CACHE_TTL.ONE_DAY
+  );
+}
+
+<span class="comment">// Write Operation: Immediate Purge</span>
+<span class="keyword">export async function</span> <span class="func">updateBrandKit</span>(userId, payload, fileBufferOrFiles) {
+  <span class="comment">// ... image uploads & Prisma upsert ...</span>
+  <span class="keyword">const</span> updated = <span class="keyword">await</span> brandKitRepository.<span class="func">upsertBrandKitByUserId</span>(userId, dataToSave);
+
+  <span class="comment">// Invalidate cache immediately</span>
+  <span class="keyword">await</span> <span class="func">deleteCachePattern</span>(CACHE_KEYS.<span class="func">BRANDKIT_PATTERN</span>(userId));
+
+  <span class="keyword">return</span> <span class="func">sanitizeBrandKit</span>(updated);
+}
+</pre>
+    </section>
+
+    <!-- SECTION 7: CLI COMMANDS -->
+    <section id="cli" class="card">
+      <div class="card-header">
+        <div class="icon-box icon-emerald">🛠️</div>
+        <div>
+          <h2>Hands-On Redis CLI Debugging Guide</h2>
+          <p>Useful terminal commands to inspect your live caching layer.</p>
+        </div>
+      </div>
+
+      <p>Connect to your Redis instance via Docker or local CLI:</p>
+      <pre>
+<span class="comment"># 1. Open Redis Interactive CLI</span>
+$ docker exec -it brandflow-redis redis-cli
+<span class="comment"># OR if running locally:</span>
+$ redis-cli
+
+<span class="comment"># 2. View all active BrandFlow cache keys</span>
+127.0.0.1:6379> KEYS cache:*
+1) "cache:categories:list:{}"
+2) "cache:festivals:active"
+3) "cache:brandkit:usr_a19f0293"
+4) "cache:billing:sub:usr_a19f0293"
+
+<span class="comment"># 3. Read cached JSON for BrandKit</span>
+127.0.0.1:6379> GET "cache:brandkit:usr_a19f0293"
+"{\"businessName\":\"Apex Studio\",\"phone\":\"+919876543210\",\"logoUrl\":\"https://res.cloudinary.com/...\"}"
+
+<span class="comment"># 4. Check remaining TTL (seconds)</span>
+127.0.0.1:6379> TTL "cache:categories:list:{}"
+(integer) 3482 <span class="comment"># (~58 minutes remaining before auto-refresh)</span>
+
+<span class="comment"># 5. Live Stream Redis Commands in Real-Time (Great for debugging!)</span>
+127.0.0.1:6379> MONITOR
+OK
+1695882910.102 "GET" "cache:categories:list:{}"
+1695882912.441 "DEL" "cache:brandkit:usr_a19f0293"
+</pre>
+    </section>
+  </div>
+
+  <script>
+    // SIMULATOR STATE
+    let redisStore = {};
+    let dbQueryCount = 0;
+    let categoriesCount = 18;
+    let userPostsRemaining = 5;
+
+    function addLog(elementId, text, type = '') {
+      const el = document.getElementById(elementId);
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.innerHTML = `<span style="color:#64748b;">[${new Date().toLocaleTimeString()}]</span> ${text}`;
+      el.insertBefore(entry, el.firstChild);
+    }
+
+    function updateRedisBadge() {
+      const count = Object.keys(redisStore).length;
+      document.getElementById('redis-status').innerText = `${count} key${count === 1 ? '' : 's'}`;
+    }
+
+    function simFetchCategories1() {
+      const key = 'cache:categories:list:{}';
+      addLog('sim-client-log', '🌐 GET /api/categories called');
+
+      if (redisStore[key]) {
+        addLog('sim-redis-log', `⚡ CACHE HIT for "${key}" (Contains: ${redisStore[key].count} items, TTL: ${redisStore[key].ttl}s)`, 'log-hit');
+        addLog('sim-client-log', `✅ Received ${redisStore[key].count} Categories in <strong>1.1ms</strong> (from Redis RAM)!`, 'log-hit');
+      } else {
+        addLog('sim-redis-log', `⚠️ CACHE MISS for "${key}"`, 'log-miss');
+        dbQueryCount++;
+        addLog('sim-db-log', `🐘 SELECT * FROM "Category" ORDER BY "createdAt" DESC (Query #${dbQueryCount})`, 'log-db');
+        redisStore[key] = { data: '18 categories', count: 18, ttl: 3600 };
+        updateRedisBadge();
+        addLog('sim-redis-log', `📥 SET "${key}" with EX 3600s (Stored 18 items)`, 'log-hit');
+        addLog('sim-client-log', '✅ Received 18 Categories in <strong>52ms</strong> (from Postgres + Saved to Redis Cache)!', 'log-db');
+      }
+    }
+
+    function simAdminMutate() {
+      categoriesCount = 19;
+      addLog('sim-client-log', '✏️ POST /api/categories (New: "Festive Offers")', 'log-purge');
+      addLog('sim-db-log', '🐘 INSERT INTO "Category" ("name", "slug") VALUES (\'Festive Offers\', \'festive-offers\')', 'log-db');
+      
+      let deleted = 0;
+      for (const k in redisStore) {
+        if (k.startsWith('cache:categories:')) {
+          delete redisStore[k];
+          deleted++;
+        }
+      }
+      updateRedisBadge();
+      addLog('sim-redis-log', `🧹 deleteCachePattern("cache:categories:*") purged ${deleted} stale key(s)!`, 'log-purge');
+      addLog('sim-client-log', '✅ Category created! Cache is now purged. Next read will fetch new data from DB.', 'log-hit');
+    }
+
+    function simFetchCategoriesAfterAdmin() {
+      const key = 'cache:categories:list:{}';
+      addLog('sim-client-log', '🌐 GET /api/categories called (by another user or page refresh)');
+
+      if (redisStore[key]) {
+        addLog('sim-redis-log', `⚡ CACHE HIT for "${key}" (Contains: ${redisStore[key].count} items, TTL: ${redisStore[key].ttl}s)`, 'log-hit');
+        addLog('sim-client-log', `✅ Received ${redisStore[key].count} Categories in <strong>1.2ms</strong> (from updated Redis cache)!`, 'log-hit');
+      } else {
+        addLog('sim-redis-log', `⚠️ CACHE MISS for "${key}" (Cache was purged after Admin creation)`, 'log-miss');
+        dbQueryCount++;
+        addLog('sim-db-log', `🐘 SELECT * FROM "Category" ORDER BY "createdAt" DESC (Includes newly created "Festive Offers"!) (Query #${dbQueryCount})`, 'log-db');
+        redisStore[key] = { data: '19 categories', count: 19, ttl: 3600 };
+        updateRedisBadge();
+        addLog('sim-redis-log', `📥 SET "${key}" with EX 3600s (Stored 19 items into Redis)`, 'log-hit');
+        addLog('sim-client-log', '🎉 Received <strong>19 Categories</strong> in <strong>58ms</strong> (includes "Festive Offers"!) and re-cached into Redis.', 'log-hit');
+      }
+    }
+
+    function simUserQuotaCheck() {
+      const key = 'cache:billing:sub:usr_101';
+      addLog('sim-client-log', '🌐 GET /api/billing/subscription called');
+
+      if (redisStore[key]) {
+        addLog('sim-redis-log', `⚡ CACHE HIT for "${key}" (Posts Remaining: ${redisStore[key].postsRemaining})`, 'log-hit');
+        addLog('sim-client-log', `✅ Subscription verified in <strong>0.9ms</strong> (Posts Remaining: ${redisStore[key].postsRemaining})`, 'log-hit');
+      } else {
+        addLog('sim-redis-log', `⚠️ CACHE MISS for "${key}"`, 'log-miss');
+        addLog('sim-db-log', '🐘 SELECT * FROM "Subscription" WHERE "userId" = \'usr_101\'', 'log-db');
+        redisStore[key] = { plan: 'FREE', postsRemaining: userPostsRemaining, ttl: 900 };
+        updateRedisBadge();
+        addLog('sim-redis-log', `📥 SET "${key}" with EX 900s (Posts Remaining: ${userPostsRemaining})`, 'log-hit');
+        addLog('sim-client-log', `✅ Subscription verified in <strong>42ms</strong> (Posts Remaining: ${userPostsRemaining})`, 'log-db');
+      }
+    }
+
+    function simUserCreatePost() {
+      if (userPostsRemaining > 0) userPostsRemaining--;
+      addLog('sim-client-log', '🚀 POST /api/posts/create-instant (Publishing Post...)', 'log-purge');
+      addLog('sim-db-log', '🐘 INSERT INTO "Post" & UPDATE "Subscription" SET "postsUsed" = "postsUsed" + 1', 'log-db');
+      
+      const key = 'cache:billing:sub:usr_101';
+      if (redisStore[key]) {
+        delete redisStore[key];
+        updateRedisBadge();
+        addLog('sim-redis-log', `🧹 Invalidation triggered: DEL "${key}" (Cache purged so stale count is never served)`, 'log-purge');
+      }
+      addLog('sim-client-log', `✅ Post published! Quota deducted. (Remaining: ${userPostsRemaining})`, 'log-hit');
+    }
+
+    function simUserQuotaCheckAfterPost() {
+      const key = 'cache:billing:sub:usr_101';
+      addLog('sim-client-log', '🌐 GET /api/billing/subscription called (Checking top bar quota counter)');
+
+      if (redisStore[key]) {
+        addLog('sim-redis-log', `⚡ CACHE HIT for "${key}" (Posts Remaining: ${redisStore[key].postsRemaining})`, 'log-hit');
+        addLog('sim-client-log', `✅ Top bar quota read in <strong>0.8ms</strong> (Posts Remaining: ${redisStore[key].postsRemaining})`, 'log-hit');
+      } else {
+        addLog('sim-redis-log', `⚠️ CACHE MISS for "${key}" (Cache was purged after post creation)`, 'log-miss');
+        addLog('sim-db-log', '🐘 SELECT * FROM "Subscription" WHERE "userId" = \'usr_101\' (Fetched fresh decremented quota)', 'log-db');
+        redisStore[key] = { plan: 'FREE', postsRemaining: userPostsRemaining, ttl: 900 };
+        updateRedisBadge();
+        addLog('sim-redis-log', `📥 SET "${key}" with EX 900s (Cached updated count: ${userPostsRemaining})`, 'log-hit');
+        addLog('sim-client-log', `✅ Quota verified in <strong>38ms</strong> (Fresh count: <strong>${userPostsRemaining} posts remaining</strong>)!`, 'log-hit');
+      }
+    }
+
+    function simClearLogs() {
+      document.getElementById('sim-client-log').innerHTML = '<div class="log-entry">Client is ready...</div>';
+      document.getElementById('sim-redis-log').innerHTML = '<div class="log-entry" style="color: #64748b;">Cache empty</div>';
+      document.getElementById('sim-db-log').innerHTML = '<div class="log-entry" style="color: #64748b;">Idle...</div>';
+      redisStore = {};
+      categoriesCount = 18;
+      userPostsRemaining = 5;
+      updateRedisBadge();
+    }
+  </script>
+</body>
+
+</html>

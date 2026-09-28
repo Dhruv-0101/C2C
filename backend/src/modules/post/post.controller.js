@@ -46,14 +46,16 @@ export async function getScheduledPosts(req, res, next) {
 
 /**
  * POST /api/v1/posts/publish-now
- * Instant mock social media publishing
+ * Non-blocking instant social media publishing (BullMQ Queue Dispatch)
  */
 export async function publishNow(req, res, next) {
   try {
     const result = await postLogic.publishNow(req.user.id, req.body);
     return sendSuccessResponse(res, {
-      statusCode: HTTP_STATUS.OK,
-      message: 'Post published successfully across platforms 🎉',
+      statusCode: result.isQueued ? HTTP_STATUS.ACCEPTED : HTTP_STATUS.OK,
+      message: result.isQueued
+        ? 'Publishing task accepted and queued for background dispatch 🚀'
+        : 'Post published successfully across platforms 🎉',
       data: result,
     });
   } catch (err) {

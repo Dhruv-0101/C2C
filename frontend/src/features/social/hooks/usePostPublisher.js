@@ -16,7 +16,7 @@ export function usePostPublisher(onSuccess) {
     mutationFn: (payload) => postApi.publishNow(payload),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
-      const result = res.data?.publishResult || res.publishResult;
+      const result = res.data || res;
       setPublishResult(result);
       if (onSuccess) onSuccess(res);
     },

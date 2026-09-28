@@ -115,27 +115,28 @@ export async function uploadToCloudinaryBuffer(buffer, folder = CLOUDINARY_FOLDE
   const apiSecret = env.CLOUDINARY_API_SECRET || 'qlLxvVZDj1CCj1HyoAw7shuxdRM';
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const base64Data = `data:image/png;base64,${buffer.toString('base64')}`;
 
   // Generate SHA-1 Signature for Cloudinary REST API
   const signatureString = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
   const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
 
-  const payload = {
-    file: base64Data,
-    api_key: apiKey,
-    timestamp: timestamp,
-    signature: signature,
-    folder: folder,
-  };
+  // Stream binary multipart payload using native FormData & Blob
+  // (Eliminates ~33% Base64 string memory inflation in V8 heap and speeds up transmission)
+  const formData = new FormData();
+  const blob = new Blob([buffer], { type: 'image/png' });
+  formData.append('file', blob, 'upload.png');
+  formData.append('api_key', apiKey);
+  formData.append('timestamp', timestamp.toString());
+  formData.append('signature', signature);
+  formData.append('folder', folder);
 
   try {
     const response = await axios.post(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      payload,
+      formData,
       {
         headers: {
-          'Content-Type': 'application/json',
+          // Axios automatically sets multipart/form-data boundary for native FormData
         },
         maxBodyLength: Infinity,
         maxContentLength: Infinity,

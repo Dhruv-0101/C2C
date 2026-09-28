@@ -206,11 +206,15 @@ export const SocialPublisherModal = ({
               <h4 className="font-heading font-bold text-base text-white">
                 {publishResult.scheduled
                   ? "Post Scheduled Successfully! ⏰"
+                  : publishResult.isQueued
+                  ? "Publishing Dispatched! 🚀"
                   : "Post Published Successfully! 🎉"}
               </h4>
               <p className="text-xs text-emerald-200">
                 {publishResult.scheduled
                   ? `Will automatically publish on ${new Date(scheduledAt).toLocaleString()}`
+                  : publishResult.isQueued
+                  ? "Your post has been queued and is being published to your selected platforms in the background."
                   : "Your graphic is live across all selected platforms!"}
               </p>
             </div>

@@ -31,39 +31,49 @@ import { buildInvoicePdfBuffer } from './billing.pdf.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { addInvoiceEmailJob } from '../../queues/email.queue.js';
 import { logger } from '../../config/logger.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 /**
- * Get real-time subscription status, active plan & post quota
+ * Get real-time subscription status, active plan & post quota (Redis Cached)
  *
  * @param {string} userId - User ID
  * @returns {Promise<Object>} Sanitized subscription status
  */
 export const getSubscriptionStatus = async (userId) => {
-  const sub = await findByUserId(userId);
+  const cacheKey = CACHE_KEYS.BILLING_SUB_BY_USER_ID(userId);
 
-  if (!sub) {
-    return {
-      id: null,
-      userId,
-      plan: null,
-      status: SUBSCRIPTION_STATUSES.NO_PLAN,
-      totalPostsAllowed: 0,
-      postsUsed: 0,
-      planRemaining: 0,
-      bonusPostsAllowed: 0,
-      bonusPostsUsed: 0,
-      bonusRemaining: 0,
-      postsRemaining: 0,
-      pricePaid: 0,
-      currency: BILLING_CURRENCIES.INR,
-      paymentGateway: null,
-      isExpired: true,
-      hasPlan: false,
-      canCreatePost: false,
-    };
-  }
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const sub = await findByUserId(userId);
 
-  return sanitizeSubscription(sub);
+      if (!sub) {
+        return {
+          id: null,
+          userId,
+          plan: null,
+          status: SUBSCRIPTION_STATUSES.NO_PLAN,
+          totalPostsAllowed: 0,
+          postsUsed: 0,
+          planRemaining: 0,
+          bonusPostsAllowed: 0,
+          bonusPostsUsed: 0,
+          bonusRemaining: 0,
+          postsRemaining: 0,
+          pricePaid: 0,
+          currency: BILLING_CURRENCIES.INR,
+          paymentGateway: null,
+          isExpired: true,
+          hasPlan: false,
+          canCreatePost: false,
+        };
+      }
+
+      return sanitizeSubscription(sub);
+    },
+    CACHE_TTL.FIFTEEN_MINUTES
+  );
 };
 
 /**
@@ -99,6 +109,9 @@ export const activateFreePlan = async (userId) => {
     paymentGateway: PAYMENT_GATEWAYS.FREE,
   });
 
+  // Purge user's billing cache
+  await deleteCachePattern(CACHE_KEYS.BILLING_PATTERN(userId));
+
   // Log transaction and dispatch BullMQ Invoice Email job
   const timestamp = Date.now();
   const freeTx = await createTransaction({
@@ -113,6 +126,7 @@ export const activateFreePlan = async (userId) => {
     paymentId: `FREE_ACT_${timestamp}`,
     status: TRANSACTION_STATUSES.COMPLETED,
   }).catch(() => null);
+
 
   if (freeTx?.id) {
     addInvoiceEmailJob({ userId, transactionId: freeTx.id }).catch(() => {});
@@ -201,6 +215,9 @@ export const verifyRazorpayPayment = async (
     orderId,
     paymentId,
   });
+
+  // Purge user's billing cache
+  await deleteCachePattern(CACHE_KEYS.BILLING_PATTERN(userId));
 
   // Log transaction and dispatch BullMQ Invoice Email job
   const rzpTx = await createTransaction({
@@ -300,6 +317,9 @@ export const verifyStripePayment = async (userId, { intentId, postCount }) => {
     paymentId: intentId,
   });
 
+  // Purge user's billing cache
+  await deleteCachePattern(CACHE_KEYS.BILLING_PATTERN(userId));
+
   // Log transaction and dispatch BullMQ Invoice Email job
   const stripeTx = await createTransaction({
     userId,
@@ -357,6 +377,9 @@ export const topUpUserQuota = async (targetUserId, bonusPosts = 10) => {
     bonusPostsUsed,
   });
 
+  // Purge target user's billing cache
+  await deleteCachePattern(CACHE_KEYS.BILLING_PATTERN(targetUserId));
+
   // Log transaction and dispatch BullMQ Invoice Email job
   const bonusTx = await createTransaction({
     userId: targetUserId,
@@ -369,6 +392,7 @@ export const topUpUserQuota = async (targetUserId, bonusPosts = 10) => {
     paymentId: `admin_grant_${Date.now()}`,
     status: TRANSACTION_STATUSES.COMPLETED,
   }).catch(() => null);
+
 
   if (bonusTx?.id) {
     addInvoiceEmailJob({ userId: targetUserId, transactionId: bonusTx.id }).catch(() => {});

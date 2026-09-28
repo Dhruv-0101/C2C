@@ -12,6 +12,8 @@ import {
   DEFAULT_CAPTION_LANGUAGE,
   DEFAULT_BRAND_KIT_FALLBACK,
 } from './brandkit.constants.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 /**
  * 🏢 BRANDKIT BUSINESS LOGIC
@@ -19,19 +21,27 @@ import {
  */
 
 /**
- * Get user's BrandKit (with structured default fallback if not created yet)
+ * Get user's BrandKit (Redis Cached with structured default fallback if not created yet)
  * @param {string} userId - Authenticated user UUID
  * @returns {Promise<Object>} Sanitized BrandKit object
  */
 export async function getBrandKit(userId) {
-  const brandKit = await brandKitRepository.findBrandKitByUserId(userId);
-  if (!brandKit) {
-    return sanitizeBrandKit({
-      userId,
-      ...DEFAULT_BRAND_KIT_FALLBACK,
-    });
-  }
-  return sanitizeBrandKit(brandKit);
+  const cacheKey = CACHE_KEYS.BRANDKIT_BY_USER_ID(userId);
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const brandKit = await brandKitRepository.findBrandKitByUserId(userId);
+      if (!brandKit) {
+        return sanitizeBrandKit({
+          userId,
+          ...DEFAULT_BRAND_KIT_FALLBACK,
+        });
+      }
+      return sanitizeBrandKit(brandKit);
+    },
+    CACHE_TTL.ONE_DAY
+  );
 }
 
 /**
@@ -127,6 +137,9 @@ export async function updateBrandKit(userId, payload, fileBufferOrFiles) {
 
   const updatedBrandKit = await brandKitRepository.upsertBrandKitByUserId(userId, dataToSave);
 
+  // Invalidate Redis cache for this user's BrandKit
+  await deleteCachePattern(CACHE_KEYS.BRANDKIT_PATTERN(userId));
+
   // Auto-Sync pending draft & scheduled posts with updated BrandKit details
   let syncedCount = 0;
   try {
@@ -141,3 +154,4 @@ export async function updateBrandKit(userId, payload, fileBufferOrFiles) {
     syncedPendingPostsCount: syncedCount,
   });
 }
+

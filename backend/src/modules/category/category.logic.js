@@ -3,6 +3,8 @@ import { parsePaginationParams, buildPaginatedResponse } from '../../common/help
 import * as categoryRepository from './category.repository.js';
 import { sanitizeCategory } from './category.helper.js';
 import { DEFAULT_CATEGORY_SORT_BY, DEFAULT_CATEGORY_SORT_ORDER } from './category.constants.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 /**
  * Generate a clean URL slug from category name
@@ -18,42 +20,58 @@ function slugify(text) {
 }
 
 /**
- * Get business categories with pagination, searching, and sorting
+ * Get business categories with pagination, searching, and sorting (Redis Cached)
  */
 export async function getCategories(queryParams = {}) {
-  const pagination = parsePaginationParams(queryParams, 100, 100);
-  const { categories, totalCount } = await categoryRepository.findPaginatedCategories({
-    ...pagination,
-    sortBy: queryParams.sortBy || DEFAULT_CATEGORY_SORT_BY,
-    sortOrder: queryParams.sortOrder ? (queryParams.sortOrder === 'asc' ? 'asc' : 'desc') : DEFAULT_CATEGORY_SORT_ORDER,
-  });
+  const cacheKey = CACHE_KEYS.CATEGORIES_LIST(queryParams);
 
-  const sanitizedCategories = categories.map(sanitizeCategory);
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const pagination = parsePaginationParams(queryParams, 100, 100);
+      const { categories, totalCount } = await categoryRepository.findPaginatedCategories({
+        ...pagination,
+        sortBy: queryParams.sortBy || DEFAULT_CATEGORY_SORT_BY,
+        sortOrder: queryParams.sortOrder ? (queryParams.sortOrder === 'asc' ? 'asc' : 'desc') : DEFAULT_CATEGORY_SORT_ORDER,
+      });
 
-  const paginatedResponse = buildPaginatedResponse({
-    items: sanitizedCategories,
-    totalCount,
-    page: pagination.page,
-    limit: pagination.limit,
-  });
+      const sanitizedCategories = categories.map(sanitizeCategory);
 
-  return {
-    data: {
-      categories: paginatedResponse.data,
+      const paginatedResponse = buildPaginatedResponse({
+        items: sanitizedCategories,
+        totalCount,
+        page: pagination.page,
+        limit: pagination.limit,
+      });
+
+      return {
+        data: {
+          categories: paginatedResponse.data,
+        },
+        meta: paginatedResponse.meta,
+      };
     },
-    meta: paginatedResponse.meta,
-  };
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
- * Get a single business category by ID
+ * Get a single business category by ID (Redis Cached)
  */
 export async function getCategoryById(id) {
-  const category = await categoryRepository.findCategoryById(id);
-  if (!category) {
-    throw new NotFoundError('Business category not found.');
-  }
-  return sanitizeCategory(category);
+  const cacheKey = CACHE_KEYS.CATEGORY_BY_ID(id);
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const category = await categoryRepository.findCategoryById(id);
+      if (!category) {
+        throw new NotFoundError('Business category not found.');
+      }
+      return sanitizeCategory(category);
+    },
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
@@ -85,6 +103,9 @@ export async function createCategory({ name, description, createdBy }) {
     description: description?.trim() || null,
     createdBy: createdBy || null,
   });
+
+  // Purge all categories cache keys
+  await deleteCachePattern(CACHE_KEYS.CATEGORY_PATTERN);
 
   return sanitizeCategory(newCategory);
 }
@@ -130,6 +151,9 @@ export async function updateCategory(id, { name, description }) {
 
   const updatedCategory = await categoryRepository.updateCategory(id, updateData);
 
+  // Purge all categories cache keys
+  await deleteCachePattern(CACHE_KEYS.CATEGORY_PATTERN);
+
   return sanitizeCategory(updatedCategory);
 }
 
@@ -144,8 +168,12 @@ export async function deleteCategory(id) {
 
   await categoryRepository.deleteCategory(id);
 
+  // Purge all categories cache keys
+  await deleteCachePattern(CACHE_KEYS.CATEGORY_PATTERN);
+
   return {
     id,
     name: category.name,
   };
 }
+

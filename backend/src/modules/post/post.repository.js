@@ -12,25 +12,88 @@ import {
  * Follows clean architecture: zero HTTP or presentation logic exists in this layer.
  */
 
-export const POST_INCLUDE = Object.freeze({
-  user: {
+export const POST_USER_SELECT = Object.freeze({
+  id: true,
+  fullName: true,
+  email: true,
+  avatarUrl: true,
+  role: true,
+});
+
+export const POST_CATEGORY_SELECT = Object.freeze({
+  id: true,
+  name: true,
+  slug: true,
+});
+
+export const POST_FRAME_SELECT = Object.freeze({
+  id: true,
+  title: true,
+  previewUrl: true,
+  overlayPngUrl: true,
+});
+
+export const POST_TEMPLATE_SELECT = Object.freeze({
+  id: true,
+  title: true,
+  baseImageUrl: true,
+  templateCategoryId: true,
+  templateCategory: {
     select: {
       id: true,
-      fullName: true,
-      email: true,
-      avatarUrl: true,
-      role: true,
+      name: true,
+      slug: true,
     },
   },
-  category: true,
-  frame: true,
+});
+
+export const POST_FESTIVAL_SELECT = Object.freeze({
+  id: true,
+  name: true,
+  slug: true,
+  date: true,
+  bannerUrl: true,
+});
+
+export const POST_CAPTIONS_SELECT = Object.freeze({
+  id: true,
+  captionText: true,
+  hashtags: true,
+});
+
+export const POST_INCLUDE = Object.freeze({
+  user: { select: POST_USER_SELECT },
+  category: { select: POST_CATEGORY_SELECT },
+  frame: { select: POST_FRAME_SELECT },
+  template: { select: POST_TEMPLATE_SELECT },
+  festival: { select: POST_FESTIVAL_SELECT },
+  captions: { select: POST_CAPTIONS_SELECT },
+});
+
+export const POST_LIST_INCLUDE = Object.freeze({
   template: {
-    include: {
-      templateCategory: true,
+    select: {
+      id: true,
+      title: true,
+      baseImageUrl: true,
     },
   },
-  festival: true,
-  captions: true,
+  festival: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      date: true,
+      bannerUrl: true,
+    },
+  },
+  captions: {
+    select: {
+      id: true,
+      captionText: true,
+      hashtags: true,
+    },
+  },
 });
 
 /**
@@ -57,16 +120,7 @@ export async function createWithVault(postData, vaultMetaData = {}) {
       async (tx) => {
         const newPost = await tx.post.create({
           data: postData,
-          include: {
-            template: {
-              include: {
-                templateCategory: true,
-              },
-            },
-            festival: true,
-            category: true,
-            frame: true,
-          },
+          include: POST_INCLUDE,
         });
 
         if (postData.finalGraphicUrl) {
@@ -107,16 +161,7 @@ export async function createWithVault(postData, vaultMetaData = {}) {
     logger.warn(`Transaction failed or timed out, executing sequential creation: ${err.message}`);
     const newPost = await prisma.post.create({
       data: postData,
-      include: {
-        template: {
-          include: {
-            templateCategory: true,
-          },
-        },
-        festival: true,
-        category: true,
-        frame: true,
-      },
+      include: POST_INCLUDE,
     });
 
     if (postData.finalGraphicUrl) {
@@ -178,10 +223,7 @@ export async function createScheduledPost(data) {
       data: payload,
       include: {
         post: {
-          include: {
-            template: true,
-            festival: true,
-          },
+          include: POST_LIST_INCLUDE,
         },
       },
     });
@@ -192,10 +234,7 @@ export async function createScheduledPost(data) {
         data: payload,
         include: {
           post: {
-            include: {
-              template: true,
-              festival: true,
-            },
+            include: POST_LIST_INCLUDE,
           },
         },
       });
@@ -237,11 +276,7 @@ export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 
       take,
       include: {
         post: {
-          include: {
-            template: true,
-            festival: true,
-            captions: true,
-          },
+          include: POST_LIST_INCLUDE,
         },
       },
       orderBy: { scheduledAt: 'asc' },
@@ -264,11 +299,7 @@ export async function findScheduledPostsByUserId(userId) {
     },
     include: {
       post: {
-        include: {
-          template: true,
-          festival: true,
-          captions: true,
-        },
+        include: POST_LIST_INCLUDE,
       },
     },
     orderBy: { scheduledAt: 'asc' },
@@ -290,11 +321,7 @@ export async function findDueScheduledPosts(limit = 1000) {
     },
     include: {
       post: {
-        include: {
-          template: true,
-          festival: true,
-          captions: true,
-        },
+        include: POST_LIST_INCLUDE,
       },
     },
     take: limit,
@@ -341,11 +368,7 @@ export async function findPaginatedByUserId(
       where,
       skip,
       take,
-      include: {
-        template: true,
-        festival: true,
-        captions: true,
-      },
+      include: POST_LIST_INCLUDE,
       orderBy: { [validSortBy]: validSortOrder },
     }),
     prisma.post.count({ where }),
@@ -362,11 +385,7 @@ export async function findPaginatedByUserId(
 export async function findByUserId(userId) {
   return prisma.post.findMany({
     where: { userId },
-    include: {
-      template: true,
-      festival: true,
-      captions: true,
-    },
+    include: POST_LIST_INCLUDE,
     orderBy: { createdAt: 'desc' },
   });
 }
@@ -380,11 +399,7 @@ export async function findById(id) {
   return prisma.post.findUnique({
     where: { id },
     include: {
-      template: true,
-      festival: true,
-      frame: true,
-      category: true,
-      captions: true,
+      ...POST_INCLUDE,
       scheduledPost: true,
     },
   });
@@ -404,10 +419,7 @@ export async function findPendingPostsByUserId(userId) {
       },
     },
     include: {
-      template: true,
-      festival: true,
-      frame: true,
-      category: true,
+      ...POST_INCLUDE,
       scheduledPost: true,
       vaultItems: true,
     },
@@ -444,10 +456,7 @@ export async function updatePostGraphicById(postId, finalGraphicUrl, userConfigJ
     where: { id: postId },
     data,
     include: {
-      template: true,
-      festival: true,
-      frame: true,
-      category: true,
+      ...POST_INCLUDE,
       scheduledPost: true,
     },
   });

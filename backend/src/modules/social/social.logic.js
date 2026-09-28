@@ -15,6 +15,8 @@ import { encryptToken } from '../../common/helpers/encryption.helper.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 /**
  * Get Meta / Instagram OAuth Authorization URL
@@ -93,6 +95,9 @@ export const handleLinkedinCallback = async (code, userId) => {
     tokenExpiresAt,
   });
 
+  // Invalidate user's social accounts cache
+  await deleteCachePattern(CACHE_KEYS.SOCIAL_PATTERN(userId));
+
   return {
     success: true,
     account: {
@@ -164,6 +169,9 @@ export const handleMetaCallback = async (code, userId) => {
     logger.warn('ℹ️ [SocialLogic] Instagram lookup warning:', err.message);
   }
 
+  // Invalidate user's social accounts cache
+  await deleteCachePattern(CACHE_KEYS.SOCIAL_PATTERN(userId));
+
   const primaryAccount = savedAccounts[0];
   const accountName = primaryAccount ? primaryAccount.accountName : '@meta_account';
 
@@ -177,32 +185,40 @@ export const handleMetaCallback = async (code, userId) => {
 };
 
 /**
- * Get connected social accounts for logged-in user with pagination (strictly sanitized)
+ * Get connected social accounts for logged-in user with pagination (Redis Cached)
  *
  * @param {string} userId - User ID
  * @param {Object} [queryParams={}] - Query parameters for pagination and sorting
  * @returns {Promise<{ data: { accounts: Array }, meta: Object }>}
  */
 export const getUserAccounts = async (userId, queryParams = {}) => {
-  const pagination = parsePaginationParams(queryParams);
-  const { accounts, totalCount } = await findPaginatedByUserId(userId, pagination);
+  const cacheKey = CACHE_KEYS.SOCIAL_ACCOUNTS_LIST(userId, queryParams);
 
-  // Strict OWASP Data Minimization: Access tokens and secrets never leave backend
-  const sanitizedAccounts = sanitizeSocialAccounts(accounts);
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const pagination = parsePaginationParams(queryParams);
+      const { accounts, totalCount } = await findPaginatedByUserId(userId, pagination);
 
-  const paginatedResponse = buildPaginatedResponse({
-    items: sanitizedAccounts,
-    totalCount,
-    page: pagination.page,
-    limit: pagination.limit,
-  });
+      // Strict OWASP Data Minimization: Access tokens and secrets never leave backend
+      const sanitizedAccounts = sanitizeSocialAccounts(accounts);
 
-  return {
-    data: {
-      accounts: paginatedResponse.data,
+      const paginatedResponse = buildPaginatedResponse({
+        items: sanitizedAccounts,
+        totalCount,
+        page: pagination.page,
+        limit: pagination.limit,
+      });
+
+      return {
+        data: {
+          accounts: paginatedResponse.data,
+        },
+        meta: paginatedResponse.meta,
+      };
     },
-    meta: paginatedResponse.meta,
-  };
+    CACHE_TTL.ONE_HOUR
+  );
 };
 
 /**
@@ -215,6 +231,10 @@ export const getUserAccounts = async (userId, queryParams = {}) => {
 export const disconnectAccount = async (userId, platform) => {
   const platformUpper = platform.toUpperCase();
   await deleteAccount(userId, platformUpper);
+
+  // Invalidate user's social accounts cache
+  await deleteCachePattern(CACHE_KEYS.SOCIAL_PATTERN(userId));
+
   return { success: true, platform: platformUpper };
 };
 

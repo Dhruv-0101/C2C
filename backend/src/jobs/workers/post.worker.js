@@ -160,47 +160,75 @@ Agar dono ek hi table ya ek hi ID hoti, toh ek content ko multiple times alag-al
   }
 };
 
-let workerInstance = null;
+let instantWorkerInstance = null;
+let scheduledWorkerInstance = null;
 
 if (isRedisConfigured) {
   try {
-    workerInstance = new Worker(
+    const defaultWorkerConfig = {
+      connection: redisConnectionOptions,
+      concurrency: 5,
+      limiter: {
+        max: 100,
+        duration: 60000,
+      },
+    };
+
+    // 1. Instant Post Publishing Worker (Handles Live Immediate Publishing)
+    const { INSTANT_POST_QUEUE_NAME } = await import("../../queues/post.queue.js");
+    instantWorkerInstance = new Worker(
+      INSTANT_POST_QUEUE_NAME,
+      async (job) => {
+        return await processPostJob(job.data);
+      },
+      defaultWorkerConfig
+    );
+
+    instantWorkerInstance.on("completed", (job) => {
+      logger.info(`🏁 [InstantPostWorker] Job ${job.id} dispatched successfully.`);
+    });
+
+    instantWorkerInstance.on("failed", (job, err) => {
+      logger.error(`❌ [InstantPostWorker] Job ${job?.id} failed:`, err.message || err);
+    });
+
+    // 2. Scheduled Post Publishing Worker (Handles Future Scheduled Publishing)
+    scheduledWorkerInstance = new Worker(
       SCHEDULED_POST_QUEUE_NAME,
       async (job) => {
         return await processPostJob(job.data);
       },
-      {
-        connection: redisConnectionOptions,
-        concurrency: 2,
-        limiter: {
-          max: 100,
-          duration: 60000,
-        },
-      },
+      defaultWorkerConfig
     );
 
-    workerInstance.on("completed", (job) => {
-      logger.info(`🏁 [PostWorker] Job ${job.id} completed successfully.`);
+    scheduledWorkerInstance.on("completed", (job) => {
+      logger.info(`🏁 [ScheduledPostWorker] Job ${job.id} completed successfully.`);
     });
 
-    workerInstance.on("failed", (job, err) => {
-      logger.error(`❌ [PostWorker] Job ${job?.id} failed:`, err.message || err);
+    scheduledWorkerInstance.on("failed", (job, err) => {
+      logger.error(`❌ [ScheduledPostWorker] Job ${job?.id} failed:`, err.message || err);
     });
 
-    workerInstance.on("stalled", (jobId) => {
-      logger.warn(`⚠️ [PostWorker] Job #${jobId} stalled and will be re-processed.`);
+    scheduledWorkerInstance.on("stalled", (jobId) => {
+      logger.warn(`⚠️ [ScheduledPostWorker] Job #${jobId} stalled and will be re-processed.`);
     });
 
     let hasLoggedWorkerError = false;
-    workerInstance.on("error", (err) => {
+    const quietErrorHandler = (err) => {
       if (!hasLoggedWorkerError) {
         logger.warn(`ℹ️ [PostWorker] Connection notice: ${err.message}. Direct execution fallback active.`);
         hasLoggedWorkerError = true;
       }
-    });
+    };
+
+    instantWorkerInstance.on("error", quietErrorHandler);
+    scheduledWorkerInstance.on("error", quietErrorHandler);
   } catch (err) {
     logger.warn("⚠️ [PostWorker] BullMQ Worker initialization deferred:", err.message);
   }
 }
 
-export { workerInstance };
+// Backward compatibility alias for single worker import
+const workerInstance = scheduledWorkerInstance;
+
+export { workerInstance, instantWorkerInstance, scheduledWorkerInstance };

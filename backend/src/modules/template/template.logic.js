@@ -12,6 +12,8 @@ import { uploadTemplateBuffer, deleteFromCloudinary } from '../../config/cloudin
 import { logger } from '../../config/logger.js';
 import { sanitizeTemplate } from './template.helper.js';
 import { DEFAULT_TEMPLATE_CATEGORY_NAME } from './template.constants.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 /**
  * 🎨 MASTER GRAPHIC TEMPLATE BUSINESS LOGIC
@@ -74,53 +76,72 @@ export async function createTemplate(data, creatorId) {
     createdBy: creatorId || null,
   });
 
+  // Invalidate templates cache
+  await deleteCachePattern(CACHE_KEYS.TEMPLATE_PATTERN);
+
   return sanitizeTemplate(createdTemplate);
 }
 
 /**
- * Get paginated system templates with optional filters
+ * Get paginated system templates with optional filters (Redis Cached)
  */
 export async function getTemplates(queryParams = {}) {
-  const pagination = parsePaginationParams(queryParams);
-  const { festivalId, category, categoryId, templateCategoryId, search, sortBy, sortOrder } =
-    queryParams;
+  const cacheKey = CACHE_KEYS.TEMPLATES_LIST(queryParams);
 
-  const { templates, totalCount } = await templateRepository.findPaginatedTemplates({
-    ...pagination,
-    festivalId: festivalId || undefined,
-    category: category || categoryId || undefined,
-    templateCategoryId: templateCategoryId || undefined,
-    search: search ? search.trim() : undefined,
-    sortBy,
-    sortOrder,
-  });
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const pagination = parsePaginationParams(queryParams);
+      const { festivalId, category, categoryId, templateCategoryId, search, sortBy, sortOrder } =
+        queryParams;
 
-  const sanitizedTemplates = templates.map(sanitizeTemplate);
+      const { templates, totalCount } = await templateRepository.findPaginatedTemplates({
+        ...pagination,
+        festivalId: festivalId || undefined,
+        category: category || categoryId || undefined,
+        templateCategoryId: templateCategoryId || undefined,
+        search: search ? search.trim() : undefined,
+        sortBy,
+        sortOrder,
+      });
 
-  const paginatedResponse = buildPaginatedResponse({
-    items: sanitizedTemplates,
-    totalCount,
-    page: pagination.page,
-    limit: pagination.limit,
-  });
+      const sanitizedTemplates = templates.map(sanitizeTemplate);
 
-  return {
-    data: {
-      templates: paginatedResponse.data,
+      const paginatedResponse = buildPaginatedResponse({
+        items: sanitizedTemplates,
+        totalCount,
+        page: pagination.page,
+        limit: pagination.limit,
+      });
+
+      return {
+        data: {
+          templates: paginatedResponse.data,
+        },
+        meta: paginatedResponse.meta,
+      };
     },
-    meta: paginatedResponse.meta,
-  };
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
- * Get a single system template by ID
+ * Get a single system template by ID (Redis Cached)
  */
 export async function getTemplateById(id) {
-  const template = await templateRepository.findTemplateById(id);
-  if (!template) {
-    throw new NotFoundError('System Template not found.');
-  }
-  return sanitizeTemplate(template);
+  const cacheKey = CACHE_KEYS.TEMPLATE_BY_ID(id);
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const template = await templateRepository.findTemplateById(id);
+      if (!template) {
+        throw new NotFoundError('System Template not found.');
+      }
+      return sanitizeTemplate(template);
+    },
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
@@ -139,9 +160,14 @@ export async function deleteTemplate(id) {
   }
 
   await templateRepository.deleteTemplate(id);
+
+  // Invalidate templates cache
+  await deleteCachePattern(CACHE_KEYS.TEMPLATE_PATTERN);
+
   return {
     id,
     title: template.title,
   };
 }
+
 

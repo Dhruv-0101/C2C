@@ -16,6 +16,8 @@ import {
   deleteFromCloudinary,
 } from '../../config/cloudinary.js';
 import { logger } from '../../config/logger.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 /**
  * 🖼️ FRAME BUSINESS LOGIC LAYER
@@ -24,50 +26,65 @@ import { logger } from '../../config/logger.js';
  */
 
 /**
- * Get active transparent PNG frames with pagination, search, and sorting
+ * Get active transparent PNG frames with pagination, search, and sorting (Redis Cached)
  * @param {Object} [queryParams={}]
  * @returns {Promise<{ data: { frames: Array<Object> }, meta: Object }>}
  */
 export async function getFrames(queryParams = {}) {
-  const pagination = parsePaginationParams(queryParams);
-  const { frames, totalCount } = await frameRepository.findPaginatedFrames({
-    ...pagination,
-    search: pagination.search || queryParams.search,
-    sortBy: queryParams.sortBy || DEFAULT_FRAME_SORT_BY,
-    sortOrder: queryParams.sortOrder
-      ? queryParams.sortOrder === 'asc'
-        ? 'asc'
-        : 'desc'
-      : DEFAULT_FRAME_SORT_ORDER,
-  });
+  const cacheKey = CACHE_KEYS.FRAMES_LIST(queryParams);
 
-  const paginatedResponse = buildPaginatedResponse({
-    items: sanitizeFrames(frames),
-    totalCount,
-    page: pagination.page,
-    limit: pagination.limit,
-  });
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const pagination = parsePaginationParams(queryParams);
+      const { frames, totalCount } = await frameRepository.findPaginatedFrames({
+        ...pagination,
+        search: pagination.search || queryParams.search,
+        sortBy: queryParams.sortBy || DEFAULT_FRAME_SORT_BY,
+        sortOrder: queryParams.sortOrder
+          ? queryParams.sortOrder === 'asc'
+            ? 'asc'
+            : 'desc'
+          : DEFAULT_FRAME_SORT_ORDER,
+      });
 
-  return {
-    data: {
-      frames: paginatedResponse.data,
+      const paginatedResponse = buildPaginatedResponse({
+        items: sanitizeFrames(frames),
+        totalCount,
+        page: pagination.page,
+        limit: pagination.limit,
+      });
+
+      return {
+        data: {
+          frames: paginatedResponse.data,
+        },
+        meta: paginatedResponse.meta,
+      };
     },
-    meta: paginatedResponse.meta,
-  };
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
-
 /**
- * Get single frame by ID
+ * Get single frame by ID (Redis Cached)
  * @param {string} id - Frame UUID
  * @returns {Promise<Object>}
  */
 export async function getFrameById(id) {
-  const frame = await frameRepository.findFrameById(id);
-  if (!frame) {
-    throw new NotFoundError('Frame not found');
-  }
-  return sanitizeFrame(frame);
+  const cacheKey = CACHE_KEYS.FRAME_BY_ID(id);
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const frame = await frameRepository.findFrameById(id);
+      if (!frame) {
+        throw new NotFoundError('Frame not found');
+      }
+      return sanitizeFrame(frame);
+    },
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
@@ -147,6 +164,10 @@ export async function createFrame(payload = {}, fileBuffer = null, createdBy = n
   };
 
   const created = await frameRepository.createFrame(frameData);
+
+  // Purge frame caches
+  await deleteCachePattern(CACHE_KEYS.FRAME_PATTERN);
+
   return sanitizeFrame(created);
 }
 
@@ -174,6 +195,10 @@ export async function deleteFrame(id) {
   }
 
   await frameRepository.softDeleteFrameById(id);
+
+  // Purge frame caches
+  await deleteCachePattern(CACHE_KEYS.FRAME_PATTERN);
+
   return { success: true, id };
 }
 
@@ -184,3 +209,4 @@ export const frameLogic = {
   createFrame,
   deleteFrame,
 };
+

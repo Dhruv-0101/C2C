@@ -4,6 +4,8 @@ import * as festivalRepository from './festival.repository.js';
 import { uploadFestivalBannerBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
 import { sanitizeFestival } from './festival.helper.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 function slugify(text) {
   return text
@@ -16,50 +18,66 @@ function slugify(text) {
 }
 
 /**
- * Get festivals with mandatory pagination (optionally filtered by year and active status)
+ * Get festivals with mandatory pagination (optionally filtered by year and active status) - Redis Cached
  */
 export async function getFestivals(queryParams = {}, includeInactive = false) {
   const params = typeof queryParams === 'object' && queryParams !== null ? queryParams : { year: queryParams };
-  const pagination = parsePaginationParams(params, 100, 100);
-  const year = params.year;
-  const isInactive = params.includeInactive !== undefined ? Boolean(params.includeInactive) : includeInactive;
-  const startDate = params.startDate;
-  const endDate = params.endDate;
+  const cacheKey = CACHE_KEYS.FESTIVALS_LIST({ ...params, includeInactive });
 
-  const { festivals, totalCount } = await festivalRepository.findPaginatedFestivals({
-    ...pagination,
-    year,
-    startDate,
-    endDate,
-    includeInactive: isInactive,
-  });
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const pagination = parsePaginationParams(params, 100, 100);
+      const year = params.year;
+      const isInactive = params.includeInactive !== undefined ? Boolean(params.includeInactive) : includeInactive;
+      const startDate = params.startDate;
+      const endDate = params.endDate;
 
-  const sanitizedFestivals = festivals.map(sanitizeFestival);
+      const { festivals, totalCount } = await festivalRepository.findPaginatedFestivals({
+        ...pagination,
+        year,
+        startDate,
+        endDate,
+        includeInactive: isInactive,
+      });
 
-  const paginatedResponse = buildPaginatedResponse({
-    items: sanitizedFestivals,
-    totalCount,
-    page: pagination.page,
-    limit: pagination.limit,
-  });
+      const sanitizedFestivals = festivals.map(sanitizeFestival);
 
-  return {
-    data: {
-      festivals: paginatedResponse.data,
+      const paginatedResponse = buildPaginatedResponse({
+        items: sanitizedFestivals,
+        totalCount,
+        page: pagination.page,
+        limit: pagination.limit,
+      });
+
+      return {
+        data: {
+          festivals: paginatedResponse.data,
+        },
+        meta: paginatedResponse.meta,
+      };
     },
-    meta: paginatedResponse.meta,
-  };
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
- * Fetch a single festival by ID
+ * Fetch a single festival by ID (Redis Cached)
  */
 export async function getFestivalById(id) {
-  const festival = await festivalRepository.findFestivalById(id);
-  if (!festival) {
-    throw new NotFoundError('Festival not found.');
-  }
-  return sanitizeFestival(festival);
+  const cacheKey = CACHE_KEYS.FESTIVAL_BY_ID(id);
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const festival = await festivalRepository.findFestivalById(id);
+      if (!festival) {
+        throw new NotFoundError('Festival not found.');
+      }
+      return sanitizeFestival(festival);
+    },
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
@@ -111,6 +129,9 @@ export async function createFestival({
     isActive: isActive !== undefined ? Boolean(isActive) : true,
     createdBy: createdBy || null,
   });
+
+  // Purge all festival cache keys
+  await deleteCachePattern(CACHE_KEYS.FESTIVAL_PATTERN);
 
   return sanitizeFestival(festival);
 }
@@ -182,6 +203,10 @@ export async function updateFestival(id, data, fileBuffer) {
   }
 
   const updatedFestival = await festivalRepository.updateFestival(id, updatePayload);
+
+  // Purge all festival cache keys
+  await deleteCachePattern(CACHE_KEYS.FESTIVAL_PATTERN);
+
   return sanitizeFestival(updatedFestival);
 }
 
@@ -201,8 +226,13 @@ export async function deleteFestival(id) {
   }
 
   await festivalRepository.deleteFestival(id);
+
+  // Purge all festival cache keys
+  await deleteCachePattern(CACHE_KEYS.FESTIVAL_PATTERN);
+
   return {
     id,
     name: existing.name,
   };
 }
+

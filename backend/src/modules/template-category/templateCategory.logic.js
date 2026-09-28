@@ -3,6 +3,8 @@ import { parsePaginationParams, buildPaginatedResponse } from '../../common/help
 import * as templateCategoryRepository from './templateCategory.repository.js';
 import { sanitizeTemplateCategory } from './templateCategory.helper.js';
 import { DEFAULT_TEMPLATE_CATEGORY_SORT_BY, DEFAULT_TEMPLATE_CATEGORY_SORT_ORDER } from './templateCategory.constants.js';
+import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
 /**
  * Generate a clean URL slug from string
@@ -18,43 +20,59 @@ function slugify(text) {
 }
 
 /**
- * Get template categories with pagination, live search, and sorting
+ * Get template categories with pagination, live search, and sorting (Redis Cached)
  */
 export async function getTemplateCategories(queryParams = {}) {
-  const pagination = parsePaginationParams(queryParams, 100, 100);
-  const { categories, totalCount } = await templateCategoryRepository.findPaginatedTemplateCategories({
-    ...pagination,
-    search: queryParams.search,
-    sortBy: queryParams.sortBy || DEFAULT_TEMPLATE_CATEGORY_SORT_BY,
-    sortOrder: queryParams.sortOrder ? (queryParams.sortOrder === 'desc' ? 'desc' : 'asc') : DEFAULT_TEMPLATE_CATEGORY_SORT_ORDER,
-  });
+  const cacheKey = CACHE_KEYS.TEMPLATE_CATEGORIES_LIST(queryParams);
 
-  const sanitizedCategories = categories.map(sanitizeTemplateCategory);
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const pagination = parsePaginationParams(queryParams, 100, 100);
+      const { categories, totalCount } = await templateCategoryRepository.findPaginatedTemplateCategories({
+        ...pagination,
+        search: queryParams.search,
+        sortBy: queryParams.sortBy || DEFAULT_TEMPLATE_CATEGORY_SORT_BY,
+        sortOrder: queryParams.sortOrder ? (queryParams.sortOrder === 'desc' ? 'desc' : 'asc') : DEFAULT_TEMPLATE_CATEGORY_SORT_ORDER,
+      });
 
-  const paginatedResponse = buildPaginatedResponse({
-    items: sanitizedCategories,
-    totalCount,
-    page: pagination.page,
-    limit: pagination.limit,
-  });
+      const sanitizedCategories = categories.map(sanitizeTemplateCategory);
 
-  return {
-    data: {
-      categories: paginatedResponse.data,
+      const paginatedResponse = buildPaginatedResponse({
+        items: sanitizedCategories,
+        totalCount,
+        page: pagination.page,
+        limit: pagination.limit,
+      });
+
+      return {
+        data: {
+          categories: paginatedResponse.data,
+        },
+        meta: paginatedResponse.meta,
+      };
     },
-    meta: paginatedResponse.meta,
-  };
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
- * Get a single template category by ID
+ * Get a single template category by ID (Redis Cached)
  */
 export async function getTemplateCategoryById(id) {
-  const category = await templateCategoryRepository.findTemplateCategoryById(id);
-  if (!category) {
-    throw new NotFoundError('Template category not found.');
-  }
-  return sanitizeTemplateCategory(category);
+  const cacheKey = CACHE_KEYS.TEMPLATE_CATEGORY_BY_ID(id);
+
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const category = await templateCategoryRepository.findTemplateCategoryById(id);
+      if (!category) {
+        throw new NotFoundError('Template category not found.');
+      }
+      return sanitizeTemplateCategory(category);
+    },
+    CACHE_TTL.ONE_HOUR
+  );
 }
 
 /**
@@ -87,6 +105,9 @@ export async function createTemplateCategory({ name, description, isSystem = fal
     isSystem: Boolean(isSystem),
     createdBy: createdBy || null,
   });
+
+  // Invalidate all template-category cache keys
+  await deleteCachePattern(CACHE_KEYS.TEMPLATE_CATEGORY_PATTERN);
 
   return sanitizeTemplateCategory(newCategory);
 }
@@ -129,6 +150,10 @@ export async function updateTemplateCategory(id, { name, description }) {
   }
 
   const updatedCategory = await templateCategoryRepository.updateTemplateCategory(id, updateData);
+
+  // Invalidate all template-category cache keys
+  await deleteCachePattern(CACHE_KEYS.TEMPLATE_CATEGORY_PATTERN);
+
   return sanitizeTemplateCategory(updatedCategory);
 }
 
@@ -147,8 +172,12 @@ export async function deleteTemplateCategory(id) {
 
   await templateCategoryRepository.deleteTemplateCategory(id);
 
+  // Invalidate all template-category cache keys
+  await deleteCachePattern(CACHE_KEYS.TEMPLATE_CATEGORY_PATTERN);
+
   return {
     id,
     name: category.name,
   };
 }
+

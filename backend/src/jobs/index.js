@@ -1,5 +1,10 @@
 import { emailWorker } from './workers/email.worker.js';
-import { workerInstance, processPostJob } from './workers/post.worker.js';
+import {
+  workerInstance,
+  instantWorkerInstance,
+  scheduledWorkerInstance,
+  processPostJob,
+} from './workers/post.worker.js';
 import { analyticsWorkerInstance, processAnalyticsJob } from './workers/analytics.worker.js';
 import { initCronDispatcher, stopCronDispatcher, triggerScheduledPostsNow } from './cron/postCron.job.js';
 import { initAnalyticsCron, stopAnalyticsCron, syncAnalyticsMetrics } from './cron/analyticsCron.job.js';
@@ -31,7 +36,9 @@ export async function closeWorkers() {
 
   // Close BullMQ worker consumers cleanly
   if (emailWorker) await emailWorker.close().catch(() => {});
-  if (workerInstance) await workerInstance.close().catch(() => {});
+  if (instantWorkerInstance) await instantWorkerInstance.close().catch(() => {});
+  if (scheduledWorkerInstance) await scheduledWorkerInstance.close().catch(() => {});
+  if (workerInstance && workerInstance !== scheduledWorkerInstance) await workerInstance.close().catch(() => {});
   if (analyticsWorkerInstance) await analyticsWorkerInstance.close().catch(() => {});
 }
 
@@ -43,6 +50,8 @@ export {
   syncAnalyticsMetrics,
   emailWorker,
   workerInstance,
+  instantWorkerInstance,
+  scheduledWorkerInstance,
   analyticsWorkerInstance,
   initCronDispatcher,
   stopCronDispatcher,

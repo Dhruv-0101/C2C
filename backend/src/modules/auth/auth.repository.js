@@ -1,5 +1,18 @@
 import { prisma } from '../../config/database.js';
 
+export const AUTH_USER_SELECT = Object.freeze({
+  id: true,
+  email: true,
+  fullName: true,
+  role: true,
+  isActive: true,
+  isAdmin: true,
+  isSuperAdmin: true,
+  isSubAdmin: true,
+  allowedTabs: true,
+  avatarUrl: true,
+});
+
 export async function findUserByEmail(email) {
   return prisma.user.findUnique({
     where: { email },
@@ -356,7 +369,11 @@ export async function createRefreshToken({ userId, tokenHash, expiresAt }) {
 export async function findRefreshToken(tokenHash) {
   return prisma.refreshToken.findUnique({
     where: { tokenHash },
-    include: { user: true },
+    include: {
+      user: {
+        select: AUTH_USER_SELECT,
+      },
+    },
   });
 }
 
@@ -387,7 +404,11 @@ export async function createPasswordResetToken({ userId, tokenHash, expiresAt })
 export async function findPasswordResetToken(tokenHash) {
   return prisma.passwordResetToken.findUnique({
     where: { tokenHash },
-    include: { user: true },
+    include: {
+      user: {
+        select: AUTH_USER_SELECT,
+      },
+    },
   });
 }
 
@@ -536,7 +557,16 @@ export async function findSubAdminActivity({
     totalCount = templatesCount;
     const records = await prisma.template.findMany({
       where: templateWhere,
-      include: { creator: creatorSelect, templateCategory: true },
+      include: {
+        creator: creatorSelect,
+        templateCategory: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
       skip,
       take: limit,
       orderBy: { createdAt: sortOrder },
@@ -651,7 +681,16 @@ export async function findSubAdminActivity({
     const [templates, frames, festivals, categories, templateCategories] = await Promise.all([
       prisma.template.findMany({
         where: templateWhere,
-        include: { creator: creatorSelect, templateCategory: true },
+        include: {
+          creator: creatorSelect,
+          templateCategory: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
         take: fetchLimit,
         orderBy: { createdAt: sortOrder },
       }),

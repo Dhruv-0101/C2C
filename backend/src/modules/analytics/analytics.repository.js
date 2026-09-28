@@ -157,14 +157,24 @@ export const getTopTemplates = async (userId, limit = 5) => {
     where: { userId },
     take: 20,
     orderBy: { engagementRate: 'desc' },
-    include: {
+    select: {
+      postId: true,
+      impressions: true,
+      reach: true,
+      likes: true,
+      comments: true,
+      shares: true,
+      engagementRate: true,
       post: {
-        include: {
+        select: {
+          id: true,
+          occasionName: true,
+          customImageUrl: true,
+          finalGraphicUrl: true,
           template: {
             select: {
               id: true,
               title: true,
-              category: true,
               baseImageUrl: true,
             },
           },
@@ -184,7 +194,7 @@ export const getTopTemplates = async (userId, limit = 5) => {
       templateMap.set(templateId, {
         id: templateId,
         title: templateTitle,
-        category: item.post?.template?.category || 'PROMOTION',
+        category: 'PROMOTION',
         imageUrl,
         totalImpressions: 0,
         totalReach: 0,
@@ -218,6 +228,7 @@ export const getTopTemplates = async (userId, limit = 5) => {
 export const seedDemoAnalytics = async (userId) => {
   let posts = await prisma.post.findMany({
     where: { userId },
+    select: { id: true },
     take: 10,
   });
 

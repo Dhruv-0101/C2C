@@ -1,6 +1,6 @@
 import * as postRepository from './post.repository.js';
 import { uploadPostBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
-import { processPostJob } from '../../jobs/index.js';
+import { addInstantPostJob, addScheduledPostJob } from '../../queues/post.queue.js';
 import {
   parsePaginationParams,
   buildPaginatedResponse,
@@ -15,8 +15,11 @@ import {
   BadRequestError,
 } from '../../common/errors/custom-errors.js';
 import { logger } from '../../config/logger.js';
+import { deleteCachePattern } from '../../common/utils/cache.util.js';
+import { CACHE_KEYS } from '../../common/constants/cache.constants.js';
 import {
   POST_STATUS,
+
   SCHEDULED_POST_STATUS,
   POST_TARGET_PLATFORMS,
 } from './post.constants.js';
@@ -88,10 +91,10 @@ export async function getScheduledPosts(userId, queryParams = {}) {
 }
 
 /**
- * Instant Live Social Media Publishing
+ * Instant Live Social Media Publishing (Non-blocking BullMQ Queue Dispatch)
  * @param {string} userId
  * @param {Object} payload
- * @returns {Promise<{ post: Object, publishResult: Object }>}
+ * @returns {Promise<{ post: Object, isQueued: boolean, jobId?: string, publishResult?: Object }>}
  */
 export async function publishNow(userId, payload) {
   const post = await createPost(userId, { ...payload, status: POST_STATUS.PUBLISHING });
@@ -104,16 +107,19 @@ export async function publishNow(userId, payload) {
     graphicUrl: post.finalGraphicUrl,
   };
 
-  const publishResult = await processPostJob(jobPayload);
+  // Dispatch non-blocking background job via BullMQ instant queue
+  const queueResult = await addInstantPostJob(jobPayload);
 
   return {
     post: sanitizePost(post),
-    publishResult,
+    isQueued: queueResult.isQueued,
+    jobId: queueResult.jobId || null,
+    publishResult: queueResult.result || null,
   };
 }
 
 /**
- * Schedule Post for Future Date & Time
+ * Schedule Post for Future Date & Time (Persists in DB & Enqueues to BullMQ with delay)
  * @param {string} userId
  * @param {Object} payload
  * @returns {Promise<{ post: Object, scheduledPost: Object }>}
@@ -129,6 +135,19 @@ export async function schedulePost(userId, payload) {
     targetPlatforms: payload.targetPlatforms || [...POST_TARGET_PLATFORMS],
     status: SCHEDULED_POST_STATUS.PENDING,
   });
+
+  // Enqueue to BullMQ delayed queue (with cron safety net)
+  await addScheduledPostJob(
+    {
+      scheduledPostId: scheduledPost.id,
+      postId: post.id,
+      userId,
+      targetPlatforms: payload.targetPlatforms || [...POST_TARGET_PLATFORMS],
+      postContent: payload.caption || payload.occasionName || 'Branded Graphic Post',
+      graphicUrl: post.finalGraphicUrl,
+    },
+    scheduledDate
+  );
 
   return {
     post: sanitizePost(post),
@@ -220,8 +239,12 @@ export async function createPost(userId, payload, fileBuffer) {
     logger.warn(`Failed to increment post quota for user ${userId}: ${err.message}`);
   });
 
+  // Purge user's cached billing status to reflect newly decremented quota in real time
+  deleteCachePattern(CACHE_KEYS.BILLING_PATTERN(userId)).catch(() => {});
+
   return sanitizePost(createdPost);
 }
+
 
 /**
  * Enterprise Admin: Get all posts created across platform with multi-dimensional filters

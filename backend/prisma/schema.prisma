@@ -99,6 +99,8 @@ model User {
   @@index([email])
   @@index([googleId])
   @@index([role])
+  @@index([isActive, role])
+  @@index([createdAt])
 }
 
 // 🔐 JWT Refresh Token Session Store (Implements Refresh Token Rotation & Multi-Device Logout)
@@ -202,6 +204,7 @@ model Frame {
   posts Post[]                                        // User posts created using this frame overlay
 
   @@index([createdBy])
+  @@index([isActive, createdAt])
 }
 
 // ==============================================================================
@@ -223,6 +226,7 @@ model Category {
   posts     Post[]                                    // User posts created under this business niche
 
   @@index([createdBy])
+  @@index([createdAt])
 }
 
 // 🎆 Festivals & National Observances (e.g. Diwali, Eid, Independence Day, Holi)
@@ -244,6 +248,9 @@ model Festival {
   posts     Post[]                                    // User posts created for this festival
 
   @@index([createdBy])
+  @@index([isActive, date])
+  @@index([date])
+  @@index([createdAt])
 }
 
 // 🎨 Template Categories (Grouping templates by visual theme: Festive, Sale, Hiring, Motivation)
@@ -261,6 +268,7 @@ model TemplateCategory {
   templates Template[]
 
   @@index([createdBy])
+  @@index([createdAt])
 }
 
 // 🖼️ Master Graphic Poster Templates: Ready-made artwork for users to customize
@@ -285,6 +293,9 @@ model Template {
   @@index([festivalId])
   @@index([templateCategoryId])
   @@index([createdBy])
+  @@index([festivalId, isActive])
+  @@index([templateCategoryId, isActive])
+  @@index([isActive, createdAt])
 }
 
 // ==============================================================================
@@ -324,6 +335,11 @@ model Post {
   @@index([templateId])
   @@index([festivalId])
   @@index([createdAt])
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@index([categoryId, status])
+  @@index([festivalId, status])
+  @@index([templateId, status])
 }
 
 // ✍️ Social Captions: AI-generated copy & viral hashtags
@@ -358,6 +374,7 @@ model ScheduledPost {
 
   @@index([postId])
   @@index([status, scheduledAt])                     // Composite index optimizing 60-second cron polling query
+  @@index([scheduledAt])
 }
 
 // 🗄️ Creative Vault: Saved favorite graphics for quick re-use & brand archive
@@ -372,6 +389,7 @@ model VaultItem {
   @@unique([userId, postId])
   @@index([userId])
   @@index([postId])
+  @@index([userId, createdAt])
 }
 
 // ==============================================================================
@@ -396,6 +414,9 @@ model Subscription {
   orderId            String?                           // Gateway order ID (e.g. order_xxx)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+
+  @@index([status])
+  @@index([plan])
 }
 
 // 🧾 Billing Transactions Ledger: Immutable financial transaction history
@@ -416,6 +437,8 @@ model BillingTransaction {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([paymentGateway, status])
 }
 
 // ==============================================================================
