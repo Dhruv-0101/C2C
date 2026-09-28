@@ -17,14 +17,16 @@ import {
   Filter,
   X,
   Sparkles,
+  Check,
 } from "lucide-react";
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
 import { useSubAdminActivity } from '@/features/admin/sub-admins/hooks/useSubAdminActivity';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import { ADMIN_TABS } from '@/shared/constants';
+import { ADMIN_TABS, QUERY_KEYS } from '@/shared/constants';
 import { formatDateTime as formatDate } from '@/shared/utils/date.util';
 import { SubAdminActivityLog } from "./components/SubAdminActivityLog";
 
@@ -105,6 +107,10 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
   const [inspectItem, setInspectItem] = useState(null);
   const [viewMode, setViewMode] = useState("cards");
 
+  const queryClient = useQueryClient();
+  const [isRefreshedRecently, setIsRefreshedRecently] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState(new Date());
+
   // Auto-reset page to 1 whenever debounced search or filters change
   useEffect(() => {
     setCurrentPage(1);
@@ -138,6 +144,26 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
     setCurrentPage(1);
   };
 
+  /**
+   * Refreshes the activity feed, invalidates parent SubAdmin query caches, and shows user confirmation
+   */
+  const handleRefreshFeed = async () => {
+    try {
+      await Promise.all([
+        refetch(),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL }),
+        queryClient.invalidateQueries({ queryKey: ['subadmins', 'activity'] }),
+      ]);
+      setLastRefreshedAt(new Date());
+      setIsRefreshedRecently(true);
+      setTimeout(() => {
+        setIsRefreshedRecently(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to refresh SubAdmin activity feed:", err);
+    }
+  };
+
   return (
     <div className="animate-in fade-in duration-200 space-y-6">
       {/* 1. Header Section */}
@@ -159,18 +185,40 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            icon={RefreshCw}
-            className={`border-[#2C384E] text-slate-300 hover:text-white ${
-              isFetching ? "animate-spin" : ""
-            }`}
-            onClick={() => refetch()}
+          <span className="text-[11px] text-slate-400 font-mono hidden sm:inline-block">
+            Updated {formatRelativeTime(lastRefreshedAt) || "just now"}
+          </span>
+
+          <button
+            type="button"
+            onClick={handleRefreshFeed}
+            disabled={isFetching}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border flex items-center gap-2 cursor-pointer shadow-sm select-none ${
+              isRefreshedRecently
+                ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
+                : "bg-[#131B2A] border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-500/50 hover:bg-[#1A2538]"
+            } disabled:opacity-60 disabled:cursor-not-allowed`}
+            title="Refresh SubAdmin activity feed"
           >
-            Refresh Feed
-          </Button>
+            {isRefreshedRecently ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-400 font-bold">Updated!</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${
+                    isFetching ? "animate-spin text-amber-400" : "text-slate-400"
+                  }`}
+                />
+                <span>{isFetching ? "Refreshing..." : "Refresh Feed"}</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
+
 
       {/* 2. Top Summary Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

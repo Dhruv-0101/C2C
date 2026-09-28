@@ -40,9 +40,8 @@ export const AdminStatsHeader = ({
       {/* SubAdmin Moderators Stat Card (Clickable for SuperAdmin) */}
       <Card
         onClick={() => isSuperAdmin && onNavigateTab && onNavigateTab(ADMIN_TABS.SUB_ADMINS)}
-        className={`p-5 border-[#2C384E] bg-[#131B2A] space-y-2 transition-all duration-200 group ${
-          isSuperAdmin ? "cursor-pointer hover:border-teal-500/50 hover:shadow-lg" : "opacity-90"
-        }`}
+        className={`p-5 border-[#2C384E] bg-[#131B2A] space-y-2 transition-all duration-200 group ${isSuperAdmin ? "cursor-pointer hover:border-teal-500/50 hover:shadow-lg" : "opacity-90"
+          }`}
       >
         <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
           <span className="group-hover:text-teal-400 transition-colors">SubAdmin Moderators</span>

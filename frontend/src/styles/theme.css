@@ -93,6 +93,48 @@ html.light .text-amber-700 {
   color: #92400E !important; /* Deep Dark Amber 800 */
 }
 
+/* Purple, Emerald, Blue High-Contrast Typography in Light Mode */
+html.light .text-purple-200,
+html.light .text-purple-300,
+html.light .text-purple-400 {
+  color: #7E22CE !important; /* Deep Rich Purple 700 */
+}
+
+html.light .text-purple-500,
+html.light .text-purple-600 {
+  color: #6B21A8 !important; /* Deep Dark Purple 800 */
+}
+
+html.light .text-emerald-300,
+html.light .text-emerald-400 {
+  color: #047857 !important; /* Deep Rich Emerald 700 */
+}
+
+html.light .text-emerald-500,
+html.light .text-emerald-600 {
+  color: #065F46 !important; /* Deep Dark Emerald 800 */
+}
+
+html.light .text-blue-300,
+html.light .text-blue-400 {
+  color: #1D4ED8 !important; /* Deep Rich Blue 700 */
+}
+
+html.light .text-sky-300,
+html.light .text-sky-400 {
+  color: #0369A1 !important; /* Deep Rich Sky 700 */
+}
+
+html.light .text-teal-300,
+html.light .text-teal-400 {
+  color: #0F766E !important; /* Deep Rich Teal 700 */
+}
+
+html.light .text-rose-300,
+html.light .text-rose-400 {
+  color: #BE123C !important; /* Deep Rich Rose 700 */
+}
+
 /* Background Card Overrides for Light Mode */
 html.light [class*="bg-[#0B0F17]"],
 html.light [class*="bg-[#0b0f17]"],
@@ -108,6 +150,8 @@ html.light [class*="bg-[#131B2A]"],
 html.light [class*="bg-[#131b2a]"],
 html.light [class*="bg-[#1A2538]"],
 html.light [class*="bg-[#1a2538]"],
+html.light [class*="bg-[#182335]"],
+html.light [class*="bg-[#182335]"],
 html.light [class*="bg-[#1A2335]"],
 html.light [class*="bg-[#1a2335]"],
 html.light [class*="bg-[#0F172A]"],
@@ -125,6 +169,8 @@ html.light [class*="from-[#131B2A]"],
 html.light [class*="from-[#131b2a]"],
 html.light [class*="from-[#1A2538]"],
 html.light [class*="from-[#1a2538]"],
+html.light [class*="from-[#182335]"],
+html.light [class*="from-[#182335]"],
 html.light [class*="from-[#0B0F17]"],
 html.light [class*="from-[#0b0f17]"],
 html.light [class*="from-[#0F172A]"],
@@ -140,6 +186,8 @@ html.light [class*="via-[#131B2A]"],
 html.light [class*="via-[#131b2a]"],
 html.light [class*="via-[#1A2538]"],
 html.light [class*="via-[#1a2538]"],
+html.light [class*="via-[#182335]"],
+html.light [class*="via-[#182335]"],
 html.light [class*="via-[#0B0F17]"],
 html.light [class*="via-[#0b0f17]"],
 html.light [class*="via-slate-950"],
@@ -151,6 +199,8 @@ html.light [class*="to-[#0B0F17]"],
 html.light [class*="to-[#0b0f17]"],
 html.light [class*="to-[#131B2A]"],
 html.light [class*="to-[#131b2a]"],
+html.light [class*="to-[#0F172A]"],
+html.light [class*="to-[#0f172a]"],
 html.light [class*="to-slate-950"],
 html.light [class*="to-slate-900"] {
   --tw-gradient-to: #F1F5F9 !important;
@@ -164,6 +214,7 @@ html.light [class*="border-slate-900"],
 html.light [class*="border-slate-700"] {
   border-color: #CBD5E1 !important;
 }
+
 
 /* Dark Mode Custom Hex Overrides for Rich Slate Look */
 html.dark [class*="bg-[#0B0F17]"] {
@@ -213,7 +264,8 @@ textarea {
 
 html.light input,
 html.light select,
-html.light textarea {
+html.light textarea,
+html.light option {
   color: #0F172A !important;
   background-color: #FFFFFF !important;
   border-color: #CBD5E1 !important;
@@ -228,7 +280,8 @@ html.light textarea:focus {
 
 html.dark input,
 html.dark select,
-html.dark textarea {
+html.dark textarea,
+html.dark option {
   color: #F8FAFC !important;
   background-color: #0F172A !important;
   border-color: #334155 !important;

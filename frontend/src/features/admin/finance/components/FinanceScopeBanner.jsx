@@ -68,7 +68,7 @@ export const FinanceScopeBanner = ({
       </div>
 
       {/* 2. Reporting Horizon & Scope Presets Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#182335] via-[#131B2A] to-[#0F172A] border border-[#2C384E] flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-xl font-sans">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#131B2A] border border-[#2C384E] flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-xl font-sans">
         <div className="flex items-start sm:items-center gap-3">
           <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
             <CalendarRange className="w-5 h-5" />

@@ -145,6 +145,12 @@ export const AdminFestivalManagerView = () => {
     setDisplayMode("form");
   };
 
+  // Open Delete Confirmation Modal
+  const handleOpenDelete = (festOrId) => {
+    const id = typeof festOrId === "object" && festOrId !== null ? festOrId.id : festOrId;
+    setDeleteConfirmId(id);
+  };
+
   // Save (Create or Update) Handler
   const handleSaveSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -468,7 +474,7 @@ export const AdminFestivalManagerView = () => {
                           </button>
 
                           <button
-                            onClick={() => setDeleteConfirmId(fest.id)}
+                            onClick={() => handleOpenDelete(fest.id)}
                             className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-red-400 hover:border-red-500/50 transition cursor-pointer"
                             title="Delete Festival"
                           >

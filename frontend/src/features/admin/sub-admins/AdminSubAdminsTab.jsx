@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Shield, UserPlus, Pencil, Trash2, Activity } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
@@ -6,6 +6,7 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
 import { ADMIN_TABS } from '@/shared/constants';
 import { SubAdminTable } from "./components/SubAdminTable";
+import { DeleteSubAdminModal } from "./components/DeleteSubAdminModal";
 
 // Color mapping helper for distinct visual RBAC permission pill badges
 const TAB_BADGE_STYLES = {
@@ -37,6 +38,33 @@ export const AdminSubAdminsTab = ({
   deleteSubAdminMutation,
   onNavigateTab,
 }) => {
+  const [subAdminToDelete, setSubAdminToDelete] = useState(null);
+
+  /**
+   * Opens the confirmation modal before permanently deleting a SubAdmin account
+   * @param {Object|string} subAdminOrId - SubAdmin object or identifier
+   */
+  const handleDeleteSubAdmin = (subAdminOrId) => {
+    const targetAdmin =
+      typeof subAdminOrId === "object" && subAdminOrId !== null
+        ? subAdminOrId
+        : subAdmins.find((a) => a.id === subAdminOrId) || { id: subAdminOrId, fullName: "SubAdmin" };
+    setSubAdminToDelete(targetAdmin);
+  };
+
+  /**
+   * Confirms deletion and fires mutation
+   * @param {string} id - SubAdmin user ID
+   */
+  const handleConfirmDelete = (id) => {
+    if (!id) return;
+    deleteSubAdminMutation?.mutate(id, {
+      onSuccess: () => {
+        setSubAdminToDelete(null);
+      },
+    });
+  };
+
   return (
     <div className="animate-in fade-in duration-200 space-y-4">
       {/* SubAdmin Section Header */}
@@ -113,8 +141,18 @@ export const AdminSubAdminsTab = ({
           pageSizeOptions={[5, 10, 20, 50]}
         />
       )}
+
+      {/* Delete SubAdmin Confirmation Modal */}
+      <DeleteSubAdminModal
+        isOpen={Boolean(subAdminToDelete)}
+        onClose={() => setSubAdminToDelete(null)}
+        subAdmin={subAdminToDelete}
+        onConfirm={handleConfirmDelete}
+        isPending={deleteSubAdminMutation?.isPending}
+      />
     </div>
   );
 };
+
 
 export default AdminSubAdminsTab;
