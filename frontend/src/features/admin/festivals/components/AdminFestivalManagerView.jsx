@@ -32,6 +32,7 @@ import { CalendarPage } from "@/features/calendar/pages/CalendarPage";
 import { createImagePreview } from '@/shared/utils/file.util';
 import { FestivalCreateModal } from "./FestivalCreateModal";
 import { FestivalTable } from "./FestivalTable";
+import { SkeletonTable } from "@/components/feedback/SkeletonLoader";
 
 /**
  * AdminFestivalManagerView
@@ -351,7 +352,9 @@ export const AdminFestivalManagerView = () => {
 
           {/* Festival Data Table / Cards */}
           {isLoading ? (
-            <div className="p-16 text-center text-slate-400 text-xs">Loading festivals...</div>
+            <div className="py-2">
+              <SkeletonTable rows={5} cols={5} />
+            </div>
           ) : paginatedFestivals.length === 0 ? (
             <div className="p-12 text-center text-slate-400 text-xs border border-dashed border-[#2C384E] rounded-2xl space-y-2">
               <p>

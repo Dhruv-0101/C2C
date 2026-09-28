@@ -128,7 +128,7 @@ export async function updatePostGraphic(req, res, next) {
 export async function deletePost(req, res, next) {
   try {
     const { id } = req.params;
-    await postLogic.deletePost(id, req.user.id);
+    await postLogic.deletePost(id, req.user);
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: 'Post deleted successfully',

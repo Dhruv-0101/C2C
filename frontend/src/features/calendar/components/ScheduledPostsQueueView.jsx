@@ -72,7 +72,24 @@ export const ScheduledPostsQueueView = () => {
       {error && <Alert variant="error" message="Failed to load scheduled queue." />}
 
       {isLoadingScheduled ? (
-        <div className="p-8 text-center text-slate-400 text-sm">Loading scheduled queue...</div>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="flex items-start gap-4 flex-1">
+                <div className="w-16 h-16 rounded-xl skeleton-shimmer shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-48 rounded skeleton-shimmer" />
+                  <div className="h-3 w-32 rounded skeleton-shimmer opacity-70" />
+                  <div className="h-3 w-64 rounded skeleton-shimmer opacity-50" />
+                </div>
+              </div>
+              <div className="h-9 w-28 rounded-xl skeleton-shimmer shrink-0" />
+            </div>
+          ))}
+        </div>
       ) : scheduledPosts.length === 0 ? (
         <div className="p-8 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-2">
           <Calendar className="w-8 h-8 text-slate-600 mx-auto" />

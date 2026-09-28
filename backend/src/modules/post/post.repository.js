@@ -763,12 +763,16 @@ export async function getPostAnalytics() {
 /**
  * Delete post by ID
  * @param {string} id - Post UUID
- * @param {string} userId - Authenticated user UUID
+ * @param {string} [userId=null] - Authenticated user UUID (optional for admin overrides)
  * @returns {Promise<Object>}
  */
-export async function deletePostById(id, userId) {
+export async function deletePostById(id, userId = null) {
+  const where = { id };
+  if (userId) {
+    where.userId = userId;
+  }
   return prisma.post.deleteMany({
-    where: { id, userId },
+    where,
   });
 }
 
@@ -789,5 +793,6 @@ export const postRepository = {
   updatePostGraphicById,
   findPaginatedForAdmin,
   getPostAnalytics,
+  deletePostById,
   delete: deletePostById,
 };

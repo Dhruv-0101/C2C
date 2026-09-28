@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { STORAGE_KEYS } from '@/shared/constants';
 import { AdminHeader } from './components/AdminHeader';
 import { AdminSidebar } from './components/AdminSidebar';
+import { ContentLoader } from '@/components/feedback/ContentLoader';
 
 /**
  * SuperAdmin / SubAdmin dashboard shell (< 80 lines)
+ * Keeps AdminSidebar and AdminHeader permanently mounted (0 CLS / 0 flicker) during route chunk transitions.
  */
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -49,7 +51,9 @@ export const AdminLayout = () => {
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full overflow-y-auto">
-          <Outlet />
+          <Suspense fallback={<ContentLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
@@ -57,3 +61,4 @@ export const AdminLayout = () => {
 };
 
 export default AdminLayout;
+

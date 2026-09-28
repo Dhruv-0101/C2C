@@ -105,23 +105,11 @@ export const VaultView = ({
       </Card>
 
       {/* Main Grid View */}
-      {isLoading ? (
-        <Card className="p-12 text-center text-slate-400 text-sm bg-[#131B2A] border-[#2C384E]">
-          Loading your vault items...
-        </Card>
-      ) : error ? (
+      {error ? (
         <Alert variant="error" message="Failed to load vault items. Please try again." />
-      ) : vaultItems.length === 0 ? (
-        <Card className="p-12 text-center border-dashed border-[#2C384E] bg-[#131B2A] rounded-2xl space-y-3">
-          <ImageIcon className="w-12 h-12 text-slate-600 mx-auto" />
-          <h3 className="text-slate-200 font-bold text-base">Your Vault is Empty</h3>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
-            When you create post graphics in the Post Creator or Festival Studio, final PNG images are automatically saved to your Vault!
-          </p>
-        </Card>
       ) : (
         <VaultAssetGrid
-          vaultItems={vaultItems}
+          vaultItems={vaultItems || []}
           meta={meta}
           isLoading={isLoading}
           selectedIds={selectedIds}

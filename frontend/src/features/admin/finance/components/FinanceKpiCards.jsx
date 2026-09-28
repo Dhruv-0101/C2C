@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, CheckCircle2 } from 'lucide-react';
 import { formatCurrency } from '../../../../shared/utils/currency.util';
+import { SkeletonKPI } from '@/components/feedback/SkeletonLoader';
 
 /**
  * Financial Executive KPI Cards Grid displaying INR/USD metrics and active subs
@@ -11,6 +12,9 @@ export const FinanceKpiCards = ({
   isLoadingOverview,
   scopeInfo,
 }) => {
+  if (isLoadingOverview) {
+    return <SkeletonKPI count={5} />;
+  }
   const getCurrencyRevenue = (currCode) => {
     if (!overview?.currencyBreakdown) return 0;
     const item = overview.currencyBreakdown.find(

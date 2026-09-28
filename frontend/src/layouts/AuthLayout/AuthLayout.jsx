@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from '@/layouts/AppLayout/components/Header';
 import { Footer } from '@/layouts/AppLayout/components/Footer';
 import { AuthHeroBanner } from './components/AuthHeroBanner';
+import { AuthLoader } from '@/components/feedback/AuthLoader';
 
 /**
  * Authentication Shell (Login, Register, Forgot Password)
+ * Keeps Header, Footer, and AuthHeroBanner permanently mounted with zero layout shifts.
  */
 export const AuthLayout = () => {
   return (
@@ -25,7 +27,9 @@ export const AuthLayout = () => {
 
           {/* Right Column: Form Container */}
           <div className="lg:col-span-6 flex justify-center w-full">
-            <Outlet />
+            <Suspense fallback={<AuthLoader />}>
+              <Outlet />
+            </Suspense>
           </div>
         </div>
       </main>
@@ -36,3 +40,4 @@ export const AuthLayout = () => {
 };
 
 export default AuthLayout;
+

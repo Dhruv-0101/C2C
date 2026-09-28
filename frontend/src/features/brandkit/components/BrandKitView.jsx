@@ -30,6 +30,8 @@ import { Alert } from "@/components/ui/Alert";
 import { Modal } from "@/components/ui/Modal";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { useClickOutside } from "@/shared/hooks/useClickOutside";
+import { SkeletonForm, SkeletonLoader } from "@/components/feedback/SkeletonLoader";
+
 
 // Curated high-converting target audiences for small businesses
 export const PRESET_AUDIENCES = [
@@ -312,12 +314,10 @@ export const BrandKitView = ({
       </div>
 
       {isLoadingBrandKit ? (
-        <div className="p-16 text-center text-slate-400">
-          <div className="inline-block animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full mb-3" />
-          <p className="text-sm">Loading your BrandKit profile...</p>
-        </div>
+        <SkeletonForm fields={8} />
       ) : (
         <form onSubmit={handleSubmit} className="w-full space-y-6" noValidate>
+
           {errorMsg && <Alert variant="error" message={errorMsg} />}
           {successMsg && (
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold flex items-center gap-2">
@@ -1281,9 +1281,13 @@ export const BrandKitView = ({
 
           {/* Category Cards Grid with Loading & Empty States */}
           {isLoadingCategories ? (
-            <div className="p-12 text-center text-slate-400 text-xs">
-              <div className="inline-block animate-spin w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full mb-2" />
-              <p>Searching business categories...</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 py-2">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div key={idx} className="h-16 rounded-xl border border-slate-700/40 p-3 space-y-2 bg-[#131B2A]/60">
+                  <div className="h-3.5 w-3/4 rounded skeleton-shimmer" />
+                  <div className="h-2.5 w-1/2 rounded skeleton-shimmer opacity-60" />
+                </div>
+              ))}
             </div>
           ) : categories.length === 0 ? (
             <div className="p-8 text-center border border-dashed border-[#2C384E] rounded-xl text-slate-400 text-xs space-y-2">

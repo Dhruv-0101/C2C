@@ -5,6 +5,8 @@ import { Alert } from '../../../components/ui/Alert';
 import Pagination from '@/components/ui/Pagination';
 import { useSocialAccounts } from '@/features/social/hooks/useSocialAccounts';
 import { API_BASE_URL } from '@/shared/http/api.endpoints';
+import { SkeletonLoader } from '@/components/feedback/SkeletonLoader';
+
 
 export const SocialAccountsManager = () => {
   const {
@@ -75,12 +77,30 @@ export const SocialAccountsManager = () => {
       {successMsg && <Alert variant="success" message={successMsg} />}
       {errorMsg && <Alert variant="error" message={errorMsg} />}
 
-      {/* Main Instagram Status Card */}
-      <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <div className="p-3.5 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-glow">
-            <Instagram className="w-7 h-7" />
-          </div>
+      {isLoadingAccounts ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((idx) => (
+            <div key={idx} className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl skeleton-shimmer shrink-0" />
+                <div className="space-y-2">
+                  <div className="h-5 w-48 rounded skeleton-shimmer" />
+                  <div className="h-3.5 w-64 rounded skeleton-shimmer opacity-70" />
+                </div>
+              </div>
+              <div className="h-10 w-36 rounded-xl skeleton-shimmer shrink-0" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Main Instagram Status Card */}
+          <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex items-start gap-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-glow">
+                <Instagram className="w-7 h-7" />
+              </div>
+
 
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -324,9 +344,12 @@ export const SocialAccountsManager = () => {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {/* Central Pagination Controls */}
       <Pagination
+
         meta={accountsMeta}
         currentPage={page}
         onPageChange={setPage}

@@ -25,6 +25,7 @@ import { Alert } from "@/components/ui/Alert";
 import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import { SkeletonGrid, SkeletonTable } from '@/components/feedback/SkeletonLoader';
 import { AdminPostCard } from "./components/AdminPostCard";
 
 /**
@@ -448,9 +449,83 @@ export const AdminPostsTab = ({
 
       {/* Posts Audit Feed Table / Cards */}
       {isLoadingPosts ? (
-        <div className="p-12 text-center text-slate-400 text-sm bg-[#131B2A] border border-[#2C384E] rounded-2xl">
-          Loading generated posts directory...
-        </div>
+        postViewMode === "cards" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {Array.from({ length: 12 }).map((_, idx) => (
+              <div key={idx} className="overflow-hidden rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-2 p-3">
+                <div className="aspect-square w-full rounded-xl skeleton-shimmer" />
+                <div className="space-y-1.5 pt-1">
+                  <div className="h-3.5 w-4/5 rounded skeleton-shimmer" />
+                  <div className="h-2.5 w-3/5 rounded skeleton-shimmer opacity-60" />
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-[#2C384E]/50">
+                  <div className="h-2.5 w-16 rounded skeleton-shimmer opacity-50" />
+                  <div className="h-2.5 w-12 rounded skeleton-shimmer opacity-50" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border border-[#2C384E] bg-[#131B2A]">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-[#0B0F17] text-slate-400 uppercase font-semibold text-[11px] border-b border-[#2C384E]">
+                <tr>
+                  <th className="py-3 px-4">Post Artwork</th>
+                  <th className="py-3 px-4">Creator User</th>
+                  <th className="py-3 px-4">Business Category</th>
+                  <th className="py-3 px-4">Frame Overlay</th>
+                  <th className="py-3 px-4">Template & Theme</th>
+                  <th className="py-3 px-4">Festival</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Created At</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#2C384E]/50">
+                {Array.from({ length: 6 }).map((_, rIdx) => (
+                  <tr key={rIdx} className="border-b border-[#2C384E]/40">
+                    <td className="py-3 px-4">
+                      <div className="w-12 h-12 rounded-xl skeleton-shimmer shrink-0" />
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full skeleton-shimmer shrink-0" />
+                        <div className="space-y-1">
+                          <div className="h-3.5 w-24 rounded skeleton-shimmer" />
+                          <div className="h-2.5 w-16 rounded skeleton-shimmer opacity-60" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="h-6 w-24 rounded-full skeleton-shimmer" />
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="h-6 w-20 rounded-full skeleton-shimmer" />
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="space-y-1">
+                        <div className="h-3.5 w-28 rounded skeleton-shimmer" />
+                        <div className="h-2.5 w-16 rounded skeleton-shimmer opacity-60" />
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="h-3.5 w-20 rounded skeleton-shimmer" />
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="h-6 w-16 rounded-full skeleton-shimmer" />
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="h-3.5 w-20 rounded skeleton-shimmer" />
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="h-7 w-16 rounded-lg skeleton-shimmer ml-auto" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       ) : posts.length === 0 ? (
         <div className="p-12 text-center border border-dashed border-[#2C384E] bg-[#131B2A] rounded-2xl space-y-3">
           <Layers className="w-10 h-10 text-slate-600 mx-auto" />

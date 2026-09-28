@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pencil, Trash2, Shield } from 'lucide-react';
 import { ADMIN_TABS } from '@/shared/constants';
+import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
 
 const TAB_BADGE_STYLES = {
   [ADMIN_TABS.TEMPLATES]: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
@@ -24,8 +25,8 @@ export const SubAdminTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="p-8 text-center text-slate-400 text-sm">
-        Loading SubAdmin directory...
+      <div className="py-2">
+        <SkeletonTable rows={4} cols={5} />
       </div>
     );
   }

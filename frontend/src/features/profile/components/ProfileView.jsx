@@ -32,6 +32,7 @@ import { useFeedbackModal } from '@/components/feedback/FeedbackModal';
 import { usePaginatedQuery } from '@/shared/hooks/usePaginatedQuery';
 import { billingApi } from '@/features/billing/api/billing.api';
 import { USER_PROFILE_QUERY_KEY } from '@/features/profile/hooks/useProfile';
+import { SkeletonForm, SkeletonTable } from '@/components/feedback/SkeletonLoader';
 
 /**
  * ProfileView
@@ -91,9 +92,9 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
 
   if (isLoading) {
     return (
-      <Card className="p-12 text-center text-slate-400 text-sm bg-[#131B2A] border-[#2C384E]">
-        Loading user profile and subscription details...
-      </Card>
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <SkeletonForm fields={6} />
+      </div>
     );
   }
 
@@ -548,9 +549,7 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
           </div>
 
           {isLoadingHistory ? (
-            <div className="p-8 text-center text-slate-400 text-xs bg-[#0B0F17] rounded-xl border border-[#2C384E]">
-              Loading billing transaction history...
-            </div>
+            <SkeletonTable rows={4} cols={5} />
           ) : historyItems.length === 0 ? (
             <div className="p-8 text-center border-dashed border-[#2C384E] bg-[#0B0F17] rounded-xl space-y-2">
               <Receipt className="w-10 h-10 text-slate-600 mx-auto" />

@@ -25,6 +25,9 @@ import Pagination from '@/components/ui/Pagination';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { TemplateCard } from './TemplateCard';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import { SkeletonGrid } from '@/components/feedback/SkeletonLoader';
+
+
 
 /**
  * BaseTemplateManagerView
@@ -401,8 +404,9 @@ export const BaseTemplateManagerView = ({
         </div>
 
         {isLoadingTemplates ? (
-          <div className="p-12 text-center text-slate-400 text-sm">Loading base templates...</div>
+          <SkeletonGrid variant="template" count={8} columns="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" />
         ) : templates.length === 0 ? (
+
           <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3">
             <ImageIcon className="w-10 h-10 text-slate-600 mx-auto" />
             <p className="text-slate-300 font-semibold text-sm">No base graphic templates found.</p>

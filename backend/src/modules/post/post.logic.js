@@ -296,18 +296,32 @@ export async function getAdminPostAnalytics() {
 
 /**
  * Delete user post and cleanup Cloudinary storage
+ * Supports both standard user self-deletion and enterprise admin deletion
  * @param {string} id - Post UUID
- * @param {string} userId - User UUID
+ * @param {Object|string} userOrUserId - Authenticated user object or userId
  * @returns {Promise<Object>}
  */
-export async function deletePost(id, userId) {
+export async function deletePost(id, userOrUserId) {
+  const userId = typeof userOrUserId === 'object' ? userOrUserId?.id : userOrUserId;
+  const role = typeof userOrUserId === 'object' ? userOrUserId?.role : null;
+
   const post = await postRepository.findById(id);
-  if (post?.finalGraphicUrl) {
+  if (!post) {
+    throw new NotFoundError('Post not found');
+  }
+
+  // Authorization: Creator or Enterprise Admin
+  if (role !== 'ADMIN' && post.userId !== userId) {
+    throw new ForbiddenError('You do not have permission to delete this post');
+  }
+
+  if (post.finalGraphicUrl) {
     deleteFromCloudinary(post.finalGraphicUrl).catch((err) =>
       logger.warn(`Failed to cleanup post graphic from Cloudinary: ${err.message}`)
     );
   }
-  return postRepository.delete(id, userId);
+
+  return postRepository.deletePostById(id, role === 'ADMIN' ? null : userId);
 }
 
 /**

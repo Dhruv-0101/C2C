@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
+import { ContentLoader } from '@/components/feedback/ContentLoader';
 import { STORAGE_KEYS } from '@/shared/constants';
 
 /**
  * Business User Main Workspace Shell
+ * Keeps Sidebar permanently mounted (0 CLS / 0 flicker) during route chunk transitions.
  */
 export const AppLayout = () => {
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -28,10 +30,13 @@ export const AppLayout = () => {
           isCollapsed ? 'md:ml-20' : 'md:ml-64'
         } p-4 sm:p-6 lg:p-8 min-h-screen w-full overflow-y-auto`}
       >
-        <Outlet />
+        <Suspense fallback={<ContentLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );
 };
 
 export default AppLayout;
+

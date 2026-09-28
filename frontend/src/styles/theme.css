@@ -427,13 +427,65 @@ html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-indigo-950/
   background-color: rgba(30, 27, 75, 0.85) !important;
 }
 
-html.light .post-canvas-preview [class*="aspect-square"] [class*="bg-black/80"] {
-  background-color: rgba(0, 0, 0, 0.85) !important;
-}
-
 html.light .post-canvas-preview .post-social-footer,
 html.light .post-canvas-preview .post-social-footer span,
 html.light .post-canvas-preview .post-social-footer button {
   color: #94A3B8 !important;
 }
+
+/* ==============================================================================
+ * ✨ ULTRA-PREMIUM LINEAR GRADIENT SKELETON SHIMMER ANIMATION
+ * ============================================================================== */
+@keyframes shimmer-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.6) 0%,
+    rgba(51, 65, 85, 0.85) 30%,
+    rgba(99, 102, 241, 0.15) 50%,
+    rgba(51, 65, 85, 0.85) 70%,
+    rgba(30, 41, 59, 0.6) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+html.light .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0.8) 0%,
+    rgba(241, 245, 249, 1) 30%,
+    rgba(99, 102, 241, 0.12) 50%,
+    rgba(241, 245, 249, 1) 70%,
+    rgba(226, 232, 240, 0.8) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes top-progress-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-top-progress {
+  animation: top-progress-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+
 

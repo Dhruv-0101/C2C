@@ -1,6 +1,7 @@
 import React from 'react';
 import { Users } from 'lucide-react';
 import { UserTableRow } from './UserTableRow';
+import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
 
 /**
  * UserTable Component
@@ -17,8 +18,8 @@ export const UserTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="p-12 text-center text-slate-400 text-sm bg-[#131B2A] border border-[#2C384E] rounded-2xl">
-        Loading user subscriptions & payment details...
+      <div className="py-2">
+        <SkeletonTable rows={5} cols={5} />
       </div>
     );
   }

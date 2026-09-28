@@ -21,7 +21,9 @@ import { Button } from "../../../components/ui/Button";
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import Pagination from '@/components/ui/Pagination';
+import { SkeletonGrid } from '@/components/feedback/SkeletonLoader';
 import { PostGridItem } from "./PostGridItem";
+
 
 /**
  * YourPostsView
@@ -223,8 +225,9 @@ export const YourPostsView = ({
 
       {/* Main Content Render */}
       {isLoading ? (
-        <div className="p-12 text-center text-slate-400 text-sm">Loading your posts...</div>
+        <SkeletonGrid variant="post" count={6} columns="grid-cols-1 sm:grid-cols-2 md:grid-cols-3" />
       ) : activeTab === "SCHEDULED" ? (
+
         /* SCHEDULED QUEUE VIEW */
         filteredScheduled.length === 0 ? (
           <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-2 bg-[#131B2A]">

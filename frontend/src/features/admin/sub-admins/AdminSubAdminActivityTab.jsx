@@ -29,6 +29,7 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 import { ADMIN_TABS, QUERY_KEYS } from '@/shared/constants';
 import { formatDateTime as formatDate } from '@/shared/utils/date.util';
 import { SubAdminActivityLog } from "./components/SubAdminActivityLog";
+import { SkeletonGrid } from "@/components/feedback/SkeletonLoader";
 
 // Visual theme configurations for each creation type
 const TYPE_CONFIG = {
@@ -517,20 +518,8 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
           isLoading={isLoading}
         />
       ) : isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="h-64 rounded-2xl bg-[#131B2A] border border-[#2C384E] animate-pulse p-4 flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="h-4 w-24 bg-slate-800 rounded-md" />
-                <div className="h-32 w-full bg-slate-800/60 rounded-xl" />
-                <div className="h-4 w-3/4 bg-slate-800 rounded-md" />
-              </div>
-              <div className="h-8 w-full bg-slate-800/40 rounded-xl" />
-            </div>
-          ))}
+        <div className="py-2">
+          <SkeletonGrid count={8} columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
         </div>
       ) : items.length === 0 ? (
         <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-4 bg-[#131B2A]/30">

@@ -33,6 +33,8 @@ import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { AnalyticsKpiCards } from './AnalyticsKpiCards';
 import { EngagementChart } from './EngagementChart';
+import { SkeletonKPI } from '@/components/feedback/SkeletonLoader';
+
 
 // Platform Color Palette
 const PLATFORM_COLORS = {
@@ -157,7 +159,25 @@ export const AnalyticsView = ({
         </div>
       </div>
 
-      {!hasData && !isLoading ? (
+      {isLoading ? (
+        <div className="space-y-6">
+          <SkeletonKPI count={4} />
+          <div className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-6 space-y-4">
+            <div className="h-5 w-48 rounded skeleton-shimmer" />
+            <div className="h-64 w-full rounded-xl skeleton-shimmer" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-6 space-y-4">
+              <div className="h-5 w-40 rounded skeleton-shimmer" />
+              <div className="h-52 w-full rounded-xl skeleton-shimmer" />
+            </div>
+            <div className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-6 space-y-4">
+              <div className="h-5 w-40 rounded skeleton-shimmer" />
+              <div className="h-52 w-full rounded-xl skeleton-shimmer" />
+            </div>
+          </div>
+        </div>
+      ) : !hasData ? (
         /* Empty State Card */
         <Card className="p-12 text-center bg-[#131B2A] border-[#2C384E] space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
@@ -180,6 +200,7 @@ export const AnalyticsView = ({
           </Button>
         </Card>
       ) : (
+
         <>
           {/* KPI Summary Cards */}
           <AnalyticsKpiCards kpi={kpi} />

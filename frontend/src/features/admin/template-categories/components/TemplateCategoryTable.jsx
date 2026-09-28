@@ -8,6 +8,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
+import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
 
 /**
  * TemplateCategoryTable Component
@@ -24,46 +25,8 @@ export const TemplateCategoryTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="bg-[#131B2A] border border-[#2C384E] rounded-2xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#0B0F17] text-slate-400 font-mono uppercase text-[11px] border-b border-[#2C384E]">
-              <tr>
-                <th className="py-3 px-4 font-bold">Category Title & Slug</th>
-                <th className="py-3 px-4 font-bold">Theme Description</th>
-                <th className="py-3 px-4 font-bold text-center">Linked Templates</th>
-                <th className="py-3 px-4 font-bold">Created By</th>
-                <th className="py-3 px-4 font-bold">Date Created</th>
-                <th className="py-3 px-4 font-bold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#2C384E]/60">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <tr key={index} className="animate-pulse">
-                  <td className="py-4 px-4">
-                    <div className="h-4 bg-slate-800 rounded w-36 mb-2"></div>
-                    <div className="h-3 bg-slate-900 rounded w-24"></div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="h-3.5 bg-slate-800 rounded w-48"></div>
-                  </td>
-                  <td className="py-4 px-4 text-center">
-                    <div className="h-4 bg-slate-800 rounded w-16 mx-auto"></div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="h-3.5 bg-slate-800 rounded w-28"></div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="h-3.5 bg-slate-800 rounded w-20"></div>
-                  </td>
-                  <td className="py-4 px-4 text-right">
-                    <div className="h-8 bg-slate-800 rounded w-16 ml-auto"></div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="py-2">
+        <SkeletonTable rows={5} cols={6} />
       </div>
     );
   }

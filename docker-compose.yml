@@ -3,11 +3,9 @@
 # Enterprise Development Stack: PostgreSQL, Redis, Express Backend, Vite Frontend
 # ==============================================================================
 
-# Compose Specification File Format Schema Version (v3.8 is the most stable enterprise standard)
-version: '3.8'
-
 # Container Services registry containing all 4 application micro-components
 services:
+
   # ============================================================================
   # 1. PostgreSQL Relational Database Service
   # ============================================================================

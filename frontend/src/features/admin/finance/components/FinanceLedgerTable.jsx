@@ -70,11 +70,18 @@ export const FinanceLedgerTable = ({
           </thead>
           <tbody className="divide-y divide-[#2C384E]/60 text-slate-200">
             {isLoadingTransactions ? (
-              <tr>
-                <td colSpan={8} className="p-8 text-center text-slate-500 italic">
-                  Loading transactions ledger...
-                </td>
-              </tr>
+              Array.from({ length: 5 }).map((_, rIdx) => (
+                <tr key={rIdx} className="border-b border-[#2C384E]/40">
+                  {Array.from({ length: 8 }).map((_, cIdx) => (
+                    <td key={cIdx} className="p-3">
+                      <div
+                        className="h-3.5 rounded skeleton-shimmer"
+                        style={{ width: `${60 + ((rIdx + cIdx) % 3) * 15}%` }}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))
             ) : transactions.length === 0 ? (
               <tr>
                 <td colSpan={8} className="p-8 text-center text-slate-500 italic">

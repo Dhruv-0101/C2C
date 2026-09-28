@@ -2,10 +2,15 @@ import React from 'react';
 import { Calendar, Trash2, Edit2 } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../../components/ui/Table';
 import { formatDate } from '../../../../shared/utils/date.util';
+import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
 
 export const FestivalTable = ({ festivals = [], isLoading, onEdit, onDelete }) => {
   if (isLoading) {
-    return <div className="p-8 text-center text-slate-500 italic">Loading festivals...</div>;
+    return (
+      <div className="py-2">
+        <SkeletonTable rows={5} cols={4} />
+      </div>
+    );
   }
 
   if (festivals.length === 0) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FolderKanban, Plus, User, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
+import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
 
 /**
  * CategoryTable Component
@@ -17,8 +18,8 @@ export const CategoryTable = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="p-12 text-center text-slate-400 text-sm">
-        Loading categories...
+      <div className="py-2">
+        <SkeletonTable rows={5} cols={4} />
       </div>
     );
   }

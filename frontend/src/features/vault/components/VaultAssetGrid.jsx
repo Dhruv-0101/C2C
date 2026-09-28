@@ -2,6 +2,8 @@ import React from 'react';
 import { ImageIcon, Maximize2, Download, Edit, Trash2, Calendar, Check, User } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import Pagination from '@/components/ui/Pagination';
+import { SkeletonGrid } from '@/components/feedback/SkeletonLoader';
+
 
 /**
  * GraphicCard
@@ -183,11 +185,12 @@ export const VaultAssetGrid = ({
 }) => {
   if (isLoading) {
     return (
-      <Card className="p-12 text-center text-slate-400 text-sm bg-[#131B2A] border-[#2C384E]">
-        Loading your vault items...
-      </Card>
+      <div className="space-y-6">
+        <SkeletonGrid variant="vault" count={limit || 12} columns="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" />
+      </div>
     );
   }
+
 
   if (vaultItems.length === 0) {
     return (
