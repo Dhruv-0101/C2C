@@ -91,10 +91,19 @@ export async function addScheduledPostJob(jobData, delayOrDate) {
         ? Math.max(0, delayOrDate)
         : Math.max(0, new Date(delayOrDate).getTime() - Date.now());
 
+      const deterministicJobId = jobData.scheduledPostId
+        ? `sched_${jobData.scheduledPostId}`
+        : `post_${jobData.postId}`;
+
       const job = await scheduledPostQueue.add(
         POST_JOB_NAMES.PUBLISH_SCHEDULED_POST,
         jobData,
-        { delay }
+        {
+          jobId: deterministicJobId,
+          delay,
+          removeOnComplete: true,
+          removeOnFail: false,
+        }
       );
       logger.info(`⏰ [BullMQ Producer] Scheduled Post Job #${job.id} queued (delay: ${delay}ms) for Post ID: ${jobData.postId}`);
       return { isQueued: true, jobId: job.id };

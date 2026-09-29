@@ -45,7 +45,7 @@ Open Terminal on your laptop, navigate to the folder containing `brandflow-key.p
 chmod 400 "/Users/mac0011/Downloads/brandflow-c2c.pem"
 
 # 2. SSH into your EC2 Ubuntu instance
-ssh -i "/Users/mac0011/Downloads/brandflow-c2c.pem" ubuntu@13.234.177.70
+ssh -i "/Users/mac0011/Downloads/brandflow-c2c.pem" ubuntu@65.0.208.238
 ```
 
 ---
@@ -95,7 +95,7 @@ cd C2C
 2. **Paste Content**:
    - **Mac**: Press `Cmd + V` or Right-click in Terminal
    - **Windows**: Press `Ctrl + Shift + V` or Right-click in Git Bash / PuTTY
-3. Copy-paste this complete `.env` block into `nano` (pre-configured for your Elastic IP `13.234.177.70`):
+3. Copy-paste this complete `.env` block into `nano` (pre-configured for your Elastic IP `65.0.208.238`):
 
 ```env
 # APPLICATION SERVER CONFIGURATION
@@ -128,9 +128,9 @@ JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_min_16_chars
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 
-# FRONTEND & CORS CROSS-ORIGIN URLS (13.234.177.70 / 13-234-177-70.sslip.io)
-CLIENT_URL=https://13-234-177-70.sslip.io
-VITE_API_BASE_URL=https://13-234-177-70.sslip.io/api/v1
+# FRONTEND & CORS CROSS-ORIGIN URLS (65.0.208.238 / 65-0-208-238.sslip.io)
+CLIENT_URL=https://65-0-208-238.sslip.io
+VITE_API_BASE_URL=https://65-0-208-238.sslip.io/api/v1
 
 # GOOGLE OAUTH 2.0 CREDENTIALS
 GOOGLE_CLIENT_ID="your_google_client_id_here.apps.googleusercontent.com"
@@ -151,12 +151,12 @@ CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"
 # META / INSTAGRAM GRAPH API CONFIGURATION
 META_APP_ID="your_meta_app_id_here"
 META_APP_SECRET="your_meta_app_secret_here"
-META_REDIRECT_URI="https://13-234-177-70.sslip.io/api/v1/social/meta/callback"
+META_REDIRECT_URI="https://65-0-208-238.sslip.io/api/v1/social/meta/callback"
 
 # LINKEDIN OAUTH 2.0 CONFIGURATION
 LINKEDIN_CLIENT_ID="your_linkedin_client_id_here"
 LINKEDIN_CLIENT_SECRET="your_linkedin_client_secret_here"
-LINKEDIN_REDIRECT_URI="https://13-234-177-70.sslip.io/api/v1/social/linkedin/callback"
+LINKEDIN_REDIRECT_URI="https://65-0-208-238.sslip.io/api/v1/social/linkedin/callback"
 
 # SOCIAL PUBLISHER & ENCRYPTION
 SOCIAL_TOKEN_ENCRYPTION_KEY="your_32_character_encryption_key_here"
@@ -199,8 +199,8 @@ JWT_ACCESS_SECRET=your_jwt_access_secret_key_min_16_chars
 JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_min_16_chars
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
-CLIENT_URL=https://13-234-177-70.sslip.io
-VITE_API_BASE_URL=https://13-234-177-70.sslip.io/api/v1
+CLIENT_URL=https://65-0-208-238.sslip.io
+VITE_API_BASE_URL=https://65-0-208-238.sslip.io/api/v1
 GOOGLE_CLIENT_ID="your_google_client_id_here.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your_google_client_secret_here"
 SMTP_HOST="smtp.gmail.com"
@@ -213,10 +213,10 @@ CLOUDINARY_API_KEY="your_cloudinary_api_key_here"
 CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"
 META_APP_ID="your_meta_app_id_here"
 META_APP_SECRET="your_meta_app_secret_here"
-META_REDIRECT_URI="https://13-234-177-70.sslip.io/api/v1/social/meta/callback"
+META_REDIRECT_URI="https://65-0-208-238.sslip.io/api/v1/social/meta/callback"
 LINKEDIN_CLIENT_ID="your_linkedin_client_id_here"
 LINKEDIN_CLIENT_SECRET="your_linkedin_client_secret_here"
-LINKEDIN_REDIRECT_URI="https://13-234-177-70.sslip.io/api/v1/social/linkedin/callback"
+LINKEDIN_REDIRECT_URI="https://65-0-208-238.sslip.io/api/v1/social/linkedin/callback"
 SOCIAL_TOKEN_ENCRYPTION_KEY="your_32_character_encryption_key_here"
 SOCIAL_PUBLISHER_MODE="LIVE"
 RAZORPAY_KEY_ID="your_razorpay_key_id_here"
@@ -244,14 +244,14 @@ ls -la .env
 
 ### 📌 Exact Variables to Update in `.env` After Getting Your Elastic IP / Domain
 
-Whenever you allocate an **Elastic IP** (e.g. `13.234.177.70`) or assign a custom domain / HTTPS address, update these **4 specific environment variables** in your EC2 `.env` file:
+Whenever you allocate an **Elastic IP** (e.g. `65.0.208.238`) or assign a custom domain / HTTPS address, update these **4 specific environment variables** in your EC2 `.env` file:
 
 | Environment Variable | HTTP (Elastic IP Example) | HTTPS (Domain / sslip.io Example) | What It Does |
 | :--- | :--- | :--- | :--- |
-| `CLIENT_URL` | `http://13.234.177.70` | `https://13-234-177-70.sslip.io` | Configures CORS & secure session cookie origin for frontend |
-| `VITE_API_BASE_URL` | `http://13.234.177.70:5000/api/v1` | `https://13-234-177-70.sslip.io/api/v1` | Frontend REST API communication endpoint |
-| `META_REDIRECT_URI` | `http://13.234.177.70:5000/api/v1/social/meta/callback` | `https://13-234-177-70.sslip.io/api/v1/social/meta/callback` | Facebook / Instagram OAuth redirect endpoint |
-| `LINKEDIN_REDIRECT_URI` | `http://13.234.177.70:5000/api/v1/social/linkedin/callback` | `https://13-234-177-70.sslip.io/api/v1/social/linkedin/callback` | LinkedIn OAuth 2.0 redirect endpoint |
+| `CLIENT_URL` | `http://65.0.208.238` | `https://65-0-208-238.sslip.io` | Configures CORS & secure session cookie origin for frontend |
+| `VITE_API_BASE_URL` | `http://65.0.208.238:5000/api/v1` | `https://65-0-208-238.sslip.io/api/v1` | Frontend REST API communication endpoint |
+| `META_REDIRECT_URI` | `http://65.0.208.238:5000/api/v1/social/meta/callback` | `https://65-0-208-238.sslip.io/api/v1/social/meta/callback` | Facebook / Instagram OAuth redirect endpoint |
+| `LINKEDIN_REDIRECT_URI` | `http://65.0.208.238:5000/api/v1/social/linkedin/callback` | `https://65-0-208-238.sslip.io/api/v1/social/linkedin/callback` | LinkedIn OAuth 2.0 redirect endpoint |
 
 #### How to update them on EC2:
 1. Open `.env` on your EC2 server:
@@ -283,16 +283,16 @@ cd frontend
 npm install
 
 # 3. Compile production bundle with your Elastic IP / HTTPS domain:
-VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1" npm run build
+VITE_API_BASE_URL="https://65-0-208-238.sslip.io/api/v1" npm run build
 
 # 4. Upload compiled 'dist' directory to EC2 server:
 
 # 👉 Option A: If you are currently INSIDE the 'frontend' folder:
-scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@13.234.177.70:~/C2C/frontend/
+scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
 
 # 👉 Option B: If you return to the root 'C2C' project folder:
 cd ..
-scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r frontend/dist ubuntu@13.234.177.70:~/C2C/frontend/
+scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r frontend/dist ubuntu@65.0.208.238:~/C2C/frontend/
 ```
 
 #### 🔍 Command-by-Command Detailed Explanation:
@@ -316,7 +316,7 @@ scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r frontend/dist ubuntu@13.2
 > @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 > Permissions 0644 for 'brandflow-c2c.pem' are too open.
 > Load key: bad permissions
-> ubuntu@13.234.177.70: Permission denied (publickey).
+> ubuntu@65.0.208.238: Permission denied (publickey).
 > ```
 > **Cause**: SSH and SCP strictly require `.pem` private keys to have restricted `400` permissions (read-only by the owner, not accessible by others).
 > 
@@ -366,10 +366,10 @@ docker compose -f docker-compose.prod.yml exec --user root brandflow-backend npm
 
 ### Step 3.7: Set Up Free HTTPS (SSL Certificate) using `sslip.io` & Certbot
 
-To enable **HTTPS (`https://`)** for your Elastic IP (`13.234.177.70`) for **FREE** without buying a domain name:
+To enable **HTTPS (`https://`)** for your Elastic IP (`65.0.208.238`) for **FREE** without buying a domain name:
 
-> **Your Free SSL Domain**: `https://13-234-177-70.sslip.io`  
-> *(sslip.io automatically resolves `13-234-177-70.sslip.io` to your Elastic IP `13.234.177.70`, allowing Let's Encrypt to issue a real, valid SSL certificate!)*
+> **Your Free SSL Domain**: `https://65-0-208-238.sslip.io`  
+> *(sslip.io automatically resolves `65-0-208-238.sslip.io` to your Elastic IP `65.0.208.238`, allowing Let's Encrypt to issue a real, valid SSL certificate!)*
 
 ---
 
@@ -395,11 +395,11 @@ sudo systemctl stop nginx
 # 3. Ensure Docker frontend is running on internal port 8080 (already pre-configured in docker-compose.prod.yml):
 docker compose -f docker-compose.prod.yml up -d
 
-# 4. Create Host Nginx reverse proxy configuration for 13-234-177-70.sslip.io:
+# 4. Create Host Nginx reverse proxy configuration for 65-0-208-238.sslip.io:
 sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/brandflow
 server {
     listen 80;
-    server_name 13-234-177-70.sslip.io;
+    server_name 65-0-208-238.sslip.io;
 
     client_max_body_size 50M;
 
@@ -430,7 +430,7 @@ sudo nginx -t
 sudo systemctl restart nginx
 
 # 6. Obtain Free Let's Encrypt SSL Certificate:
-sudo certbot --nginx -d 13-234-177-70.sslip.io
+sudo certbot --nginx -d 65-0-208-238.sslip.io
 ```
 *(When prompted by Certbot, enter your email and agree to terms. Certbot will automatically configure HTTPS on port 443!)*
 
@@ -443,10 +443,10 @@ nano .env
 ```
 Update these lines:
 ```env
-CLIENT_URL=https://13-234-177-70.sslip.io
-VITE_API_BASE_URL=https://13-234-177-70.sslip.io/api/v1
-META_REDIRECT_URI=https://13-234-177-70.sslip.io/api/v1/social/meta/callback
-LINKEDIN_REDIRECT_URI=https://13-234-177-70.sslip.io/api/v1/social/linkedin/callback
+CLIENT_URL=https://65-0-208-238.sslip.io
+VITE_API_BASE_URL=https://65-0-208-238.sslip.io/api/v1
+META_REDIRECT_URI=https://65-0-208-238.sslip.io/api/v1/social/meta/callback
+LINKEDIN_REDIRECT_URI=https://65-0-208-238.sslip.io/api/v1/social/linkedin/callback
 ```
 Save and exit (`Ctrl + O` ➔ `Enter` ➔ `Ctrl + X`).
 
@@ -461,8 +461,8 @@ docker compose -f docker-compose.prod.yml restart brandflow-backend
 On your **Mac terminal**:
 ```bash
 cd frontend
-VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1" npm run build
-scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@13.234.177.70:~/C2C/frontend/
+VITE_API_BASE_URL="https://65-0-208-238.sslip.io/api/v1" npm run build
+scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
 cd ..
 ```
 
@@ -475,7 +475,7 @@ The application codebase is fully configured for dynamic multi-environment resol
 | Deployment Environment | Frontend Web App URL | Backend API Base URL | Reverse Proxy / Host |
 | :--- | :--- | :--- | :--- |
 | 🟢 **1. Local Development** | `http://localhost:5173` | `http://localhost:5000/api/v1` | Direct Vite Dev Server |
-| 🚀 **2. AWS EC2 Production (HTTPS)** | `https://13-234-177-70.sslip.io` | `https://13-234-177-70.sslip.io/api/v1` | Host Nginx Reverse Proxy (Port 80/443 -> Docker 8080/5000) |
+| 🚀 **2. AWS EC2 Production (HTTPS)** | `https://65-0-208-238.sslip.io` | `https://65-0-208-238.sslip.io/api/v1` | Host Nginx Reverse Proxy (Port 80/443 -> Docker 8080/5000) |
 | ⚡ **3. Vercel + Render Production** | `https://c2-c-puce.vercel.app` | `https://c2c-negk.onrender.com/api/v1` | Vercel Edge CDN + Render Cloud |
 
 ### 🔐 Default SuperAdmin Login Credentials:

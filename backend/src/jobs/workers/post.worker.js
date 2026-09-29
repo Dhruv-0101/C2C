@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { redisConnectionOptions, isRedisConfigured } from "../../config/redis.js";
+import { redisConnectionOptions, isRedisConfigured, getRedisClient } from "../../config/redis.js";
 import { SCHEDULED_POST_QUEUE_NAME } from "../../queues/post.queue.js";
 import { liveSocialPublisherService } from "../../modules/social/services/liveSocialPublisher.service.js";
 import { prisma } from "../../config/database.js";
@@ -15,34 +15,69 @@ import { sendPostPublishedEmail } from "../../common/services/email.service.js";
  */
 export const processPostJob = async (jobData) => {
   const { scheduledPostId, postId, userId, targetPlatforms, postContent, graphicUrl } = jobData;
+  const targetId = scheduledPostId || postId;
 
-  logger.info(`⚙️ [PostWorker] Processing publishing job for ScheduledPost ID: ${scheduledPostId || postId}`);
+  logger.info(`⚙️ [PostWorker] Processing publishing job for Target ID: ${targetId}`);
 
-  /*
-  Maan lijiye ek business owner ne Diwali ke liye 1 Graphic & Caption banaya (postId = "post_101").
+  // 1. Redis Distributed Lock to prevent concurrent duplicate execution (Mutex)
+  const lockKey = `lock:publish:${targetId}`;
+  let lockAcquired = false;
+  const redis = isRedisConfigured ? getRedisClient() : null;
 
-Ab wo usi same post ko 2 alag-alag times par schedule karna chahta hai:
-
-Diwali se 1 din pehle shaam 6:00 PM ➔ scheduledPostId: "sched_01" (postId: "post_101")
-Diwali wale din subah 9:00 AM ➔ scheduledPostId: "sched_02" (postId: "post_101")
-Agar dono ek hi table ya ek hi ID hoti, toh ek content ko multiple times alag-alag schedule nahi kiya ja sakta tha. */
-
-  // 1. Update ScheduledPost status to PROCESSING
-  if (scheduledPostId) {
-    await prisma.scheduledPost.update({
-      where: { id: scheduledPostId },
-      data: { status: "PROCESSING" },
-    }).catch(() => { });
-  }
-
-  if (postId) {
-    await prisma.post.update({
-      where: { id: postId },
-      data: { status: "PUBLISHING" },
-    }).catch(() => { });
+  if (redis) {
+    try {
+      // SET lockKey 'locked' NX (Not Exists) PX 180000 (3-minute auto-expiry)
+      const lockRes = await redis.set(lockKey, 'locked', 'PX', 180000, 'NX');
+      if (!lockRes) {
+        logger.warn(`⚠️ [PostWorker] Job for ${targetId} is already being executed by another active worker. Skipping duplicate!`);
+        return { duplicate: true, skipped: true };
+      }
+      lockAcquired = true;
+    } catch (lockErr) {
+      logger.debug(`[PostWorker] Redis lock check notice: ${lockErr.message}`);
+    }
   }
 
   try {
+    // 2. Database Idempotency Check: Prevent duplicate publishing if already SUCCESS / PUBLISHED
+    if (scheduledPostId) {
+      const existingSchedule = await prisma.scheduledPost.findUnique({
+        where: { id: scheduledPostId },
+        select: { status: true },
+      });
+
+      if (!existingSchedule) {
+        logger.warn(`⚠️ [PostWorker] ScheduledPost ${scheduledPostId} not found in database. Skipping.`);
+        return { duplicate: true, skipped: true };
+      }
+
+      if (existingSchedule.status === 'SUCCESS') {
+        logger.warn(`⚠️ [PostWorker] ScheduledPost ${scheduledPostId} is ALREADY published (SUCCESS). Skipping duplicate execution!`);
+        return { duplicate: true, skipped: true };
+      }
+
+      await prisma.scheduledPost.update({
+        where: { id: scheduledPostId },
+        data: { status: "PROCESSING" },
+      }).catch(() => { });
+    }
+
+    if (postId) {
+      const existingPost = await prisma.post.findUnique({
+        where: { id: postId },
+        select: { status: true },
+      });
+
+      if (existingPost && existingPost.status === 'PUBLISHED') {
+        logger.warn(`⚠️ [PostWorker] Post ${postId} is ALREADY marked PUBLISHED. Skipping duplicate execution!`);
+        return { duplicate: true, skipped: true };
+      }
+
+      await prisma.post.update({
+        where: { id: postId },
+        data: { status: "PUBLISHING" },
+      }).catch(() => { });
+    }
     // Check if user account has been deactivated by admin
     if (userId) {
       const userRecord = await prisma.user.findUnique({
@@ -157,6 +192,10 @@ Agar dono ek hi table ya ek hi ID hoti, toh ek content ko multiple times alag-al
     }
 
     throw error;
+  } finally {
+    if (lockAcquired && redis) {
+      await redis.del(lockKey).catch(() => {});
+    }
   }
 };
 

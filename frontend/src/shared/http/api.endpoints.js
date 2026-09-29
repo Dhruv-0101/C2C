@@ -28,8 +28,8 @@ const getApiBaseUrl = () => {
 
   if (typeof window !== 'undefined' && window.location) {
     const hostname = window.location.hostname;
-    if (hostname.includes('sslip.io') || hostname === '13.234.177.70') {
-      return 'https://13-234-177-70.sslip.io/api/v1';
+    if (hostname.includes('sslip.io') || hostname === '65.0.208.238' || hostname === '13.234.177.70') {
+      return `${window.location.origin}/api/v1`;
     }
     if (hostname.includes('vercel.app')) {
       return 'https://c2c-negk.onrender.com/api/v1';
@@ -40,7 +40,7 @@ const getApiBaseUrl = () => {
   }
 
   if (isProduction) {
-    return 'https://13-234-177-70.sslip.io/api/v1';
+    return 'https://65-0-208-238.sslip.io/api/v1';
   }
 
   return 'http://localhost:5000/api/v1';

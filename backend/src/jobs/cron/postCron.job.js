@@ -43,11 +43,19 @@ export const triggerScheduledPostsNow = async () => {
 
     for (const item of duePosts) {
       try {
-        // Mark as PROCESSING to prevent duplicate pickup by concurrent worker processes
-        await prisma.scheduledPost.update({
-          where: { id: item.id },
+        // Atomic compare-and-swap: ONLY transition if post is still in PENDING state
+        const updateResult = await prisma.scheduledPost.updateMany({
+          where: {
+            id: item.id,
+            status: "PENDING",
+          },
           data: { status: "PROCESSING" },
         });
+
+        if (updateResult.count === 0) {
+          logger.info(`ℹ️ [CronDispatcher] Post #${item.id} already claimed or processed by BullMQ worker. Skipping duplicate dispatch.`);
+          continue;
+        }
 
         const jobPayload = {
           scheduledPostId: item.id,
@@ -60,8 +68,20 @@ export const triggerScheduledPostsNow = async () => {
 
         if (scheduledPostQueue) {
           try {
-            await scheduledPostQueue.add(POST_JOB_NAMES.PUBLISH_SCHEDULED_POST, jobPayload);
+            await scheduledPostQueue.add(
+              POST_JOB_NAMES.PUBLISH_SCHEDULED_POST,
+              jobPayload,
+              {
+                jobId: `sched_${item.id}`,
+                removeOnComplete: true,
+                removeOnFail: false,
+              }
+            );
           } catch (queueErr) {
+            if (queueErr.message?.includes('already exists') || queueErr.name === 'JobIdAlreadyExists') {
+              logger.info(`ℹ️ [CronDispatcher] BullMQ job sched_${item.id} already exists in queue. Skipping.`);
+              continue;
+            }
             logger.warn(`ℹ️ [CronDispatcher] Redis Queue offline (${queueErr.message}). Executing direct DB publish fallback for post ${item.id}...`);
             await processPostJob(jobPayload);
           }
