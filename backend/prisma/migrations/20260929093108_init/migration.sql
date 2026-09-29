@@ -321,6 +321,12 @@ CREATE INDEX "User_googleId_idx" ON "User"("googleId");
 CREATE INDEX "User_role_idx" ON "User"("role");
 
 -- CreateIndex
+CREATE INDEX "User_isActive_role_idx" ON "User"("isActive", "role");
+
+-- CreateIndex
+CREATE INDEX "User_createdAt_idx" ON "User"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "RefreshToken_tokenHash_key" ON "RefreshToken"("tokenHash");
 
 -- CreateIndex
@@ -351,6 +357,9 @@ CREATE INDEX "BrandKit_categoryId_idx" ON "BrandKit"("categoryId");
 CREATE INDEX "Frame_createdBy_idx" ON "Frame"("createdBy");
 
 -- CreateIndex
+CREATE INDEX "Frame_isActive_createdAt_idx" ON "Frame"("isActive", "createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
 
 -- CreateIndex
@@ -360,10 +369,22 @@ CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
 CREATE INDEX "Category_createdBy_idx" ON "Category"("createdBy");
 
 -- CreateIndex
+CREATE INDEX "Category_createdAt_idx" ON "Category"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Festival_slug_key" ON "Festival"("slug");
 
 -- CreateIndex
 CREATE INDEX "Festival_createdBy_idx" ON "Festival"("createdBy");
+
+-- CreateIndex
+CREATE INDEX "Festival_isActive_date_idx" ON "Festival"("isActive", "date");
+
+-- CreateIndex
+CREATE INDEX "Festival_date_idx" ON "Festival"("date");
+
+-- CreateIndex
+CREATE INDEX "Festival_createdAt_idx" ON "Festival"("createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TemplateCategory_name_key" ON "TemplateCategory"("name");
@@ -375,6 +396,9 @@ CREATE UNIQUE INDEX "TemplateCategory_slug_key" ON "TemplateCategory"("slug");
 CREATE INDEX "TemplateCategory_createdBy_idx" ON "TemplateCategory"("createdBy");
 
 -- CreateIndex
+CREATE INDEX "TemplateCategory_createdAt_idx" ON "TemplateCategory"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "Template_festivalId_idx" ON "Template"("festivalId");
 
 -- CreateIndex
@@ -382,6 +406,15 @@ CREATE INDEX "Template_templateCategoryId_idx" ON "Template"("templateCategoryId
 
 -- CreateIndex
 CREATE INDEX "Template_createdBy_idx" ON "Template"("createdBy");
+
+-- CreateIndex
+CREATE INDEX "Template_festivalId_isActive_idx" ON "Template"("festivalId", "isActive");
+
+-- CreateIndex
+CREATE INDEX "Template_templateCategoryId_isActive_idx" ON "Template"("templateCategoryId", "isActive");
+
+-- CreateIndex
+CREATE INDEX "Template_isActive_createdAt_idx" ON "Template"("isActive", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "Post_userId_idx" ON "Post"("userId");
@@ -405,6 +438,21 @@ CREATE INDEX "Post_festivalId_idx" ON "Post"("festivalId");
 CREATE INDEX "Post_createdAt_idx" ON "Post"("createdAt");
 
 -- CreateIndex
+CREATE INDEX "Post_userId_status_idx" ON "Post"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "Post_userId_createdAt_idx" ON "Post"("userId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Post_categoryId_status_idx" ON "Post"("categoryId", "status");
+
+-- CreateIndex
+CREATE INDEX "Post_festivalId_status_idx" ON "Post"("festivalId", "status");
+
+-- CreateIndex
+CREATE INDEX "Post_templateId_status_idx" ON "Post"("templateId", "status");
+
+-- CreateIndex
 CREATE INDEX "Caption_postId_idx" ON "Caption"("postId");
 
 -- CreateIndex
@@ -417,10 +465,16 @@ CREATE INDEX "ScheduledPost_postId_idx" ON "ScheduledPost"("postId");
 CREATE INDEX "ScheduledPost_status_scheduledAt_idx" ON "ScheduledPost"("status", "scheduledAt");
 
 -- CreateIndex
+CREATE INDEX "ScheduledPost_scheduledAt_idx" ON "ScheduledPost"("scheduledAt");
+
+-- CreateIndex
 CREATE INDEX "VaultItem_userId_idx" ON "VaultItem"("userId");
 
 -- CreateIndex
 CREATE INDEX "VaultItem_postId_idx" ON "VaultItem"("postId");
+
+-- CreateIndex
+CREATE INDEX "VaultItem_userId_createdAt_idx" ON "VaultItem"("userId", "createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VaultItem_userId_postId_key" ON "VaultItem"("userId", "postId");
@@ -429,10 +483,22 @@ CREATE UNIQUE INDEX "VaultItem_userId_postId_key" ON "VaultItem"("userId", "post
 CREATE UNIQUE INDEX "Subscription_userId_key" ON "Subscription"("userId");
 
 -- CreateIndex
+CREATE INDEX "Subscription_status_idx" ON "Subscription"("status");
+
+-- CreateIndex
+CREATE INDEX "Subscription_plan_idx" ON "Subscription"("plan");
+
+-- CreateIndex
 CREATE INDEX "BillingTransaction_userId_idx" ON "BillingTransaction"("userId");
 
 -- CreateIndex
 CREATE INDEX "BillingTransaction_createdAt_idx" ON "BillingTransaction"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "BillingTransaction_status_createdAt_idx" ON "BillingTransaction"("status", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "BillingTransaction_paymentGateway_status_idx" ON "BillingTransaction"("paymentGateway", "status");
 
 -- CreateIndex
 CREATE INDEX "PostAnalytics_userId_platform_idx" ON "PostAnalytics"("userId", "platform");
