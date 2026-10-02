@@ -31,6 +31,8 @@ CREATE TABLE "User" (
     "googleId" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "avatarUrl" TEXT,
+    "facebookPageUrl" TEXT,
+    "socialOnboardingStatus" TEXT DEFAULT 'NOT_SUBMITTED',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -589,3 +591,4 @@ ALTER TABLE "PostAnalytics" ADD CONSTRAINT "PostAnalytics_postId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "PostAnalytics" ADD CONSTRAINT "PostAnalytics_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
