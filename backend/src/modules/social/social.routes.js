@@ -6,13 +6,18 @@ import {
   handleMetaCallback,
   getUserAccounts,
   disconnectAccount,
+  adminConnectUserToken,
+  adminDisconnectUserAccount,
 } from './social.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
+import { requireAdmin } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import {
   disconnectAccountSchema,
   oauthCallbackQuerySchema,
   getAccountsQuerySchema,
+  adminConnectUserTokenSchema,
+  adminDisconnectUserAccountSchema,
 } from './social.validator.js';
 
 const router = Router();
@@ -44,4 +49,25 @@ router.get('/auth-url/linkedin', getLinkedinAuthUrl);
 // DELETE /api/v1/social/accounts/:platform
 router.delete('/accounts/:platform', validate(disconnectAccountSchema), disconnectAccount);
 
+// ==========================================
+// Admin Client Social Onboarding Endpoints
+// ==========================================
+
+// POST /api/v1/social/admin/connect-user-token
+router.post(
+  '/admin/connect-user-token',
+  requireAdmin,
+  validate(adminConnectUserTokenSchema),
+  adminConnectUserToken
+);
+
+// DELETE /api/v1/social/admin/user/:userId/:platform
+router.delete(
+  '/admin/user/:userId/:platform',
+  requireAdmin,
+  validate(adminDisconnectUserAccountSchema),
+  adminDisconnectUserAccount
+);
+
 export default router;
+

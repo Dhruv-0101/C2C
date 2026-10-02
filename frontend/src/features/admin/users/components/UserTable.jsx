@@ -13,6 +13,7 @@ export const UserTable = ({
   copiedId,
   onCopy,
   onOpenTopUp,
+  onOpenConnectSocial,
   onToggleStatus,
   isToggling,
 }) => {
@@ -48,6 +49,7 @@ export const UserTable = ({
             <th className="py-3.5 px-4">Posts Quota Usage</th>
             <th className="py-3.5 px-4">Payment Reference ID</th>
             <th className="py-3.5 px-4">Plan Status</th>
+            <th className="py-3.5 px-4">Social Media</th>
             <th className="py-3.5 px-4">Account Status</th>
           </tr>
         </thead>
@@ -59,6 +61,7 @@ export const UserTable = ({
               copiedId={copiedId}
               onCopy={onCopy}
               onOpenTopUp={onOpenTopUp}
+              onOpenConnectSocial={onOpenConnectSocial}
               onToggleStatus={onToggleStatus}
               isToggling={isToggling}
             />

@@ -8,6 +8,9 @@ import {
   Clock,
   AlertCircle,
   CheckCircle2,
+  Facebook,
+  Instagram,
+  Share2,
 } from 'lucide-react';
 import { UserStatusBadge } from './UserStatusBadge';
 
@@ -20,6 +23,7 @@ export const UserTableRow = ({
   copiedId,
   onCopy,
   onOpenTopUp,
+  onOpenConnectSocial,
   onToggleStatus,
   isToggling = false,
 }) => {
@@ -209,6 +213,52 @@ export const UserTableRow = ({
             <CheckCircle2 className="w-3.5 h-3.5" /> ACTIVE
           </span>
         )}
+      </td>
+
+      {/* Social Accounts & Meta Link */}
+      <td className="py-3.5 px-4 min-w-[160px]">
+        <div className="space-y-1.5">
+          <div className="flex flex-col gap-1">
+            {user.socialAccounts?.some((a) => a.isConnected) ? (
+              <div className="flex flex-wrap gap-1">
+                {user.socialAccounts
+                  .filter((a) => a.isConnected)
+                  .map((acc) => (
+                    <span
+                      key={acc.id}
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                        acc.platform === 'FACEBOOK'
+                          ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                          : acc.platform === 'INSTAGRAM'
+                          ? 'bg-pink-500/15 text-pink-300 border-pink-500/30'
+                          : 'bg-slate-800 text-slate-300 border-slate-700'
+                      }`}
+                      title={`${acc.platform}: ${acc.accountName}`}
+                    >
+                      {acc.platform === 'FACEBOOK' ? (
+                        <Facebook className="w-2.5 h-2.5 text-blue-400 shrink-0" />
+                      ) : (
+                        <Instagram className="w-2.5 h-2.5 text-pink-400 shrink-0" />
+                      )}
+                      <span className="truncate max-w-[85px]">{acc.accountName}</span>
+                    </span>
+                  ))}
+              </div>
+            ) : (
+              <span className="text-slate-500 text-[10px] italic">No Socials Linked</span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onOpenConnectSocial(user)}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-indigo-500/20 border border-amber-500/40 text-amber-300 hover:text-white hover:border-amber-300 text-[10px] font-bold transition shadow-xs cursor-pointer"
+            title="Link or Update Meta System User Token for this client"
+          >
+            <Share2 className="w-2.5 h-2.5" />
+            <span>Link Meta</span>
+          </button>
+        </div>
       </td>
 
       {/* Account Status Switch */}

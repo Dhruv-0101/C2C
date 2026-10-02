@@ -9,6 +9,8 @@ export const usersApi = {
   getById: (id) => api.get(API_ENDPOINTS.USERS.BY_ID(id)),
   updateRole: (id, role) => api.patch(API_ENDPOINTS.USERS.ROLE(id), { role }),
   topUpQuota: (id, payload) => api.post(`${API_ENDPOINTS.USERS.BY_ID(id)}/quota`, payload),
+  connectSocialToken: (userId, token) => api.post('/social/admin/connect-user-token', { userId, token }),
+  disconnectSocialAccount: (userId, platform) => api.delete(`/social/admin/user/${userId}/${platform}`),
 };
 
 export default usersApi;

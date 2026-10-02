@@ -38,10 +38,10 @@ Choose your change scenario below to deploy to production in seconds:
    cd frontend
 
    # 2. Build production static bundle with your API URL:
-   VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1" npm run build
+   VITE_API_BASE_URL="https://65.0.208.238.sslip.io/api/v1" npm run build
 
    # 3. Upload compiled 'dist' directory to EC2 server via SCP:
-   scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@13.234.177.70:~/C2C/frontend/
+   scp -i "/Users/mac0014/Downloads/brandflow-latest.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
    ```
 
 2. In your **Browser**:
@@ -101,8 +101,8 @@ Choose your change scenario below to deploy to production in seconds:
 1. **Build & Upload Frontend (from Mac)**:
    ```bash
    cd frontend
-   VITE_API_BASE_URL="https://13-234-177-70.sslip.io/api/v1" npm run build
-   scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@13.234.177.70:~/C2C/frontend/
+   VITE_API_BASE_URL="https://65.0.208.238.sslip.io/api/v1" npm run build
+   scp -i "/Users/mac0014/Downloads/brandflow-latest.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
    cd ..
    ```
 2. **Deploy Backend (from Mac to EC2)**:

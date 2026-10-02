@@ -98,6 +98,7 @@ export const AdminDashboardView = ({
   deleteSubAdminMutation,
   toggleUserStatusMutation,
   topUpUserQuotaMutation,
+  connectSocialTokenMutation,
   register,
   handleSubmit,
   errors,
@@ -411,6 +412,7 @@ export const AdminDashboardView = ({
             setUserLimit={setUserLimit}
             toggleUserStatusMutation={toggleUserStatusMutation}
             topUpUserQuotaMutation={topUpUserQuotaMutation}
+            connectSocialTokenMutation={connectSocialTokenMutation}
           />
         )}
       </div>

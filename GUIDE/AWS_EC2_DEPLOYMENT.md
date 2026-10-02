@@ -42,10 +42,10 @@ Open Terminal on your laptop, navigate to the folder containing `brandflow-key.p
 
 ```bash
 # 1. Secure private key permissions (macOS/Linux mandatory)
-chmod 400 "/Users/mac0011/Downloads/brandflow-c2c.pem"
+chmod 400 "/Users/mac0014/Downloads/brandflow-latest.pem"
 
 # 2. SSH into your EC2 Ubuntu instance
-ssh -i "/Users/mac0011/Downloads/brandflow-c2c.pem" ubuntu@65.0.208.238
+ssh -i "/Users/mac0014/Downloads/brandflow-latest.pem" ubuntu@65.0.208.238
 ```
 
 ---
@@ -283,16 +283,16 @@ cd frontend
 npm install
 
 # 3. Compile production bundle with your Elastic IP / HTTPS domain:
-VITE_API_BASE_URL="https://65-0-208-238.sslip.io/api/v1" npm run build
+VITE_API_BASE_URL="https://65.0.208.238.sslip.io/api/v1" npm run build
 
 # 4. Upload compiled 'dist' directory to EC2 server:
 
 # 👉 Option A: If you are currently INSIDE the 'frontend' folder:
-scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
+scp -i "/Users/mac0014/Downloads/brandflow-latest.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
 
 # 👉 Option B: If you return to the root 'C2C' project folder:
 cd ..
-scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r frontend/dist ubuntu@65.0.208.238:~/C2C/frontend/
+scp -i "/Users/mac0014/Downloads/brandflow-latest.pem" -r frontend/dist ubuntu@65.0.208.238:~/C2C/frontend/
 ```
 
 #### 🔍 Command-by-Command Detailed Explanation:
@@ -322,7 +322,7 @@ scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r frontend/dist ubuntu@65.0
 > 
 > **Fix**: Run this command on your Mac terminal to secure the key:
 > ```bash
-> chmod 400 "/Users/mac0011/Downloads/brandflow-c2c.pem"
+> chmod 400 "/Users/mac0014/Downloads/brandflow-latest.pem"
 > ```
 > *(**What `chmod 400` does**: `chmod` = Change Mode (file permissions). `400` sets permission to **Read-Only for Owner only** (`r--------`), blocking all access for Group and Others. SSH/SCP strictly mandates `400` so nobody else on your system can read your private AWS key.)*
 > 
@@ -461,8 +461,8 @@ docker compose -f docker-compose.prod.yml restart brandflow-backend
 On your **Mac terminal**:
 ```bash
 cd frontend
-VITE_API_BASE_URL="https://65-0-208-238.sslip.io/api/v1" npm run build
-scp -i "/Users/mac0011/Downloads/brandflow-c2c.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
+VITE_API_BASE_URL="https://65.0.208.238.sslip.io/api/v1" npm run build
+scp -i "/Users/mac0014/Downloads/brandflow-latest.pem" -r dist ubuntu@65.0.208.238:~/C2C/frontend/
 cd ..
 ```
 

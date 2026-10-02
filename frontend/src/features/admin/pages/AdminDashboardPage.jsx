@@ -16,6 +16,7 @@ import { authApi } from '@/features/auth/api/auth.api';
 import { categoryApi } from '@/features/admin/categories/api/category.api';
 import { templateCategoryApi } from '@/features/admin/template-categories/api/templateCategory.api';
 import { billingApi } from '@/features/billing/api/billing.api';
+import { usersApi } from '@/features/admin/users/api/users.api';
 import { subAdminSchema } from '@/features/auth/validations/auth.validation';
 import { useFeedbackModal } from '@/components/feedback/FeedbackModal';
 import { QUERY_KEYS } from '@/shared/constants';
@@ -414,6 +415,21 @@ export const AdminDashboardPage = () => {
     },
   });
 
+  // Admin Meta Agency Token Connect Mutation
+  const connectSocialTokenMutation = useMutation({
+    mutationFn: ({ userId, token }) => usersApi.connectSocialToken(userId, token),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USERS.ALL });
+      showSuccess(
+        "Meta Assets Linked! 🚀",
+        res?.message || "Successfully connected Facebook Page and Instagram Account to client!",
+      );
+    },
+    onError: (err) => {
+      showError("Connection Failed ⚠️", err.message || "Failed to verify or connect Meta token.");
+    },
+  });
+
   // React Hook Form for SubAdmin Creation
   const {
     register,
@@ -555,6 +571,7 @@ export const AdminDashboardPage = () => {
         deleteSubAdminMutation={deleteSubAdminMutation}
         toggleUserStatusMutation={toggleUserStatusMutation}
         topUpUserQuotaMutation={topUpUserQuotaMutation}
+        connectSocialTokenMutation={connectSocialTokenMutation}
         register={register}
         handleSubmit={handleSubmit}
         errors={errors}

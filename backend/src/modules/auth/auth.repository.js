@@ -332,6 +332,16 @@ export async function findPaginatedUsers({ skip, take, search, sortBy = 'created
         updatedAt: true,
       },
     },
+    socialAccounts: {
+      select: {
+        id: true,
+        platform: true,
+        platformUserId: true,
+        accountName: true,
+        isConnected: true,
+        createdAt: true,
+      },
+    },
   };
 
   const [users, totalCount] = await prisma.$transaction([

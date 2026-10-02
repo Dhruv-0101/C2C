@@ -5,12 +5,13 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
 import { UserTable } from "./components/UserTable";
 import { QuotaTopUpModal } from "./components/QuotaTopUpModal";
+import { ConnectSocialModal } from "./components/ConnectSocialModal";
 
 /**
  * AdminUsersTab Component
  * Business User & Subscription Billing Directory displaying all registered business tenants,
  * active plan subscription details, payment gateway, post quota usage, transaction IDs,
- * instant Bonus Post Quota top-ups, and interactive Account Status deactivation toggle switches.
+ * instant Bonus Post Quota top-ups, Meta Agency Social Linking, and interactive Account Status deactivation toggle switches.
  */
 export const AdminUsersTab = ({
   users = [],
@@ -24,9 +25,11 @@ export const AdminUsersTab = ({
   setUserLimit,
   toggleUserStatusMutation,
   topUpUserQuotaMutation,
+  connectSocialTokenMutation,
 }) => {
   const [copiedId, setCopiedId] = useState(null);
   const [topUpUser, setTopUpUser] = useState(null);
+  const [socialModalUser, setSocialModalUser] = useState(null);
 
   const handleCopy = (text) => {
     if (!text) return;
@@ -77,6 +80,7 @@ export const AdminUsersTab = ({
         copiedId={copiedId}
         onCopy={handleCopy}
         onOpenTopUp={(u) => setTopUpUser(u)}
+        onOpenConnectSocial={(u) => setSocialModalUser(u)}
         onToggleStatus={(u) =>
           toggleUserStatusMutation?.mutate({
             userId: u.id,
@@ -93,6 +97,15 @@ export const AdminUsersTab = ({
         user={topUpUser}
         onConfirm={(payload) => topUpUserQuotaMutation?.mutate(payload)}
         isPending={topUpUserQuotaMutation?.isPending}
+      />
+
+      {/* Meta Agency Social Linking Modal */}
+      <ConnectSocialModal
+        isOpen={Boolean(socialModalUser)}
+        onClose={() => setSocialModalUser(null)}
+        user={socialModalUser}
+        onConfirm={(payload) => connectSocialTokenMutation?.mutateAsync(payload)}
+        isPending={connectSocialTokenMutation?.isPending}
       />
 
       {users.length > 0 && (

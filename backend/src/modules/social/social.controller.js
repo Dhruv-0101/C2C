@@ -7,6 +7,8 @@ import {
   handleMetaCallback as handleMetaCallbackLogic,
   getUserAccounts as getUserAccountsLogic,
   disconnectAccount as disconnectAccountLogic,
+  adminConnectUserToken as adminConnectUserTokenLogic,
+  adminDisconnectUserAccount as adminDisconnectUserAccountLogic,
 } from './social.logic.js';
 import { resolveClientUrl } from './social.helper.js';
 
@@ -159,6 +161,42 @@ export const disconnectAccount = async (req, res, next) => {
 };
 
 /**
+ * POST /api/v1/social/admin/connect-user-token
+ * Connect Meta System User / Page Token for a Specific Client Tenant (Admin Only)
+ */
+export const adminConnectUserToken = async (req, res, next) => {
+  try {
+    const { userId, token } = req.body;
+    const result = await adminConnectUserTokenLogic({ userId, token });
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.message || 'Client social accounts connected successfully',
+      data: result.data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * DELETE /api/v1/social/admin/user/:userId/:platform
+ * Disconnect a Specific User's Social Account (Admin Only)
+ */
+export const adminDisconnectUserAccount = async (req, res, next) => {
+  try {
+    const { userId, platform } = req.params;
+    const result = await adminDisconnectUserAccountLogic(userId, platform);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: `Disconnected ${platform} account for user successfully`,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * Social Controller singleton for backward-compatible consumption
  */
 export const socialController = {
@@ -168,4 +206,7 @@ export const socialController = {
   handleMetaCallback,
   getUserAccounts,
   disconnectAccount,
+  adminConnectUserToken,
+  adminDisconnectUserAccount,
 };
+

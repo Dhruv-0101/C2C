@@ -29,3 +29,20 @@ export const getAccountsQuerySchema = z.object({
     sortOrder: z.enum(['asc', 'desc']).optional(),
   }),
 });
+
+export const adminConnectUserTokenSchema = z.object({
+  body: z.object({
+    userId: z.string().uuid({ message: 'Valid target user ID is required' }),
+    token: z.string().min(20, { message: 'Valid Meta System User or Page Token is required' }).trim(),
+  }),
+});
+
+export const adminDisconnectUserAccountSchema = z.object({
+  params: z.object({
+    userId: z.string().uuid({ message: 'Valid target user ID is required' }),
+    platform: z.enum(SOCIAL_PLATFORM_LIST, {
+      required_error: 'Valid platform parameter is required',
+    }),
+  }),
+});
+
