@@ -12,6 +12,7 @@ export const AnalyticsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(9);
 
   const {
     kpi,
@@ -32,7 +33,7 @@ export const AnalyticsPage = () => {
     search: searchTerm,
     sortBy,
     page,
-    limit: 9,
+    limit,
   });
 
   const handleSync = async () => {
@@ -66,6 +67,11 @@ export const AnalyticsPage = () => {
     setPage(1);
   };
 
+  const handleLimitChange = (newLimit) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   return (
     <AnalyticsView
       kpi={kpi}
@@ -86,6 +92,8 @@ export const AnalyticsPage = () => {
       onSortChange={handleSortChange}
       page={page}
       onPageChange={setPage}
+      limit={limit}
+      onLimitChange={handleLimitChange}
       onSync={handleSync}
       isSyncing={isSyncing}
       onSeedDemo={handleSeedDemo}

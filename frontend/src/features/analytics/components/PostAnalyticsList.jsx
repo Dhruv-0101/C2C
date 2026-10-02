@@ -14,10 +14,11 @@ import {
 import { PostAnalyticsCard } from './PostAnalyticsCard';
 import { PostDetailsModal } from './PostDetailsModal';
 import { Button } from '../../../components/ui/Button';
+import Pagination from '@/components/ui/Pagination';
 
 export const PostAnalyticsList = ({
   posts = [],
-  meta = { totalCount: 0, page: 1, limit: 10, totalPages: 1 },
+  meta = { totalCount: 0, totalItems: 0, page: 1, limit: 9, totalPages: 1 },
   isLoading = false,
   searchTerm = '',
   onSearchChange,
@@ -27,6 +28,8 @@ export const PostAnalyticsList = ({
   onSortChange,
   page = 1,
   onPageChange,
+  limit = 9,
+  onLimitChange,
 }) => {
   const [selectedPost, setSelectedPost] = useState(null);
 
@@ -122,35 +125,22 @@ export const PostAnalyticsList = ({
             ))}
           </div>
 
-          {/* Pagination Controls */}
-          {meta.totalPages > 1 && (
-            <div className="flex items-center justify-between p-3 rounded-xl bg-[#131B2A] border border-[#2C384E] text-xs">
-              <span className="text-slate-400 font-mono">
-                Showing page <strong>{meta.page}</strong> of <strong>{meta.totalPages}</strong> ({meta.totalCount} total)
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange?.(Math.max(1, page - 1))}
-                  disabled={page <= 1}
-                  className="px-2.5 py-1 text-xs"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5 mr-0.5" /> Prev
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange?.(Math.min(meta.totalPages, page + 1))}
-                  disabled={page >= meta.totalPages}
-                  className="px-2.5 py-1 text-xs"
-                >
-                  Next <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-                </Button>
-              </div>
-            </div>
-          )}
+          {/* Central Enterprise Pagination Component (Handles thousands of posts gracefully) */}
+          <Pagination
+            meta={{
+              page: meta.page || page,
+              limit: meta.limit || limit || 9,
+              totalItems: meta.totalCount ?? meta.totalItems ?? posts.length,
+              totalPages: meta.totalPages || 1,
+              hasNextPage: meta.hasNextPage ?? (page < (meta.totalPages || 1)),
+              hasPrevPage: meta.hasPrevPage ?? (page > 1),
+            }}
+            currentPage={page}
+            totalPages={meta.totalPages || 1}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+            pageSizeOptions={[6, 9, 12, 24, 48]}
+          />
         </>
       )}
 

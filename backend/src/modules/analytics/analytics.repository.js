@@ -12,17 +12,27 @@ import { prisma } from '../../config/database.js';
 export const getOverviewMetrics = async (userId, startDate, priorStartDate, platform = null) => {
   const currentWhere = {
     userId,
-    createdAt: { gte: startDate },
+    ...(startDate ? { createdAt: { gte: startDate } } : {}),
   };
 
   const priorWhere = {
     userId,
-    createdAt: { gte: priorStartDate, lt: startDate },
+    ...(priorStartDate && startDate ? { createdAt: { gte: priorStartDate, lt: startDate } } : {}),
   };
 
   if (platform && platform !== 'ALL') {
     currentWhere.platform = platform;
     priorWhere.platform = platform;
+  }
+
+  // Count unique published posts matching the filter
+  const postWhere = {
+    userId,
+    status: 'PUBLISHED',
+    ...(startDate ? { createdAt: { gte: startDate } } : {}),
+  };
+  if (platform && platform !== 'ALL') {
+    postWhere.postAnalytics = { some: { platform } };
   }
 
   const [currentAgg, priorAgg, postCount] = await Promise.all([
@@ -53,27 +63,45 @@ export const getOverviewMetrics = async (userId, startDate, priorStartDate, plat
         engagementRate: true,
       },
     }),
-    prisma.postAnalytics.count({ where: currentWhere }),
+    prisma.post.count({ where: postWhere }),
   ]);
+
+  const currentLikes = currentAgg._sum.likes || 0;
+  const currentComments = currentAgg._sum.comments || 0;
+  const currentShares = currentAgg._sum.shares || 0;
+  const currentReach = currentAgg._sum.reach || 0;
+  const currentInteractions = currentLikes + currentComments + currentShares;
+  const currentEngagementRate = currentReach > 0
+    ? Number(((currentInteractions / currentReach) * 100).toFixed(2))
+    : Number((currentAgg._avg.engagementRate || 0).toFixed(2));
+
+  const priorLikes = priorAgg._sum.likes || 0;
+  const priorComments = priorAgg._sum.comments || 0;
+  const priorShares = priorAgg._sum.shares || 0;
+  const priorReach = priorAgg._sum.reach || 0;
+  const priorInteractions = priorLikes + priorComments + priorShares;
+  const priorEngagementRate = priorReach > 0
+    ? Number(((priorInteractions / priorReach) * 100).toFixed(2))
+    : Number((priorAgg._avg.engagementRate || 0).toFixed(2));
 
   return {
     current: {
       impressions: currentAgg._sum.impressions || 0,
-      reach: currentAgg._sum.reach || 0,
-      likes: currentAgg._sum.likes || 0,
-      comments: currentAgg._sum.comments || 0,
-      shares: currentAgg._sum.shares || 0,
+      reach: currentReach,
+      likes: currentLikes,
+      comments: currentComments,
+      shares: currentShares,
       clicks: currentAgg._sum.clicks || 0,
-      engagementRate: Number((currentAgg._avg.engagementRate || 0).toFixed(2)),
+      engagementRate: currentEngagementRate,
       totalAnalyzedPosts: postCount,
     },
     prior: {
       impressions: priorAgg._sum.impressions || 0,
-      reach: priorAgg._sum.reach || 0,
-      likes: priorAgg._sum.likes || 0,
-      comments: priorAgg._sum.comments || 0,
-      shares: priorAgg._sum.shares || 0,
-      engagementRate: Number((priorAgg._avg.engagementRate || 0).toFixed(2)),
+      reach: priorReach,
+      likes: priorLikes,
+      comments: priorComments,
+      shares: priorShares,
+      engagementRate: priorEngagementRate,
     },
   };
 };
