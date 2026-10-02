@@ -42,6 +42,7 @@ export const getTransactions = async (queryParams = {}) => {
     paymentGateway: queryParams.paymentGateway || '',
     currency: queryParams.currency || '',
     plan: queryParams.plan || '',
+    transactionType: queryParams.transactionType || '',
     startDate: queryParams.startDate || '',
     endDate: queryParams.endDate || '',
   });
@@ -104,6 +105,7 @@ export const exportTransactionsCsv = async (queryParams = {}) => {
     paymentGateway: queryParams.paymentGateway || '',
     currency: queryParams.currency || '',
     plan: queryParams.plan || '',
+    transactionType: queryParams.transactionType || '',
     startDate: queryParams.startDate || '',
     endDate: queryParams.endDate || '',
   });

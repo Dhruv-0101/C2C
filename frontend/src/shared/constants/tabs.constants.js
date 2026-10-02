@@ -27,7 +27,6 @@ export const ADMIN_TAB_LIST = Object.freeze(Object.values(ADMIN_TABS));
  */
 export const SUBADMIN_PERMITTED_TABS = Object.freeze([
   ADMIN_TABS.FESTIVALS,
-  ADMIN_TABS.CATEGORIES,
   ADMIN_TABS.TEMPLATE_CATEGORIES,
   ADMIN_TABS.FRAMES,
   ADMIN_TABS.TEMPLATES,
@@ -43,12 +42,6 @@ export const SUBADMIN_TAB_CONFIG = Object.freeze([
     label: "Festival Calendar",
     description: "Manage monthly festival events, dates, and special promotional days.",
     icon: "Calendar",
-  },
-  {
-    id: ADMIN_TABS.CATEGORIES,
-    label: "Business Categories",
-    description: "Manage industry category tags, emojis, and display classifications.",
-    icon: "FolderKanban",
   },
   {
     id: ADMIN_TABS.TEMPLATE_CATEGORIES,

@@ -28,21 +28,21 @@ export const useFestivals = (options = { includeInactive: true, limit: 100 }) =>
   const createFestivalMutation = useMutation({
     mutationFn: (data) => festivalApi.createFestival(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL, refetchType: 'all' });
     },
   });
 
   const updateFestivalMutation = useMutation({
     mutationFn: ({ id, data }) => festivalApi.updateFestival(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL, refetchType: 'all' });
     },
   });
 
   const deleteFestivalMutation = useMutation({
     mutationFn: (id) => festivalApi.deleteFestival(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL, refetchType: 'all' });
     },
   });
 
@@ -56,9 +56,11 @@ export const useFestivals = (options = { includeInactive: true, limit: 100 }) =>
     refetch: festivalsQuery.refetch,
     createFestival: createFestivalMutation.mutateAsync,
     isCreating: createFestivalMutation.isPending,
-    createError: createFestivalMutation.error,
-    updateFestival: (id, data) => updateFestivalMutation.mutateAsync({ id, data }),
-    isUpdating: updateFestivalMutation.isPending,
+    updateFestival: (idOrObj, maybeData) => {
+      const id = typeof idOrObj === 'object' && idOrObj !== null ? idOrObj.id : idOrObj;
+      const data = typeof idOrObj === 'object' && idOrObj !== null ? idOrObj.data : maybeData;
+      return updateFestivalMutation.mutateAsync({ id, data });
+    },
     updateError: updateFestivalMutation.error,
     deleteFestival: deleteFestivalMutation.mutateAsync,
     isDeleting: deleteFestivalMutation.isPending,

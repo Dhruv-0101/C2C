@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImageIcon, Maximize2, Download, Edit, Trash2, Calendar, Check, User } from 'lucide-react';
+import { ImageIcon, Maximize2, Download, Trash2, Calendar, Check, User } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import Pagination from '@/components/ui/Pagination';
 import { SkeletonGrid } from '@/components/feedback/SkeletonLoader';
@@ -17,7 +17,6 @@ export const GraphicCard = ({
   creator,
   onPreview,
   onDownload,
-  onEdit,
   onDelete,
   isSelected = false,
   onToggleSelect,
@@ -113,7 +112,7 @@ export const GraphicCard = ({
           </div>
 
           {/* Action Buttons (Right) */}
-          {(onDownload || onEdit || onDelete) && (
+          {(onDownload || onDelete) && (
             <div className="flex items-center gap-1.5 shrink-0">
               {onDownload && (
                 <button
@@ -126,19 +125,6 @@ export const GraphicCard = ({
                   title="Download HD PNG"
                 >
                   <Download className="w-3.5 h-3.5" />
-                </button>
-              )}
-              {onEdit && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit();
-                  }}
-                  className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-500 transition cursor-pointer"
-                  title="Edit Details"
-                >
-                  <Edit className="w-3.5 h-3.5" />
                 </button>
               )}
               {onDelete && (
@@ -175,7 +161,6 @@ export const VaultAssetGrid = ({
   onToggleSelect,
   onPreview,
   onDownload,
-  onEdit,
   onDelete,
   isDeleting = false,
   page = 1,
@@ -216,7 +201,6 @@ export const VaultAssetGrid = ({
             date={new Date(item.createdAt).toLocaleDateString()}
             onPreview={() => onPreview?.(item)}
             onDownload={() => onDownload?.(item.post?.finalGraphicUrl || item.graphicUrl, item.post?.occasionName || item.occasionName)}
-            onEdit={() => onEdit?.(item)}
             onDelete={() => onDelete?.(item.id)}
             isDeleting={isDeleting}
             isSelected={selectedIds.includes(item.id)}

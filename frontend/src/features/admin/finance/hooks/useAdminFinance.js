@@ -11,6 +11,7 @@ export const useAdminFinance = ({
   paymentGateway = '',
   currency = '',
   plan = '',
+  transactionType = '',
   startDate = '',
   endDate = '',
 } = {}) => {
@@ -44,6 +45,7 @@ export const useAdminFinance = ({
       paymentGateway,
       currency,
       plan,
+      transactionType,
       startDate,
       endDate,
     }),
@@ -57,6 +59,7 @@ export const useAdminFinance = ({
           paymentGateway: paymentGateway || undefined,
           currency: currency || undefined,
           plan: plan || undefined,
+          transactionType: transactionType || undefined,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
         }).filter(([_, v]) => v !== undefined)
@@ -86,6 +89,7 @@ export const useAdminFinance = ({
           paymentGateway: paymentGateway || undefined,
           currency: currency || undefined,
           plan: plan || undefined,
+          transactionType: transactionType || undefined,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
         }).filter(([_, v]) => v !== undefined)

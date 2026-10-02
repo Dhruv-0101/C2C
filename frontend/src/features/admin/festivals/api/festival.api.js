@@ -84,7 +84,13 @@ export const festivalApi = {
    * @param {boolean} [data.isActive] - Updated active visibility status
    * @returns {Promise<Object>} Updated festival record from database
    */
-  updateFestival: async (id, data) => {
+  updateFestival: async (idOrObj, maybeData) => {
+    let id = idOrObj;
+    let data = maybeData;
+    if (typeof idOrObj === 'object' && idOrObj !== null && idOrObj.id) {
+      id = idOrObj.id;
+      data = idOrObj.data !== undefined ? idOrObj.data : maybeData;
+    }
     return await api.put(API_ENDPOINTS.FESTIVALS.BY_ID(id), data);
   },
 

@@ -27,7 +27,7 @@ export async function getFestivals(queryParams = {}, includeInactive = false) {
   return getOrSetCache(
     cacheKey,
     async () => {
-      const pagination = parsePaginationParams(params, 100, 100);
+      const pagination = parsePaginationParams(params, 500, 500);
       const year = params.year;
       const isInactive = params.includeInactive !== undefined ? Boolean(params.includeInactive) : includeInactive;
       const startDate = params.startDate;

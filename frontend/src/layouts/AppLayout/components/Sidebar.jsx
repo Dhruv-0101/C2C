@@ -60,14 +60,13 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'Analytics & Insights', path: '/analytics', icon: BarChart3 },
-    { label: 'BrandKit', path: '/brandkit', icon: Building2 },
-    { label: 'Social Integrations', path: '/connections', icon: Share2 },
+    { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
     { label: 'Post Studio', path: '/create-post', icon: Sparkles },
     { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
-    { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
     { label: 'Graphic Vault', path: '/vault', icon: FolderKanban },
-    { label: 'My Profile', path: '/profile', icon: User },
+    { label: 'BrandKit', path: '/brandkit', icon: Building2 },
+    { label: 'Social Integrations', path: '/connections', icon: Share2 },
+    { label: 'Analytics & Insights', path: '/analytics', icon: BarChart3 },
   ];
 
   const adminConsoleAllSubItems = [
@@ -304,16 +303,21 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
           )}
 
           {/* Theme Toggle Button */}
-          <div className="pt-1">
-            <ThemeToggle className="w-full justify-center" />
+          <div className="pt-0.5 flex justify-center">
+            <ThemeToggle
+              showText={!isCollapsed || isMobileOpen}
+              className={isCollapsed && !isMobileOpen ? "w-10 h-10 p-0 justify-center rounded-xl" : "w-full justify-center"}
+            />
           </div>
 
           {/* 2FA Status Trigger */}
           <button
             onClick={() => setIs2FAModalOpen(true)}
             title={isCollapsed && !isMobileOpen ? (user?.isTwoFactorEnabled ? '2FA Active' : 'Enable 2FA') : undefined}
-            className={`w-full flex items-center justify-between p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700 transition ${
-              isCollapsed && !isMobileOpen ? 'justify-center p-2' : ''
+            className={`transition cursor-pointer ${
+              isCollapsed && !isMobileOpen
+                ? "w-10 h-10 p-0 mx-auto flex items-center justify-center rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700"
+                : "w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700"
             }`}
           >
             <span className="text-slate-300 font-medium flex items-center gap-1.5">
@@ -337,8 +341,10 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
           <button
             onClick={handleLogout}
             title={isCollapsed && !isMobileOpen ? 'Sign Out' : undefined}
-            className={`w-full flex items-center gap-2 p-2.5 text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition ${
-              isCollapsed && !isMobileOpen ? 'justify-center p-2' : ''
+            className={`font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition cursor-pointer ${
+              isCollapsed && !isMobileOpen
+                ? "w-10 h-10 p-0 mx-auto flex items-center justify-center"
+                : "w-full flex items-center gap-2 p-2.5 text-xs"
             }`}
           >
             <LogOut className="w-4 h-4 shrink-0" />

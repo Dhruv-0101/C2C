@@ -106,6 +106,7 @@ export const getAdminTransactionsQuerySchema = z.object({
     paymentGateway: z.preprocess(emptyToUndefined, z.string().trim().optional()),
     currency: z.preprocess(emptyToUndefined, z.enum(BILLING_CURRENCY_LIST).optional()),
     plan: z.preprocess(emptyToUndefined, z.enum(BILLING_PLAN_LIST).optional()),
+    transactionType: z.preprocess(emptyToUndefined, z.string().trim().optional()),
     startDate: z.preprocess(emptyToUndefined, z.string().trim().optional()),
     endDate: z.preprocess(emptyToUndefined, z.string().trim().optional()),
     sortBy: z.preprocess(emptyToUndefined, z.enum(BILLING_ALLOWED_SORT_FIELDS).optional()),

@@ -80,7 +80,8 @@ export const TemplateCreateModal = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      id="template-create-modal-overlay"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose && !isUploading) {
           onClose();
@@ -89,7 +90,7 @@ export const TemplateCreateModal = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#131B2A] border border-[#2C384E] rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-slate-100 my-auto"
+        className="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#131B2A] border border-[#2C384E] rounded-3xl shadow-2xl overflow-hidden text-slate-100 my-auto"
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#2C384E] bg-[#0B0F17]/70 shrink-0">
@@ -576,22 +577,22 @@ export const TemplateCreateModal = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#2C384E] bg-[#0B0F17]/80 shrink-0">
-          <Button
-            variant="ghost"
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
+          <button
             type="button"
             onClick={onClose}
             disabled={isUploading}
+            className="px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
           >
             Cancel
-          </Button>
+          </button>
           <Button
             variant="primary"
             type="submit"
             form="templateCreateForm"
             isLoading={isUploading}
             icon={Sparkles}
-            className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-xs"
+            className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-xs"
           >
             Publish Template
           </Button>

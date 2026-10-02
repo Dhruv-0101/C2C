@@ -192,10 +192,7 @@ export const AdminFestivalManagerView = () => {
       }
 
       if (editingFestival) {
-        await updateFestival({
-          id: editingFestival.id,
-          data: festivalPayload,
-        });
+        await updateFestival(editingFestival.id, festivalPayload);
         setFeedback({
           isOpen: true,
           type: "success",
@@ -399,17 +396,49 @@ export const AdminFestivalManagerView = () => {
                     key={fest.id}
                     className="group relative rounded-2xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 transition shadow-lg overflow-hidden flex flex-col justify-between"
                   >
-                    {/* Festival Cover Banner Image if present */}
-                    {fest.bannerUrl ? (
-                      <div className="relative h-28 w-full overflow-hidden bg-slate-900 border-b border-[#2C384E]">
+                    {/* Festival Cover Banner Image with Region & Actions Overlay */}
+                    <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950/40 border-b border-[#2C384E]">
+                      {fest.bannerUrl ? (
                         <img
                           src={fest.bannerUrl}
                           alt={fest.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                         />
-                        <div className="image-scrim-overlay absolute inset-0 pointer-events-none" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center opacity-30">
+                          <CalendarIcon className="w-10 h-10 text-amber-400" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17]/90 via-transparent to-black/60 pointer-events-none" />
+
+                      {/* Region badge on top-left of banner */}
+                      <div className="absolute top-2.5 left-2.5 z-10">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-white text-[11px] font-semibold shadow-md">
+                          <Globe className="w-3 h-3 text-amber-400" />
+                          <span>{fest.targetRegion || "India"}</span>
+                        </span>
                       </div>
-                    ) : null}
+
+                      {/* Edit & Delete Actions on top-right of banner */}
+                      <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(fest)}
+                          className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                          title="Edit Festival"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDelete(fest.id)}
+                          className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-red-400 hover:border-red-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                          title="Delete Festival"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
 
                     <div className="p-4 space-y-3">
                       <div>
@@ -435,8 +464,7 @@ export const AdminFestivalManagerView = () => {
                           </span>
                         </div>
 
-
-                        <div className="pt-2 flex items-center gap-1.5">
+                        <div className="pt-1 flex items-center gap-1.5">
                           {fest.creator ? (
                             <span
                               className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md border ${
@@ -458,31 +486,6 @@ export const AdminFestivalManagerView = () => {
                               <span>System</span>
                             </span>
                           )}
-                        </div>
-                      </div>
-
-                      <div className="pt-3 border-t border-[#2C384E]/60 flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                          <Globe className="w-3 h-3 text-slate-500" />
-                          <span>{fest.targetRegion || "India"}</span>
-                        </span>
-
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleOpenEdit(fest)}
-                            className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition cursor-pointer"
-                            title="Edit Festival"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            onClick={() => handleOpenDelete(fest.id)}
-                            className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-red-400 hover:border-red-500/50 transition cursor-pointer"
-                            title="Delete Festival"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
                         </div>
                       </div>
                     </div>

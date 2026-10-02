@@ -21,6 +21,19 @@ import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js
  */
 
 /**
+ * Generate a clean URL slug from string
+ */
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
  * Unifying Template Creation: Handles File Attachments, Base64 strings, or Direct URLs
  * - Raw File Buffer / Base64 -> Uploads strictly to Cloudinary 'brandflow/festival-templates'
  * - Direct URL -> Saves URL directly to database
@@ -57,11 +70,24 @@ export async function createTemplate(data, creatorId) {
 
     catRecord = await templateCategoryRepository.findTemplateCategoryByNameOrSlug(catName);
     if (!catRecord && catName) {
+      let slug = slugify(catName);
+      if (!slug) {
+        slug = `category-${Date.now()}`;
+      }
+      const existingBySlug = await templateCategoryRepository.findTemplateCategoryBySlug(slug);
+      if (existingBySlug) {
+        slug = `${slug}-${Date.now().toString().slice(-4)}`;
+      }
+
       catRecord = await templateCategoryRepository.createTemplateCategory({
         name: catName,
+        slug,
         isSystem: false,
         createdBy: creatorId || null,
       });
+
+      // Purge template categories cache so dropdowns update immediately
+      await deleteCachePattern(CACHE_KEYS.TEMPLATE_CATEGORY_PATTERN);
     }
   }
 
@@ -76,8 +102,11 @@ export async function createTemplate(data, creatorId) {
     createdBy: creatorId || null,
   });
 
-  // Invalidate templates cache
-  await deleteCachePattern(CACHE_KEYS.TEMPLATE_PATTERN);
+  // Invalidate templates and festival caches
+  await Promise.all([
+    deleteCachePattern(CACHE_KEYS.TEMPLATE_PATTERN),
+    deleteCachePattern(CACHE_KEYS.FESTIVAL_PATTERN),
+  ]);
 
   return sanitizeTemplate(createdTemplate);
 }
@@ -161,8 +190,11 @@ export async function deleteTemplate(id) {
 
   await templateRepository.deleteTemplate(id);
 
-  // Invalidate templates cache
-  await deleteCachePattern(CACHE_KEYS.TEMPLATE_PATTERN);
+  // Invalidate templates and festival caches
+  await Promise.all([
+    deleteCachePattern(CACHE_KEYS.TEMPLATE_PATTERN),
+    deleteCachePattern(CACHE_KEYS.FESTIVAL_PATTERN),
+  ]);
 
   return {
     id,

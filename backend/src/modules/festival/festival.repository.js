@@ -75,11 +75,12 @@ export async function findPaginatedFestivals({
             title: true,
             baseImageUrl: true,
             isActive: true,
+            festivalId: true,
           },
         },
         _count: {
           select: {
-            templates: true,
+            templates: { where: { isActive: true } },
             posts: true,
           },
         },
@@ -120,7 +121,7 @@ export async function findAllFestivals(year, includeInactive = false) {
       },
       _count: {
         select: {
-          templates: true,
+          templates: { where: { isActive: true } },
           posts: true,
         },
       },
@@ -145,7 +146,7 @@ export async function findFestivalById(id) {
       },
       _count: {
         select: {
-          templates: true,
+          templates: { where: { isActive: true } },
           posts: true,
         },
       },

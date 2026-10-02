@@ -42,7 +42,7 @@ const ADMIN_NAVIGATION_SECTIONS = [
       { id: ADMIN_TABS.TEMPLATE_CATEGORIES, label: "Template Categories", icon: FolderTree },
       { id: ADMIN_TABS.FESTIVALS, label: "Festival Calendar", icon: Calendar },
       { id: ADMIN_TABS.FRAMES, label: "Brand Frames Studio", icon: Layers },
-      { id: ADMIN_TABS.CATEGORIES, label: "Business Categories", icon: FolderKanban },
+      { id: ADMIN_TABS.CATEGORIES, label: "Business Categories", icon: FolderKanban, superAdminOnly: true },
     ],
   },
   {
@@ -268,8 +268,11 @@ export const AdminSidebar = ({
             </div>
           )}
           {/* Theme Toggle Button */}
-          <div className="pt-0.5">
-            <ThemeToggle className="w-full justify-center" />
+          <div className="pt-0.5 flex justify-center">
+            <ThemeToggle
+              showText={!isCollapsed || isMobileOpen}
+              className={isCollapsed && !isMobileOpen ? "w-10 h-10 p-0 justify-center rounded-xl" : "w-full justify-center"}
+            />
           </div>
 
           {/* 2FA Status Trigger */}
@@ -282,8 +285,10 @@ export const AdminSidebar = ({
                   : "Enable 2FA"
                 : undefined
             }
-            className={`w-full flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700 transition cursor-pointer ${
-              isCollapsed && !isMobileOpen ? "justify-center p-2" : ""
+            className={`transition cursor-pointer ${
+              isCollapsed && !isMobileOpen
+                ? "w-10 h-10 p-0 mx-auto flex items-center justify-center rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700"
+                : "w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700"
             }`}
           >
             <span className="text-slate-300 font-medium flex items-center gap-1.5">
@@ -306,8 +311,10 @@ export const AdminSidebar = ({
           <button
             onClick={handleLogout}
             title={isCollapsed && !isMobileOpen ? "Sign Out" : undefined}
-            className={`w-full flex items-center gap-2 p-2 text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer ${
-              isCollapsed && !isMobileOpen ? "justify-center p-2" : ""
+            className={`font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition cursor-pointer ${
+              isCollapsed && !isMobileOpen
+                ? "w-10 h-10 p-0 mx-auto flex items-center justify-center"
+                : "w-full flex items-center gap-2 p-2.5 text-xs"
             }`}
           >
             <LogOut className="w-4 h-4 shrink-0" />

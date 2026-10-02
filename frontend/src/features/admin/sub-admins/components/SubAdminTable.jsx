@@ -61,7 +61,6 @@ export const SubAdminTable = ({
               (counts.templatesCreated || 0) +
               (counts.festivalsCreated || 0) +
               (counts.framesCreated || 0) +
-              (counts.categoriesCreated || 0) +
               (counts.templateCategoriesCreated || 0);
 
             return (
@@ -112,14 +111,6 @@ export const SubAdminTable = ({
                             title="Festivals Created"
                           >
                             🎆 {counts.festivalsCreated} Fest
-                          </span>
-                        )}
-                        {counts.categoriesCreated > 0 && (
-                          <span
-                            className="px-1.5 py-0.5 rounded-md border text-[10px] bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
-                            title="Categories Created"
-                          >
-                            🏬 {counts.categoriesCreated} Cat
                           </span>
                         )}
                         {counts.templateCategoriesCreated > 0 && (

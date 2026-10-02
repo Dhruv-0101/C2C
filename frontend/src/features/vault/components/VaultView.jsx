@@ -1,10 +1,9 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { FolderKanban, Edit, X, ImageIcon, CheckSquare, Square, Trash2 } from "lucide-react";
+import { FolderKanban, X, ImageIcon, CheckSquare, Square, Trash2 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
 import Pagination from '@/components/ui/Pagination';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
@@ -15,7 +14,7 @@ import { VaultAssetGrid } from "./VaultAssetGrid";
 
 /**
  * VaultView
- * Pure Presentational Component rendering Vault items grid, search bars, edit modals, and full-screen lightbox.
+ * Pure Presentational Component rendering Vault items grid, search bars, and full-screen lightbox.
  */
 export const VaultView = ({
   modalProps,
@@ -27,25 +26,18 @@ export const VaultView = ({
   setSearch,
   fullscreenItem,
   setFullscreenItem,
-  editingItem,
-  setEditingItem,
-  editFormData,
-  setEditFormData,
   vaultItems,
   meta,
   isLoading,
   error,
   deleteMutation,
   bulkDeleteMutation,
-  updateMutation,
   selectedIds = [],
   handleToggleSelect,
   handleSelectAll,
   handleClearSelection,
   handleBulkDelete,
   handleDownload,
-  handleOpenEdit,
-  handleSaveEdit,
 }) => {
   const navigate = useNavigate();
   const isAllCurrentSelected =
@@ -67,7 +59,7 @@ export const VaultView = ({
                 Content Vault & Media Assets
               </h1>
               <p className="text-xs text-slate-400">
-                Organize, inspect, edit, and download your final composited brand graphics.
+                Organize, inspect, and download your final composited brand graphics.
               </p>
             </div>
           </div>
@@ -116,7 +108,6 @@ export const VaultView = ({
           onToggleSelect={handleToggleSelect}
           onPreview={setFullscreenItem}
           onDownload={handleDownload}
-          onEdit={handleOpenEdit}
           onDelete={(id) => deleteMutation.mutate(id)}
           isDeleting={deleteMutation.isPending}
           page={page}
@@ -169,51 +160,7 @@ export const VaultView = ({
         </div>
       )}
 
-      {/* Edit Vault Item Modal */}
-      {editingItem &&
-        createPortal(
-          <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="w-full max-w-md bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl my-auto">
-              <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
-                <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-                  <Edit className="w-4 h-4 text-amber-400" />
-                  <span>Edit Vault Item</span>
-                </h3>
-                <button
-                  onClick={() => setEditingItem(null)}
-                  className="text-slate-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              <form onSubmit={handleSaveEdit} className="space-y-4">
-                <Input
-                  label="Occasion / Title"
-                  placeholder="e.g. Diwali Offer Promo"
-                  value={editFormData.occasionName}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, occasionName: e.target.value })
-                  }
-                />
-
-                <div className="flex justify-end gap-3 pt-3 border-t border-[#2C384E]">
-                  <Button variant="ghost" type="button" onClick={() => setEditingItem(null)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    isLoading={updateMutation.isPending}
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>,
-          document.body,
-        )}
 
       {/* Reusable High-Res Lightbox Modal */}
       <ImageLightbox

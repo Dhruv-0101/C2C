@@ -24,7 +24,7 @@ export const AdminHeader = ({ user, isSuperAdmin, onOpenMobile, onLogout }) => {
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
         </span>
         <span className="font-heading font-extrabold text-xs text-white uppercase tracking-wider hidden sm:inline-block">
-          🛡️ BrandFlow Admin Console
+          BrandFlow Admin Console
         </span>
         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold border bg-amber-500/20 text-amber-300 border-amber-500/40">
           {isSuperAdmin ? 'SUPERADMIN PRIVILEGE' : 'SUBADMIN SCOPED'}

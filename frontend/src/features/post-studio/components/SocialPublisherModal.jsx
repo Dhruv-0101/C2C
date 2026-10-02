@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   Send,
@@ -46,6 +46,7 @@ export const SocialPublisherModal = ({
   isOpen,
   onClose,
   postData,
+  initialPublishMode = "NOW",
   onSuccess,
 }) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState([
@@ -53,7 +54,13 @@ export const SocialPublisherModal = ({
     "FACEBOOK",
     "LINKEDIN",
   ]);
-  const [publishMode, setPublishMode] = useState("NOW"); // 'NOW' | 'SCHEDULE'
+  const [publishMode, setPublishMode] = useState(initialPublishMode); // 'NOW' | 'SCHEDULE'
+
+  useEffect(() => {
+    if (isOpen && initialPublishMode) {
+      setPublishMode(initialPublishMode);
+    }
+  }, [isOpen, initialPublishMode]);
   const [validationError, setValidationError] = useState("");
   const [captionText, setCaptionText] = useState(
     postData?.caption || postData?.captions?.[0]?.captionText || ""

@@ -141,6 +141,7 @@ export const AdminTemplatesTab = () => {
     onSuccess: (res, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL });
       setIsCreateModalOpen(false);
       resetForm();
       showSuccess(
@@ -159,6 +160,7 @@ export const AdminTemplatesTab = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FESTIVALS.ALL });
       showSuccess('Template Deleted 🗑️', 'Base graphic template removed from database.');
     },
     onError: (err) => {

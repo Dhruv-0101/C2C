@@ -4,7 +4,6 @@ import {
   FileCode2,
   Layers,
   Calendar,
-  FolderKanban,
   FolderTree,
   Shield,
   Search,
@@ -53,13 +52,6 @@ const TYPE_CONFIG = {
     badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
     dotColor: "bg-emerald-400",
     targetTab: ADMIN_TABS.FESTIVALS,
-  },
-  category: {
-    label: "Business Category",
-    icon: FolderKanban,
-    badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
-    dotColor: "bg-indigo-400",
-    targetTab: ADMIN_TABS.CATEGORIES,
   },
   templateCategory: {
     label: "Template Category",
@@ -117,7 +109,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
     setCurrentPage(1);
   }, [debouncedSearchTerm, selectedSubAdminId, selectedType]);
 
-  // Fetch audit activity feed
+  // Fetch audit activity feed (strictly sorted descending - newest creations first)
   const { items, summary, meta, isLoading, error, refetch, isFetching } =
     useSubAdminActivity({
       subAdminId: selectedSubAdminId || undefined,
@@ -125,6 +117,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
       search: debouncedSearchTerm || undefined,
       page: currentPage,
       limit: pageSize,
+      sortOrder: "desc",
     });
 
   const subAdminsList = summary?.subAdmins || [];
@@ -132,7 +125,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
     templates: 0,
     frames: 0,
     festivals: 0,
-    categories: 0,
+    templateCategories: 0,
   };
 
   const handleSubAdminSelect = (id) => {
@@ -179,7 +172,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                 SubAdmin Creations & Activity Audit
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Real-time tracking of all graphic templates, brand frames, festivals, and categories created by SubAdmins.
+                Real-time tracking of all graphic templates, brand frames, festivals, and template categories created by SubAdmins.
               </p>
             </div>
           </div>
@@ -222,7 +215,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
 
 
       {/* 2. Top Summary Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* Total Creations */}
         <div className="p-4 rounded-2xl bg-gradient-to-br from-[#131B2A] to-[#0B0F17] border border-amber-500/30 shadow-lg relative overflow-hidden group">
           <div className="flex items-center justify-between">
@@ -297,27 +290,6 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
               {typeCounts.festivals}
             </span>
             <span className="text-[10px] text-emerald-400 font-medium">Events</span>
-          </div>
-        </div>
-
-        {/* Business Categories */}
-        <div
-          onClick={() => handleTypeSelect(selectedType === "category" ? "all" : "category")}
-          className={`p-4 rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-indigo-500/60 ${
-            selectedType === "category"
-              ? "border-indigo-500 bg-indigo-500/10 shadow-lg"
-              : "border-[#2C384E]"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-indigo-300">Categories</span>
-            <FolderKanban className="w-4 h-4 text-indigo-400" />
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-heading">
-              {typeCounts.categories}
-            </span>
-            <span className="text-[10px] text-indigo-400 font-medium">Niches</span>
           </div>
         </div>
 
@@ -436,7 +408,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
             { id: "template", label: "Templates", count: typeCounts.templates },
             { id: "frame", label: "Frames", count: typeCounts.frames },
             { id: "festival", label: "Festivals", count: typeCounts.festivals },
-            { id: "category", label: "Categories", count: typeCounts.categories },
+            { id: "templateCategory", label: "Template Categories", count: typeCounts.templateCategories },
           ].map((tab) => {
             const isActive = selectedType === tab.id;
             return (
@@ -511,7 +483,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
           activities={items.map((item) => ({
             id: item.id,
             action: `created ${item.itemType} "${item.title || 'Untitled'}"`,
-            subAdmin: { fullName: item.creatorName },
+            subAdmin: { fullName: item.creator?.fullName || item.creatorName || "SubAdmin" },
             details: item.subtitle || item.description || `Category: ${item.categoryName || 'General'}`,
             createdAt: item.createdAt,
           }))}
@@ -531,7 +503,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
             <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
               {searchTerm || selectedSubAdminId || selectedType !== "all"
                 ? "Try adjusting your filters or search keywords to view SubAdmin activity."
-                : "Delegated SubAdmins haven't created any items yet. When they create festival events, templates, frames, or categories, they will be tracked here."}
+                : "Delegated SubAdmins haven't created any items yet. When they create festival events, templates, frames, or template categories, they will be tracked here."}
             </p>
           </div>
           {(searchTerm || selectedSubAdminId || selectedType !== "all") && (
@@ -581,12 +553,12 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
 
                   {/* Card Media Preview Container */}
                   <div className="relative h-44 bg-[#0B0F17] flex items-center justify-center overflow-hidden border-b border-[#2C384E]/50 group-hover:bg-[#070A0F] transition">
-                    {item.itemType === "category" ? (
+                    {item.itemType === "templateCategory" ? (
                       <div className="text-center p-6 space-y-2">
-                        <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center mx-auto">
-                          <FolderKanban className="w-7 h-7" />
+                        <div className="w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center mx-auto">
+                          <FolderTree className="w-7 h-7" />
                         </div>
-                        <span className="text-xs font-bold text-indigo-300 block font-mono">
+                        <span className="text-xs font-bold text-teal-300 block font-mono">
                           /{item.subtitle?.replace("Slug: /", "")}
                         </span>
                       </div>
@@ -720,15 +692,15 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
 
             {/* Modal Media Preview */}
             <div className="h-64 bg-[#0B0F17] rounded-2xl border border-[#2C384E] flex items-center justify-center overflow-hidden relative">
-              {inspectItem.itemType === "category" ? (
+              {inspectItem.itemType === "templateCategory" ? (
                 <div className="text-center space-y-2 p-4">
-                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
-                    <FolderKanban className="w-8 h-8" />
+                  <div className="w-16 h-16 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center mx-auto">
+                    <FolderTree className="w-8 h-8" />
                   </div>
                   <h3 className="font-heading font-extrabold text-white text-lg">
                     {inspectItem.title}
                   </h3>
-                  <p className="text-xs text-indigo-300 font-mono">
+                  <p className="text-xs text-teal-300 font-mono">
                     Slug: /{inspectItem.subtitle?.replace("Slug: /", "")}
                   </p>
                 </div>

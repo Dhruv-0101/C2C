@@ -23,13 +23,21 @@ export const SubAdminActivityLog = ({ activities = [], isLoading }) => {
     );
   }
 
-  if (activities.length === 0) {
+  const sortedActivities = React.useMemo(() => {
+    return [...activities].sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+  }, [activities]);
+
+  if (sortedActivities.length === 0) {
     return <div className="p-8 text-center text-slate-500 italic">No activity logs recorded.</div>;
   }
 
   return (
     <div className="space-y-3">
-      {activities.map((act) => (
+      {sortedActivities.map((act) => (
         <Card key={act.id} className="p-3 bg-[#131B2A] border-[#2C384E] flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">

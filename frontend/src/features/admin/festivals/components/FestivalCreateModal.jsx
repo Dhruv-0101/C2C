@@ -40,9 +40,9 @@ export const FestivalCreateModal = ({
               <h2 className="font-heading font-extrabold text-2xl text-white">
                 {editingFestival ? "Edit Festival Event" : "Add New Festival Event"}
               </h2>
-              <span className="text-[10px] font-black uppercase bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full">
+              {/* <span className="text-[10px] font-black uppercase bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full">
                 Full-Screen Creator
-              </span>
+              </span> */}
             </div>
           </div>
         </div>

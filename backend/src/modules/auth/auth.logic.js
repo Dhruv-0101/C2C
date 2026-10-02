@@ -412,13 +412,16 @@ export async function getSubAdminActivity(queryParams = {}) {
   const pagination = parsePaginationParams(queryParams);
   const { subAdminId, type } = queryParams;
 
+  // Ensure sortOrder defaults to 'desc' so latest creations always appear at the top
+  const sortOrder = queryParams.sortOrder === 'asc' ? 'asc' : 'desc';
+
   const { items, totalCount, summary } = await authRepository.findSubAdminActivity({
     subAdminId,
     type,
     search: pagination.search,
     page: pagination.page,
     limit: pagination.limit,
-    sortOrder: pagination.sortOrder,
+    sortOrder,
   });
 
   const paginatedResponse = buildPaginatedResponse({

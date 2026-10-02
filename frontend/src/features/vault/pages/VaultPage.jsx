@@ -22,10 +22,6 @@ export const VaultPage = () => {
 
   // Modals & Lightbox States
   const [fullscreenItem, setFullscreenItem] = useState(null);
-  const [editingItem, setEditingItem] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    occasionName: "",
-  });
 
   // Selection state for Bulk Delete
   const [selectedIds, setSelectedIds] = useState([]);
@@ -59,19 +55,6 @@ export const VaultPage = () => {
     },
     onError: (err) => {
       showError(err.response?.data?.message || "Failed to delete selected items");
-    },
-  });
-
-  // Update Vault Item Mutation
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => vaultApi.updateVaultItem(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
-      setEditingItem(null);
-      showSuccess("Vault item updated successfully");
-    },
-    onError: (err) => {
-      showError(err.response?.data?.message || "Failed to update vault item");
     },
   });
 
@@ -117,24 +100,6 @@ export const VaultPage = () => {
     link.click();
   };
 
-  // Open Edit Modal
-  const handleOpenEdit = (item) => {
-    setEditingItem(item);
-    setEditFormData({
-      occasionName: item.post?.occasionName || item.occasionName || "",
-    });
-  };
-
-  // Submit Edit Form
-  const handleSaveEdit = (e) => {
-    e.preventDefault();
-    if (!editingItem) return;
-    updateMutation.mutate({
-      id: editingItem.id,
-      data: editFormData,
-    });
-  };
-
   return (
     <VaultView
       modalProps={modalProps}
@@ -146,25 +111,18 @@ export const VaultPage = () => {
       setSearch={setSearch}
       fullscreenItem={fullscreenItem}
       setFullscreenItem={setFullscreenItem}
-      editingItem={editingItem}
-      setEditingItem={setEditingItem}
-      editFormData={editFormData}
-      setEditFormData={setEditFormData}
       vaultItems={vaultItems}
       meta={meta}
       isLoading={isLoading}
       error={error}
       deleteMutation={deleteMutation}
       bulkDeleteMutation={bulkDeleteMutation}
-      updateMutation={updateMutation}
       selectedIds={selectedIds}
       handleToggleSelect={handleToggleSelect}
       handleSelectAll={handleSelectAll}
       handleClearSelection={handleClearSelection}
       handleBulkDelete={handleBulkDelete}
       handleDownload={handleDownload}
-      handleOpenEdit={handleOpenEdit}
-      handleSaveEdit={handleSaveEdit}
     />
   );
 };

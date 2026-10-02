@@ -20,7 +20,7 @@ export const getSubAdminsQuerySchema = z.object({
 export const getSubAdminActivityQuerySchema = z.object({
   query: paginationQuerySchema.extend({
     subAdminId: z.string().uuid('Invalid SubAdmin ID').optional(),
-    type: z.enum(['all', 'template', 'frame', 'festival', 'category']).optional().default('all'),
+    type: z.enum(['all', 'template', 'frame', 'festival', 'templateCategory']).optional().default('all'),
   }),
 });
 

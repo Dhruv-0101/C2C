@@ -115,25 +115,38 @@ export const FinanceLedgerTable = ({
                   </td>
 
                   <td className="p-3">
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-bold uppercase">
-                      {tx.plan}
-                    </span>
+                    {tx.transactionType === 'ADMIN_BONUS' || tx.paymentGateway === 'ADMIN_BONUS' ? (
+                      <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-mono font-bold uppercase inline-flex items-center gap-1">
+                        <span>Bonus</span>
+                        {tx.postCount > 0 && <span>(+{tx.postCount}p)</span>}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-bold uppercase">
+                        {tx.plan}
+                      </span>
+                    )}
                   </td>
 
                   <td className="p-3">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${
-                          tx.paymentGateway === 'RAZORPAY'
+                          tx.paymentGateway === 'ADMIN_BONUS' || tx.transactionType === 'ADMIN_BONUS'
+                            ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                            : tx.paymentGateway === 'RAZORPAY'
                             ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
                             : tx.paymentGateway === 'STRIPE'
-                            ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                            ? 'bg-sky-500/20 text-sky-300 border-sky-500/30'
                             : tx.paymentGateway === 'UPI'
                             ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                             : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                         }`}
                       >
-                        {tx.paymentGateway || 'FREE'}
+                        {tx.paymentGateway === 'ADMIN_BONUS'
+                          ? 'ADMIN BONUS'
+                          : tx.paymentGateway === 'ADMIN_MANUAL'
+                          ? 'MANUAL'
+                          : (tx.paymentGateway || 'FREE')}
                       </span>
                       <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-mono font-bold">
                         {tx.currency || 'INR'}
@@ -141,8 +154,15 @@ export const FinanceLedgerTable = ({
                     </div>
                   </td>
 
-                  <td className="p-3 font-mono font-bold text-emerald-400 text-xs">
-                    {formatCurrency(tx.pricePaid, tx.currency)}
+                  <td className="p-3 font-mono font-bold text-xs">
+                    {tx.transactionType === 'ADMIN_BONUS' || tx.paymentGateway === 'ADMIN_BONUS' ? (
+                      <div className="flex flex-col">
+                        <span className="text-purple-400">+{tx.postCount || 10} Posts</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Bonus Grant</span>
+                      </div>
+                    ) : (
+                      <span className="text-emerald-400">{formatCurrency(tx.pricePaid, tx.currency)}</span>
+                    )}
                   </td>
 
                   <td className="p-3 font-mono text-[10px] text-slate-400 whitespace-nowrap max-w-[160px] truncate">

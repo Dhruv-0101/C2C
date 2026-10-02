@@ -25,13 +25,14 @@ export const AdminFinanceTab = () => {
   const [paymentGateway, setPaymentGateway] = useState('');
   const [currency, setCurrency] = useState('');
   const [plan, setPlan] = useState('');
+  const [transactionType, setTransactionType] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   // Auto-reset page to 1 whenever any filter changes
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, status, paymentGateway, currency, plan, startDate, endDate]);
+  }, [debouncedSearch, status, paymentGateway, currency, plan, transactionType, startDate, endDate]);
 
   // Modal State for Manual Transaction Logging
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -68,6 +69,7 @@ export const AdminFinanceTab = () => {
     paymentGateway,
     currency,
     plan,
+    transactionType,
     startDate,
     endDate,
   });
@@ -440,6 +442,11 @@ export const AdminFinanceTab = () => {
           plan={plan}
           onPlanChange={(v) => {
             setPlan(v);
+            setPage(1);
+          }}
+          transactionType={transactionType}
+          onTransactionTypeChange={(v) => {
+            setTransactionType(v);
             setPage(1);
           }}
           startDate={startDate}

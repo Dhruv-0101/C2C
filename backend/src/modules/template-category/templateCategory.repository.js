@@ -26,10 +26,20 @@ const CATEGORY_INCLUDE = Object.freeze({
  * Create a new template category record in PostgreSQL
  */
 export async function createTemplateCategory(data) {
+  const cleanName = data.name.trim();
+  const slug =
+    data.slug ||
+    cleanName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[\s_]+/g, '-')
+      .replace(/^-+|-+$/g, '') ||
+    `cat-${Date.now()}`;
+
   return prisma.templateCategory.create({
     data: {
-      name: data.name.trim(),
-      slug: data.slug,
+      name: cleanName,
+      slug,
       description: data.description?.trim() || null,
       isSystem: Boolean(data.isSystem),
       createdBy: data.createdBy || null,

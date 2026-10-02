@@ -3,7 +3,7 @@ import { CreditCard, Download, Plus, CalendarRange, Clock, X } from 'lucide-reac
 import { Button } from '@/components/ui/Button';
 
 const PRESET_BUTTONS = [
-  { id: 'ALL', label: '🌐 All Time' },
+  { id: 'ALL', label: 'All Time' },
   { id: 'TODAY', label: 'Today (1d)' },
   { id: '7_DAYS', label: 'Last 7 Days' },
   { id: '30_DAYS', label: 'Last 30 Days' },
@@ -58,7 +58,7 @@ export const FinanceScopeBanner = ({
               variant="primary"
               size="sm"
               onClick={onOpenManual}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs py-2 shadow-lg"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 shadow-sm rounded-xl"
             >
               <Plus className="w-3.5 h-3.5 mr-1 text-slate-950 font-black" />
               <span>Log Offline Payment</span>
@@ -102,9 +102,9 @@ export const FinanceScopeBanner = ({
               <button
                 key={preset.id}
                 onClick={() => onApplyPreset(preset.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md font-extrabold'
+                    ? 'bg-slate-800 text-amber-400 border border-amber-500/40 shadow-sm font-bold'
                     : 'bg-[#0B0F17] text-slate-400 hover:text-white hover:bg-slate-800 border border-[#2C384E]'
                 }`}
               >

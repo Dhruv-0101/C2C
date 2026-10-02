@@ -33,7 +33,7 @@ export const AdminStatsHeader = ({
           {isLoadingUsers ? "..." : (usersTotal ?? 0)}
         </p>
         <p className="text-[11px] text-emerald-400 font-medium">
-          Registered business tenants &rarr;
+          Registered business tenants
         </p>
       </Card>
 
@@ -51,7 +51,7 @@ export const AdminStatsHeader = ({
           {isLoadingSubAdmins ? "..." : (subAdminsTotal ?? 0)}
         </p>
         <p className="text-[11px] text-teal-400 font-medium">
-          {isSuperAdmin ? "Manage SubAdmins &rarr;" : "SuperAdmin privilege"}
+          {isSuperAdmin ? "Manage SubAdmins" : "SuperAdmin privilege"}
         </p>
       </Card>
 
@@ -68,7 +68,7 @@ export const AdminStatsHeader = ({
           {isLoadingCategories ? "..." : (categoriesTotal ?? 0)}
         </p>
         <p className="text-[11px] text-indigo-400 font-medium">
-          Active industry tags &rarr;
+          Active industry tags
         </p>
       </Card>
     </div>

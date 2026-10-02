@@ -33,10 +33,7 @@ export async function getBrandKit(userId) {
     async () => {
       const brandKit = await brandKitRepository.findBrandKitByUserId(userId);
       if (!brandKit) {
-        return sanitizeBrandKit({
-          userId,
-          ...DEFAULT_BRAND_KIT_FALLBACK,
-        });
+        return null;
       }
       return sanitizeBrandKit(brandKit);
     },
@@ -123,10 +120,10 @@ export async function updateBrandKit(userId, payload, fileBufferOrFiles) {
     address: payload.address?.trim() || null,
     city: payload.city?.trim() || null,
     state: payload.state?.trim() || null,
-    country: payload.country?.trim() || DEFAULT_COUNTRY,
+    country: payload.country?.trim() || null,
     tagline: payload.tagline?.trim() || null,
     targetAudience: payload.targetAudience?.trim() || null,
-    captionLanguage: payload.captionLanguage?.trim() || DEFAULT_CAPTION_LANGUAGE,
+    captionLanguage: payload.captionLanguage?.trim() || null,
     businessUsps: payload.businessUsps?.trim() || null,
     linkedinHandle: payload.linkedinHandle?.trim() || null,
     gmbReviewUrl: payload.gmbReviewUrl?.trim() || null,

@@ -93,7 +93,7 @@ export const UserTableRow = ({
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-[10px] uppercase shadow-xs">
-            <Zap className="w-3 h-3 text-amber-400" /> BONUS ONLY
+            <Zap className="w-3 h-3 text-amber-400" /> BONUS
           </span>
         )}
       </td>
@@ -104,15 +104,14 @@ export const UserTableRow = ({
           <span className="text-slate-500 font-mono text-[11px]">—</span>
         ) : (
           <span
-            className={`px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase border ${
-              sub.paymentGateway === 'STRIPE'
+            className={`px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase border ${sub.paymentGateway === 'STRIPE'
                 ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
                 : sub.paymentGateway === 'RAZORPAY'
-                ? 'bg-teal-500/20 text-teal-300 border-teal-500/40'
-                : sub.paymentGateway === 'ADMIN_BONUS'
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                : 'bg-slate-800 text-slate-400 border-slate-700'
-            }`}
+                  ? 'bg-teal-500/20 text-teal-300 border-teal-500/40'
+                  : sub.paymentGateway === 'ADMIN_BONUS'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}
           >
             {sub.paymentGateway}
           </span>
@@ -219,15 +218,13 @@ export const UserTableRow = ({
             type="button"
             disabled={isToggling}
             onClick={() => onToggleStatus(user)}
-            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-              isActive ? 'bg-emerald-500' : 'bg-red-500/80'
-            }`}
+            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isActive ? 'bg-emerald-500' : 'bg-red-500/80'
+              }`}
             title={isActive ? 'Click to Deactivate Account' : 'Click to Activate Account'}
           >
             <span
-              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                isActive ? 'translate-x-4' : 'translate-x-0'
-              }`}
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${isActive ? 'translate-x-4' : 'translate-x-0'
+                }`}
             />
           </button>
           <span className={`text-[10px] font-bold ${isActive ? 'text-emerald-400' : 'text-red-400'}`}>

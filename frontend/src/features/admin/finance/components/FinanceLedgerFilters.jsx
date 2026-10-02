@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Calendar, X } from 'lucide-react';
+import { Search, Calendar, X, Gift } from 'lucide-react';
 import { Input } from '../../../../components/ui/Input';
 
 /**
@@ -16,6 +16,8 @@ export const FinanceLedgerFilters = ({
   onStatusChange,
   plan,
   onPlanChange,
+  transactionType = '',
+  onTransactionTypeChange = () => {},
   startDate,
   onStartDateChange,
   endDate,
@@ -25,8 +27,8 @@ export const FinanceLedgerFilters = ({
 }) => {
   return (
     <div className="space-y-3 p-3.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs">
-      {/* Row 1: Search, Currency, Gateway, Status, Plan */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      {/* Row 1: Search, Currency, Gateway, Status, Plan, Type */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Search Input */}
         <div className="relative">
           <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
@@ -45,8 +47,8 @@ export const FinanceLedgerFilters = ({
           className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
         >
           <option value="">All Currencies</option>
-          <option value="INR">🇮🇳 INR (₹)</option>
-          <option value="USD">🇺🇸 USD ($)</option>
+          <option value="INR">INR (₹)</option>
+          <option value="USD">USD ($)</option>
         </select>
 
         {/* Gateway Filter */}
@@ -59,8 +61,9 @@ export const FinanceLedgerFilters = ({
           <option value="RAZORPAY">Razorpay</option>
           <option value="STRIPE">Stripe</option>
           <option value="UPI">UPI Direct</option>
-          <option value="FREE">Free Tier</option>
+          <option value="ADMIN_BONUS">Admin Bonus</option>
           <option value="ADMIN_MANUAL">Admin Manual</option>
+          <option value="FREE">Free Tier</option>
         </select>
 
         {/* Status Filter */}
@@ -86,11 +89,46 @@ export const FinanceLedgerFilters = ({
           <option value="FREE">Free</option>
           <option value="PRO">Pro</option>
         </select>
+
+        {/* Transaction Type Filter (includes Admin Bonus Grants) */}
+        <select
+          value={transactionType}
+          onChange={(e) => onTransactionTypeChange(e.target.value)}
+          className={`w-full bg-[#131B2A] border rounded-xl px-3 py-1.5 text-xs focus:outline-none transition font-semibold ${
+            transactionType === 'ADMIN_BONUS'
+              ? 'border-purple-500 text-purple-300 bg-purple-950/30'
+              : 'border-[#2C384E] text-white focus:border-amber-500'
+          }`}
+        >
+          <option value="">All Types</option>
+          <option value="ADMIN_BONUS">Bonus (Admin Grant)</option>
+          <option value="PLAN_PURCHASE">Plan Purchases</option>
+          <option value="PLAN_ACTIVATION">Plan Activations</option>
+        </select>
       </div>
 
-      {/* Row 2: Date Filters & Timeframe Scope Indicator */}
+      {/* Row 2: Quick Bonus Toggle & Date Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#2C384E]/60">
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick Bonus Transactions Filter Button */}
+          <button
+            type="button"
+            onClick={() => onTransactionTypeChange(transactionType === 'ADMIN_BONUS' ? '' : 'ADMIN_BONUS')}
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
+              transactionType === 'ADMIN_BONUS'
+                ? 'bg-purple-500/25 text-purple-300 border-purple-500/60 shadow-sm font-bold'
+                : 'bg-[#131B2A] text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 border-[#2C384E]'
+            }`}
+          >
+            <Gift className="w-3.5 h-3.5 text-purple-400" />
+            <span>Bonus Transactions</span>
+            {transactionType === 'ADMIN_BONUS' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse ml-0.5" />
+            )}
+          </button>
+
+          <span className="text-slate-600 hidden sm:inline">|</span>
+
           <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-amber-400" />
             <span>Date Range:</span>

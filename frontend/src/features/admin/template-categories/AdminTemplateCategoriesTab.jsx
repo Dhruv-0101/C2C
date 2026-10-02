@@ -141,17 +141,17 @@ export const AdminTemplateCategoriesTab = ({
         onOpenDelete={setCategoryToDelete}
       />
 
-      {templateCategoryMeta && templateCategoryMeta.totalPages > 1 && (
+      {templateCategories.length > 0 && (
         <Pagination
+          meta={templateCategoryMeta}
           currentPage={templateCategoryPage}
-          totalPages={templateCategoryMeta.totalPages}
-          totalItems={templateCategoryMeta.totalItems}
-          itemsPerPage={templateCategoryMeta.limit}
-          onPageChange={(page) => setTemplateCategoryPage(page)}
-          onItemsPerPageChange={(limit) => {
-            setTemplateCategoryLimit(limit);
+          totalPages={templateCategoryMeta?.totalPages || 1}
+          onPageChange={setTemplateCategoryPage}
+          onLimitChange={(newLimit) => {
+            setTemplateCategoryLimit(newLimit);
             setTemplateCategoryPage(1);
           }}
+          pageSizeOptions={[10, 20, 30, 50]}
         />
       )}
 

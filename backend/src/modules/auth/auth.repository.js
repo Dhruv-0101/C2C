@@ -228,7 +228,6 @@ export async function findAllSubAdmins() {
         select: {
           templatesCreated: true,
           festivalsCreated: true,
-          categoriesCreated: true,
           templateCategoriesCreated: true,
           framesCreated: true,
         },
@@ -266,7 +265,6 @@ export async function findPaginatedSubAdmins({ skip, take, search, sortBy = 'cre
       select: {
         templatesCreated: true,
         festivalsCreated: true,
-        categoriesCreated: true,
         templateCategoriesCreated: true,
         framesCreated: true,
       },
@@ -483,7 +481,6 @@ export async function findSubAdminActivity({
         select: {
           templatesCreated: true,
           festivalsCreated: true,
-          categoriesCreated: true,
           templateCategoriesCreated: true,
           framesCreated: true,
         },
@@ -502,7 +499,7 @@ export async function findSubAdminActivity({
       totalCount: 0,
       summary: {
         totalCreations: 0,
-        byType: { templates: 0, frames: 0, festivals: 0, categories: 0 },
+        byType: { templates: 0, frames: 0, festivals: 0, templateCategories: 0 },
         subAdmins: [],
       },
     };
@@ -532,21 +529,16 @@ export async function findSubAdminActivity({
     createdBy: { in: targetCreatorIds },
     ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
   };
-  const categoryWhere = {
-    createdBy: { in: targetCreatorIds },
-    ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
-  };
   const templateCategoryWhere = {
     createdBy: { in: targetCreatorIds },
     ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
   };
 
   // Compute counts
-  const [templatesCount, framesCount, festivalsCount, categoriesCount, templateCategoriesCount] = await Promise.all([
+  const [templatesCount, framesCount, festivalsCount, templateCategoriesCount] = await Promise.all([
     prisma.template.count({ where: templateWhere }),
     prisma.frame.count({ where: frameWhere }),
     prisma.festival.count({ where: festivalWhere }),
-    prisma.category.count({ where: categoryWhere }),
     prisma.templateCategory.count({ where: templateCategoryWhere }),
   ]);
 
@@ -628,28 +620,6 @@ export async function findSubAdminActivity({
       updatedAt: item.updatedAt,
       creator: item.creator,
     }));
-  } else if (type === 'category') {
-    totalCount = categoriesCount;
-    const records = await prisma.category.findMany({
-      where: categoryWhere,
-      include: { creator: creatorSelect },
-      skip,
-      take: limit,
-      orderBy: { createdAt: sortOrder },
-    });
-    items = records.map((item) => ({
-      id: item.id,
-      itemType: 'category',
-      title: item.name,
-      description: item.description,
-      subtitle: `Slug: /${item.slug}`,
-      previewUrl: null,
-      eventDate: null,
-      isActive: true,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      creator: item.creator,
-    }));
   } else if (type === 'templateCategory') {
     totalCount = templateCategoriesCount;
     const records = await prisma.templateCategory.findMany({
@@ -674,11 +644,11 @@ export async function findSubAdminActivity({
     }));
   } else {
     // type === 'all'
-    totalCount = templatesCount + framesCount + festivalsCount + categoriesCount + templateCategoriesCount;
+    totalCount = templatesCount + framesCount + festivalsCount + templateCategoriesCount;
 
     // Fetch up to (skip + limit) from each category to ensure accurate sorting across models
     const fetchLimit = skip + limit;
-    const [templates, frames, festivals, categories, templateCategories] = await Promise.all([
+    const [templates, frames, festivals, templateCategories] = await Promise.all([
       prisma.template.findMany({
         where: templateWhere,
         include: {
@@ -702,12 +672,6 @@ export async function findSubAdminActivity({
       }),
       prisma.festival.findMany({
         where: festivalWhere,
-        include: { creator: creatorSelect },
-        take: fetchLimit,
-        orderBy: { createdAt: sortOrder },
-      }),
-      prisma.category.findMany({
-        where: categoryWhere,
         include: { creator: creatorSelect },
         take: fetchLimit,
         orderBy: { createdAt: sortOrder },
@@ -760,19 +724,6 @@ export async function findSubAdminActivity({
         updatedAt: item.updatedAt,
         creator: item.creator,
       })),
-      ...categories.map((item) => ({
-        id: item.id,
-        itemType: 'category',
-        title: item.name,
-        description: item.description,
-        subtitle: `Slug: /${item.slug}`,
-        previewUrl: null,
-        eventDate: null,
-        isActive: true,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-        creator: item.creator,
-      })),
       ...templateCategories.map((item) => ({
         id: item.id,
         itemType: 'templateCategory',
@@ -802,12 +753,11 @@ export async function findSubAdminActivity({
     items,
     totalCount,
     summary: {
-      totalCreations: templatesCount + framesCount + festivalsCount + categoriesCount + templateCategoriesCount,
+      totalCreations: templatesCount + framesCount + festivalsCount + templateCategoriesCount,
       byType: {
         templates: templatesCount,
         frames: framesCount,
         festivals: festivalsCount,
-        categories: categoriesCount,
         templateCategories: templateCategoriesCount,
       },
       subAdmins: subAdmins.map((s) => ({
@@ -821,13 +771,11 @@ export async function findSubAdminActivity({
           templates: s._count.templatesCreated,
           frames: s._count.framesCreated,
           festivals: s._count.festivalsCreated,
-          categories: s._count.categoriesCreated,
           templateCategories: s._count.templateCategoriesCreated,
           total:
             s._count.templatesCreated +
             s._count.framesCreated +
             s._count.festivalsCreated +
-            s._count.categoriesCreated +
             s._count.templateCategoriesCreated,
         },
       })),

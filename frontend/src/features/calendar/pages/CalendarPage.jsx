@@ -20,7 +20,7 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
 
-  // TanStack Query for Festivals
+  // TanStack Query for Festivals (fetch up to 500 to ensure full calendar coverage)
   const {
     festivals,
     isLoading: isLoadingFestivals,
@@ -28,7 +28,7 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
     isCreating: isSubmittingFest,
     createError,
     deleteFestival,
-  } = useFestivals();
+  } = useFestivals({ limit: 500, includeInactive: true });
 
   // TanStack Query for User Scheduled & Published Posts
   const {
@@ -36,12 +36,16 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
     scheduledPosts,
   } = useYourPosts();
 
-  // Selected Festival Day Template Search & Pagination State
+  // Selected Festival Day Multi-Festival Tab & Template Search State
+  const [selectedFestivalTab, setSelectedFestivalTab] = useState("all");
   const [festivalTemplatePage, setFestivalTemplatePage] = useState(1);
-  const [festivalTemplateLimit, setFestivalTemplateLimit] = useState(6);
+  const [festivalTemplateLimit, setFestivalTemplateLimit] = useState(12);
   const [festivalTemplateSearch, setFestivalTemplateSearch] = useState("");
 
-  const activeFestivalId = selectedDayDetails?.festivals?.[0]?.id;
+  const activeFestivalId =
+    selectedFestivalTab !== "all"
+      ? selectedFestivalTab
+      : selectedDayDetails?.festivals?.[0]?.id;
 
   const {
     templates: paginatedFestivalTemplates,
@@ -54,7 +58,7 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
       search: festivalTemplateSearch,
       festivalId: activeFestivalId,
     },
-    { enabled: !!activeFestivalId && !!selectedDayDetails },
+    { enabled: !!activeFestivalId && !!selectedDayDetails && selectedFestivalTab !== "all" },
   );
 
   // Handle Template Selection -> Direct Navigation to Post Studio
@@ -142,14 +146,23 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
     ? festivals
     : festivals?.festivals || festivals?.data || [];
 
+  const getNormalizedDateKey = (val) => {
+    if (!val) return "";
+    if (typeof val === "string") {
+      const match = val.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (match) return match[1];
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return "";
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
   // Festivals Map by Date (YYYY-MM-DD)
   const festivalMap = {};
   safeFestivals.forEach((fest) => {
     if (!fest || !fest.date) return;
-    const festDate = new Date(fest.date);
-    const dateKey = `${festDate.getFullYear()}-${String(
-      festDate.getMonth() + 1,
-    ).padStart(2, "0")}-${String(festDate.getDate()).padStart(2, "0")}`;
+    const dateKey = getNormalizedDateKey(fest.date);
+    if (!dateKey) return;
     if (!festivalMap[dateKey]) {
       festivalMap[dateKey] = [];
     }
@@ -160,10 +173,8 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
   const scheduledMap = {};
   scheduledPosts.forEach((item) => {
     if (!item.scheduledAt) return;
-    const itemDate = new Date(item.scheduledAt);
-    const dateKey = `${itemDate.getFullYear()}-${String(
-      itemDate.getMonth() + 1,
-    ).padStart(2, "0")}-${String(itemDate.getDate()).padStart(2, "0")}`;
+    const dateKey = getNormalizedDateKey(item.scheduledAt);
+    if (!dateKey) return;
     if (!scheduledMap[dateKey]) {
       scheduledMap[dateKey] = [];
     }
@@ -174,10 +185,8 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
   const publishedMap = {};
   userPosts.forEach((post) => {
     if (post.status !== "PUBLISHED" || !post.createdAt) return;
-    const postDate = new Date(post.createdAt);
-    const dateKey = `${postDate.getFullYear()}-${String(
-      postDate.getMonth() + 1,
-    ).padStart(2, "0")}-${String(postDate.getDate()).padStart(2, "0")}`;
+    const dateKey = getNormalizedDateKey(post.createdAt);
+    if (!dateKey) return;
     if (!publishedMap[dateKey]) {
       publishedMap[dateKey] = [];
     }
@@ -217,6 +226,9 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
       onAddFestival(cell.dateKey);
       return;
     }
+    setSelectedFestivalTab("all");
+    setFestivalTemplatePage(1);
+    setFestivalTemplateSearch("");
     setSelectedDayDetails(cell);
   };
 
@@ -233,6 +245,8 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
       calendarCells={calendarCells}
       selectedDayDetails={selectedDayDetails}
       setSelectedDayDetails={setSelectedDayDetails}
+      selectedFestivalTab={selectedFestivalTab}
+      setSelectedFestivalTab={setSelectedFestivalTab}
       handleCellClick={handleCellClick}
       handleDeleteFestival={handleDeleteFestival}
       paginatedFestivalTemplates={paginatedFestivalTemplates}

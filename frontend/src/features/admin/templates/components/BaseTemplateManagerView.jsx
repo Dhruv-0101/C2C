@@ -8,6 +8,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Search,
   FolderKanban,
   FolderTree,
@@ -75,9 +76,12 @@ export const BaseTemplateManagerView = ({
 }) => {
   const [customCatInput, setCustomCatInput] = useState("");
   const [templateToDelete, setTemplateToDelete] = useState(null);
+  const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
+  const [isFestDropdownOpen, setIsFestDropdownOpen] = useState(false);
 
   const catTotalPages = categoryMeta?.totalPages || 1;
   const festTotalPages = festivalMeta?.totalPages || 1;
+  const activeFestivalObj = festivals.find((f) => f.id === selectedFestival);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -111,121 +115,161 @@ export const BaseTemplateManagerView = ({
       </div>
 
       {/* Filter and Template Grid Card */}
-      <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6">
-        {/* 1. Template Category Section (8 Items per Page + Search) */}
-        <div className="space-y-3 p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Card className="border-[#2C384E] bg-[#131B2A] p-5 sm:p-6 space-y-5">
+        {/* 1. Template Category Section (Collapsible Dropdown Filter) */}
+        <div className="rounded-2xl bg-[#0B0F17] border border-[#2C384E] overflow-hidden transition-all duration-200">
+          <button
+            type="button"
+            onClick={() => setIsCatDropdownOpen((prev) => !prev)}
+            className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-900/60 transition cursor-pointer"
+          >
             <div className="flex items-center gap-2 flex-wrap">
               <FolderTree className="w-4 h-4 text-amber-400" />
               <h4 className="font-heading font-extrabold text-sm text-white">
                 Template Categories Navigation
               </h4>
               <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
-                {categoryMeta?.totalItems ?? categoriesList.length} Template Categories
+                {categoryMeta?.totalItems ?? categoriesList.length} Categories
               </span>
-              <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
-                Page {catPage} of {catTotalPages}
-              </span>
+              {selectedCategory ? (
+                <span className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="text-slate-400">Active:</span> {selectedCategory}
+                </span>
+              ) : (
+                <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700">
+                  All Selected
+                </span>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Template Category Search */}
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Search template categories..."
-                  value={catSearch}
-                  onChange={(e) => {
-                    setCatSearch(e.target.value);
-                    setCatPage(1);
-                  }}
-                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-48"
-                />
-              </div>
-
-              {/* Template Category Pagination Controls */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={catPage <= 1}
-                  onClick={() => setCatPage((p) => Math.max(1, p - 1))}
-                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
-                  title="Previous Template Categories"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Prev</span>
-                </button>
-                <button
-                  type="button"
-                  disabled={catPage >= catTotalPages}
-                  onClick={() => setCatPage((p) => Math.min(catTotalPages, p + 1))}
-                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
-                  title="Next Template Categories"
-                >
-                  <span className="hidden sm:inline">Next</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+            <div className="flex items-center gap-2 text-slate-300 text-xs font-semibold">
+              <span className="hidden sm:inline text-slate-400">
+                {isCatDropdownOpen ? "Hide Filter" : "Filter by Category"}
+              </span>
+              <div
+                className={`p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] transition-transform duration-200 ${
+                  isCatDropdownOpen ? "rotate-180" : ""
+                }`}
+              >
+                <ChevronDown className="w-4 h-4 text-slate-300" />
               </div>
             </div>
-          </div>
+          </button>
 
-          {/* Template Category Pills (Max 8 shown per page) */}
-          <div className="flex items-center gap-2 overflow-x-auto pt-1.5 pb-3.5 custom-scrollbar">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategory("");
-                setPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 ${
-                !selectedCategory
-                  ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
-                  : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-              }`}
-            >
-              <span>🎨 All Template Categories</span>
-            </button>
+          {isCatDropdownOpen && (
+            <div className="p-4 pt-1 space-y-3 border-t border-[#2C384E]/70 animate-in fade-in duration-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-medium">Filter by category:</span>
+                  <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
+                    Page {catPage} of {catTotalPages}
+                  </span>
+                </div>
 
-            {isLoadingCategories && (
-              <span className="text-xs text-slate-400 animate-pulse px-2">
-                Searching template categories...
-              </span>
-            )}
+                <div className="flex items-center gap-2">
+                  {/* Template Category Search */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Search template categories..."
+                      value={catSearch}
+                      onChange={(e) => {
+                        setCatSearch(e.target.value);
+                        setCatPage(1);
+                      }}
+                      className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-48"
+                    />
+                  </div>
 
-            {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
-              <span className="text-xs text-slate-400 italic px-2">
-                No template categories matching "{catSearch}"
-              </span>
-            )}
+                  {/* Template Category Pagination Controls */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={catPage <= 1}
+                      onClick={() => setCatPage((p) => Math.max(1, p - 1))}
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      title="Previous Template Categories"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Prev</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={catPage >= catTotalPages}
+                      onClick={() => setCatPage((p) => Math.min(catTotalPages, p + 1))}
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      title="Next Template Categories"
+                    >
+                      <span className="hidden sm:inline">Next</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-            {categoriesList.map((cat) => {
-              const isSelected = selectedCategory === cat.name || selectedCategory === cat.id;
-              return (
+              {/* Template Category Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-2 custom-scrollbar">
                 <button
-                  key={cat.id}
                   type="button"
                   onClick={() => {
-                    setSelectedCategory(cat.name);
+                    setSelectedCategory("");
                     setPage(1);
                   }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 ${
-                    isSelected
+                    !selectedCategory
                       ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
                       : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
                   }`}
                 >
-                  <span>{cat.icon || "🎨"}</span>
-                  <span>{cat.name}</span>
+                  <span>🎨 All Template Categories</span>
                 </button>
-              );
-            })}
-          </div>
+
+                {isLoadingCategories && (
+                  <span className="text-xs text-slate-400 animate-pulse px-2">
+                    Searching template categories...
+                  </span>
+                )}
+
+                {!isLoadingCategories && categoriesList.length === 0 && catSearch && (
+                  <span className="text-xs text-slate-400 italic px-2">
+                    No template categories matching "{catSearch}"
+                  </span>
+                )}
+
+                {categoriesList.map((cat) => {
+                  const isSelected = selectedCategory === cat.name || selectedCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategory(cat.name);
+                        setPage(1);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 ${
+                        isSelected
+                          ? "bg-amber-500 text-slate-950 font-bold shadow-glow"
+                          : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                      }`}
+                    >
+                      <span>{cat.icon || "🎨"}</span>
+                      <span>{cat.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* 2. Festival Section (8 Items per Page + Search) */}
-        <div className="space-y-3 p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* 2. Festival Section (Collapsible Dropdown Filter) */}
+        <div className="rounded-2xl bg-[#0B0F17] border border-[#2C384E] overflow-hidden transition-all duration-200">
+          <button
+            type="button"
+            onClick={() => setIsFestDropdownOpen((prev) => !prev)}
+            className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-900/60 transition cursor-pointer"
+          >
             <div className="flex items-center gap-2 flex-wrap">
               <Calendar className="w-4 h-4 text-emerald-400" />
               <h4 className="font-heading font-extrabold text-sm text-white">
@@ -234,109 +278,141 @@ export const BaseTemplateManagerView = ({
               <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                 {festivalMeta?.totalItems ?? festivals.length} Festivals
               </span>
-              <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
-                Page {festPage} of {festTotalPages}
-              </span>
+              {selectedFestival ? (
+                <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="text-slate-400">Active:</span> {activeFestivalObj?.name || "Selected Festival"}
+                </span>
+              ) : (
+                <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700">
+                  All Selected
+                </span>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Festival Search */}
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Search festivals..."
-                  value={festSearch}
-                  onChange={(e) => {
-                    setFestSearch(e.target.value);
-                    setFestPage(1);
-                  }}
-                  className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-40"
-                />
-              </div>
-
-              {/* Festival Pagination Controls */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={festPage <= 1}
-                  onClick={() => setFestPage((p) => Math.max(1, p - 1))}
-                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
-                  title="Previous Festivals"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Prev</span>
-                </button>
-                <button
-                  type="button"
-                  disabled={festPage >= festTotalPages}
-                  onClick={() => setFestPage((p) => Math.min(festTotalPages, p + 1))}
-                  className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
-                  title="Next Festivals"
-                >
-                  <span className="hidden sm:inline">Next</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+            <div className="flex items-center gap-2 text-slate-300 text-xs font-semibold">
+              <span className="hidden sm:inline text-slate-400">
+                {isFestDropdownOpen ? "Hide Filter" : "Filter by Festival"}
+              </span>
+              <div
+                className={`p-1 rounded-lg bg-[#131B2A] border border-[#2C384E] transition-transform duration-200 ${
+                  isFestDropdownOpen ? "rotate-180" : ""
+                }`}
+              >
+                <ChevronDown className="w-4 h-4 text-slate-300" />
               </div>
             </div>
-          </div>
+          </button>
 
-          {/* Festival Pills (Max 8 shown per page) */}
-          <div className="flex items-center gap-2 overflow-x-auto pt-1.5 pb-3.5 custom-scrollbar">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedFestival("");
-                setPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 ${
-                !selectedFestival
-                  ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
-                  : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
-              }`}
-            >
-              <span>🎉 All Festivals</span>
-            </button>
+          {isFestDropdownOpen && (
+            <div className="p-4 pt-1 space-y-3 border-t border-[#2C384E]/70 animate-in fade-in duration-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-medium">Filter by festival:</span>
+                  <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
+                    Page {festPage} of {festTotalPages}
+                  </span>
+                </div>
 
-            {isLoadingFestivals && (
-              <span className="text-xs text-slate-400 animate-pulse px-2">
-                Searching festivals...
-              </span>
-            )}
+                <div className="flex items-center gap-2">
+                  {/* Festival Search */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Search festivals..."
+                      value={festSearch}
+                      onChange={(e) => {
+                        setFestSearch(e.target.value);
+                        setFestPage(1);
+                      }}
+                      className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-40"
+                    />
+                  </div>
 
-            {!isLoadingFestivals && festivals.length === 0 && festSearch && (
-              <span className="text-xs text-slate-400 italic px-2">
-                No festivals matching "{festSearch}"
-              </span>
-            )}
+                  {/* Festival Pagination Controls */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={festPage <= 1}
+                      onClick={() => setFestPage((p) => Math.max(1, p - 1))}
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      title="Previous Festivals"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Prev</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={festPage >= festTotalPages}
+                      onClick={() => setFestPage((p) => Math.min(festTotalPages, p + 1))}
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      title="Next Festivals"
+                    >
+                      <span className="hidden sm:inline">Next</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-            {festivals.map((f) => {
-              const isSelected = selectedFestival === f.id;
-              return (
+              {/* Festival Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-2 custom-scrollbar">
                 <button
-                  key={f.id}
                   type="button"
                   onClick={() => {
-                    setSelectedFestival(f.id);
+                    setSelectedFestival("");
                     setPage(1);
                   }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 ${
-                    isSelected
+                    !selectedFestival
                       ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
                       : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
                   }`}
                 >
-                  <span>🪔</span>
-                  <span>{f.name}</span>
+                  <span>🎉 All Festivals</span>
                 </button>
-              );
-            })}
-          </div>
+
+                {isLoadingFestivals && (
+                  <span className="text-xs text-slate-400 animate-pulse px-2">
+                    Searching festivals...
+                  </span>
+                )}
+
+                {!isLoadingFestivals && festivals.length === 0 && festSearch && (
+                  <span className="text-xs text-slate-400 italic px-2">
+                    No festivals matching "{festSearch}"
+                  </span>
+                )}
+
+                {festivals.map((f) => {
+                  const isSelected = selectedFestival === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedFestival(f.id);
+                        setPage(1);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 ${
+                        isSelected
+                          ? "bg-emerald-500 text-slate-950 font-bold shadow-glow"
+                          : "bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                      }`}
+                    >
+                      <span>🪔</span>
+                      <span>{f.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* 3. Search Base Templates Bar */}
+        {/* 3. Search Base Templates Bar & Right-aligned Counter */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
-          <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="w-full sm:max-w-md">
             <SearchBar
               placeholder="Search base graphic templates by title..."
               value={search}
@@ -344,63 +420,67 @@ export const BaseTemplateManagerView = ({
                 setSearch(val);
                 setPage(1);
               }}
-              className="w-full sm:max-w-md"
+              className="w-full"
             />
-            <div className="text-xs text-slate-400 font-mono">
-              Showing {templates.length} of {templateMeta?.totalItems ?? templates.length} templates
-            </div>
           </div>
 
-          {(selectedCategory || selectedFestival) && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-slate-400 font-medium">Active Filters:</span>
-              {selectedCategory && (
-                <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1">
-                  <span>Category:</span>
-                  <span className="font-bold">{selectedCategory}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory("");
-                      setPage(1);
-                    }}
-                    className="hover:text-white ml-1 font-bold"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {selectedFestival && (
-                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1">
-                  <span>Festival:</span>
-                  <span className="font-bold">
-                    {festivals.find((f) => f.id === selectedFestival)?.name || selectedFestival}
+          <div className="flex items-center gap-4 flex-wrap justify-between sm:justify-end ml-auto">
+            {(selectedCategory || selectedFestival) && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-slate-400 font-medium">Active Filters:</span>
+                {selectedCategory && (
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1">
+                    <span>Category:</span>
+                    <span className="font-bold">{selectedCategory}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategory("");
+                        setPage(1);
+                      }}
+                      className="hover:text-white ml-1 font-bold cursor-pointer"
+                    >
+                      ×
+                    </button>
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedFestival("");
-                      setPage(1);
-                    }}
-                    className="hover:text-white ml-1 font-bold"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategory("");
-                  setSelectedFestival("");
-                  setPage(1);
-                }}
-                className="text-xs text-amber-400 hover:underline font-semibold ml-2"
-              >
-                Clear All
-              </button>
+                )}
+                {selectedFestival && (
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1">
+                    <span>Festival:</span>
+                    <span className="font-bold">
+                      {festivals.find((f) => f.id === selectedFestival)?.name || selectedFestival}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFestival("");
+                        setPage(1);
+                      }}
+                      className="hover:text-white ml-1 font-bold cursor-pointer"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory("");
+                    setSelectedFestival("");
+                    setPage(1);
+                  }}
+                  className="text-xs text-amber-400 hover:underline font-semibold ml-2 cursor-pointer"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
+
+            <div className="text-xs text-slate-400 font-mono text-right whitespace-nowrap">
+              Showing <span className="text-slate-200 font-semibold">{templates.length}</span> of{" "}
+              <span className="text-slate-200 font-semibold">{templateMeta?.totalItems ?? templates.length}</span> templates
             </div>
-          )}
+          </div>
         </div>
 
         {isLoadingTemplates ? (

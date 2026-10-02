@@ -38,6 +38,8 @@ export const FestivalCalendarView = ({
   calendarCells,
   selectedDayDetails,
   setSelectedDayDetails,
+  selectedFestivalTab = "all",
+  setSelectedFestivalTab,
   handleCellClick,
   handleDeleteFestival,
   paginatedFestivalTemplates,
@@ -69,6 +71,21 @@ export const FestivalCalendarView = ({
   const safeSelectedFestivals = selectedDayDetails?.festivals || [];
   const safeScheduledPosts = selectedDayDetails?.scheduledPosts || [];
   const safePublishedPosts = selectedDayDetails?.publishedPosts || [];
+
+  const modalDayTotalTemplates = safeSelectedFestivals.reduce((sum, f) => {
+    return (
+      sum +
+      Math.max(
+        f._count?.templates ?? 0,
+        Array.isArray(f.templates) ? f.templates.length : 0
+      )
+    );
+  }, 0);
+
+  const festivalsToRender =
+    selectedFestivalTab === "all"
+      ? safeSelectedFestivals
+      : safeSelectedFestivals.filter((f) => f.id === selectedFestivalTab);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -151,6 +168,19 @@ export const FestivalCalendarView = ({
             const hasPublished = cell.publishedPosts && cell.publishedPosts.length > 0;
             const hasEvents = hasFestivals || hasScheduled || hasPublished;
 
+            // Total templates across all festivals on this day
+            const dayTotalTemplates = hasFestivals
+              ? cell.festivals.reduce(
+                  (sum, f) =>
+                    sum +
+                    Math.max(
+                      f._count?.templates ?? 0,
+                      Array.isArray(f.templates) ? f.templates.length : 0
+                    ),
+                  0
+                )
+              : 0;
+
             // Find festival with cover banner image if uploaded by Admin
             const festivalWithBanner = hasFestivals
               ? cell.festivals.find((f) => f.bannerUrl)
@@ -169,16 +199,13 @@ export const FestivalCalendarView = ({
                       : "bg-[#0B0F17]/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/40"
                 }`}
               >
-                {/* Festival Cover Banner Background Overlay */}
+                {/* Festival Cover Banner Background Overlay (Rendered vibrant & crisp as requested) */}
                 {bannerUrl && (
-                  <>
-                    <img
-                      src={bannerUrl}
-                      alt={festivalWithBanner.name || "Festival Cover"}
-                      className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:opacity-50 group-hover:scale-105 transition duration-300 pointer-events-none"
-                    />
-                    <div className="image-scrim-overlay absolute inset-0 pointer-events-none" />
-                  </>
+                  <img
+                    src={bannerUrl}
+                    alt={festivalWithBanner.name || "Festival Cover"}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300 pointer-events-none"
+                  />
                 )}
 
                 {/* Cell Top Header */}
@@ -186,20 +213,31 @@ export const FestivalCalendarView = ({
                   <span
                     className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-extrabold ${
                       cell.isToday
-                        ? "bg-amber-500 text-slate-950"
+                        ? "bg-amber-500 text-slate-950 font-black shadow-md"
                         : bannerUrl
-                          ? "text-white bg-black/60 backdrop-blur-md border border-white/10 group-hover:text-amber-400"
+                          ? "text-white bg-slate-950/80 backdrop-blur-md border border-white/20 group-hover:text-amber-400 shadow-md"
                           : "text-slate-300 group-hover:text-amber-400"
                     }`}
                   >
                     {cell.dayNum}
                   </span>
 
-                  {cell.isToday && (
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-tighter bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-full border border-amber-500/30">
-                      Today
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {dayTotalTemplates > 0 && (
+                      <span
+                        className="px-1.5 py-0.5 rounded-md bg-purple-600/90 text-white font-mono text-[9px] font-black shadow-sm flex items-center gap-1 border border-purple-400/40"
+                        title={`${dayTotalTemplates} Graphic Templates on this date`}
+                      >
+                        <span>🎨</span>
+                        <span>{dayTotalTemplates}</span>
+                      </span>
+                    )}
+                    {cell.isToday && (
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-tighter bg-slate-950/85 backdrop-blur-md px-1.5 py-0.5 rounded-full border border-amber-500/40 shadow-md">
+                        Today
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Event & Post Badges Container */}
@@ -231,24 +269,45 @@ export const FestivalCalendarView = ({
                     ))}
 
                   {/* Festival & Attached Templates Badges */}
-                  {hasFestivals &&
-                    cell.festivals.slice(0, 2).map((fest) => {
-                      const templateCount = fest.templates?.length || 0;
-                      return (
-                        <div key={fest.id} className="space-y-1">
-                          <div className="px-2 py-0.5 rounded-lg bg-amber-500/30 backdrop-blur-md border border-amber-500/50 text-amber-200 text-[10px] font-bold flex items-center justify-between gap-1 truncate shadow-sm">
+                  {hasFestivals && (
+                    <div className="space-y-1">
+                      {cell.festivals.slice(0, 2).map((fest) => {
+                        const templateCount = Math.max(
+                          fest._count?.templates ?? 0,
+                          Array.isArray(fest.templates) ? fest.templates.length : 0
+                        );
+                        return (
+                          <div
+                            key={fest.id}
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center justify-between gap-1 truncate shadow-md ${
+                              bannerUrl
+                                ? "bg-slate-950/90 backdrop-blur-md border border-slate-700/70 text-amber-300"
+                                : "bg-amber-500/25 backdrop-blur-md border border-amber-500/50 text-amber-200"
+                            }`}
+                          >
                             <span className="truncate">{fest.name}</span>
+                            {templateCount > 0 && (
+                              <span
+                                className="px-1.5 py-0.5 rounded-md bg-purple-600 text-white font-mono text-[9px] font-black shrink-0 border border-purple-400/40 shadow-sm"
+                                title={`${templateCount} Templates`}
+                              >
+                                {templateCount}
+                              </span>
+                            )}
                           </div>
+                        );
+                      })}
 
-                          {templateCount > 0 && (
-                            <div className="px-2 py-0.5 rounded-lg bg-purple-500/30 backdrop-blur-md border border-purple-500/50 text-purple-200 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-glow">
-                              <span className="truncate">🎨 {templateCount} {templateCount === 1 ? 'Template' : 'Templates'}</span>
-                              <ImageIcon className="w-3 h-3 text-purple-300 shrink-0" />
-                            </div>
-                          )}
+                      {cell.festivals.length > 2 && (
+                        <div
+                          className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-extrabold text-center truncate shadow-sm"
+                          title={`${cell.festivals.length - 2} more festival(s) on this date`}
+                        >
+                          +{cell.festivals.length - 2} more
                         </div>
-                      );
-                    })}
+                      )}
+                    </div>
+                  )}
 
                   {!hasEvents && (
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-slate-500 flex items-center gap-1 justify-center py-1">
@@ -284,8 +343,10 @@ export const FestivalCalendarView = ({
                     <h3 className="font-heading font-bold text-lg text-white">
                       Day Details — {selectedDayDetails.dateKey}
                     </h3>
-                    <p className="text-xs text-slate-400">
-                      Explore festival graphics, queued scheduled posts, and live publications for this day.
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {safeSelectedFestivals.length > 0
+                        ? `${safeSelectedFestivals.length} Festival${safeSelectedFestivals.length > 1 ? "s" : ""} • ${modalDayTotalTemplates} Graphic Template${modalDayTotalTemplates === 1 ? "" : "s"} for this day`
+                        : "Explore festival graphics, queued scheduled posts, and live publications for this day."}
                     </p>
                   </div>
                 </div>
@@ -300,14 +361,14 @@ export const FestivalCalendarView = ({
                         onAddFestival(selectedDayDetails.dateKey);
                         setSelectedDayDetails(null);
                       }}
-                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-1.5"
+                      className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-1.5 shadow-md"
                     >
                       Add Festival
                     </Button>
                   )}
                   <button
                     onClick={() => setSelectedDayDetails(null)}
-                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -315,7 +376,7 @@ export const FestivalCalendarView = ({
               </div>
 
               {/* Drawer Body Scroll Container */}
-              <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              <div className="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
                 {/* 1. Scheduled Posts for this Day */}
                 {safeScheduledPosts.length > 0 && (
                   <div className="space-y-3">
@@ -391,80 +452,198 @@ export const FestivalCalendarView = ({
 
                 {/* 3. National Festivals & Custom Templates Showcase */}
                 {safeSelectedFestivals.length > 0 ? (
-                  safeSelectedFestivals.map((fest) => {
-                    const displayTemplates =
-                      paginatedFestivalTemplates ||
-                      fest.templates?.filter((t) => t.festivalId === fest.id) ||
-                      [];
+                  <div className="space-y-6">
+                    {/* Multi-Festival Filter Tabs (When 2 or more festivals occur on the same day) */}
+                    {safeSelectedFestivals.length > 1 && (
+                      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#2C384E] custom-scrollbar">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedFestivalTab && setSelectedFestivalTab("all")}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-2 cursor-pointer ${
+                            selectedFestivalTab === "all"
+                              ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                              : "bg-[#0B0F17] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                          }`}
+                        >
+                          <span>🌟 All Festivals</span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
+                              selectedFestivalTab === "all"
+                                ? "bg-slate-950/20 text-slate-950 font-black"
+                                : "bg-slate-800 text-amber-300"
+                            }`}
+                          >
+                            {modalDayTotalTemplates}
+                          </span>
+                        </button>
 
-                    return (
-                      <div key={fest.id} className="space-y-4">
-                        <div className="flex items-start justify-between border-b border-slate-800 pb-3">
-                          <div>
-                            <h4 className="font-heading font-extrabold text-xl text-white">
-                              {fest.name}
-                            </h4>
-                            <p className="text-xs text-slate-400 mt-1">
-                              {fest.description || "Special celebration day."}
-                            </p>
+                        {safeSelectedFestivals.map((fest) => {
+                          const isTabActive = selectedFestivalTab === fest.id;
+                          const count = Math.max(
+                            fest._count?.templates ?? 0,
+                            Array.isArray(fest.templates) ? fest.templates.length : 0
+                          );
+                          return (
+                            <button
+                              key={fest.id}
+                              type="button"
+                              onClick={() => setSelectedFestivalTab && setSelectedFestivalTab(fest.id)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-2 cursor-pointer ${
+                                isTabActive
+                                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                                  : "bg-[#0B0F17] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                              }`}
+                            >
+                              <span>🪔 {fest.name}</span>
+                              <span
+                                className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
+                                  isTabActive
+                                    ? "bg-slate-950/20 text-slate-950 font-black"
+                                    : "bg-purple-900/50 text-purple-300 border border-purple-500/30"
+                                }`}
+                              >
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Render Each Festival and Its Specific Templates */}
+                    {festivalsToRender.map((fest) => {
+                      const festTemplates =
+                        selectedFestivalTab === fest.id && paginatedFestivalTemplates?.length > 0
+                          ? paginatedFestivalTemplates
+                          : Array.isArray(fest.templates)
+                            ? fest.templates
+                            : [];
+
+                      const festCount = Math.max(
+                        fest._count?.templates ?? 0,
+                        festTemplates.length
+                      );
+
+                      return (
+                        <div
+                          key={fest.id}
+                          className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-4 shadow-lg"
+                        >
+                          {/* Banner preview if available */}
+                          {fest.bannerUrl && (
+                            <div className="h-32 sm:h-44 w-full rounded-xl overflow-hidden relative border border-[#2C384E] mb-2">
+                              <img
+                                src={fest.bannerUrl}
+                                alt={fest.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent flex items-end p-4">
+                                <span className="text-white font-heading font-extrabold text-lg sm:text-xl drop-shadow-md">
+                                  {fest.name}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Festival Header Bar */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-heading font-extrabold text-lg text-white">
+                                  {fest.name}
+                                </h4>
+                                {fest.targetRegion && (
+                                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-semibold">
+                                    📍 {fest.targetRegion}
+                                  </span>
+                                )}
+                                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-mono font-bold">
+                                  {festCount} Template{festCount === 1 ? "" : "s"}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-400 mt-1">
+                                {fest.description || "Special occasion / festive celebration."}
+                              </p>
+                            </div>
+
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleDeleteFestival(fest.id)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition self-start sm:self-center cursor-pointer"
+                                title="Delete Festival"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
 
-                          {isAdmin && (
-                            <button
-                              onClick={() => handleDeleteFestival(fest.id)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
-                              title="Delete Festival"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-
-                        {displayTemplates.length > 0 ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            {displayTemplates.map((template) => (
-                              <div
-                                key={template.id}
-                                className="group relative bg-[#0B0F17] border border-[#2C384E] rounded-xl overflow-hidden hover:border-amber-500/50 transition cursor-pointer"
-                                onClick={() => {
-                                  if (onSelectTemplate) {
-                                    onSelectTemplate(template);
-                                  }
+                          {/* Search bar when filtered to single festival */}
+                          {selectedFestivalTab === fest.id && (
+                            <div className="relative">
+                              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                              <input
+                                type="text"
+                                placeholder={`Filter templates for ${fest.name}...`}
+                                value={festivalTemplateSearch}
+                                onChange={(e) => {
+                                  setFestivalTemplateSearch(e.target.value);
+                                  setFestivalTemplatePage(1);
                                 }}
-                              >
-                                <div className="aspect-square relative overflow-hidden bg-slate-950">
-                                  <img
-                                    src={template.baseImageUrl}
-                                    alt={template.title}
-                                    className="w-full h-full object-contain group-hover:scale-105 transition duration-300 bg-[#0B0F17]"
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-3">
-                                    <Button
-                                      size="sm"
-                                      variant="primary"
-                                      icon={Sparkles}
-                                      className="w-full text-xs"
+                                className="w-full pl-9 pr-4 py-2 bg-[#131B2A] border border-[#2C384E] rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 transition"
+                              />
+                            </div>
+                          )}
+
+                          {/* Templates Grid */}
+                          {festTemplates.length > 0 ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 pt-1">
+                              {festTemplates.map((template) => (
+                                <div
+                                  key={template.id}
+                                  className="group relative bg-[#131B2A] border border-[#2C384E] rounded-xl overflow-hidden hover:border-amber-500/60 hover:shadow-lg transition cursor-pointer flex flex-col justify-between"
+                                  onClick={() => {
+                                    if (onSelectTemplate) {
+                                      onSelectTemplate(template);
+                                    }
+                                  }}
+                                >
+                                  <div className="aspect-square relative overflow-hidden bg-slate-950 flex items-center justify-center">
+                                    <img
+                                      src={template.baseImageUrl}
+                                      alt={template.title}
+                                      className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
+                                    />
+                                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                                      <span className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold shadow-md transform translate-y-1 group-hover:translate-y-0 transition">
+                                        Create Post
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="p-2.5 bg-[#131B2A] border-t border-[#2C384E]">
+                                    <p
+                                      className="text-xs font-bold text-white truncate"
+                                      title={template.title}
                                     >
-                                      Create Post
-                                    </Button>
+                                      {template.title}
+                                    </p>
                                   </div>
                                 </div>
-                                <div className="p-2.5">
-                                  <p className="text-xs font-bold text-white truncate">
-                                    {template.title}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="p-8 text-center text-xs text-slate-500 border border-dashed border-slate-800 rounded-xl">
-                            No graphic templates available for this festival yet.
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-6 text-center text-xs text-slate-400 border border-dashed border-[#2C384E] rounded-xl space-y-1 bg-[#131B2A]/40">
+                              <p className="font-semibold text-slate-300">
+                                No graphic templates attached to {fest.name} yet.
+                              </p>
+                              <p className="text-slate-500">
+                                Graphic templates uploaded for this festival will appear here for one-click post creation.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 ) : (
                   safeScheduledPosts.length === 0 &&
                   safePublishedPosts.length === 0 && (

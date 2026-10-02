@@ -202,12 +202,14 @@ export const getPaginatedTransactions = async ({
   paymentGateway = '',
   currency = '',
   plan = '',
+  transactionType = '',
   startDate = '',
   endDate = '',
 }) => {
   const skip = (page - 1) * limit;
 
   const where = {};
+  const andConditions = [];
 
   if (status) {
     where.status = status;
@@ -235,14 +237,33 @@ export const getPaginatedTransactions = async ({
     }
   }
 
+  if (transactionType) {
+    if (transactionType === 'ADMIN_BONUS') {
+      andConditions.push({
+        OR: [
+          { transactionType: 'ADMIN_BONUS' },
+          { paymentGateway: 'ADMIN_BONUS' },
+        ],
+      });
+    } else {
+      where.transactionType = transactionType;
+    }
+  }
+
   if (search) {
-    where.OR = [
-      { paymentId: { contains: search, mode: 'insensitive' } },
-      { orderId: { contains: search, mode: 'insensitive' } },
-      { user: { email: { contains: search, mode: 'insensitive' } } },
-      { user: { fullName: { contains: search, mode: 'insensitive' } } },
-      { user: { brandKit: { businessName: { contains: search, mode: 'insensitive' } } } },
-    ];
+    andConditions.push({
+      OR: [
+        { paymentId: { contains: search, mode: 'insensitive' } },
+        { orderId: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { user: { fullName: { contains: search, mode: 'insensitive' } } },
+        { user: { brandKit: { businessName: { contains: search, mode: 'insensitive' } } } },
+      ],
+    });
+  }
+
+  if (andConditions.length > 0) {
+    where.AND = andConditions;
   }
 
   const [items, totalCount] = await Promise.all([
@@ -369,10 +390,12 @@ export const getAllMatchingTransactionsForExport = async ({
   paymentGateway = '',
   currency = '',
   plan = '',
+  transactionType = '',
   startDate = '',
   endDate = '',
 } = {}) => {
   const where = {};
+  const andConditions = [];
 
   if (status) where.status = status;
   if (paymentGateway) where.paymentGateway = paymentGateway;
@@ -389,13 +412,32 @@ export const getAllMatchingTransactionsForExport = async ({
     }
   }
 
+  if (transactionType) {
+    if (transactionType === 'ADMIN_BONUS') {
+      andConditions.push({
+        OR: [
+          { transactionType: 'ADMIN_BONUS' },
+          { paymentGateway: 'ADMIN_BONUS' },
+        ],
+      });
+    } else {
+      where.transactionType = transactionType;
+    }
+  }
+
   if (search) {
-    where.OR = [
-      { paymentId: { contains: search, mode: 'insensitive' } },
-      { orderId: { contains: search, mode: 'insensitive' } },
-      { user: { email: { contains: search, mode: 'insensitive' } } },
-      { user: { fullName: { contains: search, mode: 'insensitive' } } },
-    ];
+    andConditions.push({
+      OR: [
+        { paymentId: { contains: search, mode: 'insensitive' } },
+        { orderId: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { user: { fullName: { contains: search, mode: 'insensitive' } } },
+      ],
+    });
+  }
+
+  if (andConditions.length > 0) {
+    where.AND = andConditions;
   }
 
   return prisma.billingTransaction.findMany({

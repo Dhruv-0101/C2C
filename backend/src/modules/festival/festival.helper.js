@@ -46,6 +46,7 @@ export function sanitizeFestival(festival) {
             title: t.title,
             baseImageUrl: t.baseImageUrl,
             isActive: t.isActive,
+            festivalId: t.festivalId || festival.id,
           })),
         }
       : {}),

@@ -253,14 +253,14 @@ export const AdminDashboardView = ({
                     color: "text-teal-400",
                     borderColor: "hover:border-teal-500/50",
                   },
-                  {
-                    id: ADMIN_TABS.FESTIVALS,
-                    label: "Festival Calendar",
-                    desc: "Configure upcoming cultural events & marketing days",
-                    icon: Calendar,
-                    color: "text-teal-400",
-                    borderColor: "hover:border-teal-500/50",
-                  },
+                  // {
+                  //   id: ADMIN_TABS.FESTIVALS,
+                  //   label: "Festival Calendar",
+                  //   desc: "Configure upcoming cultural events & marketing days",
+                  //   icon: Calendar,
+                  //   color: "text-teal-400",
+                  //   borderColor: "hover:border-teal-500/50",
+                  // },
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
@@ -321,8 +321,8 @@ export const AdminDashboardView = ({
         {/* 3. Brand Frames Studio Tab */}
         {activeTab === ADMIN_TABS.FRAMES && <AdminFramesTab />}
 
-        {/* 4. Master Business Categories Tab */}
-        {activeTab === ADMIN_TABS.CATEGORIES && (
+        {/* 4. Master Business Categories Tab (SuperAdmin Only) */}
+        {activeTab === ADMIN_TABS.CATEGORIES && isSuperAdmin && (
           <AdminCategoriesTab
             categories={categories}
             categoryMeta={categoryMeta}

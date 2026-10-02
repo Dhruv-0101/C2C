@@ -2,26 +2,19 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sparkles,
-  Calendar,
-  Share2,
-  TrendingUp,
   Plus,
-  CheckCircle,
   Zap,
-  Building2,
-  Layers,
-  Palette,
-  FolderKanban,
-  ArrowRight,
-  Shield,
   Activity,
-  Archive,
+  Shield,
   Wand2,
+  Calendar,
+  Building2,
+  Archive,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
 import { DashboardQuickStats } from "./DashboardQuickStats";
-import { RecentActivityFeed } from "./RecentActivityFeed";
 
 /**
  * DashboardView
@@ -146,41 +139,6 @@ export const DashboardView = ({
           })}
         </div>
       </div>
-
-      {/* Recent Posts Activity */}
-      <Card className="p-3.5 sm:p-4 border-[#2C384E] bg-[#131B2A] space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2">
-            <Archive className="w-4 h-4 text-amber-400" />
-            <span>Recent Posts & Graphics</span>
-          </h3>
-          {recentPosts.length > 0 && (
-            <div className="flex items-center gap-2">
-              {totalPostsCount > 4 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs font-bold border-[#2C384E] text-slate-300 hover:text-white py-1 px-2.5"
-                  onClick={() => navigate("/your-posts")}
-                >
-                  <span>View All ({totalPostsCount})</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              )}
-              <Button variant="primary" icon={Plus} size="sm" className="text-xs font-bold py-1.5 px-3" onClick={() => handleOpenNewPost(null)}>
-                Create New Post
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <RecentActivityFeed
-          recentPosts={recentPosts}
-          totalPostsCount={totalPostsCount}
-          onOpenNewPost={handleOpenNewPost}
-        />
-
-      </Card>
     </div>
   );
 };

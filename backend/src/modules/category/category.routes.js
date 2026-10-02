@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireTabPermission } from '../../common/middleware/role.middleware.js';
+import { requireSuperAdmin } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { CATEGORY_TAB_PERMISSION } from './category.constants.js';
 import {
   getCategoriesQuerySchema,
   getCategoryByIdSchema,
@@ -20,11 +19,11 @@ router.get('/', validate(getCategoriesQuerySchema), categoryController.getCatego
 // Public / Authenticated route to fetch a single business category by ID
 router.get('/:id', validate(getCategoryByIdSchema), categoryController.getCategoryById);
 
-// Admin & SubAdmin with Category Tab Permission
+// SuperAdmin Only: Business Category Management
 router.post(
   '/',
   authenticate,
-  requireTabPermission(CATEGORY_TAB_PERMISSION),
+  requireSuperAdmin,
   validate(createCategorySchema),
   categoryController.createCategory
 );
@@ -32,7 +31,7 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  requireTabPermission(CATEGORY_TAB_PERMISSION),
+  requireSuperAdmin,
   validate(updateCategorySchema),
   categoryController.updateCategory
 );
@@ -40,7 +39,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  requireTabPermission(CATEGORY_TAB_PERMISSION),
+  requireSuperAdmin,
   validate(deleteCategorySchema),
   categoryController.deleteCategory
 );

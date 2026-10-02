@@ -64,70 +64,7 @@ export const CreatePostPage = () => {
   const [customBaseImage, setCustomBaseImage] = useState(initialBaseImage);
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
-
-  // Multi-Slide Manual Carousel State (Default: 1 Slide)
-  const [slides, setSlides] = useState([
-    {
-      id: "slide-1",
-      title: "Main Post Headline",
-      text: "Enter your post text or caption explanation here.",
-      customBaseImage: initialBaseImage,
-      selectedFrame: null,
-    },
-  ]);
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-
-  // Carousel Handlers
-  const handleAddSlide = () => {
-    const newSlide = {
-      id: `slide-${Date.now()}`,
-      title: `Slide ${slides.length + 1} Headline`,
-      text: "Enter your slide explanation text here.",
-      customBaseImage: null,
-      selectedFrame: null,
-    };
-    setSlides((prev) => [...prev, newSlide]);
-    setActiveSlideIndex(slides.length);
-  };
-
-  const handleRemoveSlide = (indexToRemove) => {
-    if (slides.length <= 1) return;
-    setSlides((prev) => prev.filter((_, idx) => idx !== indexToRemove));
-    if (activeSlideIndex >= indexToRemove && activeSlideIndex > 0) {
-      setActiveSlideIndex((prev) => prev - 1);
-    }
-  };
-
-  const handleDuplicateSlide = (indexToDup) => {
-    const slideToDup = slides[indexToDup];
-    if (!slideToDup) return;
-    const duplicated = {
-      ...slideToDup,
-      id: `slide-${Date.now()}`,
-      title: `${slideToDup.title} (Copy)`,
-    };
-    const newSlides = [...slides];
-    newSlides.splice(indexToDup + 1, 0, duplicated);
-    setSlides(newSlides);
-    setActiveSlideIndex(indexToDup + 1);
-  };
-
-  const handleMoveSlide = (index, direction) => {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= slides.length) return;
-    const updated = [...slides];
-    const temp = updated[index];
-    updated[index] = updated[targetIndex];
-    updated[targetIndex] = temp;
-    setSlides(updated);
-    setActiveSlideIndex(targetIndex);
-  };
-
-  const handleUpdateActiveSlide = (key, value) => {
-    setSlides((prev) =>
-      prev.map((s, idx) => (idx === activeSlideIndex ? { ...s, [key]: value } : s))
-    );
-  };
+  const [publisherInitialMode, setPublisherInitialMode] = useState("NOW");
 
   // Template Category & Festival Filter States
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -244,12 +181,6 @@ export const CreatePostPage = () => {
       setSelectedTemplateId(templates[0].id);
     }
   }, [templates, selectedTemplateId]);
-
-  useEffect(() => {
-    if (currentStep === 2) {
-      setActiveSlideIndex(0);
-    }
-  }, [currentStep]);
 
   // Live Overrides for Business Details
   const [customDetails, setCustomDetails] = useState({
@@ -515,11 +446,12 @@ export const CreatePostPage = () => {
     }
   };
 
-  const handleOpenPublisher = () => {
+  const handleOpenPublisher = (mode = "NOW") => {
     if (isExpired || postsRemaining <= 0) {
       openPlanModal();
       return;
     }
+    setPublisherInitialMode(mode);
     setIsPublisherModalOpen(true);
   };
 
@@ -585,14 +517,6 @@ export const CreatePostPage = () => {
         handleSaveToDb={handleSaveToDb}
         handleDownloadHD={handleDownloadHD}
         onOpenPublisherModal={handleOpenPublisher}
-        slides={slides}
-        activeSlideIndex={activeSlideIndex}
-        setActiveSlideIndex={setActiveSlideIndex}
-        onAddSlide={handleAddSlide}
-        onRemoveSlide={handleRemoveSlide}
-        onDuplicateSlide={handleDuplicateSlide}
-        onMoveSlide={handleMoveSlide}
-        onUpdateActiveSlide={handleUpdateActiveSlide}
         subscription={subscription}
         postsRemaining={postsRemaining}
         isExpired={isExpired}
@@ -604,6 +528,7 @@ export const CreatePostPage = () => {
         isOpen={isPublisherModalOpen}
         onClose={() => setIsPublisherModalOpen(false)}
         postData={publisherPayload}
+        initialPublishMode={publisherInitialMode}
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
