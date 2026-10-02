@@ -30,3 +30,23 @@ export const ANALYTICS_TOP_TEMPLATES_LIMITS = Object.freeze({
   MIN: 1,
   MAX: 20,
 });
+
+export const ANALYTICS_POSTS_SORT_FIELDS = Object.freeze([
+  'createdAt',
+  'likes',
+  'comments',
+  'shares',
+  'reach',
+  'impressions',
+  'engagementRate',
+]);
+
+export const DEFAULT_POSTS_SORT_BY = 'createdAt';
+export const DEFAULT_POSTS_SORT_ORDER = 'desc';
+
+export const ANALYTICS_POSTS_LIMITS = Object.freeze({
+  DEFAULT: 10,
+  MIN: 1,
+  MAX: 50,
+});
+

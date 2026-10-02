@@ -167,6 +167,173 @@ export const seedDemoData = async (userId) => {
 };
 
 /**
+ * Get paginated post-level analytics and engagement breakdown
+ *
+ * @param {string} userId - User ID
+ * @param {Object} [queryParams={}] - Filter and pagination options
+ * @returns {Promise<Object>} Post analytics list with pagination
+ */
+export const getPostsAnalytics = async (userId, queryParams = {}) => {
+  const range = queryParams.range || DEFAULT_ANALYTICS_RANGE;
+  const platform = queryParams.platform || DEFAULT_ANALYTICS_PLATFORM;
+  const search = queryParams.search || null;
+  const sortBy = queryParams.sortBy || 'createdAt';
+  const sortOrder = queryParams.sortOrder || 'desc';
+  const page = Number(queryParams.page) || 1;
+  const limit = Number(queryParams.limit) || 10;
+
+  const { startDate } = getDateRanges(range);
+
+  const { posts, totalCount } = await analyticsRepository.getUserPostsWithAnalytics(userId, {
+    startDate,
+    platform: platform !== 'ALL' ? platform : null,
+    search,
+    sortBy,
+    sortOrder,
+    page,
+    limit,
+  });
+
+  const formattedPosts = posts.map((post) => {
+    const analytics = post.postAnalytics || [];
+    const schedule = post.scheduledPost || {};
+    const platformResults = schedule.platformResults || {};
+
+    let totalLikes = 0;
+    let totalComments = 0;
+    let totalShares = 0;
+    let totalReach = 0;
+    let totalImpressions = 0;
+    let latestSync = null;
+
+    const platformBreakdown = analytics.map((pa) => {
+      totalLikes += pa.likes || 0;
+      totalComments += pa.comments || 0;
+      totalShares += pa.shares || 0;
+      totalReach += pa.reach || 0;
+      totalImpressions += pa.impressions || 0;
+
+      if (!latestSync || (pa.lastSyncedAt && new Date(pa.lastSyncedAt) > new Date(latestSync))) {
+        latestSync = pa.lastSyncedAt;
+      }
+
+      // Resolve live post URL if available from platform results
+      const liveInfo = platformResults[pa.platform] || {};
+      const postUrl = liveInfo.postUrl || liveInfo.permalink || null;
+
+      return {
+        platform: pa.platform,
+        likes: pa.likes || 0,
+        comments: pa.comments || 0,
+        shares: pa.shares || 0,
+        reach: pa.reach || 0,
+        impressions: pa.impressions || 0,
+        engagementRate: pa.engagementRate || 0,
+        lastSyncedAt: pa.lastSyncedAt || null,
+        platformPostId: pa.platformPostId,
+        postUrl,
+      };
+    });
+
+    const totalInteractions = totalLikes + totalComments + totalShares;
+    const engagementRate = totalReach > 0
+      ? Number(((totalInteractions / totalReach) * 100).toFixed(2))
+      : (totalInteractions > 0 ? 100 : 0);
+
+    // Collect target platforms
+    const targetPlatforms = schedule.targetPlatforms?.length > 0
+      ? schedule.targetPlatforms
+      : analytics.length > 0
+      ? analytics.map((a) => a.platform)
+      : ['INSTAGRAM', 'FACEBOOK'];
+
+    return {
+      id: post.id,
+      title: post.occasionName || post.template?.title || 'Branded Graphic Post',
+      graphicUrl: post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl || null,
+      caption: post.captions?.[0]?.captionText || '',
+      hashtags: post.captions?.[0]?.hashtags || [],
+      festivalName: post.festival?.name || null,
+      categoryName: post.category?.name || null,
+      createdAt: post.createdAt,
+      publishedAt: schedule.publishedAt || post.createdAt,
+      targetPlatforms,
+      platformResults,
+      metrics: {
+        likes: totalLikes,
+        comments: totalComments,
+        shares: totalShares,
+        reach: totalReach,
+        impressions: totalImpressions,
+        totalInteractions,
+        engagementRate,
+        lastSyncedAt: latestSync || post.createdAt,
+      },
+      platformBreakdown,
+    };
+  });
+
+  return {
+    posts: formattedPosts,
+    meta: {
+      totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit) || 1,
+    },
+  };
+};
+
+/**
+ * Trigger immediate real-time sync with Meta Graph API for all user's published posts
+ *
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Sync result
+ */
+export const syncUserAnalytics = async (userId) => {
+  const eligiblePosts = await analyticsRepository.findUserPublishedPostsForSync(userId, 20);
+
+  if (eligiblePosts.length === 0) {
+    return {
+      syncedCount: 0,
+      message: 'No published posts available to sync.',
+    };
+  }
+
+  const { processAnalyticsJob } = await import('../../jobs/workers/analytics.worker.js');
+
+  let syncedCount = 0;
+  for (const post of eligiblePosts) {
+    const latestSchedule = post.scheduledPost;
+    const platformResults = latestSchedule?.platformResults || {};
+    const targetPlatforms = latestSchedule?.targetPlatforms?.length > 0
+      ? latestSchedule.targetPlatforms
+      : Object.keys(platformResults).length > 0
+      ? Object.keys(platformResults)
+      : ['INSTAGRAM', 'FACEBOOK'];
+
+    try {
+      await processAnalyticsJob({
+        postId: post.id,
+        userId,
+        targetPlatforms,
+        platformResults,
+      });
+      syncedCount++;
+    } catch (err) {
+      logger.warn(`⚠️ [AnalyticsLogic] On-demand sync warning for post ${post.id}:`, err.message);
+    }
+  }
+
+  await invalidateUserAnalyticsCache(userId);
+
+  return {
+    syncedCount,
+    message: `Successfully synchronized live metrics for ${syncedCount} post(s) with Meta Graph API!`,
+  };
+};
+
+/**
  * Backward-compatible logic singleton export
  */
 export const analyticsLogic = {
@@ -174,6 +341,9 @@ export const analyticsLogic = {
   getTrends,
   getPlatformBreakdown,
   getTopTemplates,
+  getPostsAnalytics,
+  syncUserAnalytics,
   seedDemoData,
   invalidateUserAnalyticsCache,
 };
+

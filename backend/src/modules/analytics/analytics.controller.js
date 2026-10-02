@@ -5,6 +5,8 @@ import {
   getTrends as getTrendsLogic,
   getPlatformBreakdown as getPlatformBreakdownLogic,
   getTopTemplates as getTopTemplatesLogic,
+  getPostsAnalytics as getPostsAnalyticsLogic,
+  syncUserAnalytics as syncUserAnalyticsLogic,
   seedDemoData as seedDemoDataLogic,
 } from './analytics.logic.js';
 
@@ -73,6 +75,39 @@ export const getTopTemplates = async (req, res, next) => {
 };
 
 /**
+ * Get individual post-level analytics and breakdown
+ */
+export const getPostsAnalytics = async (req, res, next) => {
+  try {
+    const data = await getPostsAnalyticsLogic(req.user.id, req.query);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'Post analytics list fetched successfully.',
+      data: data.posts,
+      meta: data.meta,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Trigger real-time on-demand Meta Graph API sync for user's published posts
+ */
+export const syncAnalytics = async (req, res, next) => {
+  try {
+    const result = await syncUserAnalyticsLogic(req.user.id);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.message,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * Seed demo analytics data for local development/testing
  */
 export const seedDemo = async (req, res, next) => {
@@ -96,5 +131,8 @@ export const analyticsController = {
   getTrends,
   getPlatformBreakdown,
   getTopTemplates,
+  getPostsAnalytics,
+  syncAnalytics,
   seedDemo,
 };
+

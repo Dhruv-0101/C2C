@@ -43,6 +43,40 @@ export const analyticsApi = {
   },
 
   /**
+   * Get post-level analytics and engagement metrics
+   */
+  getPostsAnalytics: async ({
+    range = '30d',
+    platform = 'ALL',
+    search = '',
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+    page = 1,
+    limit = 10,
+  } = {}) => {
+    const response = await api.get(API_ENDPOINTS.ANALYTICS.POSTS, {
+      params: {
+        range,
+        platform,
+        search: search || undefined,
+        sortBy,
+        sortOrder,
+        page,
+        limit,
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Trigger immediate real-time sync with Meta Graph API
+   */
+  syncAnalytics: async () => {
+    const response = await api.post(API_ENDPOINTS.ANALYTICS.SYNC);
+    return response.data;
+  },
+
+  /**
    * Seed demo analytics data for development environment
    */
   seedDemo: async () => {

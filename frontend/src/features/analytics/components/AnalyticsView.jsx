@@ -1,18 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
+  Tooltip,
 } from 'recharts';
 import {
+  BarChart3,
   TrendingUp,
   TrendingDown,
   Eye,
@@ -20,21 +15,24 @@ import {
   Award,
   Sparkles,
   RefreshCw,
-  Calendar,
   Filter,
   Instagram,
   Facebook,
-  Linkedin,
-  BarChart3,
   Share2,
   Heart,
+  HelpCircle,
+  Layers,
+  LayoutDashboard,
+  Calculator,
+  ShieldCheck,
 } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { AnalyticsKpiCards } from './AnalyticsKpiCards';
 import { EngagementChart } from './EngagementChart';
+import { PostAnalyticsList } from './PostAnalyticsList';
+import { MetricsExplanationModal } from './MetricsExplanationModal';
 import { SkeletonKPI } from '@/components/feedback/SkeletonLoader';
-
 
 // Platform Color Palette
 const PLATFORM_COLORS = {
@@ -72,21 +70,40 @@ export const AnalyticsView = ({
   trends = [],
   platforms = [],
   topTemplates = [],
+  posts = [],
+  postsMeta = { totalCount: 0, page: 1, limit: 10, totalPages: 1 },
   isLoading = false,
+  isPostsLoading = false,
   range = '30d',
   onRangeChange,
   platformFilter = 'ALL',
   onPlatformChange,
+  searchTerm = '',
+  onSearchChange,
+  sortBy = 'createdAt',
+  onSortChange,
+  page = 1,
+  onPageChange,
+  onSync,
+  isSyncing = false,
   onSeedDemo,
   isSeeding = false,
 }) => {
+  // Tab state: 'posts' | 'overview' | 'unified'
+  const [activeTab, setActiveTab] = useState('posts');
+  // Metrics explanation modal state
+  const [isExplanationOpen, setIsExplanationOpen] = useState(false);
+
   const formatNumber = (num = 0) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toLocaleString();
   };
 
-  const hasData = trends.length > 0 || (kpi.totalImpressions && kpi.totalImpressions > 0);
+  const hasData =
+    trends.length > 0 ||
+    posts.length > 0 ||
+    (kpi.totalImpressions && kpi.totalImpressions > 0);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-12">
@@ -103,15 +120,15 @@ export const AnalyticsView = ({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span>Meta & LinkedIn Graph API Live Sync</span>
+              <span>Meta Graph API Live Sync</span>
             </div>
           </div>
           <p className="text-xs text-slate-400">
-            Real-time engagement metrics, reach growth & insights fetched directly from Meta Graph API & LinkedIn API.
+            Real counts for Impressions, Reach, Likes, Comments & Shares directly from Instagram & Facebook.
           </p>
         </div>
 
-        {/* Action Controls - Single Row Alignment */}
+        {/* Action Controls Toolbar */}
         <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
           {/* Range Selector */}
           <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] p-1 shrink-0">
@@ -141,22 +158,100 @@ export const AnalyticsView = ({
               <option value="ALL" className="bg-[#131B2A]">All Platforms</option>
               <option value="INSTAGRAM" className="bg-[#131B2A]">Instagram</option>
               <option value="FACEBOOK" className="bg-[#131B2A]">Facebook</option>
-              <option value="LINKEDIN" className="bg-[#131B2A]">LinkedIn</option>
             </select>
           </div>
+
+          {/* Sync Live Data Button */}
+          <Button
+            variant="outline"
+            onClick={onSync}
+            isLoading={isSyncing}
+            className="py-1 px-3 text-xs font-bold border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-1.5 shrink-0"
+            title="Fetch real-time metrics directly from Meta Graph API"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Live Data'}</span>
+          </Button>
+
+          {/* Metrics Guide Button */}
+          <Button
+            variant="outline"
+            onClick={() => setIsExplanationOpen(true)}
+            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-1.5 shrink-0"
+            title="How are analytics and engagement rates calculated?"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Metrics Guide</span>
+          </Button>
 
           {/* Seed Demo Button */}
           <Button
             variant="outline"
             onClick={onSeedDemo}
             isLoading={isSeeding}
-            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-amber-400 hover:bg-amber-500/10 flex items-center gap-1 shrink-0"
+            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 flex items-center gap-1 shrink-0"
             title="Seed engagement analytics for testing"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Seed Analytics</span>
+            <span className="hidden md:inline">Seed</span>
           </Button>
         </div>
+      </div>
+
+      {/* View Switcher Tabs (Decluttering Mechanism) */}
+      <div className="flex items-center justify-between gap-3 border-b border-[#2C384E] pb-2 flex-wrap">
+        <div className="flex items-center gap-1 bg-[#131B2A] p-1 rounded-xl border border-[#2C384E]">
+          <button
+            onClick={() => setActiveTab('posts')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              activeTab === 'posts'
+                ? 'bg-amber-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Individual Post Insights</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-extrabold ${
+              activeTab === 'posts' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
+            }`}>
+              {postsMeta.totalCount || posts.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              activeTab === 'overview'
+                ? 'bg-amber-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Combined Overview & Trends</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('unified')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              activeTab === 'unified'
+                ? 'bg-amber-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            <span>Complete Dashboard</span>
+          </button>
+        </div>
+
+        {/* Transparent Calculation Mini-Pill */}
+        <button
+          onClick={() => setIsExplanationOpen(true)}
+          className="flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-medium hover:bg-amber-500/20 transition cursor-pointer"
+        >
+          <Calculator className="w-3.5 h-3.5 text-amber-400" />
+          <span className="hidden sm:inline">Formula:</span>
+          <span className="font-mono text-[11px]">(Likes + Comments + Shares) ÷ Reach × 100</span>
+        </button>
       </div>
 
       {isLoading ? (
@@ -165,16 +260,6 @@ export const AnalyticsView = ({
           <div className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-6 space-y-4">
             <div className="h-5 w-48 rounded skeleton-shimmer" />
             <div className="h-64 w-full rounded-xl skeleton-shimmer" />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-6 space-y-4">
-              <div className="h-5 w-40 rounded skeleton-shimmer" />
-              <div className="h-52 w-full rounded-xl skeleton-shimmer" />
-            </div>
-            <div className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-6 space-y-4">
-              <div className="h-5 w-40 rounded skeleton-shimmer" />
-              <div className="h-52 w-full rounded-xl skeleton-shimmer" />
-            </div>
           </div>
         </div>
       ) : !hasData ? (
@@ -186,136 +271,186 @@ export const AnalyticsView = ({
           <div className="space-y-1">
             <h3 className="font-heading font-extrabold text-lg text-white">No Analytics Data Found</h3>
             <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Publish graphics to your social accounts or seed demo data to generate real-time metrics and charts.
+              Publish graphics to Instagram or Facebook via Post Studio or click Sync Live Data to fetch real-time engagement.
             </p>
           </div>
-          <Button
-            variant="primary"
-            onClick={onSeedDemo}
-            isLoading={isSeeding}
-            className="py-2.5 px-5 text-xs font-bold"
-          >
-            <Sparkles className="w-4 h-4 mr-1.5" />
-            Seed Demo Analytics Metrics
-          </Button>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button
+              variant="primary"
+              onClick={onSync}
+              isLoading={isSyncing}
+              className="py-2.5 px-5 text-xs font-bold"
+            >
+              <RefreshCw className="w-4 h-4 mr-1.5" />
+              Sync Live Meta Data
+            </Button>
+            <Button
+              variant="outline"
+              onClick={onSeedDemo}
+              isLoading={isSeeding}
+              className="py-2.5 px-5 text-xs font-bold border-[#2C384E]"
+            >
+              <Sparkles className="w-4 h-4 mr-1.5 text-amber-400" />
+              Seed Demo Analytics
+            </Button>
+          </div>
         </Card>
       ) : (
+        <div className="space-y-6">
+          {/* TAB 1: INDIVIDUAL POST INSIGHTS */}
+          {(activeTab === 'posts' || activeTab === 'unified') && (
+            <div className="space-y-4">
+              <PostAnalyticsList
+                posts={posts}
+                meta={postsMeta}
+                isLoading={isPostsLoading}
+                searchTerm={searchTerm}
+                onSearchChange={onSearchChange}
+                platformFilter={platformFilter}
+                onPlatformChange={onPlatformChange}
+                sortBy={sortBy}
+                onSortChange={onSortChange}
+                page={page}
+                onPageChange={onPageChange}
+              />
+            </div>
+          )}
 
-        <>
-          {/* KPI Summary Cards */}
-          <AnalyticsKpiCards kpi={kpi} />
-
-          {/* Time Series Area Chart: Daily Impressions & Reach Trend */}
-          <EngagementChart trends={trends} />
-
-
-          {/* Two-Column Grid: Platform Breakdown & Top Design Templates */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Box: Platform Engagement Split */}
-            <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
-              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 border-b border-[#2C384E] pb-3">
-                <Share2 className="w-4 h-4 text-amber-400" />
-                <span>Social Channel Distribution</span>
-              </h3>
-
-              {platforms.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-500 italic">
-                  No platform breakdown available.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="h-52 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={platforms}
-                          dataKey="reach"
-                          nameKey="platform"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={80}
-                          paddingAngle={4}
-                        >
-                          {platforms.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={PLATFORM_COLORS[entry.platform] || CHART_COLORS[index % CHART_COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip content={<CustomTooltip />} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Legend Table */}
-                  <div className="space-y-2 pt-2 border-t border-[#2C384E]">
-                    {platforms.map((p) => (
-                      <div key={p.platform} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 font-bold text-slate-200">
-                          <span
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: PLATFORM_COLORS[p.platform] || '#4F46E5' }}
-                          />
-                          <span>{p.platform}</span>
-                        </div>
-                        <div className="font-mono text-slate-400">
-                          <strong>{formatNumber(p.reach)}</strong> Reach ({p.postCount} posts)
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+          {/* TAB 2: OVERVIEW & AGGREGATE METRICS */}
+          {(activeTab === 'overview' || activeTab === 'unified') && (
+            <div className="space-y-6 pt-2">
+              {activeTab === 'unified' && (
+                <div className="flex items-center gap-2 border-t border-[#2C384E] pt-6">
+                  <BarChart3 className="w-4 h-4 text-amber-400" />
+                  <h3 className="font-heading font-extrabold text-base text-white">
+                    Overall Performance & Platform Trends (All Posts Combined)
+                  </h3>
                 </div>
               )}
-            </Card>
 
-            {/* Right Box: Top Performing Design Templates */}
-            <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
-              <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 border-b border-[#2C384E] pb-3">
-                <Award className="w-4 h-4 text-emerald-400" />
-                <span>Top Performing Design Templates</span>
-              </h3>
+              {/* KPI Summary Cards */}
+              <AnalyticsKpiCards kpi={kpi} />
 
-              {topTemplates.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-500 italic">
-                  No template analytics available.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {topTemplates.map((t, idx) => (
-                    <div
-                      key={t.id}
-                      className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between gap-3 hover:border-amber-500/40 transition"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 font-extrabold text-xs flex items-center justify-center border border-amber-500/20 shrink-0">
-                          #{idx + 1}
-                        </div>
-                        <div className="space-y-0.5">
-                          <h4 className="font-bold text-xs text-white line-clamp-1">{t.title}</h4>
-                          <span className="text-[10px] font-bold text-amber-400/90 uppercase px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
-                            {t.category}
-                          </span>
-                        </div>
+              {/* Time Series Area Chart: Daily Impressions & Reach Trend */}
+              <EngagementChart trends={trends} />
+
+              {/* Two-Column Grid: Platform Breakdown & Top Design Templates */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Box: Platform Engagement Split */}
+                <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
+                  <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 border-b border-[#2C384E] pb-3">
+                    <Share2 className="w-4 h-4 text-amber-400" />
+                    <span>Social Channel Distribution</span>
+                  </h3>
+
+                  {platforms.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-slate-500 italic">
+                      No platform breakdown available.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="h-52 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={platforms}
+                              dataKey="reach"
+                              nameKey="platform"
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={50}
+                              outerRadius={80}
+                              paddingAngle={4}
+                            >
+                              {platforms.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={PLATFORM_COLORS[entry.platform] || CHART_COLORS[index % CHART_COLORS.length]}
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip />} />
+                          </PieChart>
+                        </ResponsiveContainer>
                       </div>
 
-                      <div className="text-right shrink-0">
-                        <div className="text-xs font-extrabold text-emerald-400 font-mono">
-                          {t.avgEngagementRate}% Rate
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-mono">
-                          {formatNumber(t.totalImpressions)} Impr
-                        </div>
+                      {/* Legend Table */}
+                      <div className="space-y-2 pt-2 border-t border-[#2C384E]">
+                        {platforms.map((p) => (
+                          <div key={p.platform} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2 font-bold text-slate-200">
+                              <span
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: PLATFORM_COLORS[p.platform] || '#4F46E5' }}
+                              />
+                              <span>{p.platform}</span>
+                            </div>
+                            <div className="font-mono text-slate-400">
+                              <strong>{formatNumber(p.reach)}</strong> Reach ({p.postCount} posts)
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </div>
-        </>
+                  )}
+                </Card>
+
+                {/* Right Box: Top Performing Design Templates */}
+                <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
+                  <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 border-b border-[#2C384E] pb-3">
+                    <Award className="w-4 h-4 text-emerald-400" />
+                    <span>Top Performing Design Templates</span>
+                  </h3>
+
+                  {topTemplates.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-slate-500 italic">
+                      No template analytics available.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {topTemplates.map((t, idx) => (
+                        <div
+                          key={t.id}
+                          className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between gap-3 hover:border-amber-500/40 transition"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 font-extrabold text-xs flex items-center justify-center border border-amber-500/20 shrink-0">
+                              #{idx + 1}
+                            </div>
+                            <div className="space-y-0.5">
+                              <h4 className="font-bold text-xs text-white line-clamp-1">{t.title}</h4>
+                              <span className="text-[10px] font-bold text-amber-400/90 uppercase px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                                {t.category}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <div className="text-xs font-extrabold text-emerald-400 font-mono">
+                              {t.avgEngagementRate}% Rate
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              {formatNumber(t.totalImpressions)} Impr
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            </div>
+          )}
+        </div>
       )}
+
+      {/* Metrics Explanation Glossary & Formula Modal */}
+      <MetricsExplanationModal
+        isOpen={isExplanationOpen}
+        onClose={() => setIsExplanationOpen(false)}
+      />
     </div>
   );
 };
+
+export default AnalyticsView;

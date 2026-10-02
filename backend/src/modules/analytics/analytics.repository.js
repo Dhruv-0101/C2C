@@ -309,6 +309,125 @@ export const seedDemoAnalytics = async (userId) => {
 };
 
 /**
+ * Fetch paginated user published posts with full relational analytics data
+ *
+ * @param {string} userId - User ID
+ * @param {Object} options - Filter & pagination options
+ * @returns {Promise<{ posts: Array, totalCount: number }>}
+ */
+export const getUserPostsWithAnalytics = async (userId, {
+  startDate = null,
+  platform = null,
+  search = null,
+  sortBy = 'createdAt',
+  sortOrder = 'desc',
+  page = 1,
+  limit = 10,
+} = {}) => {
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const where = {
+    userId,
+    status: 'PUBLISHED',
+  };
+
+  if (startDate) {
+    where.createdAt = { gte: startDate };
+  }
+
+  if (search && search.trim()) {
+    const s = search.trim();
+    where.OR = [
+      { occasionName: { contains: s, mode: 'insensitive' } },
+      { captions: { some: { captionText: { contains: s, mode: 'insensitive' } } } },
+      { template: { title: { contains: s, mode: 'insensitive' } } },
+      { festival: { name: { contains: s, mode: 'insensitive' } } },
+    ];
+  }
+
+  if (platform && platform !== 'ALL') {
+    where.postAnalytics = {
+      some: { platform },
+    };
+  }
+
+  const [posts, totalCount] = await Promise.all([
+    prisma.post.findMany({
+      where,
+      skip,
+      take,
+      include: {
+        captions: {
+          select: {
+            id: true,
+            captionText: true,
+            hashtags: true,
+          },
+        },
+        template: {
+          select: {
+            id: true,
+            title: true,
+            baseImageUrl: true,
+          },
+        },
+        festival: {
+          select: {
+            id: true,
+            name: true,
+            bannerUrl: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        scheduledPost: {
+          select: {
+            id: true,
+            scheduledAt: true,
+            publishedAt: true,
+            targetPlatforms: true,
+            platformResults: true,
+          },
+        },
+        postAnalytics: {
+          orderBy: { platform: 'asc' },
+        },
+      },
+      orderBy: { createdAt: sortOrder === 'asc' ? 'asc' : 'desc' },
+    }),
+    prisma.post.count({ where }),
+  ]);
+
+  return { posts, totalCount };
+};
+
+/**
+ * Find all published posts of a user eligible for live Meta Graph sync
+ *
+ * @param {string} userId - User ID
+ * @param {number} [limit=20] - Max posts to sync in on-demand batch
+ * @returns {Promise<Array>} Published posts
+ */
+export const findUserPublishedPostsForSync = async (userId, limit = 20) => {
+  return prisma.post.findMany({
+    where: {
+      userId,
+      status: 'PUBLISHED',
+    },
+    include: {
+      scheduledPost: true,
+    },
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
+/**
  * Backward-compatible repository singleton export
  */
 export const analyticsRepository = {
@@ -317,4 +436,7 @@ export const analyticsRepository = {
   getPlatformBreakdown,
   getTopTemplates,
   seedDemoAnalytics,
+  getUserPostsWithAnalytics,
+  findUserPublishedPostsForSync,
 };
+

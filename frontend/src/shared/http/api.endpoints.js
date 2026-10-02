@@ -100,6 +100,8 @@ export const API_ENDPOINTS = {
     TRENDS: '/analytics/trends',
     PLATFORMS: '/analytics/platform-breakdown',
     TOP_TEMPLATES: '/analytics/top-templates',
+    POSTS: '/analytics/posts',
+    SYNC: '/analytics/sync',
     DEMO_SEED: '/analytics/demo-seed',
   },
   AI: {
