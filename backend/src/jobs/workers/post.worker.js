@@ -136,6 +136,29 @@ export const processPostJob = async (jobData) => {
           },
         });
       }
+    } else if (postId) {
+      // 🚀 CRITICAL FOR INSTANT POSTS: Upsert ScheduledPost so platformResults (Meta mediaId/postId)
+      // are persisted, enabling the Analytics Cron & Worker to track live post engagement!
+      try {
+        await prisma.scheduledPost.upsert({
+          where: { postId },
+          create: {
+            postId,
+            scheduledAt: publishedAt,
+            publishedAt,
+            status: "SUCCESS",
+            targetPlatforms: targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],
+            platformResults: publishResult.platformResults,
+          },
+          update: {
+            status: "SUCCESS",
+            publishedAt,
+            platformResults: publishResult.platformResults,
+          },
+        });
+      } catch (upsertErr) {
+        logger.warn(`⚠️ [PostWorker] Could not persist platformResults in ScheduledPost for post ${postId}:`, upsertErr.message);
+      }
     }
 
     if (postId) {

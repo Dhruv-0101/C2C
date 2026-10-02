@@ -29,13 +29,16 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
 
       const likes = mediaRes.data?.like_count ?? 0;
       const comments = mediaRes.data?.comments_count ?? 0;
-      let reach = Math.max(likes * 12 + comments * 25 + 50, 100);
-      let impressions = Math.floor(reach * 1.35);
+      let reach = likes;
+      let impressions = likes + comments;
+      let shares = 0;
+      let hasInsights = false;
 
+      // Official Meta Insights API (Requires instagram_manage_insights permission)
       try {
         const insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
           params: {
-            metric: 'impressions,reach',
+            metric: 'impressions,reach,saved,shares',
             access_token: accessToken,
           },
           timeout: 4000,
@@ -43,39 +46,59 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
 
         const metricsData = insightsRes.data?.data || [];
         for (const item of metricsData) {
-          if (item.name === 'reach' && item.values?.[0]?.value) {
+          if (item.name === 'reach' && item.values?.[0]?.value !== undefined) {
             reach = item.values[0].value;
+            hasInsights = true;
           }
-          if (item.name === 'impressions' && item.values?.[0]?.value) {
+          if (item.name === 'impressions' && item.values?.[0]?.value !== undefined) {
             impressions = item.values[0].value;
+            hasInsights = true;
+          }
+          if (item.name === 'shares' && item.values?.[0]?.value !== undefined) {
+            shares = item.values[0].value;
+            hasInsights = true;
           }
         }
-      } catch {
-        // Insights metric optional fallback
+      } catch (igErr) {
+        logger.debug(`ℹ️ [AnalyticsWorker] Live Instagram insights notice for ${platformPostId}:`, igErr.response?.data?.error?.message || igErr.message);
       }
 
-      const shares = Math.floor(likes * 0.08);
-      const engagementRate = Number((((likes + comments + shares) / (reach || 1)) * 100).toFixed(2));
+      const totalInteractions = likes + comments + shares;
+      const engagementRate = reach > 0
+        ? Number(((totalInteractions / reach) * 100).toFixed(2))
+        : (totalInteractions > 0 ? 100 : 0);
 
       return { likes, comments, shares, reach, impressions, engagementRate };
     }
 
     if (platform === 'FACEBOOK') {
-      const fbRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}`, {
-        params: {
-          fields: 'likes.summary(true),comments.summary(true),shares',
-          access_token: accessToken,
-        },
-        timeout: 5000,
-      });
+      let likes = 0;
+      let comments = 0;
+      let shares = 0;
+      let reach = 0;
+      let impressions = 0;
+      let hasInsights = false;
 
-      const likes = fbRes.data?.likes?.summary?.total_count ?? 0;
-      const comments = fbRes.data?.comments?.summary?.total_count ?? 0;
-      const shares = fbRes.data?.shares?.count ?? 0;
+      // 1. Fetch exact live reactions, comments, shares from Facebook Page Post
+      try {
+        const fbRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}`, {
+          params: {
+            fields: 'likes.summary(true),comments.summary(true),shares',
+            access_token: accessToken,
+          },
+          timeout: 5000,
+        });
+        likes = fbRes.data?.likes?.summary?.total_count ?? 0;
+        comments = fbRes.data?.comments?.summary?.total_count ?? 0;
+        shares = fbRes.data?.shares?.count ?? 0;
+      } catch (fbErr) {
+        logger.debug(`ℹ️ [AnalyticsWorker] Direct FB likes/comments lookup notice for ${platformPostId}:`, fbErr.response?.data?.error?.message || fbErr.message);
+      }
 
-      let reach = Math.max((likes + comments + shares) * 10 + 80, 120);
-      let impressions = Math.floor(reach * 1.4);
+      reach = likes;
+      impressions = likes + comments;
 
+      // 2. Fetch exact official post insights from Meta Graph API
       try {
         const insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
           params: {
@@ -87,18 +110,24 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
 
         const metricsData = insightsRes.data?.data || [];
         for (const item of metricsData) {
-          if (item.name === 'post_impressions_unique' && item.values?.[0]?.value) {
+          if (item.name === 'post_impressions_unique' && item.values?.[0]?.value !== undefined) {
             reach = item.values[0].value;
+            hasInsights = true;
           }
-          if (item.name === 'post_impressions' && item.values?.[0]?.value) {
+          if (item.name === 'post_impressions' && item.values?.[0]?.value !== undefined) {
             impressions = item.values[0].value;
+            hasInsights = true;
           }
         }
-      } catch {
-        // Insights optional fallback
+      } catch (fbInsightsErr) {
+        logger.debug(`ℹ️ [AnalyticsWorker] FB post insights lookup notice for ${platformPostId}:`, fbInsightsErr.response?.data?.error?.message || fbInsightsErr.message);
       }
 
-      const engagementRate = Number((((likes + comments + shares) / (reach || 1)) * 100).toFixed(2));
+      const totalInteractions = likes + comments + shares;
+      const engagementRate = reach > 0
+        ? Number(((totalInteractions / reach) * 100).toFixed(2))
+        : (totalInteractions > 0 ? 100 : 0);
+
       return { likes, comments, shares, reach, impressions, engagementRate };
     }
 
@@ -114,10 +143,13 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
 
       const likes = liRes.data?.likesSummary?.totalLikes ?? 0;
       const comments = liRes.data?.commentsSummary?.totalComments ?? 0;
-      const shares = Math.floor(likes * 0.1);
-      const reach = Math.max(likes * 14 + 100, 150);
-      const impressions = Math.floor(reach * 1.5);
-      const engagementRate = Number((((likes + comments + shares) / (reach || 1)) * 100).toFixed(2));
+      const shares = 0;
+      const reach = likes;
+      const impressions = likes + comments;
+      const totalInteractions = likes + comments + shares;
+      const engagementRate = reach > 0
+        ? Number(((totalInteractions / reach) * 100).toFixed(2))
+        : (totalInteractions > 0 ? 100 : 0);
 
       return { likes, comments, shares, reach, impressions, engagementRate };
     }
