@@ -34,33 +34,53 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
       let shares = 0;
       let hasInsights = false;
 
-      // Official Meta Insights API (Requires instagram_manage_insights permission)
+      // Official Meta Insights API for Instagram (Supports modern Meta Graph API v22+)
       try {
-        const insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
-          params: {
-            metric: 'impressions,reach,saved,shares',
-            access_token: accessToken,
-          },
-          timeout: 4000,
-        });
+        let insightsRes;
+        try {
+          // In Meta Graph API v22+, 'views' replaced 'impressions'
+          insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
+            params: {
+              metric: 'views,reach,saved,shares',
+              access_token: accessToken,
+            },
+            timeout: 5000,
+          });
+        } catch (v22Err) {
+          // Graceful fallback for media types that only support reach, saved, shares
+          insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
+            params: {
+              metric: 'reach,saved,shares',
+              access_token: accessToken,
+            },
+            timeout: 5000,
+          });
+        }
 
         const metricsData = insightsRes.data?.data || [];
         for (const item of metricsData) {
-          if (item.name === 'reach' && item.values?.[0]?.value !== undefined) {
-            reach = item.values[0].value;
+          const val = item.values?.[0]?.value;
+          if (val === undefined) continue;
+
+          if (item.name === 'reach') {
+            reach = Number(val);
             hasInsights = true;
           }
-          if (item.name === 'impressions' && item.values?.[0]?.value !== undefined) {
-            impressions = item.values[0].value;
+          if (item.name === 'views' || item.name === 'impressions') {
+            impressions = Number(val);
             hasInsights = true;
           }
-          if (item.name === 'shares' && item.values?.[0]?.value !== undefined) {
-            shares = item.values[0].value;
+          if (item.name === 'shares') {
+            shares = Number(val);
             hasInsights = true;
           }
         }
       } catch (igErr) {
         logger.debug(`ℹ️ [AnalyticsWorker] Live Instagram insights notice for ${platformPostId}:`, igErr.response?.data?.error?.message || igErr.message);
+      }
+
+      if (!hasInsights) {
+        impressions = Math.max(likes + comments, reach);
       }
 
       const totalInteractions = likes + comments + shares;
@@ -83,26 +103,23 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
       try {
         const fbRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}`, {
           params: {
-            fields: 'likes.summary(true),comments.summary(true),shares',
+            fields: 'likes.summary(true),comments.summary(true),shares,reactions.summary(true)',
             access_token: accessToken,
           },
           timeout: 5000,
         });
-        likes = fbRes.data?.likes?.summary?.total_count ?? 0;
+        likes = fbRes.data?.reactions?.summary?.total_count ?? fbRes.data?.likes?.summary?.total_count ?? 0;
         comments = fbRes.data?.comments?.summary?.total_count ?? 0;
         shares = fbRes.data?.shares?.count ?? 0;
       } catch (fbErr) {
         logger.debug(`ℹ️ [AnalyticsWorker] Direct FB likes/comments lookup notice for ${platformPostId}:`, fbErr.response?.data?.error?.message || fbErr.message);
       }
 
-      reach = likes;
-      impressions = likes + comments;
-
-      // 2. Fetch exact official post insights from Meta Graph API
+      // 2. Query Facebook Post Activity Insights for shares & actions
       try {
         const insightsRes = await axios.get(`${META_GRAPH_URL}/${platformPostId}/insights`, {
           params: {
-            metric: 'post_impressions_unique,post_impressions',
+            metric: 'post_activity_by_action_type',
             access_token: accessToken,
           },
           timeout: 4000,
@@ -110,18 +127,24 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
 
         const metricsData = insightsRes.data?.data || [];
         for (const item of metricsData) {
-          if (item.name === 'post_impressions_unique' && item.values?.[0]?.value !== undefined) {
-            reach = item.values[0].value;
+          const actionMap = item.values?.[0]?.value || {};
+          if (actionMap.share && Number(actionMap.share) > shares) {
+            shares = Number(actionMap.share);
             hasInsights = true;
           }
-          if (item.name === 'post_impressions' && item.values?.[0]?.value !== undefined) {
-            impressions = item.values[0].value;
-            hasInsights = true;
+          if (actionMap.like && Number(actionMap.like) > likes) {
+            likes = Number(actionMap.like);
+          }
+          if (actionMap.comment && Number(actionMap.comment) > comments) {
+            comments = Number(actionMap.comment);
           }
         }
       } catch (fbInsightsErr) {
         logger.debug(`ℹ️ [AnalyticsWorker] FB post insights lookup notice for ${platformPostId}:`, fbInsightsErr.response?.data?.error?.message || fbInsightsErr.message);
       }
+
+      reach = Math.max(likes, 1);
+      impressions = Math.max(likes + comments + shares, reach);
 
       const totalInteractions = likes + comments + shares;
       const engagementRate = reach > 0
