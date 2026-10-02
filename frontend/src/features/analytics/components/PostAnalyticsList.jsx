@@ -26,6 +26,8 @@ export const PostAnalyticsList = ({
   onPlatformChange,
   sortBy = 'createdAt',
   onSortChange,
+  sortOrder = 'desc',
+  onSortOrderChange,
   page = 1,
   onPageChange,
   limit = 9,
@@ -66,19 +68,28 @@ export const PostAnalyticsList = ({
           </div>
 
           {/* Sort Selector */}
-          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2.5 py-1.5 shrink-0">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 mr-1.5 shrink-0" />
+          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2.5 py-1 shrink-0 gap-1.5">
+            <ArrowUpDown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <select
               value={sortBy}
               onChange={(e) => onSortChange?.(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 font-bold focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs text-slate-200 font-bold focus:outline-none cursor-pointer py-1"
             >
               <option value="createdAt" className="bg-[#131B2A]">Latest Published</option>
-              <option value="likes" className="bg-[#131B2A]">Most Likes</option>
               <option value="reach" className="bg-[#131B2A]">Highest Reach</option>
-              <option value="impressions" className="bg-[#131B2A]">Most Impressions</option>
               <option value="engagementRate" className="bg-[#131B2A]">Best Engagement Rate</option>
+              <option value="impressions" className="bg-[#131B2A]">Most Impressions</option>
+              <option value="likes" className="bg-[#131B2A]">Most Likes</option>
             </select>
+
+            <button
+              type="button"
+              onClick={() => onSortOrderChange?.(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="px-2 py-0.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-[10px] font-mono font-extrabold text-amber-400 border border-slate-700/80 transition cursor-pointer"
+              title={`Currently sorted ${sortOrder === 'desc' ? 'High to Low (Descending)' : 'Low to High (Ascending)'}. Click to reverse order.`}
+            >
+              {sortOrder === 'desc' ? 'DESC ↓' : 'ASC ↑'}
+            </button>
           </div>
         </div>
       </div>

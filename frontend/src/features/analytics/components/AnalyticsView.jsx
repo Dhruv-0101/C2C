@@ -81,6 +81,8 @@ export const AnalyticsView = ({
   onSearchChange,
   sortBy = 'createdAt',
   onSortChange,
+  sortOrder = 'desc',
+  onSortOrderChange,
   page = 1,
   onPageChange,
   limit = 9,
@@ -403,6 +405,8 @@ export const AnalyticsView = ({
               onPlatformChange={onPlatformChange}
               sortBy={sortBy}
               onSortChange={onSortChange}
+              sortOrder={sortOrder}
+              onSortOrderChange={onSortOrderChange}
               page={page}
               onPageChange={onPageChange}
               limit={limit}

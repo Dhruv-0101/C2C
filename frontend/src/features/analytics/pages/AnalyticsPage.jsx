@@ -11,6 +11,7 @@ export const AnalyticsPage = () => {
   const [platformFilter, setPlatformFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(9);
 
@@ -32,6 +33,7 @@ export const AnalyticsPage = () => {
     platform: platformFilter,
     search: searchTerm,
     sortBy,
+    sortOrder,
     page,
     limit,
   });
@@ -67,6 +69,11 @@ export const AnalyticsPage = () => {
     setPage(1);
   };
 
+  const handleSortOrderChange = (newOrder) => {
+    setSortOrder(newOrder);
+    setPage(1);
+  };
+
   const handleLimitChange = (newLimit) => {
     setLimit(newLimit);
     setPage(1);
@@ -90,6 +97,8 @@ export const AnalyticsPage = () => {
       onSearchChange={handleSearchChange}
       sortBy={sortBy}
       onSortChange={handleSortChange}
+      sortOrder={sortOrder}
+      onSortOrderChange={handleSortOrderChange}
       page={page}
       onPageChange={setPage}
       limit={limit}

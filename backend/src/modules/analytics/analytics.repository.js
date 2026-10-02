@@ -387,11 +387,12 @@ export const getUserPostsWithAnalytics = async (userId, {
     };
   }
 
+  const isRelationalSort = Boolean(sortBy && sortBy !== 'createdAt');
+
   const [posts, totalCount] = await Promise.all([
     prisma.post.findMany({
       where,
-      skip,
-      take,
+      ...(isRelationalSort ? {} : { skip, take }),
       include: {
         captions: {
           select: {
@@ -439,7 +440,7 @@ export const getUserPostsWithAnalytics = async (userId, {
     prisma.post.count({ where }),
   ]);
 
-  return { posts, totalCount };
+  return { posts, totalCount, isRelationalSort };
 };
 
 /**

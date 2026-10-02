@@ -203,7 +203,7 @@ export const getPostsAnalytics = async (userId, queryParams = {}) => {
 
   const { startDate } = getDateRanges(range);
 
-  const { posts, totalCount } = await analyticsRepository.getUserPostsWithAnalytics(userId, {
+  const { posts, totalCount, isRelationalSort } = await analyticsRepository.getUserPostsWithAnalytics(userId, {
     startDate,
     platform: platform !== 'ALL' ? platform : null,
     search,
@@ -291,6 +291,62 @@ export const getPostsAnalytics = async (userId, queryParams = {}) => {
       platformBreakdown,
     };
   });
+
+  // Apply sorting when sorting by computed metrics (reach, engagementRate, likes, impressions, etc.)
+  if (isRelationalSort) {
+    const isAsc = String(sortOrder).toLowerCase() === 'asc';
+    formattedPosts.sort((a, b) => {
+      let diff = 0;
+      switch (sortBy) {
+        case 'reach':
+          diff = (b.metrics.reach || 0) - (a.metrics.reach || 0);
+          break;
+        case 'impressions':
+          diff = (b.metrics.impressions || 0) - (a.metrics.impressions || 0);
+          break;
+        case 'likes':
+          diff = (b.metrics.likes || 0) - (a.metrics.likes || 0);
+          break;
+        case 'comments':
+          diff = (b.metrics.comments || 0) - (a.metrics.comments || 0);
+          break;
+        case 'shares':
+          diff = (b.metrics.shares || 0) - (a.metrics.shares || 0);
+          break;
+        case 'engagementRate':
+          diff = (b.metrics.engagementRate || 0) - (a.metrics.engagementRate || 0);
+          break;
+        default:
+          diff = 0;
+          break;
+      }
+
+      // Tie-breaker when metric values are identical
+      if (diff === 0) {
+        if (sortBy !== 'engagementRate') {
+          diff = (b.metrics.engagementRate || 0) - (a.metrics.engagementRate || 0);
+        }
+        if (diff === 0) {
+          diff = new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt);
+        }
+      }
+
+      return isAsc ? -diff : diff;
+    });
+
+    const startIndex = (page - 1) * limit;
+    const paginatedPosts = formattedPosts.slice(startIndex, startIndex + limit);
+
+    return {
+      posts: paginatedPosts,
+      meta: {
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit) || 1,
+      },
+    };
+  }
 
   return {
     posts: formattedPosts,
