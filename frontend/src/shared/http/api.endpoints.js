@@ -3,6 +3,26 @@
  */
 
 const getApiBaseUrl = () => {
+  // 1. Dynamic Browser Runtime Resolution (Always matches current origin in production)
+  if (typeof window !== 'undefined' && window.location) {
+    const { hostname, origin } = window.location;
+
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:5000/api/v1';
+    }
+
+    // Vercel deployment talking to Render backend
+    if (hostname.includes('vercel.app')) {
+      return 'https://c2c-negk.onrender.com/api/v1';
+    }
+
+    // In production on EC2 (sslip.io, IP, or custom domain):
+    // Nginx reverse proxies /api/ to the backend container on port 5000
+    return `${origin}/api/v1`;
+  }
+
+  // 2. Build-time / SSR Fallback
   const isValidUrl = (url) => {
     return (
       url &&
@@ -24,19 +44,6 @@ const getApiBaseUrl = () => {
 
   if (isValidUrl(envSpecificUrl)) {
     return envSpecificUrl.trim();
-  }
-
-  if (typeof window !== 'undefined' && window.location) {
-    const hostname = window.location.hostname;
-    if (hostname.includes('sslip.io') || hostname === '65.0.208.238' || hostname === '13.234.177.70') {
-      return `${window.location.origin}/api/v1`;
-    }
-    if (hostname.includes('vercel.app')) {
-      return 'https://c2c-negk.onrender.com/api/v1';
-    }
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:5000/api/v1';
-    }
   }
 
   if (isProduction) {
