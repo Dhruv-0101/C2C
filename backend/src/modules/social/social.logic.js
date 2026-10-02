@@ -5,6 +5,8 @@ import {
   upsertAccount,
   findPaginatedByUserId,
   deleteAccount,
+  updateSocialOnboarding,
+  getUserSocialOnboarding,
 } from './social.repository.js';
 import {
   sanitizeSocialAccount,
@@ -356,6 +358,11 @@ export const adminConnectUserToken = async ({ userId, token }) => {
     savedAccounts.push(sanitizeSocialAccount(igRecord));
   }
 
+  // Update onboarding status to CONNECTED
+  await updateSocialOnboarding(userId, {
+    socialOnboardingStatus: 'CONNECTED',
+  });
+
   // Invalidate Redis cache for user's social accounts
   await deleteCachePattern(CACHE_KEYS.SOCIAL_PATTERN(userId));
 
@@ -382,6 +389,81 @@ export const adminConnectUserToken = async ({ userId, token }) => {
         : null,
       accounts: savedAccounts,
     },
+  };
+};
+
+/**
+ * Submit Facebook Page Link by Client
+ *
+ * @param {string} userId - User ID
+ * @param {string} pageUrl - Submitted Facebook Page URL or Name
+ * @returns {Promise<Object>}
+ */
+export const submitPageLink = async (userId, pageUrl) => {
+  const targetUser = await findUserById(userId);
+  if (!targetUser) {
+    throw new NotFoundError(`User with ID '${userId}' not found.`);
+  }
+
+  const cleanUrl = pageUrl.trim();
+  const updated = await updateSocialOnboarding(userId, {
+    facebookPageUrl: cleanUrl,
+    socialOnboardingStatus: 'SUBMITTED',
+  });
+
+  logger.info(`📋 [SocialOnboarding] User ${targetUser.email} submitted Facebook Page: ${cleanUrl}`);
+
+  return {
+    success: true,
+    message: 'Facebook Page details submitted successfully! Our team will dispatch the connection request shortly.',
+    data: updated,
+  };
+};
+
+/**
+ * Get Client Social Onboarding Status
+ *
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>}
+ */
+export const getSocialOnboardingStatus = async (userId) => {
+  const onboarding = await getUserSocialOnboarding(userId);
+  if (!onboarding) {
+    throw new NotFoundError(`User with ID '${userId}' not found.`);
+  }
+
+  const isConnected = Boolean(onboarding.socialAccounts && onboarding.socialAccounts.length > 0);
+
+  return {
+    facebookPageUrl: onboarding.facebookPageUrl || null,
+    socialOnboardingStatus: isConnected ? 'CONNECTED' : onboarding.socialOnboardingStatus || 'NOT_SUBMITTED',
+    isConnected,
+  };
+};
+
+/**
+ * Admin Update User Social Onboarding Status
+ *
+ * @param {string} userId - Target User ID
+ * @param {string} status - New status ('NOT_SUBMITTED' | 'SUBMITTED' | 'REQUEST_SENT' | 'CONNECTED')
+ * @returns {Promise<Object>}
+ */
+export const adminUpdateOnboardingStatus = async (userId, status) => {
+  const targetUser = await findUserById(userId);
+  if (!targetUser) {
+    throw new NotFoundError(`Target user with ID '${userId}' not found.`);
+  }
+
+  const updated = await updateSocialOnboarding(userId, {
+    socialOnboardingStatus: status,
+  });
+
+  logger.info(`🔄 [SocialOnboarding] Admin updated status for ${targetUser.email} to '${status}'`);
+
+  return {
+    success: true,
+    message: `Onboarding status updated to '${status}'.`,
+    data: updated,
   };
 };
 
@@ -419,4 +501,7 @@ export const socialLogic = {
   disconnectAccount,
   adminConnectUserToken,
   adminDisconnectUserAccount,
+  submitPageLink,
+  getSocialOnboardingStatus,
+  adminUpdateOnboardingStatus,
 };

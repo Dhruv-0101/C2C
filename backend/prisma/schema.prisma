@@ -77,6 +77,8 @@ model User {
   googleId           String?  @unique                  // Unique Google OAuth account identifier (sub)
   isActive           Boolean  @default(true)           // Account status; if false, publishing & logins are blocked
   avatarUrl          String?                           // Cloudinary URL for user profile picture
+  facebookPageUrl    String?                           // Client submitted Facebook Business Page URL or Name
+  socialOnboardingStatus String? @default("NOT_SUBMITTED") // "NOT_SUBMITTED" | "SUBMITTED" | "REQUEST_SENT" | "CONNECTED"
   createdAt          DateTime @default(now())          // Timestamp when user registered
   updatedAt          DateTime @updatedAt               // Timestamp of last profile update
 

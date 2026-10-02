@@ -11,6 +11,7 @@ import {
   Facebook,
   Instagram,
   Share2,
+  ExternalLink,
 } from 'lucide-react';
 import { UserStatusBadge } from './UserStatusBadge';
 
@@ -216,8 +217,10 @@ export const UserTableRow = ({
       </td>
 
       {/* Social Accounts & Meta Link */}
-      <td className="py-3.5 px-4 min-w-[160px]">
+      {/* Social Accounts & Meta Link */}
+      <td className="py-3.5 px-4 min-w-[170px]">
         <div className="space-y-1.5">
+          {/* Active Connected Badges */}
           <div className="flex flex-col gap-1">
             {user.socialAccounts?.some((a) => a.isConnected) ? (
               <div className="flex flex-wrap gap-1">
@@ -249,10 +252,63 @@ export const UserTableRow = ({
             )}
           </div>
 
+          {/* Submitted Facebook Page Link Card */}
+          {user.facebookPageUrl && (
+            <div className="p-1.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] space-y-1">
+              <div className="flex items-center justify-between text-[9px]">
+                <span className="text-amber-400 font-bold flex items-center gap-1">
+                  <Facebook className="w-2.5 h-2.5 text-blue-400 shrink-0" />
+                  <span>Page Link:</span>
+                </span>
+                <span
+                  className={`px-1 py-0.2 rounded font-bold uppercase text-[8px] ${
+                    user.socialOnboardingStatus === 'CONNECTED'
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : user.socialOnboardingStatus === 'REQUEST_SENT'
+                      ? 'bg-indigo-500/20 text-indigo-400'
+                      : 'bg-amber-500/20 text-amber-400'
+                  }`}
+                >
+                  {user.socialOnboardingStatus || 'SUBMITTED'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-1 text-[10px]">
+                <span className="text-slate-300 font-mono truncate max-w-[110px]" title={user.facebookPageUrl}>
+                  {user.facebookPageUrl}
+                </span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onCopy(user.facebookPageUrl)}
+                    className="p-0.5 rounded text-slate-400 hover:text-white transition cursor-pointer"
+                    title="Copy Page URL"
+                  >
+                    {copiedId === user.facebookPageUrl ? (
+                      <Check className="w-2.5 h-2.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-2.5 h-2.5" />
+                    )}
+                  </button>
+                  {user.facebookPageUrl.startsWith('http') && (
+                    <a
+                      href={user.facebookPageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-0.5 rounded text-emerald-400 hover:text-emerald-300 transition cursor-pointer"
+                      title="Open in Facebook"
+                    >
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => onOpenConnectSocial(user)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-indigo-500/20 border border-amber-500/40 text-amber-300 hover:text-white hover:border-amber-300 text-[10px] font-bold transition shadow-xs cursor-pointer"
+            className="w-full inline-flex items-center justify-center gap-1 px-2 py-1 rounded bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-indigo-500/20 border border-amber-500/40 text-amber-300 hover:text-white hover:border-amber-300 text-[10px] font-bold transition shadow-xs cursor-pointer"
             title="Link or Update Meta System User Token for this client"
           >
             <Share2 className="w-2.5 h-2.5" />

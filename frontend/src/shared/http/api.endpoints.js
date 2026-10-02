@@ -160,6 +160,10 @@ export const API_ENDPOINTS = {
     AUTH_URL_INSTAGRAM: '/social/auth-url/instagram',
     AUTH_URL_LINKEDIN: '/social/auth-url/linkedin',
     DISCONNECT: (platform) => `/social/accounts/${platform}`,
+    SUBMIT_PAGE_LINK: '/social/submit-page-link',
+    ONBOARDING_STATUS: '/social/onboarding-status',
+    ADMIN_UPDATE_STATUS: '/social/admin/update-status',
+    ADMIN_CONNECT_TOKEN: '/social/admin/connect-user-token',
   },
 };
 

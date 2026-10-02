@@ -67,6 +67,30 @@ export function useSocialAccounts(initialPage = 1, initialLimit = 10) {
     },
   });
 
+  // Fetch Social Onboarding Status (Submitted Facebook Page Link)
+  const {
+    data: onboardingResponse,
+    isLoading: isLoadingOnboarding,
+    refetch: refetchOnboarding,
+  } = useQuery({
+    queryKey: ['social-onboarding-status'],
+    queryFn: () => socialApi.getOnboardingStatus(),
+  });
+
+  const onboardingData = onboardingResponse?.data || {};
+
+  // Submit Page Link Mutation
+  const submitPageLinkMutation = useMutation({
+    mutationFn: (pageUrl) => socialApi.submitPageLink(pageUrl),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-onboarding-status'] });
+      setSuccessMsg('Facebook Page submitted! Admin has been notified to prepare your connection.');
+    },
+    onError: (err) => {
+      setErrorMsg(err.message || 'Failed to submit Facebook Page link.');
+    },
+  });
+
   // LinkedIn OAuth Trigger Helper
   const getLinkedinAuthUrl = async () => {
     const res = await socialApi.getLinkedinAuthUrl();
@@ -87,6 +111,11 @@ export function useSocialAccounts(initialPage = 1, initialLimit = 10) {
     isLoadingAuthUrl,
     authUrlData,
     isMetaConfigured,
+    onboardingData,
+    isLoadingOnboarding,
+    refetchOnboarding,
+    submitPageLink: submitPageLinkMutation.mutateAsync,
+    isSubmittingPageLink: submitPageLinkMutation.isPending,
     errorMsg,
     setErrorMsg,
     successMsg,

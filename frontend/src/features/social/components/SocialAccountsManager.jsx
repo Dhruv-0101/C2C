@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw, Share2 } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, CheckCircle, AlertCircle, Link2, Unlink, ExternalLink, ShieldCheck, Key, RefreshCw, Share2, HelpCircle, Sparkles } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
 import Pagination from '@/components/ui/Pagination';
 import { useSocialAccounts } from '@/features/social/hooks/useSocialAccounts';
 import { API_BASE_URL } from '@/shared/http/api.endpoints';
 import { SkeletonLoader } from '@/components/feedback/SkeletonLoader';
-
+import { ClientOnboardingHelpModal } from './ClientOnboardingHelpModal';
 
 export const SocialAccountsManager = () => {
   const {
@@ -21,6 +21,9 @@ export const SocialAccountsManager = () => {
     isLoadingAuthUrl,
     authUrlData,
     isMetaConfigured,
+    onboardingData,
+    submitPageLink,
+    isSubmittingPageLink,
     errorMsg,
     setErrorMsg,
     successMsg,
@@ -31,7 +34,25 @@ export const SocialAccountsManager = () => {
   } = useSocialAccounts();
 
   const [showConfigGuide, setShowConfigGuide] = useState(false);
+  const [showClientHelpModal, setShowClientHelpModal] = useState(false);
   const [isLoadingLiAuthUrl, setIsLoadingLiAuthUrl] = useState(false);
+  const [pageInput, setPageInput] = useState('');
+
+  React.useEffect(() => {
+    if (onboardingData?.facebookPageUrl) {
+      setPageInput(onboardingData.facebookPageUrl);
+    }
+  }, [onboardingData?.facebookPageUrl]);
+
+  const handlePageSubmit = async (e) => {
+    e?.preventDefault?.();
+    if (!pageInput.trim()) return;
+    try {
+      await submitPageLink(pageInput.trim());
+    } catch {
+      // Handled in hook mutation
+    }
+  };
 
   const handleConnectMeta = () => {
     if (!isMetaConfigured) {
@@ -63,15 +84,26 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => refetch()}
-          disabled={isLoadingAccounts}
-          className="self-start sm:self-auto p-2 px-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-600 transition flex items-center gap-1.5 text-xs font-semibold"
-          title="Refresh account statuses"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoadingAccounts ? 'animate-spin text-amber-400' : ''}`} />
-          <span>{isLoadingAccounts ? 'Refreshing...' : 'Refresh'}</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => setShowClientHelpModal(true)}
+            className="p-2 px-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 hover:text-white transition flex items-center gap-1.5 text-xs font-bold"
+            title="Step-by-step setup guide for business owners"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>Setup Guide (3 Steps)</span>
+          </button>
+
+          <button
+            onClick={() => refetch()}
+            disabled={isLoadingAccounts}
+            className="p-2 px-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-600 transition flex items-center gap-1.5 text-xs font-semibold"
+            title="Refresh account statuses"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingAccounts ? 'animate-spin text-amber-400' : ''}`} />
+            <span>{isLoadingAccounts ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+        </div>
       </div>
 
       {successMsg && <Alert variant="success" message={successMsg} />}
@@ -94,6 +126,102 @@ export const SocialAccountsManager = () => {
         </div>
       ) : (
         <>
+          {/* Friendly Client Setup Guide Banner (If not fully connected) */}
+          {(!facebookAccount?.isConnected || !instagramAccount?.isConnected) && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-white text-xs">New to Social Connections?</p>
+                  <p className="text-slate-400 text-[11px] mt-0.5">
+                    Link your Facebook Page & Instagram in 3 simple steps without technical confusion.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowClientHelpModal(true)}
+                className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shadow-sm shrink-0 cursor-pointer"
+              >
+                View 3-Step Guide
+              </button>
+            </div>
+          )}
+
+          {/* Managed Facebook Page Submission Card */}
+          {(!facebookAccount?.isConnected || !instagramAccount?.isConnected) && (
+            <div className="p-4 rounded-2xl bg-[#0B0F17] border border-indigo-500/30 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-blue-500/15 text-blue-400 shrink-0">
+                    <Facebook className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-xs">
+                      Managed Setup: Submit Your Facebook Page
+                    </h4>
+                    <p className="text-[11px] text-slate-400">
+                      Submit your Page link or name below. Our team will link your accounts in Meta Business Suite!
+                    </p>
+                  </div>
+                </div>
+
+                {onboardingData?.facebookPageUrl && (
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase self-start sm:self-auto ${
+                      onboardingData.socialOnboardingStatus === 'CONNECTED'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                        : onboardingData.socialOnboardingStatus === 'REQUEST_SENT'
+                        ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    }`}
+                  >
+                    Status: {onboardingData.socialOnboardingStatus || 'SUBMITTED'}
+                  </span>
+                )}
+              </div>
+
+              <form onSubmit={handlePageSubmit} className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  placeholder="e.g. https://facebook.com/sharmasweets or Sharma Sweets"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#131B2A] border border-[#2C384E] text-slate-100 placeholder:text-slate-500 text-xs focus:outline-none focus:border-indigo-400 font-mono"
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={isSubmittingPageLink || !pageInput.trim()}
+                  isLoading={isSubmittingPageLink}
+                  className="px-5 font-bold text-xs shrink-0"
+                >
+                  {onboardingData?.facebookPageUrl ? 'Update Page Link' : 'Submit Page'}
+                </Button>
+              </form>
+
+              {onboardingData?.facebookPageUrl && (
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] pt-1 border-t border-[#2C384E]/50">
+                  <span className="text-slate-400">
+                    Saved in Admin Directory: <strong className="text-white font-mono">{onboardingData.facebookPageUrl}</strong>
+                  </span>
+                  <a
+                    href="https://business.facebook.com/settings/requests"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 hover:underline inline-flex items-center gap-1 font-semibold"
+                  >
+                    <span>Approve Request at Meta</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Main Instagram Status Card */}
           <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div className="flex items-start gap-4">
@@ -412,6 +540,15 @@ export const SocialAccountsManager = () => {
           <span>2-Step Media Container Publish</span>
         </div>
       </div>
+
+      {/* Non-Technical Client Onboarding Modal */}
+      <ClientOnboardingHelpModal
+        isOpen={showClientHelpModal}
+        onClose={() => setShowClientHelpModal(false)}
+        onboardingData={onboardingData}
+        onSubmitPageLink={submitPageLink}
+        isSubmittingPageLink={isSubmittingPageLink}
+      />
     </div>
   );
 };

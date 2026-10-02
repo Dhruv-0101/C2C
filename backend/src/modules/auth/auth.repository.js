@@ -306,6 +306,8 @@ export async function findPaginatedUsers({ skip, take, search, sortBy = 'created
     role: true,
     avatarUrl: true,
     isActive: true,
+    facebookPageUrl: true,
+    socialOnboardingStatus: true,
     createdAt: true,
     brandKit: {
       select: {

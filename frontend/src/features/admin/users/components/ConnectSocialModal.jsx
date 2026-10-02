@@ -89,6 +89,46 @@ export const ConnectSocialModal = ({
           )}
         </div>
 
+        {/* Client's Submitted Facebook Page Link */}
+        {user.facebookPageUrl && (
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                <Facebook className="w-3.5 h-3.5 text-blue-400" />
+                <span>Client's Submitted Facebook Page:</span>
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  user.socialOnboardingStatus === 'CONNECTED'
+                    ? 'bg-emerald-500/20 text-emerald-400'
+                    : user.socialOnboardingStatus === 'REQUEST_SENT'
+                    ? 'bg-indigo-500/20 text-indigo-400'
+                    : 'bg-amber-500/20 text-amber-300'
+                }`}
+              >
+                {user.socialOnboardingStatus || 'SUBMITTED'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#0B0F17] border border-[#2C384E]">
+              <span className="font-mono text-white text-xs select-all truncate">
+                {user.facebookPageUrl}
+              </span>
+              {user.facebookPageUrl.startsWith('http') && (
+                <a
+                  href={user.facebookPageUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 shrink-0"
+                >
+                  <span>Open Page</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Existing Accounts Pill Bar */}
         <div>
           <label className="block text-slate-300 font-bold mb-1.5">

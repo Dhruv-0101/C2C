@@ -8,6 +8,9 @@ import {
   disconnectAccount,
   adminConnectUserToken,
   adminDisconnectUserAccount,
+  submitPageLink,
+  getSocialOnboardingStatus,
+  adminUpdateOnboardingStatus,
 } from './social.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireAdmin } from '../../common/middleware/role.middleware.js';
@@ -18,6 +21,8 @@ import {
   getAccountsQuerySchema,
   adminConnectUserTokenSchema,
   adminDisconnectUserAccountSchema,
+  submitPageLinkSchema,
+  updateOnboardingStatusSchema,
 } from './social.validator.js';
 
 const router = Router();
@@ -50,6 +55,16 @@ router.get('/auth-url/linkedin', getLinkedinAuthUrl);
 router.delete('/accounts/:platform', validate(disconnectAccountSchema), disconnectAccount);
 
 // ==========================================
+// Client Managed Onboarding Endpoints
+// ==========================================
+
+// POST /api/v1/social/submit-page-link
+router.post('/submit-page-link', validate(submitPageLinkSchema), submitPageLink);
+
+// GET /api/v1/social/onboarding-status
+router.get('/onboarding-status', getSocialOnboardingStatus);
+
+// ==========================================
 // Admin Client Social Onboarding Endpoints
 // ==========================================
 
@@ -61,6 +76,14 @@ router.post(
   adminConnectUserToken
 );
 
+// PATCH /api/v1/social/admin/update-status
+router.patch(
+  '/admin/update-status',
+  requireAdmin,
+  validate(updateOnboardingStatusSchema),
+  adminUpdateOnboardingStatus
+);
+
 // DELETE /api/v1/social/admin/user/:userId/:platform
 router.delete(
   '/admin/user/:userId/:platform',
@@ -70,4 +93,5 @@ router.delete(
 );
 
 export default router;
+
 

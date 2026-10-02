@@ -146,6 +146,56 @@ export const deleteAccount = async (userId, platform) => {
 };
 
 /**
+ * Update user Facebook Page URL and social onboarding status
+ *
+ * @param {string} userId - User ID
+ * @param {Object} data
+ * @param {string} [data.facebookPageUrl]
+ * @param {string} [data.socialOnboardingStatus]
+ * @returns {Promise<Object>}
+ */
+export const updateSocialOnboarding = async (userId, { facebookPageUrl, socialOnboardingStatus }) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(facebookPageUrl !== undefined && { facebookPageUrl }),
+      ...(socialOnboardingStatus !== undefined && { socialOnboardingStatus }),
+    },
+    select: {
+      id: true,
+      facebookPageUrl: true,
+      socialOnboardingStatus: true,
+    },
+  });
+};
+
+/**
+ * Get user social onboarding status and page link
+ *
+ * @param {string} userId - User ID
+ * @returns {Promise<Object|null>}
+ */
+export const getUserSocialOnboarding = async (userId) => {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      facebookPageUrl: true,
+      socialOnboardingStatus: true,
+      socialAccounts: {
+        where: { isConnected: true },
+        select: {
+          id: true,
+          platform: true,
+          accountName: true,
+          isConnected: true,
+        },
+      },
+    },
+  });
+};
+
+/**
  * Social Repository singleton for backward-compatible consumption
  */
 export const socialRepository = {
@@ -154,4 +204,6 @@ export const socialRepository = {
   findAllByUserId,
   upsertAccount,
   deleteAccount,
+  updateSocialOnboarding,
+  getUserSocialOnboarding,
 };

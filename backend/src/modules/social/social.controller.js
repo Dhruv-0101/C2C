@@ -9,6 +9,9 @@ import {
   disconnectAccount as disconnectAccountLogic,
   adminConnectUserToken as adminConnectUserTokenLogic,
   adminDisconnectUserAccount as adminDisconnectUserAccountLogic,
+  submitPageLink as submitPageLinkLogic,
+  getSocialOnboardingStatus as getSocialOnboardingStatusLogic,
+  adminUpdateOnboardingStatus as adminUpdateOnboardingStatusLogic,
 } from './social.logic.js';
 import { resolveClientUrl } from './social.helper.js';
 
@@ -197,6 +200,60 @@ export const adminDisconnectUserAccount = async (req, res, next) => {
 };
 
 /**
+ * POST /api/v1/social/submit-page-link
+ * Client submits their Facebook Page URL / name for managed agency onboarding
+ */
+export const submitPageLink = async (req, res, next) => {
+  try {
+    const { pageUrl } = req.body;
+    const result = await submitPageLinkLogic(req.user.id, pageUrl);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.message,
+      data: result.data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/v1/social/onboarding-status
+ * Get current client's social onboarding status and submitted page
+ */
+export const getSocialOnboardingStatus = async (req, res, next) => {
+  try {
+    const result = await getSocialOnboardingStatusLogic(req.user.id);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'Onboarding status retrieved successfully',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * PATCH /api/v1/social/admin/update-status
+ * Admin updates client's onboarding status (e.g. REQUEST_SENT)
+ */
+export const adminUpdateOnboardingStatus = async (req, res, next) => {
+  try {
+    const { userId, status } = req.body;
+    const targetUserId = userId || req.user.id;
+    const result = await adminUpdateOnboardingStatusLogic(targetUserId, status);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.message,
+      data: result.data,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * Social Controller singleton for backward-compatible consumption
  */
 export const socialController = {
@@ -208,5 +265,9 @@ export const socialController = {
   disconnectAccount,
   adminConnectUserToken,
   adminDisconnectUserAccount,
+  submitPageLink,
+  getSocialOnboardingStatus,
+  adminUpdateOnboardingStatus,
 };
+
 
