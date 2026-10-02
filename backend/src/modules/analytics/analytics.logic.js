@@ -137,10 +137,10 @@ export const getPlatformBreakdown = async (userId, queryParams = {}) => {
 };
 
 /**
- * Get top performing design templates
+ * Get top performing design templates (Redis Cached)
  *
  * @param {string} userId - User ID
- * @param {Object} [queryParams={}] - Query parameters { limit }
+ * @param {Object} [queryParams={}] - Query parameters { limit, platform }
  * @returns {Promise<Array>} Ranked top templates
  */
 export const getTopTemplates = async (userId, queryParams = {}) => {
@@ -151,7 +151,22 @@ export const getTopTemplates = async (userId, queryParams = {}) => {
       Number(queryParams.limit) || ANALYTICS_TOP_TEMPLATES_LIMITS.DEFAULT
     )
   );
-  return getTopTemplatesRepo(userId, limit);
+  const platform = queryParams.platform || DEFAULT_ANALYTICS_PLATFORM;
+  const cacheKey = `analytics:top-templates:${userId}:${limit}:${platform}`;
+
+  // 1. Check Redis Cache
+  const cachedTemplates = await getFromCache(cacheKey);
+  if (cachedTemplates) {
+    return cachedTemplates;
+  }
+
+  // 2. Database Aggregation
+  const templates = await getTopTemplatesRepo(userId, limit, platform);
+
+  // 3. Populate Redis Cache
+  await setInCache(cacheKey, templates, ANALYTICS_CACHE_TTL_SECONDS);
+
+  return templates;
 };
 
 /**

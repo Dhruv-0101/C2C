@@ -35,9 +35,9 @@ export const analyticsApi = {
   /**
    * Get top performing design templates
    */
-  getTopTemplates: async ({ limit = 5 } = {}) => {
+  getTopTemplates: async ({ limit = 5, platform = 'ALL' } = {}) => {
     const response = await api.get(API_ENDPOINTS.ANALYTICS.TOP_TEMPLATES, {
-      params: { limit },
+      params: { limit, platform },
     });
     return response.data;
   },
@@ -65,7 +65,16 @@ export const analyticsApi = {
         limit,
       },
     });
-    return response.data;
+    return {
+      posts: response.data || [],
+      meta: response.meta || {
+        totalCount: (response.data || []).length,
+        totalItems: (response.data || []).length,
+        page,
+        limit,
+        totalPages: Math.ceil((response.data || []).length / limit) || 1,
+      },
+    };
   },
 
   /**

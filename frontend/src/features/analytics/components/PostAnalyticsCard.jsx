@@ -131,6 +131,14 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
             <span className="text-xs font-bold text-white block">
               {formatNumber(metrics.impressions || 0)}
             </span>
+            {platformBreakdown.length > 1 && (
+              <span
+                className="text-[9px] text-slate-400 block truncate font-mono"
+                title={platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.impressions)}`).join(' • ')}
+              >
+                {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.impressions)}`).join(' • ')}
+              </span>
+            )}
           </div>
 
           <div className="space-y-0.5 border-x border-[#2C384E]">
@@ -140,6 +148,14 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
             <span className="text-xs font-bold text-white block">
               {formatNumber(metrics.reach || 0)}
             </span>
+            {platformBreakdown.length > 1 && (
+              <span
+                className="text-[9px] text-amber-400/90 block truncate font-mono font-medium"
+                title={platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.reach)}`).join(' • ')}
+              >
+                {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.reach)}`).join(' • ')}
+              </span>
+            )}
           </div>
 
           <div className="space-y-0.5">
@@ -149,6 +165,14 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
             <span className="text-xs font-bold text-rose-400 block">
               {formatNumber(metrics.likes || 0)}
             </span>
+            {platformBreakdown.length > 1 && (
+              <span
+                className="text-[9px] text-slate-400 block truncate font-mono"
+                title={platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.likes)}`).join(' • ')}
+              >
+                {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.likes)}`).join(' • ')}
+              </span>
+            )}
           </div>
         </div>
 

@@ -174,16 +174,22 @@ export const getPlatformBreakdown = async (userId, startDate, platform = null) =
 };
 
 /**
- * Get top performing templates ranked by engagement rate
+ * Get top performing templates ranked by true weighted engagement rate
  *
  * @param {string} userId - User ID
  * @param {number} [limit=5] - Number of templates to return
- * @returns {Promise<Array>} Top templates ranked by average engagement rate
+ * @param {string} [platform=null] - Social platform filter
+ * @returns {Promise<Array>} Top templates ranked by weighted engagement rate
  */
-export const getTopTemplates = async (userId, limit = 5) => {
+export const getTopTemplates = async (userId, limit = 5, platform = null) => {
+  const where = { userId };
+  if (platform && platform !== 'ALL') {
+    where.platform = platform;
+  }
+
   const items = await prisma.postAnalytics.findMany({
-    where: { userId },
-    take: 20,
+    where,
+    take: 50,
     orderBy: { engagementRate: 'desc' },
     select: {
       postId: true,
@@ -193,6 +199,7 @@ export const getTopTemplates = async (userId, limit = 5) => {
       comments: true,
       shares: true,
       engagementRate: true,
+      platform: true,
       post: {
         select: {
           id: true,
@@ -211,7 +218,7 @@ export const getTopTemplates = async (userId, limit = 5) => {
     },
   });
 
-  // Group & average metrics per template
+  // Group & sum metrics per template using true weighted aggregation
   const templateMap = new Map();
   items.forEach((item) => {
     const templateTitle = item.post?.template?.title || item.post?.occasionName || 'Custom Brand Graphic';
@@ -227,21 +234,21 @@ export const getTopTemplates = async (userId, limit = 5) => {
         totalImpressions: 0,
         totalReach: 0,
         totalEngagement: 0,
-        rates: [],
       });
     }
 
     const existing = templateMap.get(templateId);
-    existing.totalImpressions += item.impressions;
-    existing.totalReach += item.reach;
-    existing.totalEngagement += item.likes + item.comments + item.shares;
-    existing.rates.push(item.engagementRate);
+    existing.totalImpressions += item.impressions || 0;
+    existing.totalReach += item.reach || 0;
+    existing.totalEngagement += (item.likes || 0) + (item.comments || 0) + (item.shares || 0);
   });
 
   return Array.from(templateMap.values())
     .map((t) => ({
       ...t,
-      avgEngagementRate: Number((t.rates.reduce((a, b) => a + b, 0) / t.rates.length).toFixed(2)),
+      avgEngagementRate: t.totalReach > 0
+        ? Number(((t.totalEngagement / t.totalReach) * 100).toFixed(2))
+        : (t.totalImpressions > 0 ? Number(((t.totalEngagement / t.totalImpressions) * 100).toFixed(2)) : 0),
     }))
     .sort((a, b) => b.avgEngagementRate - a.avgEngagementRate)
     .slice(0, limit);
@@ -423,6 +430,7 @@ export const getUserPostsWithAnalytics = async (userId, {
           },
         },
         postAnalytics: {
+          ...(platform && platform !== 'ALL' ? { where: { platform } } : {}),
           orderBy: { platform: 'asc' },
         },
       },

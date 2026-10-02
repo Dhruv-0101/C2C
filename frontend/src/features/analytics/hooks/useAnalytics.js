@@ -42,8 +42,8 @@ export const useAnalytics = ({
   });
 
   const topTemplatesQuery = useQuery({
-    queryKey: [ANALYTICS_QUERY_KEYS.TOP_TEMPLATES],
-    queryFn: () => analyticsApi.getTopTemplates({ limit: 5 }),
+    queryKey: [ANALYTICS_QUERY_KEYS.TOP_TEMPLATES, platform],
+    queryFn: () => analyticsApi.getTopTemplates({ limit: 5, platform }),
     staleTime: 2 * 60 * 1000,
   });
 
@@ -83,13 +83,22 @@ export const useAnalytics = ({
     },
   });
 
+  const resolvedPosts = postsQuery.data?.posts || (Array.isArray(postsQuery.data) ? postsQuery.data : []);
+  const resolvedMeta = postsQuery.data?.meta || {
+    totalCount: resolvedPosts.length,
+    totalItems: resolvedPosts.length,
+    page: 1,
+    limit: 9,
+    totalPages: 1,
+  };
+
   return {
     kpi: overviewQuery.data || {},
     trends: trendsQuery.data || [],
     platforms: platformsQuery.data || [],
     topTemplates: topTemplatesQuery.data || [],
-    posts: postsQuery.data?.data || postsQuery.data || [],
-    postsMeta: postsQuery.data?.meta || { totalCount: 0, page: 1, limit: 10, totalPages: 1 },
+    posts: resolvedPosts,
+    postsMeta: resolvedMeta,
     isLoading:
       overviewQuery.isLoading ||
       trendsQuery.isLoading ||

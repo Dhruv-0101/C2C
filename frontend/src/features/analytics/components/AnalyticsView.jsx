@@ -279,10 +279,15 @@ export const AnalyticsView = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left Box: Platform Engagement Split */}
               <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
-                <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 border-b border-[#2C384E] pb-3">
-                  <Share2 className="w-4 h-4 text-amber-400" />
-                  <span>Social Channel Distribution</span>
-                </h3>
+                <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+                  <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
+                    <Share2 className="w-4 h-4 text-amber-400" />
+                    <span>Social Channel Distribution</span>
+                  </h3>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Total Reach: <strong className="text-white">{formatNumber(kpi.totalReach || 0)}</strong>
+                  </span>
+                </div>
 
                 {platforms.length === 0 ? (
                   <div className="p-8 text-center text-xs text-slate-500 italic">
@@ -317,20 +322,24 @@ export const AnalyticsView = ({
 
                     {/* Legend Table */}
                     <div className="space-y-2 pt-2 border-t border-[#2C384E]">
-                      {platforms.map((p) => (
-                        <div key={p.platform} className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2 font-bold text-slate-200">
-                            <span
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: PLATFORM_COLORS[p.platform] || '#4F46E5' }}
-                            />
-                            <span>{p.platform}</span>
+                      {platforms.map((p) => {
+                        const totalPlatformReach = platforms.reduce((acc, curr) => acc + (curr.reach || 0), 0);
+                        const reachPct = totalPlatformReach > 0 ? Math.round(((p.reach || 0) / totalPlatformReach) * 100) : 0;
+                        return (
+                          <div key={p.platform} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2 font-bold text-slate-200">
+                              <span
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: PLATFORM_COLORS[p.platform] || '#4F46E5' }}
+                              />
+                              <span>{p.platform}</span>
+                            </div>
+                            <div className="font-mono text-slate-400">
+                              <strong className="text-white">{formatNumber(p.reach)}</strong> Reach ({reachPct}%) • {p.postCount} {p.postCount === 1 ? 'post' : 'posts'}
+                            </div>
                           </div>
-                          <div className="font-mono text-slate-400">
-                            <strong>{formatNumber(p.reach)}</strong> Reach ({p.postCount} {p.postCount === 1 ? 'post' : 'posts'})
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

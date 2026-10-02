@@ -41,8 +41,9 @@ export const PostAnalyticsList = ({
           <h2 className="font-heading font-extrabold text-base text-white flex items-center gap-2">
             <Layers className="w-4 h-4 text-amber-400" />
             <span>Individual Post Insights & Performance</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono">
-              {meta.totalCount} {meta.totalCount === 1 ? 'post' : 'posts'}
+            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+              {(meta?.totalCount !== undefined && meta?.totalCount !== null) ? meta.totalCount : posts.length}{' '}
+              {((meta?.totalCount !== undefined && meta?.totalCount !== null) ? meta.totalCount : posts.length) === 1 ? 'post' : 'posts'}
             </span>
           </h2>
           <p className="text-xs text-slate-400">
