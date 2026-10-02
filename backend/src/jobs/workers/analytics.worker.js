@@ -197,7 +197,7 @@ export async function fetchLivePlatformMetrics({ platform, platformPostId, acces
 export async function invalidateUserAnalyticsCache(userId) {
   try {
     const redis = getRedisClient();
-    if (!redis || !userId) return;
+    if (!redis || !userId || redis.status !== 'ready') return;
 
     // Pattern search for user's analytics cache keys
     const stream = redis.scanStream({
@@ -210,10 +210,18 @@ export async function invalidateUserAnalyticsCache(userId) {
       keysToDelete.push(...resultKeys);
     });
 
+    stream.on('error', (err) => {
+      logger.warn(`⚠️ [AnalyticsWorker] Redis scanStream error for ${userId}: ${err.message}`);
+    });
+
     stream.on('end', async () => {
       if (keysToDelete.length > 0) {
-        await redis.del(...keysToDelete);
-        logger.info(`🧹 [AnalyticsWorker] Invalidated ${keysToDelete.length} cached analytics keys for user ${userId}`);
+        try {
+          await redis.del(...keysToDelete);
+          logger.info(`🧹 [AnalyticsWorker] Invalidated ${keysToDelete.length} cached analytics keys for user ${userId}`);
+        } catch (delErr) {
+          logger.warn(`⚠️ [AnalyticsWorker] Redis del error: ${delErr.message}`);
+        }
       }
     });
   } catch (err) {

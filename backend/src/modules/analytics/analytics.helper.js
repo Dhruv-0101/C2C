@@ -49,7 +49,7 @@ export const setInCache = async (key, data, ttl = ANALYTICS_CACHE_TTL_SECONDS) =
 export const invalidateUserAnalyticsCache = async (userId) => {
   try {
     const redis = getRedisClient();
-    if (!redis || !userId) return;
+    if (!redis || !userId || redis.status !== 'ready') return;
 
     const stream = redis.scanStream({
       match: `analytics:*:${userId}:*`,
@@ -61,10 +61,18 @@ export const invalidateUserAnalyticsCache = async (userId) => {
       keysToDelete.push(...resultKeys);
     });
 
+    stream.on('error', (err) => {
+      logger.warn(`⚠️ [AnalyticsHelper] Redis scanStream error for ${userId}: ${err.message}`);
+    });
+
     stream.on('end', async () => {
       if (keysToDelete.length > 0) {
-        await redis.del(...keysToDelete);
-        logger.info(`🧹 [AnalyticsHelper] Purged ${keysToDelete.length} cached keys for user ${userId}`);
+        try {
+          await redis.del(...keysToDelete);
+          logger.info(`🧹 [AnalyticsHelper] Purged ${keysToDelete.length} cached keys for user ${userId}`);
+        } catch (delErr) {
+          logger.warn(`⚠️ [AnalyticsHelper] Redis del error: ${delErr.message}`);
+        }
       }
     });
   } catch (err) {
