@@ -16,12 +16,16 @@ import {
   formatDailyTrends,
   formatPlatformBreakdown,
 } from './analytics.helper.js';
+import { logger } from '../../config/logger.js';
+import * as analyticsRepository from './analytics.repository.js';
 import {
   getOverviewMetrics,
   getDailyTrends,
   getPlatformBreakdown as getPlatformBreakdownRepo,
   getTopTemplates as getTopTemplatesRepo,
   seedDemoAnalytics,
+  getUserPostsWithAnalytics,
+  findUserPublishedPostsForSync,
 } from './analytics.repository.js';
 
 export { invalidateUserAnalyticsCache };
