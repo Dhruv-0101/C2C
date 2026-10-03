@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Calendar, Sparkles, AlertCircle } from "lucide-react";
+import { Clock, Calendar, Sparkles, AlertCircle, X } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
@@ -11,11 +11,13 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 
 /**
  * ScheduledPostsQueueView
- * Renders user's scheduled post queue with debounced searching and standardized pagination.
+ * Renders user's scheduled post queue with multi-filter controls, debounced searching, and standardized pagination.
  */
 export const ScheduledPostsQueueView = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [platform, setPlatform] = useState("");
+  const [timeFilter, setTimeFilter] = useState("");
   const debouncedSearch = useDebounce(search, 300);
 
   const {
@@ -29,17 +31,19 @@ export const ScheduledPostsQueueView = () => {
     error,
   } = useYourPosts({
     search: debouncedSearch,
+    platform: platform || undefined,
+    timeFilter: timeFilter || undefined,
   });
 
-  // Auto-reset page on search change
+  // Auto-reset page on search or filter change
   useEffect(() => {
     setScheduledPage(1);
-  }, [debouncedSearch, setScheduledPage]);
+  }, [debouncedSearch, platform, timeFilter, setScheduledPage]);
 
   return (
     <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400">
             <Clock className="w-5 h-5" />
@@ -59,13 +63,63 @@ export const ScheduledPostsQueueView = () => {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="w-full sm:w-64">
-          <SearchBar
-            value={search}
-            onChange={setSearch}
-            placeholder="Search scheduled posts..."
-          />
+        {/* Filter Controls & Search */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          {/* Channel Filter */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
+            <span className="text-slate-400 font-medium">Channel:</span>
+            <select
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+              className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
+            >
+              <option value="" className="bg-[#131B2A] text-white">All</option>
+              <option value="INSTAGRAM" className="bg-[#131B2A] text-white">Instagram</option>
+              <option value="FACEBOOK" className="bg-[#131B2A] text-white">Facebook</option>
+              <option value="LINKEDIN" className="bg-[#131B2A] text-white">LinkedIn</option>
+            </select>
+          </div>
+
+          {/* Time Filter */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
+            <span className="text-slate-400 font-medium">Period:</span>
+            <select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+              className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
+            >
+              <option value="" className="bg-[#131B2A] text-white">All Time</option>
+              <option value="today" className="bg-[#131B2A] text-white">Today</option>
+              <option value="week" className="bg-[#131B2A] text-white">Past 7 Days</option>
+              <option value="month" className="bg-[#131B2A] text-white">Past 30 Days</option>
+            </select>
+          </div>
+
+          {/* Search Bar */}
+          <div className="w-full sm:w-56">
+            <SearchBar
+              value={search}
+              onChange={setSearch}
+              placeholder="Search queue..."
+            />
+          </div>
+
+          {/* Clear Filters Button */}
+          {(Boolean(platform) || Boolean(timeFilter) || Boolean(search)) && (
+            <button
+              type="button"
+              onClick={() => {
+                setPlatform("");
+                setTimeFilter("");
+                setSearch("");
+              }}
+              className="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+              title="Reset Filters"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Reset</span>
+            </button>
+          )}
         </div>
       </div>
 

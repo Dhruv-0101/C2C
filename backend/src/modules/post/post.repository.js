@@ -252,18 +252,96 @@ export async function createScheduledPost(data) {
 }
 
 /**
+ * Helper to build date range condition based on timeFilter or explicit start/end dates
+ */
+function buildDateCondition(timeFilter, startDate, endDate) {
+  if (startDate || endDate) {
+    const condition = {};
+    if (startDate) condition.gte = new Date(startDate);
+    if (endDate) condition.lte = new Date(endDate);
+    return condition;
+  }
+  const now = new Date();
+  if (timeFilter === 'today') {
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    return { gte: startOfToday };
+  }
+  if (timeFilter === 'week') {
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return { gte: oneWeekAgo };
+  }
+  if (timeFilter === 'month') {
+    const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    return { gte: oneMonthAgo };
+  }
+  return null;
+}
+
+/**
+ * Get unified post counts for a user (database-level totals across 1,000+ posts)
+ * @param {string} userId
+ * @returns {Promise<{ all: number, scheduled: number, published: number, draft: number }>}
+ */
+export async function getUserPostCounts(userId) {
+  const [totalAll, totalScheduled, totalPublished, totalDraft] = await Promise.all([
+    prisma.post.count({ where: { userId } }),
+    prisma.scheduledPost.count({
+      where: {
+        status: { in: ['PENDING', 'PROCESSING'] },
+        post: { userId, status: 'SCHEDULED' },
+      },
+    }),
+    prisma.post.count({ where: { userId, status: 'PUBLISHED' } }),
+    prisma.post.count({ where: { userId, status: 'DRAFT' } }),
+  ]);
+
+  return {
+    all: totalAll,
+    scheduled: totalScheduled,
+    published: totalPublished,
+    draft: totalDraft,
+  };
+}
+
+/**
  * Find scheduled posts for a user with pagination and optional search
+ * STRICT FILTER: Only pending/processing scheduled events where post.status is SCHEDULED.
+ * Never includes SUCCESS, PUBLISHED, or cancelled posts.
  * @param {string} userId
  * @param {Object} params
  * @param {number} params.skip
  * @param {number} params.take
  * @param {string} [params.search]
- * @returns {Promise<{ scheduledPosts: Array<Object>, totalCount: number }>}
+ * @param {string} [params.platform]
+ * @param {string} [params.timeFilter]
+ * @param {string} [params.startDate]
+ * @param {string} [params.endDate]
+ * @param {string} [params.sortBy]
+ * @param {string} [params.sortOrder]
+ * @returns {Promise<{ scheduledPosts: Array<Object>, totalCount: number, counts: Object }>}
  */
-export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 10, search }) {
+export async function findPaginatedScheduledByUserId(
+  userId,
+  {
+    skip = 0,
+    take = 10,
+    search,
+    platform,
+    timeFilter,
+    startDate,
+    endDate,
+    sortBy = 'scheduledAt',
+    sortOrder = 'asc',
+  } = {}
+) {
+  const dateCondition = buildDateCondition(timeFilter, startDate, endDate);
+
   const where = {
+    // Strictly ONLY active queued posts awaiting execution - NEVER finished/SUCCESS
+    status: { in: ['PENDING', 'PROCESSING'] },
     post: {
       userId,
+      status: 'SCHEDULED',
       ...(search
         ? {
             OR: [
@@ -275,9 +353,16 @@ export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 
           }
         : {}),
     },
+    ...(platform ? { targetPlatforms: { has: platform } } : {}),
+    ...(dateCondition ? { scheduledAt: dateCondition } : {}),
   };
 
-  const [scheduledPosts, totalCount] = await Promise.all([
+  const validSortBy = ['scheduledAt', 'createdAt'].includes(sortBy) ? sortBy : 'scheduledAt';
+  const validSortOrder = ['asc', 'desc'].includes(sortOrder?.toLowerCase())
+    ? sortOrder.toLowerCase()
+    : 'asc';
+
+  const [scheduledPosts, totalCount, counts] = await Promise.all([
     prisma.scheduledPost.findMany({
       where,
       skip,
@@ -287,23 +372,29 @@ export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 
           include: POST_LIST_INCLUDE,
         },
       },
-      orderBy: { scheduledAt: 'asc' },
+      orderBy: { [validSortBy]: validSortOrder },
     }),
     prisma.scheduledPost.count({ where }),
+    getUserPostCounts(userId),
   ]);
 
-  return { scheduledPosts, totalCount };
+  return { scheduledPosts, totalCount, counts };
 }
 
 /**
  * Find all scheduled posts for a user without pagination
+ * STRICT FILTER: Only pending/processing scheduled events where post.status is SCHEDULED.
  * @param {string} userId
  * @returns {Promise<Array<Object>>}
  */
 export async function findScheduledPostsByUserId(userId) {
   return prisma.scheduledPost.findMany({
     where: {
-      post: { userId },
+      status: { in: ['PENDING', 'PROCESSING'] },
+      post: {
+        userId,
+        status: 'SCHEDULED',
+      },
     },
     include: {
       post: {
@@ -337,10 +428,10 @@ export async function findDueScheduledPosts(limit = 1000) {
 }
 
 /**
- * Find all posts belonging to a user with pagination & optional search
+ * Find paginated posts for a user with comprehensive filters (Status, Platform, Time, Search, Sort)
  * @param {string} userId
  * @param {Object} params
- * @returns {Promise<{ posts: Array<Object>, totalCount: number }>}
+ * @returns {Promise<{ posts: Array<Object>, totalCount: number, counts: Object }>}
  */
 export async function findPaginatedByUserId(
   userId,
@@ -348,12 +439,30 @@ export async function findPaginatedByUserId(
     skip = 0,
     take = 10,
     search,
+    status,
+    platform,
+    timeFilter,
+    startDate,
+    endDate,
     sortBy = DEFAULT_POST_SORT_BY,
     sortOrder = DEFAULT_POST_SORT_ORDER,
-  }
+  } = {}
 ) {
+  const dateCondition = buildDateCondition(timeFilter, startDate, endDate);
+
   const where = {
     userId,
+    ...(status && ['PUBLISHED', 'DRAFT', 'SCHEDULED'].includes(status)
+      ? { status }
+      : {}),
+    ...(platform
+      ? {
+          scheduledPost: {
+            targetPlatforms: { has: platform },
+          },
+        }
+      : {}),
+    ...(dateCondition ? { createdAt: dateCondition } : {}),
     ...(search
       ? {
           OR: [
@@ -371,7 +480,7 @@ export async function findPaginatedByUserId(
     ? sortOrder.toLowerCase()
     : DEFAULT_POST_SORT_ORDER;
 
-  const [posts, totalCount] = await Promise.all([
+  const [posts, totalCount, counts] = await Promise.all([
     prisma.post.findMany({
       where,
       skip,
@@ -380,9 +489,10 @@ export async function findPaginatedByUserId(
       orderBy: { [validSortBy]: validSortOrder },
     }),
     prisma.post.count({ where }),
+    getUserPostCounts(userId),
   ]);
 
-  return { posts, totalCount };
+  return { posts, totalCount, counts };
 }
 
 /**
@@ -794,6 +904,7 @@ export const postRepository = {
   findScheduledPostsByUserId,
   findDueScheduledPosts,
   findPaginatedByUserId,
+  getUserPostCounts,
   findByUserId,
   findById,
   findPendingPostsByUserId,
