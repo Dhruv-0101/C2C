@@ -164,9 +164,27 @@ export const FestivalCalendarView = ({
             }
 
             const hasFestivals = cell.festivals && cell.festivals.length > 0;
-            const hasScheduled = cell.scheduledPosts && cell.scheduledPosts.length > 0;
-            const hasPublished = cell.publishedPosts && cell.publishedPosts.length > 0;
-            const hasEvents = hasFestivals || hasScheduled || hasPublished;
+            const scheduledList = cell.scheduledPosts || [];
+            const publishedList = cell.publishedPosts || [];
+            const totalUserPosts = scheduledList.length + publishedList.length;
+            const hasEvents = hasFestivals || totalUserPosts > 0;
+
+            // Maximum direct post pills to show: 1 if date has festival(s), else 2
+            const maxDirectPosts = hasFestivals ? 1 : 2;
+
+            // Prioritize scheduled upcoming posts first, then published posts
+            const allUserPosts = [
+              ...scheduledList.map((item) => ({ type: "scheduled", data: item })),
+              ...publishedList.map((post) => ({ type: "published", data: post })),
+            ];
+
+            const visibleUserPosts = allUserPosts.slice(0, maxDirectPosts);
+            const overflowUserPostsCount = allUserPosts.length - visibleUserPosts.length;
+
+            // Limit festivals shown directly to 1 if user posts exist to avoid vertical clipping
+            const maxFestivalsToShow = totalUserPosts > 0 ? 1 : 2;
+            const visibleFestivals = hasFestivals ? cell.festivals.slice(0, maxFestivalsToShow) : [];
+            const overflowFestivalsCount = hasFestivals ? cell.festivals.length - visibleFestivals.length : 0;
 
             // Total templates across all festivals on this day
             const dayTotalTemplates = hasFestivals
@@ -242,36 +260,56 @@ export const FestivalCalendarView = ({
 
                 {/* Event & Post Badges Container */}
                 <div className="relative z-10 space-y-1 my-1 flex-1 flex flex-col justify-end">
-                  {/* Scheduled Posts Badges */}
-                  {hasScheduled &&
-                    cell.scheduledPosts.slice(0, 2).map((item) => (
+                  {/* Visible User Posts (Scheduled / Published) */}
+                  {visibleUserPosts.map((postItem) => {
+                    if (postItem.type === "scheduled") {
+                      const item = postItem.data;
+                      return (
+                        <div
+                          key={`sched-${item.id}`}
+                          className="px-2 py-0.5 rounded-lg bg-teal-500/30 backdrop-blur-md border border-teal-500/50 text-teal-200 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-sm transition-all"
+                          title={`Scheduled: ${new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                        >
+                          <span className="truncate">
+                            ⏰ {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <Clock className="w-3 h-3 text-teal-300 shrink-0" />
+                        </div>
+                      );
+                    }
+                    const post = postItem.data;
+                    return (
                       <div
-                        key={item.id}
-                        className="px-2 py-0.5 rounded-lg bg-teal-500/30 backdrop-blur-md border border-teal-500/50 text-teal-200 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-sm"
-                      >
-                        <span className="truncate">
-                          ⏰ {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        <Clock className="w-3 h-3 text-teal-300 shrink-0" />
-                      </div>
-                    ))}
-
-                  {/* Published Posts Badges */}
-                  {hasPublished &&
-                    cell.publishedPosts.slice(0, 1).map((post) => (
-                      <div
-                        key={post.id}
-                        className="px-2 py-0.5 rounded-lg bg-emerald-500/30 backdrop-blur-md border border-emerald-500/50 text-emerald-200 text-[10px] font-semibold flex items-center justify-between gap-1 truncate shadow-sm"
+                        key={`pub-${post.id}`}
+                        className="px-2 py-0.5 rounded-lg bg-emerald-500/30 backdrop-blur-md border border-emerald-500/50 text-emerald-200 text-[10px] font-semibold flex items-center justify-between gap-1 truncate shadow-sm transition-all"
+                        title="Published Live Post"
                       >
                         <span className="truncate">🚀 Live</span>
                         <CheckCircle2 className="w-3 h-3 text-emerald-300 shrink-0" />
                       </div>
-                    ))}
+                    );
+                  })}
+
+                  {/* Smart Overflow Badge for 3+ scheduled/published posts */}
+                  {overflowUserPostsCount > 0 && (
+                    <div
+                      className="px-2 py-0.5 rounded-lg bg-slate-900/90 hover:bg-teal-950/80 backdrop-blur-md border border-teal-500/40 text-teal-300 text-[9px] font-bold flex items-center justify-between gap-1 truncate shadow-sm transition-all cursor-pointer group/pill"
+                      title={`${overflowUserPostsCount} more scheduled/published post${overflowUserPostsCount > 1 ? "s" : ""} on this date. Click to view all.`}
+                    >
+                      <span className="truncate flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 animate-pulse" />
+                        <span>+{overflowUserPostsCount} more post{overflowUserPostsCount > 1 ? "s" : ""}</span>
+                      </span>
+                      <span className="text-[8px] text-teal-400/80 group-hover/pill:text-teal-200 uppercase font-mono tracking-wider shrink-0">
+                        View →
+                      </span>
+                    </div>
+                  )}
 
                   {/* Festival & Attached Templates Badges */}
                   {hasFestivals && (
                     <div className="space-y-1">
-                      {cell.festivals.slice(0, 2).map((fest) => {
+                      {visibleFestivals.map((fest) => {
                         const templateCount = Math.max(
                           fest._count?.templates ?? 0,
                           Array.isArray(fest.templates) ? fest.templates.length : 0
@@ -298,12 +336,12 @@ export const FestivalCalendarView = ({
                         );
                       })}
 
-                      {cell.festivals.length > 2 && (
+                      {overflowFestivalsCount > 0 && (
                         <div
                           className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-extrabold text-center truncate shadow-sm"
-                          title={`${cell.festivals.length - 2} more festival(s) on this date`}
+                          title={`${overflowFestivalsCount} more festival(s) on this date`}
                         >
-                          +{cell.festivals.length - 2} more
+                          +{overflowFestivalsCount} more
                         </div>
                       )}
                     </div>
@@ -405,8 +443,20 @@ export const FestivalCalendarView = ({
                                 {item.post?.occasionName || item.post?.template?.title || "Scheduled Graphic"}
                               </p>
                               <p className="text-[11px] text-teal-400 font-mono mt-0.5">
-                                Scheduled Time: {new Date(item.scheduledAt).toLocaleTimeString()}
+                                Scheduled Time: {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </p>
+                              {item.targetPlatforms && item.targetPlatforms.length > 0 && (
+                                <div className="flex items-center gap-1.5 mt-1.5">
+                                  {item.targetPlatforms.map((p) => (
+                                    <span
+                                      key={p}
+                                      className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-mono font-bold"
+                                    >
+                                      {p}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
 

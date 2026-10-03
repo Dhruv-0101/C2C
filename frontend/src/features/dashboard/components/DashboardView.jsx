@@ -48,7 +48,7 @@ export const DashboardView = ({
             Welcome back, <span className="text-amber-400">{user?.fullName || "Creator"}</span>!
           </h1>
           <p className="text-[11px] text-slate-400 max-w-xl">
-            Your BrandKit is active. Create & share branded posts instantly across all channels!
+            Create & share branded posts instantly across all channels!
           </p>
         </div>
 
