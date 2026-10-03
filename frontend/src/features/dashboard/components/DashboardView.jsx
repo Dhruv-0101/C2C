@@ -15,11 +15,12 @@ import {
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
 import { DashboardQuickStats } from "./DashboardQuickStats";
+import { DashboardAnalyticsSummary } from "./DashboardAnalyticsSummary";
 
 /**
  * DashboardView
  * Presentational Component rendering admin-style statistics boxes, quick feature access modules,
- * interactive content calendar, and recent AI campaigns audit list.
+ * mixed post analytics summary, and interactive navigation shortcuts.
  */
 export const DashboardView = ({
   user,
@@ -27,7 +28,10 @@ export const DashboardView = ({
   totalPostsCount = 0,
   scheduledCount = 0,
   activeChannelsCount = 0,
-  recentPosts = [],
+  analyticsKpi = {},
+  analyticsPlatforms = [],
+  analyticsPosts = [],
+  isAnalyticsLoading = false,
 }) => {
   const navigate = useNavigate();
 
@@ -139,6 +143,14 @@ export const DashboardView = ({
           })}
         </div>
       </div>
+
+      {/* Mixed Social Media Analytics & Live Performance Overview */}
+      <DashboardAnalyticsSummary
+        kpi={analyticsKpi}
+        platforms={analyticsPlatforms}
+        posts={analyticsPosts}
+        isLoading={isAnalyticsLoading}
+      />
     </div>
   );
 };

@@ -3,18 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useYourPosts } from '@/features/your-posts/hooks/useYourPosts';
 import { useSocialAccounts } from '@/features/social/hooks/useSocialAccounts';
+import { useAnalytics } from '@/features/analytics/hooks/useAnalytics';
 import { DashboardView } from "../components/DashboardView";
 import { CelebrationWelcomeModal } from '@/features/welcome/components/CelebrationWelcomeModal';
 
 /**
  * DashboardPage Component
- * Canonical Route Page (/dashboard) handling user session stats, recent activities, and welcome celebration modal.
+ * Canonical Route Page (/dashboard) handling user session stats, recent activities, mixed analytics summary, and welcome celebration modal.
  */
 export const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { posts, scheduledPosts } = useYourPosts();
   const { accounts } = useSocialAccounts();
+
+  // Fetch real aggregated Meta analytics for the executive dashboard
+  const {
+    kpi: analyticsKpi,
+    platforms: analyticsPlatforms,
+    posts: analyticsPosts,
+    isLoading: isAnalyticsLoading,
+  } = useAnalytics({
+    range: '30d',
+    platform: 'ALL',
+    limit: 4,
+  });
 
   const connectedCount = accounts.filter((a) => a.isConnected).length;
   const activeChannelsCount = connectedCount;
@@ -49,7 +62,10 @@ export const DashboardPage = () => {
         totalPostsCount={posts.length}
         scheduledCount={scheduledPosts.length}
         activeChannelsCount={activeChannelsCount}
-        recentPosts={posts.slice(0, 4)}
+        analyticsKpi={analyticsKpi}
+        analyticsPlatforms={analyticsPlatforms}
+        analyticsPosts={analyticsPosts}
+        isAnalyticsLoading={isAnalyticsLoading}
       />
 
       <CelebrationWelcomeModal
