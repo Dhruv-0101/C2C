@@ -95,6 +95,15 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
       const currentTab = new URLSearchParams(location.search).get('tab') || 'templates';
       return location.pathname === basePath && currentTab === tabParam;
     }
+    if (path === '/posts' && (location.pathname === '/posts' || location.pathname === '/your-posts')) {
+      return true;
+    }
+    if (path === '/brandkit' && (location.pathname === '/brandkit' || location.pathname === '/brand-kit')) {
+      return true;
+    }
+    if (path === '/connections' && (location.pathname === '/connections' || location.pathname === '/social')) {
+      return true;
+    }
     return location.pathname === path;
   };
 

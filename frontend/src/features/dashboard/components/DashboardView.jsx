@@ -1,19 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Sparkles,
-  Plus,
-  Zap,
-  Activity,
-  Shield,
-  Wand2,
-  Calendar,
-  Building2,
-  Archive,
-  ArrowRight,
-} from "lucide-react";
+import { Sparkles, Plus, Zap, Activity } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
 import { DashboardQuickStats } from "./DashboardQuickStats";
 import { DashboardAnalyticsSummary } from "./DashboardAnalyticsSummary";
 
@@ -75,73 +63,6 @@ export const DashboardView = ({
           activeChannelsCount={activeChannelsCount}
         />
 
-      </div>
-
-      {/* Quick Access Feature Modules Grid */}
-      <div className="space-y-1.5 pt-0.5">
-        <h2 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-          <Shield className="w-3.5 h-3.5 text-amber-400" />
-          <span>Workspace Quick Actions & Modules</span>
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {[
-            {
-              title: "Post Studio",
-              desc: "Create and design branded social posts",
-              path: "/create-post",
-              icon: Wand2,
-              color: "text-amber-400",
-              borderColor: "hover:border-amber-500/50",
-            },
-            {
-              title: "Festival Content Calendar",
-              desc: "View upcoming events, holidays & celebrations",
-              path: "/calendar",
-              icon: Calendar,
-              color: "text-teal-400",
-              borderColor: "hover:border-teal-500/50",
-            },
-            {
-              title: "BrandKit Setup",
-              desc: "Update business logo, phone number & details",
-              path: "/brandkit",
-              icon: Building2,
-              color: "text-purple-400",
-              borderColor: "hover:border-purple-500/50",
-            },
-            {
-              title: "Graphic Vault",
-              desc: "Access uploaded images & saved graphics",
-              path: "/vault",
-              icon: Archive,
-              color: "text-emerald-400",
-              borderColor: "hover:border-emerald-500/50",
-            },
-          ].map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <Card
-                key={idx}
-                onClick={() => navigate(item.path)}
-                className={`p-3 bg-[#131B2A] border-[#2C384E] cursor-pointer transition-all duration-200 group ${item.borderColor} hover:shadow-lg`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className={`p-1.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] ${item.color}`}>
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-                  <ArrowRight className="w-3 h-3 text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                </div>
-                <h3 className="font-bold text-xs text-white group-hover:text-amber-400 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                  {item.desc}
-                </p>
-              </Card>
-            );
-          })}
-        </div>
       </div>
 
       {/* Mixed Social Media Analytics & Live Performance Overview */}

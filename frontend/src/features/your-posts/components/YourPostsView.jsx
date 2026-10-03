@@ -362,23 +362,45 @@ export const YourPostsView = ({
                 minute: "2-digit",
               });
 
+              const createdDateFormatted = (item.createdAt || item.post?.createdAt)
+                ? new Date(item.createdAt || item.post?.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : null;
+
+              const postForLightbox = {
+                ...(item.post || {}),
+                id: item.post?.id || item.id,
+                title: postTitle,
+                occasionName: postTitle,
+                finalGraphicUrl: item.post?.finalGraphicUrl,
+                caption: item.post?.captions?.[0]?.captionText,
+                captions: item.post?.captions || [],
+                hashtags: item.post?.captions?.[0]?.hashtags || [],
+                categoryName: item.post?.category?.name || item.post?.festival?.name || "Scheduled Post",
+                scheduledAt: item.scheduledAt,
+                createdAt: item.createdAt || item.post?.createdAt,
+              };
+
               return (
                 <Card
                   key={item.id}
                   className="p-4 bg-[#131B2A] border-[#2C384E] hover:border-slate-500/80 transition-all rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                 >
                   {/* Left: Thumbnail & Details */}
-                  <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                  <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
                     {item.post?.finalGraphicUrl ? (
                       <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] shrink-0 group/img cursor-pointer">
                         <img
                           src={item.post.finalGraphicUrl}
                           alt={postTitle}
-                          onClick={() => setLightboxImage(item.post.finalGraphicUrl)}
+                          onClick={() => setLightboxImage(postForLightbox)}
                           className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
                         />
                         <div
-                          onClick={() => setLightboxImage(item.post.finalGraphicUrl)}
+                          onClick={() => setLightboxImage(postForLightbox)}
                           className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center"
                         >
                           <Maximize2 className="w-4 h-4 text-white" />
@@ -390,15 +412,23 @@ export const YourPostsView = ({
                       </div>
                     )}
 
-                    <div className="space-y-1 min-w-0">
+                    <div className="space-y-1.5 min-w-0 flex-1">
                       <h4 className="font-bold text-sm text-white truncate" title={postTitle}>
                         {postTitle}
                       </h4>
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#0B0F17] border border-[#2C384E] text-[11px] text-slate-300 font-mono">
+                      {/* Dual Dates: Created Date & Scheduled Date */}
+                      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                        {createdDateFormatted && (
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#0B0F17] border border-[#2C384E] text-slate-400">
+                            <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span>Created: <strong className="text-slate-300 font-medium">{createdDateFormatted}</strong></span>
+                          </div>
+                        )}
+
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#0B0F17] border border-[#2C384E] text-slate-400">
                           <Clock className="w-3 h-3 text-teal-400 shrink-0" />
-                          <span>Scheduled: <strong className="text-teal-300">{scheduledDateFormatted}</strong></span>
+                          <span>Scheduled for: <strong className="text-teal-300 font-semibold">{scheduledDateFormatted}</strong></span>
                         </div>
 
                         {brandKitNeedsReview && (
@@ -409,15 +439,30 @@ export const YourPostsView = ({
                         )}
                       </div>
 
+                      {/* Complete Caption & Details - Clean without bulky layout */}
                       {item.post?.captions?.[0]?.captionText && (
-                        <p className="text-xs text-slate-400 line-clamp-1 italic">
-                          "{item.post.captions[0].captionText}"
-                        </p>
+                        <div className="bg-[#0B0F17]/80 rounded-lg p-2 border border-[#2C384E]/60 max-w-2xl">
+                          <p className="text-xs text-slate-300 leading-relaxed max-h-16 overflow-y-auto custom-scrollbar whitespace-pre-wrap select-text pr-1 font-sans">
+                            {item.post.captions[0].captionText}
+                          </p>
+                          {item.post.captions[0].hashtags?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-[#2C384E]/40 mt-1.5">
+                              {item.post.captions[0].hashtags.map((tag, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-[10px] font-mono text-teal-400 bg-teal-500/10 px-1.5 py-0.2 rounded border border-teal-500/20"
+                                >
+                                  {tag.startsWith("#") ? tag : `#${tag}`}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Right: Target Platforms, Status & Actions - No Re-use */}
+                  {/* Right: Target Platforms, Status & Actions */}
                   <div className="flex flex-wrap items-center gap-3 shrink-0 self-end md:self-center">
                     {/* Platforms Badges */}
                     {item.targetPlatforms && item.targetPlatforms.length > 0 && (
@@ -445,9 +490,9 @@ export const YourPostsView = ({
                     {item.post?.finalGraphicUrl && (
                       <button
                         type="button"
-                        onClick={() => setLightboxImage(item.post.finalGraphicUrl)}
+                        onClick={() => setLightboxImage(postForLightbox)}
                         className="p-2 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-slate-500 text-slate-300 hover:text-white transition cursor-pointer"
-                        title="View Full HD Graphic"
+                        title="View Full HD Graphic & Caption"
                       >
                         <Maximize2 className="w-4 h-4" />
                       </button>

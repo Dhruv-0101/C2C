@@ -305,6 +305,7 @@ export const CreatePostPage = () => {
 
   const [saveError, setSaveError] = useState("");
   const [createdPostId, setCreatedPostId] = useState(null);
+  const [shouldRedirectToVault, setShouldRedirectToVault] = useState(false);
 
   useEffect(() => {
     setCreatedPostId(null);
@@ -324,6 +325,11 @@ export const CreatePostPage = () => {
         "🎉 Composited post saved to Cloudinary & Vault! (1 Post Quota deducted)",
       );
       setTimeout(() => setSaveSuccess(""), 4000);
+
+      if (shouldRedirectToVault) {
+        setShouldRedirectToVault(false);
+        navigate("/vault");
+      }
     },
     onError: (err) => {
       setSaveSuccess("");
@@ -436,14 +442,20 @@ export const CreatePostPage = () => {
 
     if (!dataUrl) return;
 
+    // 1. Download 1080x1080 HD PNG to user's system
     const link = document.createElement("a");
     link.download = `${currentTemplate?.title || "BrandFlow-Post"}-1080x1080.png`;
     link.href = dataUrl;
     link.click();
 
-    if (!createdPostId && !savePostMutation.isPending) {
-      handleSaveToDb();
+    // 2. Automatically save to Graphic Vault and redirect
+    if (createdPostId) {
+      navigate("/vault");
+      return;
     }
+
+    setShouldRedirectToVault(true);
+    handleSaveToDb();
   };
 
   const handleOpenPublisher = (mode = "NOW") => {
@@ -533,6 +545,7 @@ export const CreatePostPage = () => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POSTS.ALL });
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VAULT.ALL });
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUBSCRIPTION.STATUS });
+          navigate("/posts");
         }}
       />
 

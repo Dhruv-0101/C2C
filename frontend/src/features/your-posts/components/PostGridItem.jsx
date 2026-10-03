@@ -1,5 +1,5 @@
 import React from 'react';
-import { Maximize2, Trash2, Download, Calendar, Tag } from 'lucide-react';
+import { Maximize2, Trash2, Download, Calendar, Clock } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 
 /**
@@ -54,24 +54,16 @@ export const PostGridItem = ({
               src={post.finalGraphicUrl}
               alt={occasionTitle}
               className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500 cursor-pointer"
-              onClick={() => onLightbox?.(post.finalGraphicUrl)}
+              onClick={() => onLightbox?.(post)}
             />
 
-            {/* Occasion / Category Tag */}
-            {(post.occasionName || post.festival?.name) && (
-              <div className="absolute top-2.5 left-2.5 max-w-[65%] z-10">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/75 text-amber-300 border border-amber-500/30 backdrop-blur-md truncate shadow-sm">
-                  <Tag className="w-2.5 h-2.5 shrink-0 text-amber-400" />
-                  <span className="truncate">{post.occasionName || post.festival?.name}</span>
-                </span>
-              </div>
-            )}
-
-            {/* Status Pill */}
+            {/* Status Pill - Clean status badge only, no cluttered overlay title tag */}
             <span
               className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase z-10 backdrop-blur-md shadow-sm border ${
                 post.status === "PUBLISHED"
                   ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  : post.status === "SCHEDULED"
+                  ? "bg-teal-500/20 text-teal-300 border-teal-500/40"
                   : "bg-amber-500/20 text-amber-400 border-amber-500/40"
               }`}
             >
@@ -80,7 +72,7 @@ export const PostGridItem = ({
 
             {/* Hover Quick View Overlay */}
             <div
-              onClick={() => onLightbox?.(post.finalGraphicUrl)}
+              onClick={() => onLightbox?.(post)}
               className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-[2px] cursor-pointer"
             >
               <div className="w-11 h-11 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/30 transform scale-90 group-hover/img:scale-100 transition-transform">
@@ -98,7 +90,7 @@ export const PostGridItem = ({
         )}
 
         {/* Content Details */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <h4
             className="font-bold text-sm text-white line-clamp-1 group-hover:text-amber-400 transition-colors"
             title={occasionTitle}
@@ -106,19 +98,58 @@ export const PostGridItem = ({
             {occasionTitle}
           </h4>
 
-          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed min-h-[2rem]">
-            {captionSnippet}
-          </p>
+          {/* Caption Snippet - Clean readable scrollable snippet */}
+          <div className="bg-[#0B0F17]/70 rounded-lg p-2 border border-[#2C384E]/50">
+            <p className="text-xs text-slate-300 leading-relaxed max-h-14 overflow-y-auto custom-scrollbar whitespace-pre-wrap select-text pr-1 text-[11px]">
+              {captionSnippet}
+            </p>
+            {post.captions?.[0]?.hashtags?.length > 0 && (
+              <div className="flex flex-wrap gap-1 pt-1 mt-1 border-t border-[#2C384E]/30">
+                {post.captions[0].hashtags.slice(0, 3).map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="text-[9px] font-mono text-teal-400/90 bg-teal-500/10 px-1 py-0.2 rounded border border-teal-500/20"
+                  >
+                    {tag.startsWith("#") ? tag : `#${tag}`}
+                  </span>
+                ))}
+                {post.captions[0].hashtags.length > 3 && (
+                  <span className="text-[9px] font-mono text-slate-400 px-1">
+                    +{post.captions[0].hashtags.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-mono pt-1">
-            <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
-            <span>
-              {new Date(post.createdAt).toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </span>
+          {/* Post Dates (Created / Scheduled) */}
+          <div className="space-y-1 pt-1 font-mono text-[11px] border-t border-[#2C384E]/60">
+            <div className="flex items-center gap-1.5 text-slate-400">
+              <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+              <span>
+                Created: {new Date(post.createdAt).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+
+            {post.scheduledPost?.scheduledAt && (
+              <div className="flex items-center gap-1.5 text-teal-400">
+                <Clock className="w-3 h-3 text-teal-400 shrink-0" />
+                <span>
+                  Scheduled for:{" "}
+                  <strong className="text-teal-300">
+                    {new Date(post.scheduledPost.scheduledAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </strong>
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -128,7 +159,7 @@ export const PostGridItem = ({
         {/* Fullscreen HD Lightbox Trigger */}
         <button
           type="button"
-          onClick={() => onLightbox?.(post.finalGraphicUrl)}
+          onClick={() => onLightbox?.(post)}
           className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#0B0F17] hover:bg-slate-800 text-slate-200 hover:text-white border border-[#2C384E] hover:border-slate-500 text-xs font-semibold transition cursor-pointer"
           title="View Full Resolution Graphic"
         >

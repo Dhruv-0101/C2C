@@ -18,7 +18,7 @@ export const DashboardQuickStats = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
       {/* Box 1: Generated Posts & Portfolio */}
       <Card
-        onClick={() => navigate("/your-posts")}
+        onClick={() => navigate("/posts")}
         className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-amber-500/50 hover:shadow-lg transition-all duration-200 group"
       >
         <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">
@@ -52,7 +52,7 @@ export const DashboardQuickStats = ({
 
       {/* Box 3: Social Channels Connection */}
       <Card
-        onClick={() => navigate("/social")}
+        onClick={() => navigate("/connections")}
         className="p-3 border-[#2C384E] bg-[#131B2A] space-y-1 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all duration-200 group"
       >
         <div className="flex items-center justify-between text-slate-400 text-[10px] font-semibold uppercase">

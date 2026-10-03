@@ -94,6 +94,14 @@ export const POST_LIST_INCLUDE = Object.freeze({
       hashtags: true,
     },
   },
+  scheduledPost: {
+    select: {
+      id: true,
+      scheduledAt: true,
+      status: true,
+      targetPlatforms: true,
+    },
+  },
 });
 
 /**

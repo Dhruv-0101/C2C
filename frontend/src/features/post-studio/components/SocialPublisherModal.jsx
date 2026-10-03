@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Send,
   Calendar,
@@ -49,6 +50,7 @@ export const SocialPublisherModal = ({
   initialPublishMode = "NOW",
   onSuccess,
 }) => {
+  const navigate = useNavigate();
   const [selectedPlatforms, setSelectedPlatforms] = useState([
     "INSTAGRAM",
     "FACEBOOK",
@@ -271,8 +273,15 @@ export const SocialPublisherModal = ({
               </div>
             )}
 
-            <Button variant="primary" className="w-full justify-center py-2 text-xs" onClick={onClose}>
-              Done
+            <Button
+              variant="primary"
+              className="w-full justify-center py-2.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer shadow-lg"
+              onClick={() => {
+                onClose();
+                navigate('/posts');
+              }}
+            >
+              {publishResult.scheduled ? "Go to Scheduled Queue →" : "View in Your Posts & Queue →"}
             </Button>
           </div>
         ) : (

@@ -15,7 +15,6 @@ import {
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
-import { PostDetailsModal } from '@/features/analytics/components/PostDetailsModal';
 
 const PLATFORM_COLORS = {
   INSTAGRAM: '#E1306C',
@@ -63,7 +62,6 @@ export const DashboardAnalyticsSummary = ({
   isLoading = false,
 }) => {
   const navigate = useNavigate();
-  const [selectedPost, setSelectedPost] = useState(null);
 
   const totalInteractions = (kpi.totalLikes || 0) + (kpi.totalComments || 0) + (kpi.totalShares || 0);
   const totalPlatformReach = platforms.reduce((acc, curr) => acc + (curr.reach || 0), 0);
@@ -380,11 +378,11 @@ export const DashboardAnalyticsSummary = ({
                     </div>
                   </div>
 
-                  {/* Deep Insights Trigger */}
+                  {/* Deep Insights Trigger -> Navigates to Analytics Page */}
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedPost(post)}
+                    onClick={() => navigate('/analytics')}
                     className="w-full text-[10px] font-bold py-1 border-[#2C384E] hover:border-amber-500/40 hover:bg-amber-500/10 flex items-center justify-center gap-1"
                   >
                     <BarChart3 className="w-3 h-3 text-amber-400" />
@@ -396,15 +394,6 @@ export const DashboardAnalyticsSummary = ({
           </div>
         </Card>
       </div>
-
-      {/* Modal for Post Deep Insights */}
-      {selectedPost && (
-        <PostDetailsModal
-          isOpen={Boolean(selectedPost)}
-          onClose={() => setSelectedPost(null)}
-          post={selectedPost}
-        />
-      )}
     </div>
   );
 };

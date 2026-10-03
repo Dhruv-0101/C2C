@@ -1578,11 +1578,15 @@ export const PostStudioEditorView = ({
                     <div className="space-y-2 pt-1">
                       <Button
                         variant="primary"
-                        icon={isExpired ? Lock : (isDownloading || isRendering ? Loader2 : Download)}
-                        disabled={isRendering || isDownloading || isExpired}
+                        icon={isExpired && !isEditingScheduled ? Lock : (isDownloading || savePostMutation.isPending || isRendering ? Loader2 : Download)}
+                        disabled={isRendering || isDownloading || savePostMutation.isPending || (isExpired && !isEditingScheduled)}
                         onClick={async () => {
-                          if (isExpired || postsRemaining <= 0) {
+                          if (isExpired && !isEditingScheduled && postsRemaining <= 0) {
                             openPlanModal && openPlanModal();
+                            return;
+                          }
+                          if (isEditingScheduled) {
+                            handleSaveToDb();
                             return;
                           }
                           setIsDownloading(true);
@@ -1592,35 +1596,21 @@ export const PostStudioEditorView = ({
                             setTimeout(() => setIsDownloading(false), 800);
                           }
                         }}
-                        className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3 border-0 shadow-lg ${
-                          isExpired
+                        className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg cursor-pointer ${
+                          isExpired && !isEditingScheduled
                             ? "bg-slate-800 text-slate-400 cursor-not-allowed"
-                            : "bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950"
+                            : "bg-gradient-to-r from-amber-500 to-teal-500 hover:from-amber-400 hover:to-teal-400 text-slate-950"
                         }`}
                       >
                         {isRendering
                           ? "Rendering 1080×1080 Graphic..."
-                          : isDownloading
-                            ? "Preparing HD Download..."
-                            : isExpired
-                              ? "🔒 Upgrade Plan to Download"
-                              : "Download 1080×1080 HD PNG"}
-                      </Button>
-
-                      <Button
-                        variant={isEditingScheduled ? "primary" : "outline"}
-                        icon={isExpired && !isEditingScheduled ? Lock : (savePostMutation.isPending || isUpdatingGraphic ? Loader2 : BookmarkCheck)}
-                        disabled={savePostMutation.isPending || isUpdatingGraphic || isRendering || (isExpired && !isEditingScheduled)}
-                        onClick={handleSaveToDb}
-                        className="w-full justify-center border-[#2C384E] text-slate-300 hover:text-white text-xs font-bold py-2.5"
-                      >
-                        {savePostMutation.isPending || isUpdatingGraphic
-                          ? "Saving Post to Vault..."
-                          : isEditingScheduled
-                            ? "Update Scheduled Post Graphic (0 Credits)"
-                            : isExpired
-                              ? "🔒 Upgrade Plan to Save"
-                              : "Save Post Draft to Vault"}
+                          : isDownloading || savePostMutation.isPending
+                            ? "Downloading & Saving to Vault..."
+                            : isEditingScheduled
+                              ? "Update Scheduled Post Graphic"
+                              : isExpired
+                                ? "🔒 Upgrade Plan to Download"
+                                : "Download HD PNG & Save to Vault"}
                       </Button>
                     </div>
                   </div>

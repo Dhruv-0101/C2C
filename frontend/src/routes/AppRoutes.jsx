@@ -151,13 +151,14 @@ export const AppRoutes = () => {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/create-post" element={<CreatePostPage />} />
             <Route path="/posts" element={<YourPostsPage />} />
-            <Route path="/your-posts" element={<YourPostsPage />} />
+            <Route path="/your-posts" element={<Navigate to="/posts" replace />} />
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/frames" element={<Navigate to="/dashboard" replace />} />
             <Route path="/design-styles" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/brand-kit" element={<BrandKitPage />} />
+            <Route path="/brand-kit" element={<Navigate to="/brandkit" replace />} />
             <Route path="/brandkit" element={<BrandKitPage />} />
             <Route path="/connections" element={<SocialConnectionsPage />} />
+            <Route path="/social" element={<Navigate to="/connections" replace />} />
             <Route path="/vault" element={<VaultPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />

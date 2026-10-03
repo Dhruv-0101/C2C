@@ -614,19 +614,14 @@ export const FestivalCalendarView = ({
                           key={fest.id}
                           className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-4 shadow-lg"
                         >
-                          {/* Banner preview if available */}
+                          {/* Banner preview if available - Responsive Unclipped Rectangle View */}
                           {fest.bannerUrl && (
-                            <div className="h-32 sm:h-44 w-full rounded-xl overflow-hidden relative border border-[#2C384E] mb-2">
+                            <div className="w-full rounded-2xl overflow-hidden relative border border-[#2C384E] bg-slate-950/80 mb-3 flex items-center justify-center shadow-lg">
                               <img
                                 src={fest.bannerUrl}
                                 alt={fest.name}
-                                className="w-full h-full object-cover"
+                                className="w-full max-h-[300px] sm:max-h-[360px] object-contain rounded-xl"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent flex items-end p-4">
-                                <span className="text-white font-heading font-extrabold text-lg sm:text-xl drop-shadow-md">
-                                  {fest.name}
-                                </span>
-                              </div>
                             </div>
                           )}
 
