@@ -438,27 +438,6 @@ export const YourPostsView = ({
                           </div>
                         )}
                       </div>
-
-                      {/* Complete Caption & Details - Clean without bulky layout */}
-                      {item.post?.captions?.[0]?.captionText && (
-                        <div className="bg-[#0B0F17]/80 rounded-lg p-2 border border-[#2C384E]/60 max-w-2xl">
-                          <p className="text-xs text-slate-300 leading-relaxed max-h-16 overflow-y-auto custom-scrollbar whitespace-pre-wrap select-text pr-1 font-sans">
-                            {item.post.captions[0].captionText}
-                          </p>
-                          {item.post.captions[0].hashtags?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-[#2C384E]/40 mt-1.5">
-                              {item.post.captions[0].hashtags.map((tag, idx) => (
-                                <span
-                                  key={idx}
-                                  className="text-[10px] font-mono text-teal-400 bg-teal-500/10 px-1.5 py-0.2 rounded border border-teal-500/20"
-                                >
-                                  {tag.startsWith("#") ? tag : `#${tag}`}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
 

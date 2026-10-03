@@ -18,9 +18,6 @@ export const PostGridItem = ({
     post.festival?.name ||
     "Branded Graphic Post";
 
-  const captionSnippet =
-    post.captions?.[0]?.captionText || post.caption || "No caption text attached.";
-
   // Internal fallback download if onDownload prop is omitted
   const handleInternalDownload = (e) => {
     e.stopPropagation();
@@ -97,30 +94,6 @@ export const PostGridItem = ({
           >
             {occasionTitle}
           </h4>
-
-          {/* Caption Snippet - Clean readable scrollable snippet */}
-          <div className="bg-[#0B0F17]/70 rounded-lg p-2 border border-[#2C384E]/50">
-            <p className="text-xs text-slate-300 leading-relaxed max-h-14 overflow-y-auto custom-scrollbar whitespace-pre-wrap select-text pr-1 text-[11px]">
-              {captionSnippet}
-            </p>
-            {post.captions?.[0]?.hashtags?.length > 0 && (
-              <div className="flex flex-wrap gap-1 pt-1 mt-1 border-t border-[#2C384E]/30">
-                {post.captions[0].hashtags.slice(0, 3).map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[9px] font-mono text-teal-400/90 bg-teal-500/10 px-1 py-0.2 rounded border border-teal-500/20"
-                  >
-                    {tag.startsWith("#") ? tag : `#${tag}`}
-                  </span>
-                ))}
-                {post.captions[0].hashtags.length > 3 && (
-                  <span className="text-[9px] font-mono text-slate-400 px-1">
-                    +{post.captions[0].hashtags.length - 3}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
 
           {/* Post Dates (Created / Scheduled) */}
           <div className="space-y-1 pt-1 font-mono text-[11px] border-t border-[#2C384E]/60">
