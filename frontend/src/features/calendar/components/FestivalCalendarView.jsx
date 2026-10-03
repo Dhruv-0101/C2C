@@ -69,8 +69,15 @@ export const FestivalCalendarView = ({
   onSelectTemplate,
 }) => {
   const safeSelectedFestivals = selectedDayDetails?.festivals || [];
-  const safeScheduledPosts = selectedDayDetails?.scheduledPosts || [];
+  const rawScheduledPosts = selectedDayDetails?.scheduledPosts || [];
   const safePublishedPosts = selectedDayDetails?.publishedPosts || [];
+
+  // Deduplicate: filter out scheduled queue items whose post has already been published
+  const publishedIdsSet = new Set(safePublishedPosts.map((p) => p.id));
+  const safeScheduledPosts = rawScheduledPosts.filter((item) => {
+    const pId = item.postId || item.post?.id;
+    return !pId || !publishedIdsSet.has(pId);
+  });
 
   const modalDayTotalTemplates = safeSelectedFestivals.reduce((sum, f) => {
     return (
@@ -166,20 +173,48 @@ export const FestivalCalendarView = ({
             const hasFestivals = cell.festivals && cell.festivals.length > 0;
             const scheduledList = cell.scheduledPosts || [];
             const publishedList = cell.publishedPosts || [];
-            const totalUserPosts = scheduledList.length + publishedList.length;
+
+            // Deduplicate unique user posts defensively
+            const postMap = new Map();
+            scheduledList.forEach((item) => {
+              const pId = item.postId || item.post?.id || item.id;
+              postMap.set(pId, { type: "scheduled", data: item, id: pId });
+            });
+            publishedList.forEach((post) => {
+              const existing = postMap.get(post.id);
+              postMap.set(post.id, {
+                type: "published",
+                data: post,
+                scheduledData: existing?.data,
+                id: post.id,
+              });
+            });
+
+            const allUserPosts = Array.from(postMap.values());
+            const totalUserPosts = allUserPosts.length;
             const hasEvents = hasFestivals || totalUserPosts > 0;
 
-            // Maximum direct post pills to show: 1 if date has festival(s), else 2
-            const maxDirectPosts = hasFestivals ? 1 : 2;
+            // Direct post pills vs overflow badge:
+            // If date has festival(s):
+            //   - Up to 2 posts are shown directly (no overflow badge needed for 1 or 2 posts).
+            //   - If 3 or more posts exist: show 1 direct post pill + "+X more posts" overflow badge.
+            // If date has NO festivals:
+            //   - Up to 3 posts are shown directly (no overflow badge needed for 1, 2, or 3 posts).
+            //   - If 4 or more posts exist: show 2 direct post pills + "+X more posts" overflow badge.
+            let visibleUserPosts = allUserPosts;
+            let overflowUserPostsCount = 0;
 
-            // Prioritize scheduled upcoming posts first, then published posts
-            const allUserPosts = [
-              ...scheduledList.map((item) => ({ type: "scheduled", data: item })),
-              ...publishedList.map((post) => ({ type: "published", data: post })),
-            ];
-
-            const visibleUserPosts = allUserPosts.slice(0, maxDirectPosts);
-            const overflowUserPostsCount = allUserPosts.length - visibleUserPosts.length;
+            if (hasFestivals) {
+              if (totalUserPosts > 2) {
+                visibleUserPosts = allUserPosts.slice(0, 1);
+                overflowUserPostsCount = totalUserPosts - 1;
+              }
+            } else {
+              if (totalUserPosts > 3) {
+                visibleUserPosts = allUserPosts.slice(0, 2);
+                overflowUserPostsCount = totalUserPosts - 2;
+              }
+            }
 
             // Limit festivals shown directly to 1 if user posts exist to avoid vertical clipping
             const maxFestivalsToShow = totalUserPosts > 0 ? 1 : 2;

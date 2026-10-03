@@ -169,20 +169,9 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
     festivalMap[dateKey].push(fest);
   });
 
-  // Scheduled Posts Map by Date (YYYY-MM-DD)
-  const scheduledMap = {};
-  scheduledPosts.forEach((item) => {
-    if (!item.scheduledAt) return;
-    const dateKey = getNormalizedDateKey(item.scheduledAt);
-    if (!dateKey) return;
-    if (!scheduledMap[dateKey]) {
-      scheduledMap[dateKey] = [];
-    }
-    scheduledMap[dateKey].push(item);
-  });
-
   // Published Posts Map by Date (YYYY-MM-DD)
   const publishedMap = {};
+  const publishedPostIds = new Set();
   userPosts.forEach((post) => {
     if (post.status !== "PUBLISHED" || !post.createdAt) return;
     const dateKey = getNormalizedDateKey(post.createdAt);
@@ -191,6 +180,26 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
       publishedMap[dateKey] = [];
     }
     publishedMap[dateKey].push(post);
+    publishedPostIds.add(post.id);
+  });
+
+  // Scheduled Posts Map by Date (YYYY-MM-DD)
+  // Deduplicate: If an item was already executed and is published, avoid double-counting
+  const scheduledMap = {};
+  scheduledPosts.forEach((item) => {
+    if (!item.scheduledAt) return;
+    const dateKey = getNormalizedDateKey(item.scheduledAt);
+    if (!dateKey) return;
+
+    const targetPostId = item.postId || item.post?.id;
+    if (targetPostId && publishedPostIds.has(targetPostId)) {
+      return;
+    }
+
+    if (!scheduledMap[dateKey]) {
+      scheduledMap[dateKey] = [];
+    }
+    scheduledMap[dateKey].push(item);
   });
 
   const calendarCells = [];
