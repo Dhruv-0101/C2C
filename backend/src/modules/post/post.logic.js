@@ -41,21 +41,11 @@ import {
  * Get paginated posts created by user
  * @param {string} userId
  * @param {Object} [queryParams={}]
- * @returns {Promise<{ data: { posts: Array<Object>, counts: Object }, meta: Object }>}
+ * @returns {Promise<{ data: { posts: Array<Object> }, meta: Object }>}
  */
 export async function getUserPosts(userId, queryParams = {}) {
   const pagination = parsePaginationParams(queryParams);
-  const { posts, totalCount, counts } = await postRepository.findPaginatedByUserId(userId, {
-    ...pagination,
-    search: queryParams.search,
-    status: queryParams.status,
-    platform: queryParams.platform,
-    timeFilter: queryParams.timeFilter,
-    startDate: queryParams.startDate,
-    endDate: queryParams.endDate,
-    sortBy: queryParams.sortBy,
-    sortOrder: queryParams.sortOrder,
-  });
+  const { posts, totalCount } = await postRepository.findPaginatedByUserId(userId, pagination);
 
   const paginatedResponse = buildPaginatedResponse({
     items: sanitizePosts(posts),
@@ -67,12 +57,8 @@ export async function getUserPosts(userId, queryParams = {}) {
   return {
     data: {
       posts: paginatedResponse.data,
-      counts,
     },
-    meta: {
-      ...paginatedResponse.meta,
-      counts,
-    },
+    meta: paginatedResponse.meta,
   };
 }
 
@@ -80,22 +66,13 @@ export async function getUserPosts(userId, queryParams = {}) {
  * Get user's scheduled queue with pagination
  * @param {string} userId
  * @param {Object} [queryParams={}]
- * @returns {Promise<{ data: { scheduledPosts: Array<Object>, counts: Object }, meta: Object }>}
+ * @returns {Promise<{ data: { scheduledPosts: Array<Object> }, meta: Object }>}
  */
 export async function getScheduledPosts(userId, queryParams = {}) {
   const pagination = parsePaginationParams(queryParams);
-  const { scheduledPosts, totalCount, counts } = await postRepository.findPaginatedScheduledByUserId(
+  const { scheduledPosts, totalCount } = await postRepository.findPaginatedScheduledByUserId(
     userId,
-    {
-      ...pagination,
-      search: queryParams.search,
-      platform: queryParams.platform,
-      timeFilter: queryParams.timeFilter,
-      startDate: queryParams.startDate,
-      endDate: queryParams.endDate,
-      sortBy: queryParams.sortBy,
-      sortOrder: queryParams.sortOrder,
-    }
+    pagination
   );
 
   const paginatedResponse = buildPaginatedResponse({
@@ -108,12 +85,8 @@ export async function getScheduledPosts(userId, queryParams = {}) {
   return {
     data: {
       scheduledPosts: paginatedResponse.data,
-      counts,
     },
-    meta: {
-      ...paginatedResponse.meta,
-      counts,
-    },
+    meta: paginatedResponse.meta,
   };
 }
 

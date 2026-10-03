@@ -13,8 +13,6 @@ import {
   Plus,
   Download,
   Tag,
-  Filter,
-  X,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { SearchBar } from '@/components/ui/SearchBar';
@@ -44,13 +42,6 @@ export const YourPostsView = ({
   setScheduledPage,
   scheduledLimit = 10,
   setScheduledLimit,
-  counts,
-  platform = "",
-  setPlatform,
-  timeFilter = "",
-  setTimeFilter,
-  sortBy = "",
-  setSortBy,
   activeTab: propActiveTab,
   setActiveTab: propSetActiveTab,
   searchQuery = "",
@@ -100,10 +91,10 @@ export const YourPostsView = ({
     );
   }, [scheduledPosts, searchQuery]);
 
-  const publishedCount = counts?.published ?? (posts || []).filter((p) => p.status === "PUBLISHED").length;
-  const scheduledCount = counts?.scheduled ?? scheduledMeta?.totalItems ?? (scheduledPosts || []).length;
-  const draftCount = counts?.draft ?? (posts || []).filter((p) => p.status === "DRAFT").length;
-  const totalPostsCount = counts?.all ?? postsMeta?.totalItems ?? (posts || []).length;
+  const publishedCount = (posts || []).filter((p) => p.status === "PUBLISHED").length;
+  const scheduledCount = scheduledMeta?.totalItems ?? (scheduledPosts || []).length;
+  const draftCount = (posts || []).filter((p) => p.status === "DRAFT").length;
+  const totalPostsCount = postsMeta?.totalItems ?? (posts || []).length;
 
   // Global Image Download handler
   const handleDownload = (graphicUrl, title) => {
@@ -217,7 +208,7 @@ export const YourPostsView = ({
         </Card>
       </div>
 
-      {/* Filter Tabs Header */}
+      {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
         {/* Navigation Tabs with Badges */}
         <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-xs font-bold overflow-x-auto">
@@ -303,129 +294,18 @@ export const YourPostsView = ({
             </span>
           </button>
         </div>
-      </div>
 
-      {/* Enterprise Multi-Filter Toolbar for 1,000+ Posts Scale */}
-      <div className="p-4 rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-3 shadow-md">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Search Bar Input */}
-          <div className="flex-1 min-w-[260px]">
-            <SearchBar
-              value={searchQuery}
-              onChange={(val) => {
-                const query = typeof val === "string" ? val : (val?.target?.value ?? "");
-                setSearchQuery?.(query);
-              }}
-              placeholder={
-                activeTab === "SCHEDULED"
-                  ? "Search scheduled queue by title, occasion, festival..."
-                  : "Search posts by occasion, festival, template..."
-              }
-            />
-          </div>
-
-          {/* Filter Dropdowns & Controls */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Platform Channel Filter */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
-              <span className="text-slate-400 font-medium">Channel:</span>
-              <select
-                value={platform}
-                onChange={(e) => setPlatform?.(e.target.value)}
-                className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
-              >
-                <option value="" className="bg-[#131B2A] text-white">All Channels</option>
-                <option value="INSTAGRAM" className="bg-[#131B2A] text-white">Instagram</option>
-                <option value="FACEBOOK" className="bg-[#131B2A] text-white">Facebook</option>
-                <option value="LINKEDIN" className="bg-[#131B2A] text-white">LinkedIn</option>
-              </select>
-            </div>
-
-            {/* Time / Period Filter */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
-              <span className="text-slate-400 font-medium">Period:</span>
-              <select
-                value={timeFilter}
-                onChange={(e) => setTimeFilter?.(e.target.value)}
-                className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
-              >
-                <option value="" className="bg-[#131B2A] text-white">All Time</option>
-                <option value="today" className="bg-[#131B2A] text-white">Today</option>
-                <option value="week" className="bg-[#131B2A] text-white">Past 7 Days</option>
-                <option value="month" className="bg-[#131B2A] text-white">Past 30 Days</option>
-              </select>
-            </div>
-
-            {/* Sort Order */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
-              <span className="text-slate-400 font-medium">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy?.(e.target.value)}
-                className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
-              >
-                {activeTab === "SCHEDULED" ? (
-                  <>
-                    <option value="" className="bg-[#131B2A] text-white">Scheduled Soonest</option>
-                    <option value="scheduledAt_desc" className="bg-[#131B2A] text-white">Scheduled Furthest</option>
-                    <option value="createdAt_desc" className="bg-[#131B2A] text-white">Newest Created</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="" className="bg-[#131B2A] text-white">Newest First</option>
-                    <option value="createdAt_asc" className="bg-[#131B2A] text-white">Oldest First</option>
-                    <option value="occasionName_asc" className="bg-[#131B2A] text-white">Title (A-Z)</option>
-                  </>
-                )}
-              </select>
-            </div>
-
-            {/* Clear All Filters Button */}
-            {(Boolean(platform) || Boolean(timeFilter) || Boolean(sortBy) || Boolean(searchQuery)) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setPlatform?.("");
-                  setTimeFilter?.("");
-                  setSortBy?.("");
-                  setSearchQuery?.("");
-                }}
-                className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                title="Reset All Filters"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Reset</span>
-              </button>
-            )}
-          </div>
+        {/* Search Bar Input */}
+        <div className="w-full sm:w-64">
+          <SearchBar
+            value={searchQuery}
+            onChange={(val) => {
+              const query = typeof val === "string" ? val : (val?.target?.value ?? "");
+              setSearchQuery?.(query);
+            }}
+            placeholder="Search by occasion, festival..."
+          />
         </div>
-
-        {/* Active Filter Chips Bar */}
-        {(Boolean(platform) || Boolean(timeFilter) || Boolean(sortBy) || Boolean(searchQuery)) && (
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#2C384E]/50 text-[11px]">
-            <span className="text-slate-400 font-medium">Active Filters:</span>
-            {searchQuery && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
-                Keyword: "{searchQuery}"
-              </span>
-            )}
-            {platform && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">
-                Channel: {platform}
-              </span>
-            )}
-            {timeFilter && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 font-mono">
-                Period: {timeFilter === "today" ? "Today" : timeFilter === "week" ? "Past 7 Days" : "Past 30 Days"}
-              </span>
-            )}
-            {sortBy && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-teal-500/10 text-teal-400 border border-teal-500/20 font-mono">
-                Custom Sort
-              </span>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Main Content Area */}
