@@ -74,7 +74,7 @@ const getCountdownMeta = (dateString) => {
   return {
     text: `In ${diffDays} Days`,
     badgeClass:
-      "bg-slate-950/85 backdrop-blur-md border-amber-400/40 text-amber-300 shadow-sm",
+      "bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-amber-400/50 dark:border-amber-400/40 text-amber-800 dark:text-amber-300 shadow-sm font-semibold",
     highlight: false,
   };
 };
@@ -329,8 +329,8 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
 
                     {/* Region / Category Tag Top-Right */}
                     {(item.category || item.targetRegion) && (
-                      <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/15 text-[10px] font-semibold text-slate-200 tracking-wide flex items-center gap-1 shadow-md">
-                        <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                      <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-white/95 dark:bg-slate-950/80 backdrop-blur-md border border-slate-200 dark:border-white/15 text-[10px] font-semibold text-slate-800 dark:text-slate-200 tracking-wide flex items-center gap-1 shadow-md">
+                        <Sparkles className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" />
                         <span>{(item.category || item.targetRegion || "Festival").replace(/upcoming/i, "").trim() || "India"}</span>
                       </div>
                     )}
@@ -342,14 +342,14 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                       <h4 className="font-heading font-extrabold text-sm sm:text-[15px] text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight">
                         {item.name || item.title || "Upcoming Festival"}
                       </h4>
-                      <p className="text-[11px] text-slate-700 dark:text-slate-300/80 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300/80 line-clamp-2 leading-relaxed">
                         {item.description || "Festival celebration and special event"}
                       </p>
                     </div>
 
                     {/* Styled Festival Metadata Row */}
                     <div className="pt-2.5 flex items-center justify-between border-t border-slate-200 dark:border-white/[0.08] text-[11px]">
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/25 text-amber-700 dark:text-amber-300 font-semibold text-[10px] tracking-wide">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/25 text-amber-800 dark:text-amber-300 font-bold text-[10px] tracking-wide">
                         <Calendar className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                         <span>
                           {item.date

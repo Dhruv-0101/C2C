@@ -148,6 +148,8 @@ html.light [class*="bg-slate-800"] {
 
 html.light [class*="bg-[#131B2A]"],
 html.light [class*="bg-[#131b2a]"],
+html.light [class*="bg-[#141C2E]"],
+html.light [class*="bg-[#141c2e]"],
 html.light [class*="bg-[#1A2538]"],
 html.light [class*="bg-[#1a2538]"],
 html.light [class*="bg-[#182335]"],
@@ -177,22 +179,26 @@ html.dark .modal-backdrop-overlay {
 }
 
 /* Celebration Welcome Modal Festival Cards High Contrast */
-html.light .welcome-festival-card {
+html.light .welcome-festival-card,
+html.light [class*="welcome-festival-card"] {
   background-color: #FFFFFF !important;
   background-image: none !important;
   border-color: #CBD5E1 !important;
 }
 
-html.light .welcome-festival-card .welcome-card-body {
+html.light .welcome-festival-card .welcome-card-body,
+html.light [class*="welcome-card-body"] {
   background-color: #FFFFFF !important;
   background-image: none !important;
 }
 
-html.light .welcome-festival-card h4 {
+html.light .welcome-festival-card h4,
+html.light [class*="welcome-festival-card"] h4 {
   color: #0F172A !important;
 }
 
-html.light .welcome-festival-card p {
+html.light .welcome-festival-card p,
+html.light [class*="welcome-festival-card"] p {
   color: #334155 !important;
 }
 
@@ -214,6 +220,8 @@ html.dark .welcome-festival-card p {
 }
 
 /* Fix for Dark Gradient Cards/Banners in Light Mode */
+html.light [class*="from-[#141C2E]"],
+html.light [class*="from-[#141c2e]"],
 html.light [class*="from-[#131B2A]"],
 html.light [class*="from-[#131b2a]"],
 html.light [class*="from-[#1A2538]"],
