@@ -292,7 +292,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
               return (
                 <div
                   key={item.id}
-                  className="group relative rounded-2xl bg-white dark:bg-[#141C2E] border border-slate-200 dark:border-slate-700/60 hover:border-amber-400/50 overflow-hidden shadow-xs dark:shadow-xl dark:shadow-black/30 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                  className="welcome-festival-card group relative rounded-2xl bg-white dark:bg-[#141C2E] border border-slate-200 dark:border-slate-700/60 hover:border-amber-400/50 overflow-hidden shadow-xs dark:shadow-xl dark:shadow-black/30 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
                 >
                   {/* Specular Top Glow Highlight Accent */}
                   <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent group-hover:via-amber-400 transition-all duration-500 z-10" />
@@ -337,12 +337,12 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                   </div>
 
                   {/* Content Details */}
-                  <div className="p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between bg-white dark:bg-[#141C2E]">
+                  <div className="welcome-card-body p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between bg-white dark:bg-[#141C2E]">
                     <div className="space-y-1">
                       <h4 className="font-heading font-extrabold text-sm sm:text-[15px] text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight">
                         {item.name || item.title || "Upcoming Festival"}
                       </h4>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-300/80 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-slate-700 dark:text-slate-300/80 line-clamp-2 leading-relaxed">
                         {item.description || "Festival celebration and special event"}
                       </p>
                     </div>
@@ -369,7 +369,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
         </div>
 
         {/* Modal Bottom Actions */}
-        <div className="pt-3 border-t border-white/[0.08] space-y-3">
+        <div className="pt-3 border-t border-slate-200 dark:border-white/[0.08] space-y-3">
           <button
             type="button"
             onClick={() => {
@@ -387,15 +387,15 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
           </button>
 
           {/* Micro Footer Row */}
-          <div className="flex items-center justify-between px-1 text-[11px] text-slate-400">
-            <span className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center justify-between px-1 text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
               100% automated with your brand logo &amp; contact frames
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors cursor-pointer hover:underline"
+              className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer hover:underline"
             >
               Maybe Later
             </button>

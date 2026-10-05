@@ -176,6 +176,43 @@ html.dark .modal-backdrop-overlay {
   -webkit-backdrop-filter: blur(2px) !important;
 }
 
+/* Celebration Welcome Modal Festival Cards High Contrast */
+html.light .welcome-festival-card {
+  background-color: #FFFFFF !important;
+  background-image: none !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light .welcome-festival-card .welcome-card-body {
+  background-color: #FFFFFF !important;
+  background-image: none !important;
+}
+
+html.light .welcome-festival-card h4 {
+  color: #0F172A !important;
+}
+
+html.light .welcome-festival-card p {
+  color: #334155 !important;
+}
+
+html.dark .welcome-festival-card {
+  background-color: #141C2E !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+html.dark .welcome-festival-card .welcome-card-body {
+  background-color: #141C2E !important;
+}
+
+html.dark .welcome-festival-card h4 {
+  color: #FFFFFF !important;
+}
+
+html.dark .welcome-festival-card p {
+  color: rgba(203, 213, 225, 0.8) !important;
+}
+
 /* Fix for Dark Gradient Cards/Banners in Light Mode */
 html.light [class*="from-[#131B2A]"],
 html.light [class*="from-[#131b2a]"],
