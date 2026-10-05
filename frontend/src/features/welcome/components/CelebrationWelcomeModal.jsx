@@ -217,7 +217,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/35 dark:bg-black/50 backdrop-blur-[2px] animate-in fade-in duration-300">
+    <div className="modal-backdrop-overlay fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
       {/* Canvas Overlay for Confetti Burst */}
       <canvas
         ref={canvasRef}
@@ -292,13 +292,13 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
               return (
                 <div
                   key={item.id}
-                  className="group relative rounded-2xl bg-white dark:bg-gradient-to-b dark:from-[#141C2E] dark:via-[#0E1524] dark:to-[#080C14] border border-slate-200 dark:border-slate-700/60 hover:border-amber-400/50 overflow-hidden shadow-md dark:shadow-xl dark:shadow-black/30 hover:shadow-[0_16px_36px_-10px_rgba(245,158,11,0.2)] transition-all duration-300 flex flex-col justify-between"
+                  className="group relative rounded-2xl bg-white dark:bg-[#141C2E] border border-slate-200 dark:border-slate-700/60 hover:border-amber-400/50 overflow-hidden shadow-xs dark:shadow-xl dark:shadow-black/30 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
                 >
                   {/* Specular Top Glow Highlight Accent */}
                   <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent group-hover:via-amber-400 transition-all duration-500 z-10" />
 
                   {/* Image Thumbnail Container */}
-                  <div className="w-full h-36 relative overflow-hidden bg-slate-950 rounded-t-2xl">
+                  <div className="w-full h-36 relative overflow-hidden bg-slate-100 dark:bg-slate-950 rounded-t-2xl">
                     <img
                       src={
                         item.bannerUrl ||
@@ -307,12 +307,12 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                         "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop"
                       }
                       alt={item.name || item.title || "Festival"}
-                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
+                      className="w-full h-full object-cover opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
                     />
 
-                    {/* Translucent Dark Scrim Overlay (Immune to light-mode white background overrides) */}
+                    {/* Translucent Dark Scrim Overlay (Only in dark mode) */}
                     <div
-                      className="image-scrim-overlay absolute inset-0 pointer-events-none"
+                      className="image-scrim-overlay absolute inset-0 pointer-events-none hidden dark:block"
                       style={{
                         background:
                           "linear-gradient(to top, rgba(14, 21, 36, 0.95) 0%, rgba(14, 21, 36, 0.35) 45%, transparent 100%)",
@@ -337,7 +337,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                   </div>
 
                   {/* Content Details */}
-                  <div className="p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between">
+                  <div className="p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between bg-white dark:bg-[#141C2E]">
                     <div className="space-y-1">
                       <h4 className="font-heading font-extrabold text-sm sm:text-[15px] text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight">
                         {item.name || item.title || "Upcoming Festival"}

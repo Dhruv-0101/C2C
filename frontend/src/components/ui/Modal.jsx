@@ -31,7 +31,7 @@ export const Modal = ({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in font-sans">
+    <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in font-sans">
       <div
         className={`w-full ${maxWidth} bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] rounded-2xl p-6 space-y-4 shadow-2xl my-auto text-slate-800 dark:text-slate-100 animate-in zoom-in-95 duration-200 ${className}`}
       >

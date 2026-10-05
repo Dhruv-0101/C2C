@@ -158,10 +158,22 @@ html.light [class*="bg-[#0F172A]"],
 html.light [class*="bg-[#0f172a]"],
 html.light [class*="bg-[#1E293B]"],
 html.light [class*="bg-[#1e293b]"],
-html.light [class*="bg-slate-900/"],
-html.light [class*="bg-slate-950/"],
-html.light [class*="bg-slate-800/"] {
+html.light [class*="bg-slate-900/"]:not(.modal-backdrop-overlay):not([class*="fixed"]),
+html.light [class*="bg-slate-950/"]:not(.modal-backdrop-overlay):not([class*="fixed"]),
+html.light [class*="bg-slate-800/"]:not(.modal-backdrop-overlay):not([class*="fixed"]) {
   background-color: #FFFFFF !important;
+}
+
+/* Modal Transparent Backdrop Protection for Light and Dark Themes */
+.modal-backdrop-overlay {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+}
+html.dark .modal-backdrop-overlay {
+  background-color: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
 }
 
 /* Fix for Dark Gradient Cards/Banners in Light Mode */
