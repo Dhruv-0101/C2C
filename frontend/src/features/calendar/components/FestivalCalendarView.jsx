@@ -302,13 +302,13 @@ export const FestivalCalendarView = ({
                       return (
                         <div
                           key={`sched-${item.id}`}
-                          className="px-2 py-0.5 rounded-lg bg-teal-500/30 backdrop-blur-md border border-teal-500/50 text-teal-200 text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-sm transition-all"
+                          className="px-2 py-0.5 rounded-lg bg-teal-50 border-teal-300 text-teal-900 dark:bg-teal-500/30 dark:backdrop-blur-md dark:border-teal-500/50 dark:text-teal-200 border text-[10px] font-mono font-bold flex items-center justify-between gap-1 truncate shadow-xs transition-all"
                           title={`Scheduled: ${new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                         >
-                          <span className="truncate">
+                          <span className="truncate text-teal-900 dark:text-teal-200 font-bold">
                             ⏰ {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          <Clock className="w-3 h-3 text-teal-300 shrink-0" />
+                          <Clock className="w-3 h-3 text-teal-700 dark:text-teal-300 shrink-0" />
                         </div>
                       );
                     }
@@ -316,11 +316,11 @@ export const FestivalCalendarView = ({
                     return (
                       <div
                         key={`pub-${post.id}`}
-                        className="px-2 py-0.5 rounded-lg bg-emerald-500/30 backdrop-blur-md border border-emerald-500/50 text-emerald-200 text-[10px] font-semibold flex items-center justify-between gap-1 truncate shadow-sm transition-all"
+                        className="px-2 py-0.5 rounded-lg bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-500/30 dark:backdrop-blur-md dark:border-emerald-500/50 dark:text-emerald-200 border text-[10px] font-semibold flex items-center justify-between gap-1 truncate shadow-xs transition-all"
                         title="Published Live Post"
                       >
-                        <span className="truncate">🚀 Live</span>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-300 shrink-0" />
+                        <span className="truncate text-emerald-900 dark:text-emerald-200 font-bold">🚀 Live</span>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-700 dark:text-emerald-300 shrink-0" />
                       </div>
                     );
                   })}
@@ -328,14 +328,14 @@ export const FestivalCalendarView = ({
                   {/* Smart Overflow Badge for 3+ scheduled/published posts */}
                   {overflowUserPostsCount > 0 && (
                     <div
-                      className="px-2 py-0.5 rounded-lg bg-slate-900/90 hover:bg-teal-950/80 backdrop-blur-md border border-teal-500/40 text-teal-300 text-[9px] font-bold flex items-center justify-between gap-1 truncate shadow-sm transition-all cursor-pointer group/pill"
+                      className="px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 border-teal-300 text-teal-900 dark:bg-slate-900/90 dark:hover:bg-teal-950/80 dark:backdrop-blur-md dark:border-teal-500/40 dark:text-teal-300 border text-[9px] font-bold flex items-center justify-between gap-1 truncate shadow-xs transition-all cursor-pointer group/pill"
                       title={`${overflowUserPostsCount} more scheduled/published post${overflowUserPostsCount > 1 ? "s" : ""} on this date. Click to view all.`}
                     >
                       <span className="truncate flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 animate-pulse" />
-                        <span>+{overflowUserPostsCount} more post{overflowUserPostsCount > 1 ? "s" : ""}</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-teal-400 shrink-0 animate-pulse" />
+                        <span className="text-teal-900 dark:text-teal-300">+{overflowUserPostsCount} more post{overflowUserPostsCount > 1 ? "s" : ""}</span>
                       </span>
-                      <span className="text-[8px] text-teal-400/80 group-hover/pill:text-teal-200 uppercase font-mono tracking-wider shrink-0">
+                      <span className="text-[8px] text-teal-700 group-hover/pill:text-teal-900 dark:text-teal-400/80 dark:group-hover/pill:text-teal-200 uppercase font-mono tracking-wider shrink-0 font-bold">
                         View →
                       </span>
                     </div>
@@ -404,7 +404,7 @@ export const FestivalCalendarView = ({
       {/* Selected Day Details & Scheduled Queue Drawer Modal */}
       {selectedDayDetails &&
         createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in">
             <div className="max-w-4xl w-full max-h-[85vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
               {/* Drawer Top Header */}
               <div className="p-6 border-b border-[#2C384E] flex items-center justify-between">

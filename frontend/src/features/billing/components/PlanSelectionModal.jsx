@@ -180,7 +180,7 @@ export const PlanSelectionModal = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-lg animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/35 dark:bg-black/50 backdrop-blur-[2px] animate-in fade-in duration-200 overflow-y-auto">
       <div className="relative w-full max-w-4xl bg-[#131B2A] border border-[#2C384E] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 my-auto">
         {/* Header Section */}
         <div className="flex items-start justify-between border-b border-[#2C384E] pb-4">

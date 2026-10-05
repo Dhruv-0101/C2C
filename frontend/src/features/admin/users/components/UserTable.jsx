@@ -27,9 +27,9 @@ export const UserTable = ({
 
   if (users.length === 0) {
     return (
-      <div className="p-12 text-center border border-dashed border-[#2C384E] bg-[#131B2A] rounded-2xl space-y-3">
-        <Users className="w-10 h-10 text-slate-600 mx-auto" />
-        <p className="text-slate-300 font-semibold text-sm">
+      <div className="p-8 text-center border border-dashed border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] rounded-2xl space-y-2">
+        <Users className="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto" />
+        <p className="text-slate-600 dark:text-slate-300 font-semibold text-sm">
           No registered business users found.
         </p>
       </div>
@@ -37,23 +37,23 @@ export const UserTable = ({
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-[#2C384E] bg-[#131B2A]">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] shadow-sm">
       <table className="w-full text-left text-xs">
-        <thead className="bg-[#0B0F17] text-slate-400 uppercase tracking-wider font-bold border-b border-[#2C384E]">
+        <thead className="bg-slate-50 dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 uppercase tracking-wider font-bold border-b border-slate-200 dark:border-[#2C384E] text-[11px]">
           <tr>
-            <th className="py-3.5 px-4">User Details</th>
-            <th className="py-3.5 px-4">Business Name</th>
-            <th className="py-3.5 px-4">Active Plan</th>
-            <th className="py-3.5 px-4">Gateway</th>
-            <th className="py-3.5 px-4">Amount Paid</th>
-            <th className="py-3.5 px-4">Posts Quota Usage</th>
-            <th className="py-3.5 px-4">Payment Reference ID</th>
-            <th className="py-3.5 px-4">Plan Status</th>
-            <th className="py-3.5 px-4">Social Media</th>
-            <th className="py-3.5 px-4">Account Status</th>
+            <th className="py-2.5 px-3">User Details</th>
+            <th className="py-2.5 px-3">Business Name</th>
+            <th className="py-2.5 px-3">Active Plan</th>
+            <th className="py-2.5 px-3">Gateway</th>
+            <th className="py-2.5 px-3">Amount Paid</th>
+            <th className="py-2.5 px-3">Posts Quota Usage</th>
+            <th className="py-2.5 px-3">Payment Reference ID</th>
+            <th className="py-2.5 px-3">Plan Status</th>
+            <th className="py-2.5 px-3">Social Media</th>
+            <th className="py-2.5 px-3">Account Status</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#2C384E]">
+        <tbody className="divide-y divide-slate-100 dark:divide-[#2C384E]">
           {users.map((user) => (
             <UserTableRow
               key={user.id}

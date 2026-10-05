@@ -66,8 +66,8 @@ export const FeedbackModal = ({
   const IconComponent = config.icon;
 
   const modalContent = (
-    <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
-      <div className="w-full max-w-md bg-[#131B2A] border border-[#2C384E] rounded-3xl p-6 sm:p-7 space-y-6 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-200 overflow-y-auto">
+      <div className="w-full max-w-md bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] rounded-3xl p-6 sm:p-7 space-y-6 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Top Glow Accent Bar */}
         <div
           className={`absolute top-0 left-0 right-0 h-1.5 ${

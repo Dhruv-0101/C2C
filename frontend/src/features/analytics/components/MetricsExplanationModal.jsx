@@ -71,22 +71,22 @@ export const MetricsExplanationModal = ({ isOpen, onClose }) => {
     >
       <div className="space-y-5 text-xs text-slate-300 max-h-[75vh] overflow-y-auto pr-1">
         {/* Formula Spotlight Banner */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-indigo-500/10 to-[#0B0F17] border border-amber-500/30 space-y-2">
-          <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
-            <Calculator className="w-4 h-4" />
+        <div className="p-4 rounded-2xl bg-amber-50/80 dark:bg-gradient-to-br dark:from-amber-500/10 dark:via-indigo-500/10 dark:to-[#0B0F17] border border-amber-300 dark:border-amber-500/30 space-y-2">
+          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-bold text-sm">
+            <Calculator className="w-4 h-4 text-amber-700 dark:text-amber-400" />
             <span>Official Engagement Rate Formula</span>
           </div>
-          <div className="p-3 rounded-xl bg-[#0B0F17]/90 border border-[#2C384E] font-mono text-center text-sm text-white">
-            <span className="text-amber-400">Engagement Rate (%)</span> ={' '}
-            <span className="text-slate-400">(</span>
-            <span className="text-rose-400">Likes</span> +{' '}
-            <span className="text-sky-400">Comments</span> +{' '}
-            <span className="text-emerald-400">Shares</span>
-            <span className="text-slate-400">) ÷ </span>
-            <span className="text-amber-400 font-bold">Audience Reach</span> ×{' '}
-            <span className="text-white font-bold">100</span>
+          <div className="p-3 rounded-xl bg-white dark:bg-[#0B0F17]/90 border border-slate-200 dark:border-[#2C384E] font-mono text-center text-sm text-slate-800 dark:text-white shadow-xs">
+            <span className="text-amber-700 dark:text-amber-400 font-bold">Engagement Rate (%)</span> ={' '}
+            <span className="text-slate-500 dark:text-slate-400">(</span>
+            <span className="text-rose-600 dark:text-rose-400 font-semibold">Likes</span> +{' '}
+            <span className="text-sky-600 dark:text-sky-400 font-semibold">Comments</span> +{' '}
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Shares</span>
+            <span className="text-slate-500 dark:text-slate-400">) ÷ </span>
+            <span className="text-amber-700 dark:text-amber-400 font-bold">Audience Reach</span> ×{' '}
+            <span className="text-slate-900 dark:text-white font-bold">100</span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
             This represents the true percentage of your audience who actively took action after viewing your post. Standard organic social engagement benchmarks typically range from <strong>1.5% to 5.0%</strong>.
           </p>
         </div>

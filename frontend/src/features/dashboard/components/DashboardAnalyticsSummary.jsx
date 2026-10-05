@@ -195,7 +195,7 @@ export const DashboardAnalyticsSummary = ({
           <div className="text-xl font-extrabold text-emerald-400 font-mono">
             {kpi.avgEngagementRate || 0}%
           </div>
-          <div className="text-[10px] text-emerald-400/80 font-mono">
+          <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold font-mono">
             (Interactions ÷ Reach) × 100
           </div>
         </Card>

@@ -386,7 +386,11 @@ html.light .post-canvas-preview [class*="aspect-square"] h4,
 html.light .post-canvas-preview [class*="aspect-square"] .text-white,
 html.light .post-canvas-preview [class*="aspect-square"] p.text-white,
 html.light .post-canvas-preview [class*="aspect-square"] span.text-white,
-html.light .post-canvas-preview .preserve-white-text {
+html.light .post-canvas-preview .preserve-white-text,
+.preserve-white-text,
+html.light .preserve-white-text,
+html.light p.preserve-white-text,
+html.light span.preserve-white-text {
   color: #FFFFFF !important;
 }
 

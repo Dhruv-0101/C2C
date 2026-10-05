@@ -157,7 +157,7 @@ export const AiCaptionGeneratorModal = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 w-screen h-screen z-[10000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in overflow-y-auto font-sans">
+    <div className="fixed inset-0 w-screen h-screen z-[10000] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in overflow-y-auto font-sans">
       <div className="w-full max-w-3xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl my-auto text-slate-100 max-h-[92vh] flex flex-col justify-between">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">

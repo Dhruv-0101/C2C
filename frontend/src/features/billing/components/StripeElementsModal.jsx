@@ -192,7 +192,7 @@ export const StripeElementsModal = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg bg-[#131B2A] border border-indigo-500/50 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">

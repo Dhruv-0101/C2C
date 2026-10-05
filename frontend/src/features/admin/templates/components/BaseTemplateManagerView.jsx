@@ -535,10 +535,10 @@ export const BaseTemplateManagerView = ({
       {/* Delete Confirmation Modal */}
       {templateToDelete &&
         createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-200">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm rounded-2xl bg-[#131B2A] border border-[#2C384E] p-6 shadow-2xl space-y-4 text-center"
+              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-6 shadow-2xl space-y-4 text-center"
             >
               <div className="mx-auto w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center">
                 <AlertCircle className="w-6 h-6" />

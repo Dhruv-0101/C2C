@@ -217,7 +217,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-xl animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/35 dark:bg-black/50 backdrop-blur-[2px] animate-in fade-in duration-300">
       {/* Canvas Overlay for Confetti Burst */}
       <canvas
         ref={canvasRef}
@@ -229,7 +229,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
       <div className="absolute -bottom-16 right-1/4 w-80 h-80 bg-orange-600/15 rounded-full blur-[110px] pointer-events-none" />
 
       {/* Main Glassmorphism Modal Box */}
-      <div className="relative z-20 w-full max-w-3xl bg-gradient-to-b from-[#131B2A] via-[#101726] to-[#0B0F17] border border-[#2C384E] rounded-3xl p-6 sm:p-8 shadow-[0_25px_80px_-15px_rgba(0,0,0,0.9),0_0_60px_rgba(245,158,11,0.12)] space-y-6 text-left overflow-hidden">
+      <div className="relative z-20 w-full max-w-3xl bg-white dark:bg-gradient-to-b dark:from-[#131B2A] dark:via-[#101726] dark:to-[#0B0F17] border border-slate-200 dark:border-[#2C384E] rounded-3xl p-6 sm:p-8 shadow-[0_25px_80px_-15px_rgba(0,0,0,0.4),0_0_60px_rgba(245,158,11,0.08)] dark:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.9),0_0_60px_rgba(245,158,11,0.12)] space-y-6 text-left overflow-hidden">
         {/* Specular Top Horizon Highlight Line */}
         <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_rgba(245,158,11,0.8)]" />
 
@@ -239,7 +239,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
         {/* Sleek Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700/50 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm group"
+          className="absolute top-5 right-5 p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs group cursor-pointer"
           title="Close modal"
         >
           <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
@@ -247,17 +247,17 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
 
         {/* Modal Header */}
         <div className="space-y-2 text-center sm:text-left pr-8 sm:pr-0">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold tracking-wide shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-            <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 dark:bg-gradient-to-r dark:from-amber-500/20 dark:via-orange-500/15 dark:to-amber-500/20 border border-amber-300 dark:border-amber-400/40 text-amber-700 dark:text-amber-300 text-xs font-bold tracking-wide shadow-xs">
+            <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
             <span>{isRegister ? "Welcome to BrandFlow! 🎉" : "Upcoming Festivals Ready! 🔥"}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-ping" />
           </div>
 
-          <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-white tracking-tight leading-tight">
+          <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight">
             {isRegister ? (
               <>
                 Hey{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400">
+                <span className="text-amber-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-amber-200 dark:via-amber-400 dark:to-orange-400">
                   {userName}
                 </span>
                 , Welcome Aboard!
@@ -265,7 +265,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
             ) : (
               <>
                 Welcome Back,{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400">
+                <span className="text-amber-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-amber-200 dark:via-amber-400 dark:to-orange-400">
                   {userName}
                 </span>
                 !
@@ -273,7 +273,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
             )}
           </h2>
 
-          <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed max-w-xl">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300/90 leading-relaxed max-w-xl">
             High-engagement festivals are approaching. Launch ready-to-publish social media graphics with your custom brand frame &amp; AI captions in 1-click:
           </p>
         </div>
@@ -281,8 +281,8 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
         {/* Dynamic Upcoming Admin Festivals Showcase Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
           {isLoading ? (
-            <div className="col-span-3 py-12 text-center text-xs text-amber-300/70 animate-pulse flex items-center justify-center gap-2">
-              <Sparkles className="w-4 h-4 animate-spin text-amber-400" />
+            <div className="col-span-3 py-12 text-center text-xs text-amber-600 dark:text-amber-300/70 animate-pulse flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4 animate-spin text-amber-500 dark:text-amber-400" />
               Loading upcoming festivals...
             </div>
           ) : (
@@ -292,7 +292,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
               return (
                 <div
                   key={item.id}
-                  className="group relative rounded-2xl bg-gradient-to-b from-[#141C2E] via-[#0E1524] to-[#080C14] border border-slate-700/60 hover:border-amber-400/50 overflow-hidden shadow-xl shadow-black/30 hover:shadow-[0_16px_36px_-10px_rgba(245,158,11,0.2)] transition-all duration-300 flex flex-col justify-between"
+                  className="group relative rounded-2xl bg-white dark:bg-gradient-to-b dark:from-[#141C2E] dark:via-[#0E1524] dark:to-[#080C14] border border-slate-200 dark:border-slate-700/60 hover:border-amber-400/50 overflow-hidden shadow-md dark:shadow-xl dark:shadow-black/30 hover:shadow-[0_16px_36px_-10px_rgba(245,158,11,0.2)] transition-all duration-300 flex flex-col justify-between"
                 >
                   {/* Specular Top Glow Highlight Accent */}
                   <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent group-hover:via-amber-400 transition-all duration-500 z-10" />
@@ -339,18 +339,18 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                   {/* Content Details */}
                   <div className="p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between">
                     <div className="space-y-1">
-                      <h4 className="font-heading font-extrabold text-sm sm:text-[15px] text-white group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight">
+                      <h4 className="font-heading font-extrabold text-sm sm:text-[15px] text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight">
                         {item.name || item.title || "Upcoming Festival"}
                       </h4>
-                      <p className="text-[11px] text-slate-300/80 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300/80 line-clamp-2 leading-relaxed">
                         {item.description || "Festival celebration and special event"}
                       </p>
                     </div>
 
                     {/* Styled Festival Metadata Row */}
-                    <div className="pt-2.5 flex items-center justify-between border-t border-white/[0.08] text-[11px]">
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-400/25 text-amber-300 font-semibold text-[10px] tracking-wide">
-                        <Calendar className="w-3 h-3 text-amber-400" />
+                    <div className="pt-2.5 flex items-center justify-between border-t border-slate-200 dark:border-white/[0.08] text-[11px]">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/25 text-amber-700 dark:text-amber-300 font-semibold text-[10px] tracking-wide">
+                        <Calendar className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                         <span>
                           {item.date
                             ? new Date(item.date).toLocaleDateString("en-US", {
@@ -360,11 +360,6 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                             : "Upcoming"}
                         </span>
                       </div>
-
-                      {/* <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-400/25 text-emerald-400 font-semibold text-[10px]">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                        <span>365 Days Ready</span>
-                      </div> */}
                     </div>
                   </div>
                 </div>

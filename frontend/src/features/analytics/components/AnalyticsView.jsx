@@ -200,18 +200,18 @@ export const AnalyticsView = ({
       </div>
 
       {/* Formula & Calculation Consistency Banner */}
-      <div className="flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#131B2A] to-[#0B0F17] border border-amber-500/30 text-xs">
+      <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-50/90 dark:bg-gradient-to-r dark:from-amber-500/10 dark:via-[#131B2A] dark:to-[#0B0F17] border border-amber-300/80 dark:border-amber-500/30 text-xs shadow-xs">
         <div className="flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="text-slate-300 font-semibold">Official Standard Formula:</span>
-          <span className="font-mono text-amber-300 font-bold hidden sm:inline">
+          <Calculator className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
+          <span className="text-slate-800 dark:text-slate-300 font-semibold">Official Standard Formula:</span>
+          <span className="font-mono text-amber-800 dark:text-amber-300 font-bold hidden sm:inline">
             Engagement Rate (%) = (Total Interactions ÷ Audience Reach) × 100
           </span>
         </div>
 
         <button
           onClick={() => setIsExplanationOpen(true)}
-          className="text-amber-400 hover:text-amber-300 font-bold text-xs underline underline-offset-2 flex items-center gap-1 shrink-0 cursor-pointer"
+          className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 font-bold text-xs underline underline-offset-2 flex items-center gap-1 shrink-0 cursor-pointer"
         >
           <span>Calculation Details</span>
           <ShieldCheck className="w-3.5 h-3.5" />

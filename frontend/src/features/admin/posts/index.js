@@ -5,3 +5,4 @@ export * from '@/features/admin/posts/hooks/useAdminPosts';
 export * from './components/AdminPostAnalyticsBar';
 export * from './components/AdminPostCard';
 export * from './components/AdminPostFilters';
+export * from './components/FilterSearchablePicker';

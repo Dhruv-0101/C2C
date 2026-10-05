@@ -81,7 +81,7 @@ export const CategoryModal = ({
 
   return (
     <div
-      className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in overflow-y-auto"
+      className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div

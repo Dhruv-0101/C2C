@@ -217,7 +217,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
 
   return createPortal(
     <>
-      <div className="fixed inset-0 w-screen h-screen z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+      <div className="fixed inset-0 w-screen h-screen z-[9999] bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
         <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]">
           {/* Left Column: Live Canvas Preview */}
           <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">

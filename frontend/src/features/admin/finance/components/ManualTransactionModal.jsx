@@ -21,7 +21,7 @@ export const ManualTransactionModal = ({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 w-screen h-screen z-[10000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in font-sans">
+    <div className="fixed inset-0 w-screen h-screen z-[10000] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in font-sans">
       <div className="w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl my-auto text-slate-100">
         <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
           <div className="flex items-center gap-2.5">

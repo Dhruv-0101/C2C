@@ -391,63 +391,68 @@ export const AdminFestivalManagerView = () => {
                     })
                   : "N/A";
 
-                return (
-                  <div
-                    key={fest.id}
-                    className="group relative rounded-2xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 transition shadow-lg overflow-hidden flex flex-col justify-between"
-                  >
-                    {/* Festival Cover Banner Image with Region & Actions Overlay */}
-                    <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950/40 border-b border-[#2C384E]">
-                      {fest.bannerUrl ? (
-                        <img
-                          src={fest.bannerUrl}
-                          alt={fest.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center opacity-30">
-                          <CalendarIcon className="w-10 h-10 text-amber-400" />
+                  const festBanner = fest.bannerUrl || fest.imageUrl || fest.banner || null;
+                  return (
+                    <div
+                      key={fest.id}
+                      className="group relative rounded-2xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] hover:border-amber-500/50 transition shadow-md dark:shadow-lg overflow-hidden flex flex-col justify-between"
+                    >
+                      {/* Festival Cover Banner Image with Region & Actions Overlay */}
+                      <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950/40 border-b border-slate-200 dark:border-[#2C384E]">
+                        {festBanner ? (
+                          <img
+                            src={festBanner}
+                            alt={fest.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center opacity-30">
+                            <CalendarIcon className="w-10 h-10 text-amber-400" />
+                          </div>
+                        )}
+                        <div className="image-scrim-overlay absolute inset-0 pointer-events-none" />
+
+                        {/* Region badge on top-left of banner */}
+                        <div className="absolute top-2.5 left-2.5 z-10">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-white text-[11px] font-semibold shadow-md">
+                            <Globe className="w-3 h-3 text-amber-400" />
+                            <span>{fest.targetRegion || "India"}</span>
+                          </span>
                         </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17]/90 via-transparent to-black/60 pointer-events-none" />
 
-                      {/* Region badge on top-left of banner */}
-                      <div className="absolute top-2.5 left-2.5 z-10">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-white text-[11px] font-semibold shadow-md">
-                          <Globe className="w-3 h-3 text-amber-400" />
-                          <span>{fest.targetRegion || "India"}</span>
-                        </span>
+                        {/* Edit & Delete Actions on top-right of banner */}
+                        <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(fest)}
+                            className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                            title="Edit Festival"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDelete(fest.id)}
+                            className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-red-400 hover:border-red-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                            title="Delete Festival"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-
-                      {/* Edit & Delete Actions on top-right of banner */}
-                      <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(fest)}
-                          className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
-                          title="Edit Festival"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDelete(fest.id)}
-                          className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-red-400 hover:border-red-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
-                          title="Delete Festival"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
 
                     <div className="p-4 space-y-3">
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
-                            <h3 className="font-heading font-bold text-sm text-white truncate max-w-[160px]">
+                            <h3 className="font-heading font-bold text-sm text-slate-900 dark:text-white truncate max-w-[160px]">
                               {fest.name}
                             </h3>
-                            <p className="text-[11px] text-amber-400 font-medium flex items-center gap-1 mt-0.5">
+                            <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1 mt-0.5">
                               <Clock className="w-3 h-3" />
                               <span>{formattedDate}</span>
                             </p>
@@ -517,20 +522,20 @@ export const AdminFestivalManagerView = () => {
       {/* CONFIRM DELETE MODAL */}
       {deleteConfirmId &&
         createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-200">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm rounded-2xl bg-[#131B2A] border border-[#2C384E] p-6 shadow-2xl space-y-4 text-center"
+              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-6 shadow-2xl space-y-4 text-center"
             >
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 flex items-center justify-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center">
                 <AlertCircle className="w-6 h-6" />
               </div>
 
               <div>
-                <h3 className="font-heading font-extrabold text-lg text-white">
+                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">
                   Delete Festival?
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Are you sure you want to delete this festival? This action cannot be undone.
                 </p>
               </div>

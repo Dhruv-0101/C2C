@@ -127,17 +127,18 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
   const isFreePlan = subscription?.plan === 'FREE' && totalPostsAllowed > 0;
 
   let planDisplayTitle = "NO ACTIVE PLAN";
-  let planBadgeColor = "bg-slate-800 text-slate-400 border-slate-700";
+  let planBadgeColor = "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
 
   if (isPaidPlan) {
-    planDisplayTitle = `${subscription.plan} PRO PLAN`;
-    planBadgeColor = "bg-indigo-500/20 text-indigo-300 border-indigo-500/40";
+    const rawPlan = (subscription?.plan || 'PRO').toUpperCase();
+    planDisplayTitle = rawPlan.includes('PLAN') ? rawPlan : `${rawPlan} PLAN`;
+    planBadgeColor = "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/40";
   } else if (isFreePlan) {
     planDisplayTitle = "FREE STARTER PLAN";
-    planBadgeColor = "bg-slate-800 text-slate-300 border-slate-700";
+    planBadgeColor = "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700";
   } else if (hasBonusCredits) {
     planDisplayTitle = "ADMIN BONUS CREDITS ONLY";
-    planBadgeColor = "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm";
+    planBadgeColor = "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 shadow-sm";
   }
 
   const memberSince = profile?.createdAt
@@ -182,11 +183,11 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
                 <h1 className="font-heading font-extrabold text-2xl text-white">
                   {profile.fullName}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30 text-[10px] font-bold uppercase tracking-wider">
                   {profile.role || "END_USER"}
                 </span>
                 {profile.isSuperAdmin && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-bold uppercase">
+                  <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-500/20 dark:text-purple-300 dark:border-purple-500/30 text-[10px] font-bold uppercase">
                     SuperAdmin
                   </span>
                 )}
@@ -195,7 +196,7 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
                     {planDisplayTitle}
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-bold uppercase">
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 text-[10px] font-bold uppercase">
                     NO ACTIVE PLAN
                   </span>
                 )}

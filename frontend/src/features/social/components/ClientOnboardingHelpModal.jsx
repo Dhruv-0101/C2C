@@ -293,10 +293,10 @@ export const ClientOnboardingHelpModal = ({
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] font-mono text-xs overflow-hidden">
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] font-mono text-xs overflow-hidden">
                     <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="text-emerald-400 select-none">https://</span>
-                    <span className="text-slate-200 font-semibold truncate">
+                    <span className="text-emerald-600 dark:text-emerald-400 select-none">https://</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">
                       business.facebook.com/settings/requests
                     </span>
                   </div>
@@ -305,16 +305,16 @@ export const ClientOnboardingHelpModal = ({
                     <button
                       type="button"
                       onClick={handleCopyLink}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1A2333] hover:bg-[#223046] border border-[#2C384E] text-slate-200 hover:text-white font-semibold text-xs transition cursor-pointer active:scale-95"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 hover:text-slate-900 dark:bg-[#1A2333] dark:hover:bg-[#223046] dark:border-[#2C384E] dark:text-slate-200 dark:hover:text-white font-semibold text-xs transition cursor-pointer active:scale-95 shadow-xs"
                     >
                       {copiedLink ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-emerald-400 font-bold">Copied!</span>
+                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied!</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3.5 h-3.5 text-slate-400" />
+                          <Copy className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                           <span>Copy Link</span>
                         </>
                       )}

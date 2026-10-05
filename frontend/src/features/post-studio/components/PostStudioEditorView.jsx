@@ -798,7 +798,7 @@ export const PostStudioEditorView = ({
                       </div>
 
                       <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                        <p className="text-[11px] font-bold text-white truncate">Custom Uploaded Image</p>
+                        <p className="text-[11px] font-bold preserve-white-text truncate" style={{ color: '#FFFFFF' }}>Custom Uploaded Image</p>
                       </div>
                     </div>
                   )}
@@ -832,7 +832,7 @@ export const PostStudioEditorView = ({
                             className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition duration-200"
                           />
                           <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                            <p className="text-[11px] font-bold text-white truncate">{tpl.title}</p>
+                            <p className="text-[11px] font-bold preserve-white-text truncate" style={{ color: '#FFFFFF' }}>{tpl.title}</p>
                           </div>
                           {isSelected && (
                             <div className="absolute top-2 right-2 p-1 rounded-full bg-amber-500 text-slate-950 font-bold shadow-lg">
