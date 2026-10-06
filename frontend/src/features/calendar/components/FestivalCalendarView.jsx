@@ -20,6 +20,7 @@ import {
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
+import { useTheme } from '@/shared/hooks';
 
 /**
  * FestivalCalendarView
@@ -68,6 +69,7 @@ export const FestivalCalendarView = ({
   handleAddFestivalSubmit,
   onSelectTemplate,
 }) => {
+  const { isDark } = useTheme();
   const safeSelectedFestivals = selectedDayDetails?.festivals || [];
   const rawScheduledPosts = selectedDayDetails?.scheduledPosts || [];
   const safePublishedPosts = selectedDayDetails?.publishedPosts || [];
@@ -404,19 +406,34 @@ export const FestivalCalendarView = ({
       {/* Selected Day Details & Scheduled Queue Drawer Modal */}
       {selectedDayDetails &&
         createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in">
-            <div className="max-w-4xl w-full max-h-[85vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+          <div className="modal-backdrop-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in">
+            <div
+              className="max-w-4xl w-full max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border"
+              style={{
+                backgroundColor: isDark ? "#131B2A" : "#FFFFFF",
+                borderColor: isDark ? "#2C384E" : "#E2E8F0",
+              }}
+            >
               {/* Drawer Top Header */}
-              <div className="p-6 border-b border-[#2C384E] flex items-center justify-between">
+              <div
+                className="p-6 border-b flex items-center justify-between"
+                style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400">
                     <CalendarIcon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-lg text-white">
+                    <h3
+                      className="font-heading font-bold text-lg"
+                      style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                    >
                       Day Details — {selectedDayDetails.dateKey}
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p
+                      className="text-xs mt-0.5"
+                      style={{ color: isDark ? "#94A3B8" : "#64748B" }}
+                    >
                       {safeSelectedFestivals.length > 0
                         ? `${safeSelectedFestivals.length} Festival${safeSelectedFestivals.length > 1 ? "s" : ""} • ${modalDayTotalTemplates} Graphic Template${modalDayTotalTemplates === 1 ? "" : "s"} for this day`
                         : "Explore festival graphics, queued scheduled posts, and live publications for this day."}
@@ -441,7 +458,11 @@ export const FestivalCalendarView = ({
                   )}
                   <button
                     onClick={() => setSelectedDayDetails(null)}
-                    className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                    className="p-2 rounded-lg transition cursor-pointer"
+                    style={{
+                      backgroundColor: isDark ? "#1E293B" : "#F1F5F9",
+                      color: isDark ? "#CBD5E1" : "#475569",
+                    }}
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -453,8 +474,11 @@ export const FestivalCalendarView = ({
                 {/* 1. Scheduled Posts for this Day */}
                 {safeScheduledPosts.length > 0 && (
                   <div className="space-y-3">
-                    <div className="border-b border-slate-800 pb-2">
-                      <h4 className="font-heading font-bold text-sm text-teal-400 flex items-center gap-2">
+                    <div
+                      className="border-b pb-2"
+                      style={{ borderColor: isDark ? "#1E293B" : "#E2E8F0" }}
+                    >
+                      <h4 className="font-heading font-bold text-sm text-teal-500 dark:text-teal-400 flex items-center gap-2">
                         <Clock className="w-4 h-4" /> Scheduled Posts Queue ({safeScheduledPosts.length})
                       </h4>
                     </div>
@@ -463,21 +487,29 @@ export const FestivalCalendarView = ({
                       {safeScheduledPosts.map((item) => (
                         <div
                           key={item.id}
-                          className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between gap-3"
+                          className="p-3 rounded-xl border flex items-center justify-between gap-3"
+                          style={{
+                            backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                            borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                          }}
                         >
                           <div className="flex items-center gap-3">
                             {item.post?.finalGraphicUrl && (
                               <img
                                 src={item.post.finalGraphicUrl}
                                 alt="Scheduled graphic"
-                                className="w-12 h-12 rounded-lg object-cover border border-[#2C384E]"
+                                className="w-12 h-12 rounded-lg object-cover border"
+                                style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
                               />
                             )}
                             <div>
-                              <p className="text-xs font-bold text-white">
+                              <p
+                                className="text-xs font-bold"
+                                style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                              >
                                 {item.post?.occasionName || item.post?.template?.title || "Scheduled Graphic"}
                               </p>
-                              <p className="text-[11px] text-teal-400 font-mono mt-0.5">
+                              <p className="text-[11px] text-teal-600 dark:text-teal-400 font-mono mt-0.5">
                                 Scheduled Time: {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </p>
                               {item.targetPlatforms && item.targetPlatforms.length > 0 && (
@@ -485,7 +517,12 @@ export const FestivalCalendarView = ({
                                   {item.targetPlatforms.map((p) => (
                                     <span
                                       key={p}
-                                      className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-mono font-bold"
+                                      className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border"
+                                      style={{
+                                        backgroundColor: isDark ? "#1E293B" : "#E2E8F0",
+                                        color: isDark ? "#CBD5E1" : "#334155",
+                                        borderColor: isDark ? "#334155" : "#CBD5E1",
+                                      }}
                                     >
                                       {p}
                                     </span>
@@ -495,7 +532,7 @@ export const FestivalCalendarView = ({
                             </div>
                           </div>
 
-                          <span className="px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] font-extrabold uppercase">
+                          <span className="px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-300 border border-teal-500/40 text-[10px] font-extrabold uppercase">
                             {item.status}
                           </span>
                         </div>
@@ -507,27 +544,38 @@ export const FestivalCalendarView = ({
                 {/* 2. Published Posts for this Day */}
                 {safePublishedPosts.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="font-heading font-bold text-sm text-emerald-400 flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <h4
+                      className="font-heading font-bold text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2 border-b pb-2"
+                      style={{ borderColor: isDark ? "#1E293B" : "#E2E8F0" }}
+                    >
                       <CheckCircle2 className="w-4 h-4" /> Published Posts ({safePublishedPosts.length})
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {safePublishedPosts.map((post) => (
                         <div
                           key={post.id}
-                          className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3"
+                          className="p-3 rounded-xl border flex items-center gap-3"
+                          style={{
+                            backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                            borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                          }}
                         >
                           {post.finalGraphicUrl && (
                             <img
                               src={post.finalGraphicUrl}
                               alt="Published Graphic"
-                              className="w-12 h-12 rounded-lg object-cover border border-[#2C384E]"
+                              className="w-12 h-12 rounded-lg object-cover border"
+                              style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
                             />
                           )}
                           <div>
-                            <p className="text-xs font-bold text-white line-clamp-1">
+                            <p
+                              className="text-xs font-bold line-clamp-1"
+                              style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                            >
                               {post.occasionName || post.template?.title || post.festival?.name || "Live Social Post"}
                             </p>
-                            <span className="text-[10px] text-emerald-400 font-semibold">🚀 Successfully Published</span>
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">🚀 Successfully Published</span>
                           </div>
                         </div>
                       ))}
@@ -540,22 +588,36 @@ export const FestivalCalendarView = ({
                   <div className="space-y-6">
                     {/* Multi-Festival Filter Tabs (When 2 or more festivals occur on the same day) */}
                     {safeSelectedFestivals.length > 1 && (
-                      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#2C384E] custom-scrollbar">
+                      <div
+                        className="flex items-center gap-2 overflow-x-auto pb-2 border-b custom-scrollbar"
+                        style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
+                      >
                         <button
                           type="button"
                           onClick={() => setSelectedFestivalTab && setSelectedFestivalTab("all")}
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-2 cursor-pointer ${
                             selectedFestivalTab === "all"
                               ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                              : "bg-[#0B0F17] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                              : "border hover:border-slate-400"
                           }`}
+                          style={
+                            selectedFestivalTab === "all"
+                              ? {}
+                              : {
+                                  backgroundColor: isDark ? "#0B0F17" : "#F1F5F9",
+                                  color: isDark ? "#CBD5E1" : "#475569",
+                                  borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                                }
+                          }
                         >
                           <span>🌟 All Festivals</span>
                           <span
                             className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
                               selectedFestivalTab === "all"
                                 ? "bg-slate-950/20 text-slate-950 font-black"
-                                : "bg-slate-800 text-amber-300"
+                                : isDark
+                                ? "bg-slate-800 text-amber-300"
+                                : "bg-slate-200 text-amber-700"
                             }`}
                           >
                             {modalDayTotalTemplates}
@@ -576,15 +638,26 @@ export const FestivalCalendarView = ({
                               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-2 cursor-pointer ${
                                 isTabActive
                                   ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                                  : "bg-[#0B0F17] text-slate-300 border border-[#2C384E] hover:border-slate-400"
+                                  : "border hover:border-slate-400"
                               }`}
+                              style={
+                                isTabActive
+                                  ? {}
+                                  : {
+                                      backgroundColor: isDark ? "#0B0F17" : "#F1F5F9",
+                                      color: isDark ? "#CBD5E1" : "#475569",
+                                      borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                                    }
+                              }
                             >
                               <span>🪔 {fest.name}</span>
                               <span
                                 className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
                                   isTabActive
                                     ? "bg-slate-950/20 text-slate-950 font-black"
-                                    : "bg-purple-900/50 text-purple-300 border border-purple-500/30"
+                                    : isDark
+                                    ? "bg-purple-900/50 text-purple-300 border border-purple-500/30"
+                                    : "bg-purple-100 text-purple-700 border border-purple-300"
                                 }`}
                               >
                                 {count}
@@ -612,11 +685,21 @@ export const FestivalCalendarView = ({
                       return (
                         <div
                           key={fest.id}
-                          className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-4 shadow-lg"
+                          className="p-5 rounded-2xl border space-y-4 shadow-lg"
+                          style={{
+                            backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                            borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                          }}
                         >
                           {/* Banner preview if available - Responsive Unclipped Rectangle View */}
                           {fest.bannerUrl && (
-                            <div className="w-full rounded-2xl overflow-hidden relative border border-[#2C384E] bg-slate-950/80 mb-3 flex items-center justify-center shadow-lg">
+                            <div
+                              className="w-full rounded-2xl overflow-hidden relative border mb-3 flex items-center justify-center shadow-lg"
+                              style={{
+                                borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                                backgroundColor: isDark ? "rgba(2, 6, 23, 0.8)" : "#FFFFFF",
+                              }}
+                            >
                               <img
                                 src={fest.bannerUrl}
                                 alt={fest.name}
@@ -626,22 +709,38 @@ export const FestivalCalendarView = ({
                           )}
 
                           {/* Festival Header Bar */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                          <div
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3"
+                            style={{ borderColor: isDark ? "#1E293B" : "#E2E8F0" }}
+                          >
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-heading font-extrabold text-lg text-white">
+                                <h4
+                                  className="font-heading font-extrabold text-lg"
+                                  style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                                >
                                   {fest.name}
                                 </h4>
                                 {fest.targetRegion && (
-                                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-semibold">
+                                  <span
+                                    className="px-2 py-0.5 rounded-full border text-[10px] font-semibold"
+                                    style={{
+                                      backgroundColor: isDark ? "#1E293B" : "#E2E8F0",
+                                      color: isDark ? "#CBD5E1" : "#334155",
+                                      borderColor: isDark ? "#334155" : "#CBD5E1",
+                                    }}
+                                  >
                                     📍 {fest.targetRegion}
                                   </span>
                                 )}
-                                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-mono font-bold">
+                                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/40 text-[10px] font-mono font-bold">
                                   {festCount} Template{festCount === 1 ? "" : "s"}
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-400 mt-1">
+                              <p
+                                className="text-xs mt-1"
+                                style={{ color: isDark ? "#94A3B8" : "#64748B" }}
+                              >
                                 {fest.description || "Special occasion / festive celebration."}
                               </p>
                             </div>
@@ -669,7 +768,12 @@ export const FestivalCalendarView = ({
                                   setFestivalTemplateSearch(e.target.value);
                                   setFestivalTemplatePage(1);
                                 }}
-                                className="w-full pl-9 pr-4 py-2 bg-[#131B2A] border border-[#2C384E] rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 transition"
+                                className="w-full pl-9 pr-4 py-2 border rounded-xl text-xs focus:outline-none focus:border-amber-400 transition"
+                                style={{
+                                  backgroundColor: isDark ? "#131B2A" : "#FFFFFF",
+                                  borderColor: isDark ? "#2C384E" : "#CBD5E1",
+                                  color: isDark ? "#FFFFFF" : "#0F172A",
+                                }}
                               />
                             </div>
                           )}
@@ -680,7 +784,11 @@ export const FestivalCalendarView = ({
                               {festTemplates.map((template) => (
                                 <div
                                   key={template.id}
-                                  className="group relative bg-[#131B2A] border border-[#2C384E] rounded-xl overflow-hidden hover:border-amber-500/60 hover:shadow-lg transition cursor-pointer flex flex-col justify-between"
+                                  className="group relative border rounded-xl overflow-hidden hover:border-amber-500/60 hover:shadow-lg transition cursor-pointer flex flex-col justify-between"
+                                  style={{
+                                    backgroundColor: isDark ? "#131B2A" : "#FFFFFF",
+                                    borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                                  }}
                                   onClick={() => {
                                     if (onSelectTemplate) {
                                       onSelectTemplate(template);
@@ -699,9 +807,16 @@ export const FestivalCalendarView = ({
                                       </span>
                                     </div>
                                   </div>
-                                  <div className="p-2.5 bg-[#131B2A] border-t border-[#2C384E]">
+                                  <div
+                                    className="p-2.5 border-t"
+                                    style={{
+                                      backgroundColor: isDark ? "#131B2A" : "#FFFFFF",
+                                      borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                                    }}
+                                  >
                                     <p
-                                      className="text-xs font-bold text-white truncate"
+                                      className="text-xs font-bold truncate"
+                                      style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
                                       title={template.title}
                                     >
                                       {template.title}
@@ -711,11 +826,21 @@ export const FestivalCalendarView = ({
                               ))}
                             </div>
                           ) : (
-                            <div className="p-6 text-center text-xs text-slate-400 border border-dashed border-[#2C384E] rounded-xl space-y-1 bg-[#131B2A]/40">
-                              <p className="font-semibold text-slate-300">
+                            <div
+                              className="p-6 text-center text-xs border border-dashed rounded-xl space-y-1"
+                              style={{
+                                borderColor: isDark ? "#2C384E" : "#CBD5E1",
+                                backgroundColor: isDark ? "rgba(19, 27, 42, 0.4)" : "#F1F5F9",
+                                color: isDark ? "#94A3B8" : "#64748B",
+                              }}
+                            >
+                              <p
+                                className="font-semibold"
+                                style={{ color: isDark ? "#CBD5E1" : "#334155" }}
+                              >
                                 No graphic templates attached to {fest.name} yet.
                               </p>
-                              <p className="text-slate-500">
+                              <p style={{ color: isDark ? "#64748B" : "#94A3B8" }}>
                                 Graphic templates uploaded for this festival will appear here for one-click post creation.
                               </p>
                             </div>
@@ -727,7 +852,10 @@ export const FestivalCalendarView = ({
                 ) : (
                   safeScheduledPosts.length === 0 &&
                   safePublishedPosts.length === 0 && (
-                    <div className="p-12 text-center text-slate-500 text-xs">
+                    <div
+                      className="p-12 text-center text-xs"
+                      style={{ color: isDark ? "#64748B" : "#94A3B8" }}
+                    >
                       No events, scheduled posts, or publications recorded for this date.
                     </div>
                   )

@@ -32,7 +32,7 @@ export const TwoFactorSettingsModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-200">
+    <div className="modal-backdrop-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="glass-panel max-w-lg w-full rounded-2xl p-6 border border-slate-800 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">

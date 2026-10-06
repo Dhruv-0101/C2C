@@ -81,7 +81,7 @@ export const TemplateCreateModal = ({
   return createPortal(
     <div
       id="template-create-modal-overlay"
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] overflow-y-auto"
+      className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose && !isUploading) {
           onClose();

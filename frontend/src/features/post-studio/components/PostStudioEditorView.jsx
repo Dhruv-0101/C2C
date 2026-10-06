@@ -39,6 +39,7 @@ import { Alert } from "../../../components/ui/Alert";
 import Pagination from '@/components/ui/Pagination';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { CanvasPreview } from './CanvasPreview';
+import { useTheme } from '@/shared/hooks';
 
 /**
  * PostStudioEditorView
@@ -110,6 +111,7 @@ export const PostStudioEditorView = ({
   planName = "FREE",
   openPlanModal,
 }) => {
+  const { isDark } = useTheme();
   const customFileInputRef = useRef(null);
 
   // Step 4 Export Sub-Tab State ('download' | 'publish' | 'schedule')
@@ -1738,13 +1740,17 @@ export const PostStudioEditorView = ({
             onClick={() => setZoomedFrame(null)}
             onWheel={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
-            className="fixed inset-0 w-full h-full z-[99999] flex flex-col items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-lg animate-in fade-in duration-200 select-none overflow-hidden touch-none cursor-zoom-out"
+            className="modal-backdrop-overlay fixed inset-0 w-full h-full z-[99999] flex flex-col items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 select-none overflow-hidden touch-none cursor-zoom-out"
           >
             <div className="flex flex-col items-center justify-center w-full max-w-[560px] gap-3 max-h-[92vh] overflow-hidden">
               {/* Center High-Res Frame Image */}
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-h-[50vh] sm:max-h-[54vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/40 bg-[#0B0F17] flex items-center justify-center cursor-default p-3"
+                className="relative w-full max-h-[50vh] sm:max-h-[54vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 flex items-center justify-center cursor-default p-3"
+                style={{
+                  backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
+                  borderColor: isDark ? "rgba(245, 158, 11, 0.4)" : "#E2E8F0",
+                }}
               >
                 <img
                   src={zoomedFrame.previewUrl || zoomedFrame.overlayPngUrl}
@@ -1756,19 +1762,30 @@ export const PostStudioEditorView = ({
               {/* Lightbox Complete Frame Details Card */}
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full z-10 bg-[#131B2A]/95 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#2C384E] shadow-2xl overflow-hidden shrink-0 space-y-3"
+                className="relative w-full z-10 p-4 sm:p-5 rounded-2xl border shadow-2xl overflow-hidden shrink-0 space-y-3"
+                style={{
+                  backgroundColor: isDark ? "rgba(19, 27, 42, 0.95)" : "rgba(255, 255, 255, 0.95)",
+                  borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                  color: isDark ? "#FFFFFF" : "#0F172A",
+                }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 mt-0.5">
+                    <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30 shrink-0 mt-0.5">
                       <Layers className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-heading font-extrabold text-base sm:text-lg text-white truncate">
+                      <h3
+                        className="font-heading font-extrabold text-base sm:text-lg truncate"
+                        style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                      >
                         {zoomedFrame.title}
                       </h3>
                       {zoomedFrame.description && (
-                        <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                        <p
+                          className="text-xs mt-1 line-clamp-2 leading-relaxed"
+                          style={{ color: isDark ? "#CBD5E1" : "#475569" }}
+                        >
                           {zoomedFrame.description}
                         </p>
                       )}
@@ -1777,7 +1794,12 @@ export const PostStudioEditorView = ({
 
                   <button
                     onClick={() => setZoomedFrame(null)}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer border border-[#2C384E] shrink-0"
+                    className="p-2 rounded-xl transition cursor-pointer border shrink-0"
+                    style={{
+                      backgroundColor: isDark ? "#1E293B" : "#F1F5F9",
+                      borderColor: isDark ? "#334155" : "#E2E8F0",
+                      color: isDark ? "#CBD5E1" : "#475569",
+                    }}
                     title="Close Zoom Preview"
                   >
                     <X className="w-4 h-4" />
@@ -1815,39 +1837,48 @@ export const PostStudioEditorView = ({
                     (el) => el.dynamicSlot === "UPI_QR" || el.dynamicSlot === "UPI_VPA"
                   );
 
+                  const badgeStyle = {
+                    backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                    borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                    color: isDark ? "#CBD5E1" : "#475569",
+                  };
+
                   return (
-                    <div className="space-y-2 pt-2 border-t border-[#2C384E]/70">
+                    <div
+                      className="space-y-2 pt-2 border-t"
+                      style={{ borderColor: isDark ? "rgba(44, 56, 78, 0.7)" : "#E2E8F0" }}
+                    >
                       <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 font-bold">
                           ✓ 1080×1080 HD Square Overlay
                         </span>
                         {hasLogo && (
-                          <span className="px-2 py-0.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] text-slate-300">
+                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
                             🖼️ Brand Logo
                           </span>
                         )}
                         {hasAvatar && (
-                          <span className="px-2 py-0.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] text-slate-300">
+                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
                             👤 Owner Portrait
                           </span>
                         )}
                         {hasPhone && (
-                          <span className="px-2 py-0.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] text-slate-300">
+                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
                             📞 Phone & WhatsApp
                           </span>
                         )}
                         {hasAddress && (
-                          <span className="px-2 py-0.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] text-slate-300">
+                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
                             📍 Store Address
                           </span>
                         )}
                         {hasSocial && (
-                          <span className="px-2 py-0.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] text-slate-300">
+                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
                             📱 Social Handles
                           </span>
                         )}
                         {hasUpi && (
-                          <span className="px-2 py-0.5 rounded-lg bg-[#0B0F17] border border-[#2C384E] text-slate-300">
+                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
                             💳 UPI QR / Payment
                           </span>
                         )}
@@ -1857,12 +1888,20 @@ export const PostStudioEditorView = ({
                 })()}
 
                 {/* Bottom Select Action */}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2C384E]/70">
+                <div
+                  className="flex items-center justify-end gap-2 pt-2 border-t"
+                  style={{ borderColor: isDark ? "rgba(44, 56, 78, 0.7)" : "#E2E8F0" }}
+                >
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setZoomedFrame(null)}
                     className="text-xs"
+                    style={{
+                      backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
+                      borderColor: isDark ? "#334155" : "#CBD5E1",
+                      color: isDark ? "#E2E8F0" : "#334155",
+                    }}
                   >
                     Close
                   </Button>

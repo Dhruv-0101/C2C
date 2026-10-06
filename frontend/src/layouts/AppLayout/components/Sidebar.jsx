@@ -134,7 +134,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen(false)}
-          className="lg:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm animate-in fade-in"
+          className="modal-backdrop-overlay lg:hidden fixed inset-0 z-40 animate-in fade-in"
         />
       )}
 

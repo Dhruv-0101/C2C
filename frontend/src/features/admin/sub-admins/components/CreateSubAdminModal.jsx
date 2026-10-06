@@ -22,7 +22,7 @@ export const CreateSubAdminModal = ({
   const handleDismiss = onClose || onBack;
 
   return (
-    <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in overflow-y-auto">
+    <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto">
       <div className="w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl">
         <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
           <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">

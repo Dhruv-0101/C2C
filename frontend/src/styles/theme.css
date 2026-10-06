@@ -169,13 +169,13 @@ html.light [class*="bg-slate-800/"]:not(.modal-backdrop-overlay):not([class*="fi
 /* Modal Transparent Backdrop Protection for Light and Dark Themes */
 .modal-backdrop-overlay {
   background-color: rgba(15, 23, 42, 0.45) !important;
-  backdrop-filter: blur(2px) !important;
-  -webkit-backdrop-filter: blur(2px) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
 }
 html.dark .modal-backdrop-overlay {
   background-color: rgba(0, 0, 0, 0.55) !important;
-  backdrop-filter: blur(2px) !important;
-  -webkit-backdrop-filter: blur(2px) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
 }
 
 /* Celebration Welcome Modal Festival Cards High Contrast */

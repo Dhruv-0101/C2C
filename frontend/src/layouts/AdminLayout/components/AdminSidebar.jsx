@@ -124,7 +124,7 @@ export const AdminSidebar = ({
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
-          className="fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-sm lg:hidden animate-in fade-in"
+          className="modal-backdrop-overlay fixed inset-0 z-40 lg:hidden animate-in fade-in"
         />
       )}
 

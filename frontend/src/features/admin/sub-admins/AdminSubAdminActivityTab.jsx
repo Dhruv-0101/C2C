@@ -668,7 +668,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
 
       {/* 8. Inspect Item Modal */}
       {inspectItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in duration-150">
+        <div className="modal-backdrop-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-[#131B2A] border border-[#2C384E] rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 overflow-hidden">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">

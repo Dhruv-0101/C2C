@@ -26,7 +26,7 @@ export const DeleteTemplateCategoryModal = ({
 
   return (
     <div
-      className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-slate-900/35 dark:bg-black/45 backdrop-blur-[2px] animate-in fade-in overflow-y-auto"
+      className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div

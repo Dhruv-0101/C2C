@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, ArrowRight, X, Calendar, Flame, CheckCircle2 } from "lucide-react";
 import { useFestivals } from '@/features/calendar/hooks/useFestivals';
+import { useTheme } from '@/shared/hooks';
 
 // Fallback upcoming festivals starting from today onwards
 const FALLBACK_UPCOMING_FESTIVALS = [
@@ -87,6 +88,7 @@ const getCountdownMeta = (dateString) => {
 export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", user }) => {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
+  const { isDark } = useTheme();
 
   // Fetch real festivals from database with high limit (up to 100)
   const today = new Date();
@@ -247,10 +249,27 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
 
         {/* Modal Header */}
         <div className="space-y-2 text-center sm:text-left pr-8 sm:pr-0">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 dark:bg-gradient-to-r dark:from-amber-500/20 dark:via-orange-500/15 dark:to-amber-500/20 border border-amber-300 dark:border-amber-400/40 text-amber-700 dark:text-amber-300 text-xs font-bold tracking-wide shadow-xs">
-            <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
+          <div
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold tracking-wide shadow-xs"
+            style={{
+              backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "#FEF3C7",
+              borderColor: isDark ? "rgba(245, 158, 11, 0.35)" : "#FCD34D",
+              color: isDark ? "#FCD34D" : "#92400E",
+            }}
+          >
+            <Flame
+              className="w-3.5 h-3.5 animate-pulse"
+              style={{
+                color: isDark ? "#FBBF24" : "#D97706",
+              }}
+            />
             <span>{isRegister ? "Welcome to BrandFlow! 🎉" : "Upcoming Festivals Ready! 🔥"}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-ping" />
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-ping"
+              style={{
+                backgroundColor: isDark ? "#F59E0B" : "#D97706",
+              }}
+            />
           </div>
 
           <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -292,13 +311,22 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
               return (
                 <div
                   key={item.id}
-                  className="welcome-festival-card group relative rounded-2xl bg-white dark:bg-[#141C2E] border border-slate-200 dark:border-slate-700/60 hover:border-amber-400/50 overflow-hidden shadow-xs dark:shadow-xl dark:shadow-black/30 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                  className="welcome-festival-card group relative rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md"
+                  style={{
+                    backgroundColor: isDark ? "#141C2E" : "#FFFFFF",
+                    borderColor: isDark ? "rgba(51, 65, 85, 0.6)" : "#CBD5E1",
+                  }}
                 >
                   {/* Specular Top Glow Highlight Accent */}
                   <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent group-hover:via-amber-400 transition-all duration-500 z-10" />
 
                   {/* Image Thumbnail Container */}
-                  <div className="w-full h-36 relative overflow-hidden bg-slate-100 dark:bg-slate-950 rounded-t-2xl">
+                  <div
+                    className="w-full h-36 relative overflow-hidden rounded-t-2xl"
+                    style={{
+                      backgroundColor: isDark ? "#020617" : "#F1F5F9",
+                    }}
+                  >
                     <img
                       src={
                         item.bannerUrl ||
@@ -311,17 +339,28 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                     />
 
                     {/* Translucent Dark Scrim Overlay (Only in dark mode) */}
-                    <div
-                      className="image-scrim-overlay absolute inset-0 pointer-events-none hidden dark:block"
-                      style={{
-                        background:
-                          "linear-gradient(to top, rgba(14, 21, 36, 0.95) 0%, rgba(14, 21, 36, 0.35) 45%, transparent 100%)",
-                      }}
-                    />
+                    {isDark && (
+                      <div
+                        className="image-scrim-overlay absolute inset-0 pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(to top, rgba(14, 21, 36, 0.95) 0%, rgba(14, 21, 36, 0.35) 45%, transparent 100%)",
+                        }}
+                      />
+                    )}
 
                     {/* Top Relative Days Countdown Pill */}
                     <div
                       className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full border text-[10px] tracking-wide flex items-center gap-1.5 shadow-md backdrop-blur-md ${countdown.badgeClass}`}
+                      style={
+                        !countdown.highlight
+                          ? {
+                              backgroundColor: isDark ? "rgba(2, 6, 23, 0.85)" : "#FFFFFF",
+                              borderColor: isDark ? "rgba(251, 191, 36, 0.4)" : "#F59E0B",
+                              color: isDark ? "#FCD34D" : "#92400E",
+                            }
+                          : undefined
+                      }
                     >
                       <Calendar className="w-3 h-3 shrink-0" />
                       <span>{countdown.text}</span>
@@ -329,34 +368,78 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
 
                     {/* Region / Category Tag Top-Right */}
                     {(item.category || item.targetRegion) && (
-                      <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-white/95 dark:bg-slate-950/80 backdrop-blur-md border border-slate-200 dark:border-white/15 text-[10px] font-semibold text-slate-800 dark:text-slate-200 tracking-wide flex items-center gap-1 shadow-md">
-                        <Sparkles className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" />
+                      <div
+                        className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full backdrop-blur-md border text-[10px] font-semibold tracking-wide flex items-center gap-1 shadow-md"
+                        style={{
+                          backgroundColor: isDark ? "rgba(2, 6, 23, 0.8)" : "#FFFFFF",
+                          borderColor: isDark ? "rgba(255, 255, 255, 0.15)" : "#CBD5E1",
+                          color: isDark ? "#E2E8F0" : "#0F172A",
+                        }}
+                      >
+                        <Sparkles
+                          className="w-2.5 h-2.5"
+                          style={{
+                            color: isDark ? "#FBBF24" : "#D97706",
+                          }}
+                        />
                         <span>{(item.category || item.targetRegion || "Festival").replace(/upcoming/i, "").trim() || "India"}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Content Details */}
-                  <div className="welcome-card-body p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between bg-white dark:bg-[#141C2E]">
+                  <div
+                    className="welcome-card-body p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between"
+                    style={{
+                      backgroundColor: isDark ? "#141C2E" : "#FFFFFF",
+                    }}
+                  >
                     <div className="space-y-1">
-                      <h4 className="font-heading font-extrabold text-sm sm:text-[15px] text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight">
+                      <h4
+                        className="font-heading font-extrabold text-sm sm:text-[15px] group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight"
+                        style={{
+                          color: isDark ? "#FFFFFF" : "#0F172A",
+                        }}
+                      >
                         {item.name || item.title || "Upcoming Festival"}
                       </h4>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-300/80 line-clamp-2 leading-relaxed">
+                      <p
+                        className="text-[11px] line-clamp-2 leading-relaxed"
+                        style={{
+                          color: isDark ? "rgba(203, 213, 225, 0.8)" : "#334155",
+                        }}
+                      >
                         {item.description || "Festival celebration and special event"}
                       </p>
                     </div>
 
                     {/* Styled Festival Metadata Row */}
-                    <div className="pt-2.5 flex items-center justify-between border-t border-slate-200 dark:border-white/[0.08] text-[11px]">
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/25 text-amber-800 dark:text-amber-300 font-bold text-[10px] tracking-wide">
-                        <Calendar className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                    <div
+                      className="pt-2.5 flex items-center justify-between border-t text-[11px]"
+                      style={{
+                        borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#E2E8F0",
+                      }}
+                    >
+                      <div
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border font-bold text-[10px] tracking-wide"
+                        style={{
+                          backgroundColor: isDark ? "rgba(245, 158, 11, 0.1)" : "#FEF3C7",
+                          borderColor: isDark ? "rgba(251, 191, 36, 0.25)" : "#FCD34D",
+                          color: isDark ? "#FCD34D" : "#92400E",
+                        }}
+                      >
+                        <Calendar
+                          className="w-3 h-3"
+                          style={{
+                            color: isDark ? "#FBBF24" : "#D97706",
+                          }}
+                        />
                         <span>
                           {item.date
                             ? new Date(item.date).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })
+                                month: "short",
+                                day: "numeric",
+                              })
                             : "Upcoming"}
                         </span>
                       </div>
