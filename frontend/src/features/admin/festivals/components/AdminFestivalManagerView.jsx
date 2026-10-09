@@ -30,6 +30,7 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { CalendarPage } from "@/features/calendar/pages/CalendarPage";
 import { createImagePreview } from '@/shared/utils/file.util';
+import { formatDate } from '@/shared/utils/date.util';
 import { FestivalCreateModal } from "./FestivalCreateModal";
 import { FestivalTable } from "./FestivalTable";
 import { SkeletonTable } from "@/components/feedback/SkeletonLoader";
@@ -413,14 +414,7 @@ export const AdminFestivalManagerView = () => {
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
               {paginatedFestivals.map((fest) => {
-                const festDate = fest.date ? new Date(fest.date) : null;
-                const formattedDate = festDate
-                  ? festDate.toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
-                  : "N/A";
+                const formattedDate = formatDate(fest.date) || "N/A";
 
                   const festBanner = fest.bannerUrl || fest.imageUrl || fest.banner || null;
                   return (

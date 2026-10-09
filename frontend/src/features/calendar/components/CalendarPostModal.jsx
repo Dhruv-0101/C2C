@@ -3,6 +3,7 @@ import { Calendar, Clock, Sparkles, Send, X, AlertCircle } from 'lucide-react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
+import { formatDate } from '@/shared/utils/date.util';
 
 /**
  * CalendarPostModal
@@ -58,7 +59,7 @@ export const CalendarPostModal = ({
           <Calendar className="w-5 h-5 text-indigo-400 shrink-0" />
           <div className="text-xs">
             <span className="font-semibold text-white block">
-              {selectedDate ? new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Today'}
+              {selectedDate ? formatDate(selectedDate, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Today'}
             </span>
             {festivalName && (
               <span className="text-indigo-400 font-medium">{festivalName} Event</span>

@@ -109,15 +109,14 @@ export const UserTableRow = ({
           <span className="text-slate-400 dark:text-slate-500 font-mono text-[11px]">—</span>
         ) : (
           <span
-            className={`px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase border ${
-              sub.paymentGateway === 'STRIPE'
+            className={`px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase border ${sub.paymentGateway === 'STRIPE'
                 ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/40'
                 : sub.paymentGateway === 'RAZORPAY'
                   ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/20 dark:text-teal-300 dark:border-teal-500/40'
                   : sub.paymentGateway === 'ADMIN_BONUS'
                     ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40'
                     : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-            }`}
+              }`}
           >
             {sub.paymentGateway}
           </span>
@@ -173,7 +172,7 @@ export const UserTableRow = ({
               title="Grant Bonus Posts to this user"
             >
               <Plus className="w-2.5 h-2.5" />
-              <span>+Quota</span>
+              <span>Quota</span>
             </button>
           </div>
         </div>
@@ -229,13 +228,12 @@ export const UserTableRow = ({
                   .map((acc) => (
                     <span
                       key={acc.id}
-                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
-                        acc.platform === 'FACEBOOK'
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${acc.platform === 'FACEBOOK'
                           ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30'
                           : acc.platform === 'INSTAGRAM'
-                          ? 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-500/15 dark:text-pink-300 dark:border-pink-500/30'
-                          : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
-                      }`}
+                            ? 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-500/15 dark:text-pink-300 dark:border-pink-500/30'
+                            : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                        }`}
                       title={`${acc.platform}: ${acc.accountName}`}
                     >
                       {acc.platform === 'FACEBOOK' ? (
@@ -261,13 +259,12 @@ export const UserTableRow = ({
                   <span>Page Link:</span>
                 </span>
                 <span
-                  className={`px-1 py-0.2 rounded font-bold uppercase text-[8px] ${
-                    user.socialOnboardingStatus === 'CONNECTED'
+                  className={`px-1 py-0.2 rounded font-bold uppercase text-[8px] ${user.socialOnboardingStatus === 'CONNECTED'
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400'
                       : user.socialOnboardingStatus === 'REQUEST_SENT'
-                      ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-400'
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400'
-                  }`}
+                        ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-400'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400'
+                    }`}
                 >
                   {user.socialOnboardingStatus || 'SUBMITTED'}
                 </span>
@@ -324,15 +321,13 @@ export const UserTableRow = ({
             type="button"
             disabled={isToggling}
             onClick={() => onToggleStatus(user)}
-            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-              isActive ? 'bg-emerald-500' : 'bg-red-500/80'
-            }`}
+            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isActive ? 'bg-emerald-500' : 'bg-red-500/80'
+              }`}
             title={isActive ? 'Click to Deactivate Account' : 'Click to Activate Account'}
           >
             <span
-              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                isActive ? 'translate-x-4' : 'translate-x-0'
-              }`}
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${isActive ? 'translate-x-4' : 'translate-x-0'
+                }`}
             />
           </button>
           <span className={`text-[10px] font-bold ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>

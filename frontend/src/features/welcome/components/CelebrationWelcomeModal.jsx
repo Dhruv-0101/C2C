@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Sparkles, ArrowRight, X, Calendar, Flame, CheckCircle2 } from "lucide-react";
 import { useFestivals } from '@/features/calendar/hooks/useFestivals';
 import { useTheme } from '@/shared/hooks';
+import { parseCalendarDate } from '@/shared/utils/date.util';
 
 // Fallback upcoming festivals starting from today onwards
 const FALLBACK_UPCOMING_FESTIVALS = [
@@ -47,14 +48,22 @@ const getCountdownMeta = (dateString) => {
     };
   }
 
-  const targetDate = new Date(dateString);
+  const targetDate = parseCalendarDate(dateString);
+  if (!targetDate) {
+    return {
+      text: "Upcoming",
+      badgeClass: "bg-slate-900/80 border-amber-400/40 text-amber-300",
+      highlight: false,
+    };
+  }
+
   const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  const diffTime = targetDate - now;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffTime = targetDate.getTime() - todayMidnight.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays <= 0) {
+  if (diffDays === 0) {
     return {
       text: "🔥 Today!",
       badgeClass:
@@ -69,6 +78,14 @@ const getCountdownMeta = (dateString) => {
       badgeClass:
         "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 border-amber-300/50 shadow-[0_0_12px_rgba(245,158,11,0.5)] font-black",
       highlight: true,
+    };
+  }
+
+  if (diffDays < 0) {
+    return {
+      text: diffDays === -1 ? "Yesterday" : `${Math.abs(diffDays)} Days Ago`,
+      badgeClass: "bg-slate-800 text-slate-400 border-slate-700 font-semibold",
+      highlight: false,
     };
   }
 
@@ -92,7 +109,7 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
 
   // Fetch real festivals from database with high limit (up to 100)
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
   const { festivals, isLoading } = useFestivals({
     limit: 100,
@@ -105,15 +122,26 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
   const upcomingDbFestivals = (festivals || [])
     .filter((fest) => {
       if (!fest?.date || fest?.isActive === false) return false;
-      const festDate = new Date(fest.date);
-      return festDate >= today;
+      const festDate = parseCalendarDate(fest.date);
+      return festDate && festDate.getTime() >= todayMidnight.getTime();
     })
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+    .sort((a, b) => {
+      const da = parseCalendarDate(a.date)?.getTime() || 0;
+      const db = parseCalendarDate(b.date)?.getTime() || 0;
+      return da - db;
+    });
 
   // 2. If no future dates exist, use the closest active database festivals
   const allDbFestivals = (festivals || [])
     .filter((fest) => fest?.isActive !== false)
-    .sort((a, b) => Math.abs(new Date(a.date) - today) - Math.abs(new Date(b.date) - today));
+    .sort((a, b) => {
+      const da = parseCalendarDate(a.date)?.getTime() || 0;
+      const db = parseCalendarDate(b.date)?.getTime() || 0;
+      return (
+        Math.abs(da - todayMidnight.getTime()) -
+        Math.abs(db - todayMidnight.getTime())
+      );
+    });
 
   // 3. COMPULSORY: Database festivals always take precedence! Only fallback if DB has 0 records.
   const activeShowcase =
@@ -436,10 +464,10 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
                         />
                         <span>
                           {item.date
-                            ? new Date(item.date).toLocaleDateString("en-US", {
+                            ? parseCalendarDate(item.date)?.toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
-                              })
+                              }) || "Upcoming"
                             : "Upcoming"}
                         </span>
                       </div>
