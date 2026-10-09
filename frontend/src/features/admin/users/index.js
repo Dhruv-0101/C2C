@@ -7,4 +7,4 @@ export * from './components/ConnectSocialModal';
 export * from './components/UserStatusBadge';
 export * from './components/UserTable';
 export * from './components/UserTableRow';
-
+export * from './components/UserDetailsDrawer';
