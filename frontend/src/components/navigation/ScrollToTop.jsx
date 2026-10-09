@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 /**
  * 🔝 ScrollToTop Component
  * Automatically resets scroll position to the very top (0, 0) whenever the route changes.
- * Ensures pages like Privacy Policy, Terms of Service, and System Status always open from the start.
+ * Ensures pages like Privacy Policy and Terms of Service always open from the start.
  */
 export const ScrollToTop = () => {
   const { pathname, hash } = useLocation();

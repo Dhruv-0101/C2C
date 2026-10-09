@@ -6,7 +6,7 @@ import { ContentLoader } from '@/components/feedback/ContentLoader';
 
 /**
  * 🌐 PublicLayout Shell
- * Shared responsive layout for public informational pages (Privacy, Terms, Status)
+ * Shared responsive layout for public informational pages (Privacy, Terms)
  * maintaining persistent Header, content outlet, and universal Footer.
  */
 export const PublicLayout = () => {

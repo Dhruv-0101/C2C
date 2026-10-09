@@ -117,11 +117,6 @@ const TermsOfServicePage = lazy(() =>
     default: m.TermsOfServicePage || m.default,
   }))
 );
-const SystemStatusPage = lazy(() =>
-  import("../features/status/pages/SystemStatusPage").then((m) => ({
-    default: m.SystemStatusPage || m.default,
-  }))
-);
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -161,14 +156,12 @@ export const AppRoutes = () => {
           </Route>
         </Route>
 
-        {/* Public Informational, Legal & System Health Routes */}
+        {/* Public Informational & Legal Routes */}
         <Route element={<PublicLayout />}>
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />
           <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/terms-of-service" element={<Navigate to="/terms" replace />} />
-          <Route path="/status" element={<SystemStatusPage />} />
-          <Route path="/system-status" element={<Navigate to="/status" replace />} />
         </Route>
 
         {/* Protected Shared Workspace Routes (SuperAdmin, SubAdmin, Business Users) */}
