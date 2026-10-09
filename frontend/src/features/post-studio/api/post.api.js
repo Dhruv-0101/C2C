@@ -16,8 +16,7 @@ export const postApi = {
    * @returns {Promise<Object>} `{ posts: Array<Object>, meta: PaginationMeta }`
    */
   getUserPosts: async (params = {}) => {
-    const response = await api.get(API_ENDPOINTS.POSTS.BASE, { params });
-    return response.data;
+    return await api.get(API_ENDPOINTS.POSTS.BASE, { params });
   },
 
   /**
@@ -30,8 +29,7 @@ export const postApi = {
    * @returns {Promise<Object>} `{ scheduledPosts: Array<Object>, meta: PaginationMeta }`
    */
   getScheduledPosts: async (params = {}) => {
-    const response = await api.get(API_ENDPOINTS.POSTS.SCHEDULED, { params });
-    return response.data;
+    return await api.get(API_ENDPOINTS.POSTS.SCHEDULED, { params });
   },
 
   /**
@@ -121,8 +119,7 @@ export const postApi = {
    * @returns {Promise<Object>} `{ posts: Array<Object>, meta: Object }`
    */
   getAdminPosts: async (params = {}) => {
-    const response = await api.get(API_ENDPOINTS.POSTS.ADMIN_ALL, { params });
-    return response.data;
+    return await api.get(API_ENDPOINTS.POSTS.ADMIN_ALL, { params });
   },
 
   /**
@@ -132,7 +129,20 @@ export const postApi = {
    * @returns {Promise<Object>} Volume counts, distributions by category, frame, template, festival, etc.
    */
   getAdminPostAnalytics: async () => {
-    const response = await api.get(API_ENDPOINTS.POSTS.ADMIN_ANALYTICS);
-    return response.data;
+    return await api.get(API_ENDPOINTS.POSTS.ADMIN_ANALYTICS);
   },
 };
+
+export const {
+  getUserPosts,
+  getScheduledPosts,
+  publishNow,
+  schedulePost,
+  createPost,
+  updatePostGraphic,
+  deletePost,
+  getAdminPosts,
+  getAdminPostAnalytics,
+} = postApi;
+
+export default postApi;

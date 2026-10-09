@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Layers,
-  Sparkles,
   FolderKanban,
   Maximize2,
   Calendar,
@@ -19,6 +18,10 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { FilterSearchablePicker } from "./components/FilterSearchablePicker";
+import { categoryApi } from '@/features/admin/categories/api/category.api';
+import { frameApi } from '@/features/admin/frames/api/frame.api';
+import { templateCategoryApi } from '@/features/admin/template-categories/api/templateCategory.api';
+import { festivalApi } from '@/features/admin/festivals/api/festival.api';
 
 /**
  * AdminPostsTab Component
@@ -62,6 +65,24 @@ export const AdminPostsTab = ({
   isLoadingAnalytics,
 }) => {
   const [selectedPostForLightbox, setSelectedPostForLightbox] = useState(null);
+  const [selectedLabels, setSelectedLabels] = useState({});
+
+  const handleSelectFilter = (key, id, item) => {
+    if (key === 'category') {
+      setCategoryFilter(id);
+      setSelectedLabels((prev) => ({ ...prev, category: item?.name || item?.title || '' }));
+    } else if (key === 'frame') {
+      setFrameFilter(id);
+      setSelectedLabels((prev) => ({ ...prev, frame: item?.name || item?.title || '' }));
+    } else if (key === 'templateCategory') {
+      setTemplateCategoryFilter(id);
+      setSelectedLabels((prev) => ({ ...prev, templateCategory: item?.name || item?.title || '' }));
+    } else if (key === 'festival') {
+      setFestivalFilter(id);
+      setSelectedLabels((prev) => ({ ...prev, festival: item?.name || item?.title || '' }));
+    }
+    setPostPage(1);
+  };
 
   const hasActiveFilters = Boolean(
     categoryFilter ||
@@ -79,12 +100,19 @@ export const AdminPostsTab = ({
     setFestivalFilter("");
     setStatusFilter("");
     setPostSearch("");
+    setSelectedLabels({});
     setPostPage(1);
   };
 
-  const topCategory = analytics?.byCategory?.[0];
-  const topFrame = analytics?.byFrame?.find((f) => f.frameId !== "no_frame") || analytics?.byFrame?.[0];
-  const topFestival = analytics?.byFestival?.find((f) => f.festivalId !== "no_festival") || analytics?.byFestival?.[0];
+  const selectedCategoryObj = categoriesList.find((c) => String(c.id) === String(categoryFilter));
+  const selectedFrameObj = framesList.find((f) => String(f.id) === String(frameFilter));
+  const selectedTemplateCategoryObj = templateCategoriesList.find((tc) => String(tc.id) === String(templateCategoryFilter));
+  const selectedFestivalObj = festivalsList.find((f) => String(f.id) === String(festivalFilter));
+
+  const displayCategoryName = selectedLabels.category || selectedCategoryObj?.name;
+  const displayFrameName = selectedLabels.frame || selectedFrameObj?.title;
+  const displayTemplateCategoryName = selectedLabels.templateCategory || selectedTemplateCategoryObj?.name;
+  const displayFestivalName = selectedLabels.festival || selectedFestivalObj?.name;
 
   return (
     <div className="animate-in fade-in duration-200 space-y-5">
@@ -105,69 +133,17 @@ export const AdminPostsTab = ({
         </div>
       </div>
 
-      {/* Top Aggregation KPI Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        {/* Total Posts */}
-        <div className="bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-4 rounded-2xl shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Posts Created</span>
-            <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">
-            {isLoadingAnalytics ? "..." : (analytics?.totalPosts ?? 0)}
-          </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Platform wide volume</div>
-        </div>
-
-        {/* Top Business Category */}
-        <div className="bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-4 rounded-2xl shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Top Industry Niche</span>
-            <FolderKanban className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-          </div>
-          <div className="text-sm font-bold text-slate-900 dark:text-white mt-2 truncate" title={topCategory?.name || "N/A"}>
-            {isLoadingAnalytics ? "..." : (topCategory?.name || "N/A")}
-          </div>
-          <div className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1 font-medium">
-            {topCategory ? `${topCategory.count} posts (${topCategory.percentage}%)` : "No data"}
-          </div>
-        </div>
-
-        {/* Top Frame Overlay */}
-        <div className="bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-4 rounded-2xl shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Top Brand Frame</span>
-            <Maximize2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-          </div>
-          <div className="text-sm font-bold text-slate-900 dark:text-white mt-2 truncate" title={topFrame?.title || "N/A"}>
-            {isLoadingAnalytics ? "..." : (topFrame?.title || "None")}
-          </div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
-            {topFrame ? `${topFrame.count} posts (${topFrame.percentage}%)` : "No data"}
-          </div>
-        </div>
-
-        {/* Top Festival */}
-        <div className="bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-4 rounded-2xl shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Top Festival Event</span>
-            <Calendar className="w-4 h-4 text-rose-500 dark:text-rose-400" />
-          </div>
-          <div className="text-sm font-bold text-slate-900 dark:text-white mt-2 truncate" title={topFestival?.name || "N/A"}>
-            {isLoadingAnalytics ? "..." : (topFestival?.name || "General")}
-          </div>
-          <div className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">
-            {topFestival ? `${topFestival.count} posts (${topFestival.percentage}%)` : "No data"}
-          </div>
-        </div>
-      </div>
-
-      {/* Multi-Dimensional Filter Toolbar with Paginated & Searchable Pickers */}
+      {/* Multi-Dimensional Filter Toolbar with Paginated Comboboxes */}
       <div className="p-4 rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] space-y-3.5 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-            <Filter className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <Filter className="w-4 h-4 text-amber-500" />
             <span>Filter Posts Audit Trail:</span>
+            {postMeta?.totalItems !== undefined && (
+              <span className="ml-1 text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                {postMeta.totalItems} {postMeta.totalItems === 1 ? 'post' : 'posts'}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2 flex-1 max-w-md justify-end">
@@ -178,7 +154,7 @@ export const AdminPostsTab = ({
                 setPostSearch(query);
                 setPostPage(1);
               }}
-              placeholder="Search user name, email, or occasion..."
+              placeholder="Search user name, email, occasion..."
               className="w-full"
             />
 
@@ -201,78 +177,235 @@ export const AdminPostsTab = ({
           </div>
         </div>
 
-        {/* Dynamic High-Volume Search & Paginated Filter Pickers (Enterprise 1000+ Scalable) */}
+        {/* 4 Paginated & Searchable Filters (Handles 1000+ items smoothly) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
-          {/* 1. Business Category Searchable Picker */}
+          {/* 1. Business Category Paginated Combobox */}
           <FilterSearchablePicker
             label="Business Category"
             icon={FolderKanban}
-            items={categoriesList}
             selectedId={categoryFilter}
-            onSelect={(id) => {
-              setCategoryFilter(id);
-              setPostPage(1);
-            }}
+            selectedName={displayCategoryName}
+            onSelect={(id, item) => handleSelectFilter('category', id, item)}
             placeholder="Search business categories..."
             accentColor="indigo"
+            queryKeyPrefix="filter-picker-categories"
+            queryFn={async ({ page, limit, search }) => {
+              const res = await categoryApi.getCategories({ page, limit, search });
+              const list = res?.data?.categories || res?.categories || [];
+              const meta = res?.meta || res?.data?.meta || { totalPages: 1, totalItems: list.length, page, limit };
+              return {
+                items: list.map((c) => ({ id: c.id, name: c.name, description: c.description })),
+                meta,
+              };
+            }}
+            getSingleItemFn={async (id) => {
+              const res = await categoryApi.getCategoryById(id);
+              return res?.data?.category || res?.category || null;
+            }}
+            items={categoriesList}
+            pageSize={10}
           />
 
-          {/* 2. Brand Frame Searchable Picker */}
+          {/* 2. Brand Frame Paginated Combobox */}
           <FilterSearchablePicker
             label="Brand Frame"
             icon={Maximize2}
-            items={framesList}
             selectedId={frameFilter}
-            onSelect={(id) => {
-              setFrameFilter(id);
-              setPostPage(1);
-            }}
+            selectedName={displayFrameName}
+            onSelect={(id, item) => handleSelectFilter('frame', id, item)}
             placeholder="Search brand frames..."
             accentColor="emerald"
+            queryKeyPrefix="filter-picker-frames"
+            queryFn={async ({ page, limit, search }) => {
+              const res = await frameApi.getFrames({ page, limit, search });
+              const list = res?.data?.frames || res?.frames || [];
+              const meta = res?.meta || res?.data?.meta || { totalPages: 1, totalItems: list.length, page, limit };
+              return {
+                items: list.map((f) => ({ id: f.id, name: f.title, title: f.title })),
+                meta,
+              };
+            }}
+            getSingleItemFn={async (id) => {
+              const res = await frameApi.getFrameById(id);
+              return res?.data?.frame || res?.frame || null;
+            }}
+            items={framesList}
+            pageSize={10}
           />
 
-          {/* 3. Template Category Searchable Picker */}
+          {/* 3. Template Category Paginated Combobox */}
           <FilterSearchablePicker
             label="Template Category"
             icon={Image}
-            items={templateCategoriesList}
             selectedId={templateCategoryFilter}
-            onSelect={(id) => {
-              setTemplateCategoryFilter(id);
-              setPostPage(1);
-            }}
-            placeholder="Search template themes..."
+            selectedName={displayTemplateCategoryName}
+            onSelect={(id, item) => handleSelectFilter('templateCategory', id, item)}
+            placeholder="Search template categories..."
             accentColor="amber"
+            queryKeyPrefix="filter-picker-template-categories"
+            queryFn={async ({ page, limit, search }) => {
+              const res = await templateCategoryApi.getTemplateCategories({ page, limit, search });
+              const list = res?.data?.categories || res?.categories || [];
+              const meta = res?.meta || res?.data?.meta || { totalPages: 1, totalItems: list.length, page, limit };
+              return {
+                items: list.map((tc) => ({ id: tc.id, name: tc.name, description: tc.description })),
+                meta,
+              };
+            }}
+            getSingleItemFn={async (id) => {
+              const res = await templateCategoryApi.getTemplateCategoryById(id);
+              return res?.data?.category || res?.category || null;
+            }}
+            items={templateCategoriesList}
+            pageSize={10}
           />
 
-          {/* 4. Festival Event Searchable Picker */}
+          {/* 4. Festival Event Paginated Combobox */}
           <FilterSearchablePicker
             label="Festival Event"
             icon={Calendar}
-            items={festivalsList}
             selectedId={festivalFilter}
-            onSelect={(id) => {
-              setFestivalFilter(id);
-              setPostPage(1);
-            }}
+            selectedName={displayFestivalName}
+            onSelect={(id, item) => handleSelectFilter('festival', id, item)}
             placeholder="Search festivals..."
             accentColor="rose"
+            queryKeyPrefix="filter-picker-festivals"
+            queryFn={async ({ page, limit, search }) => {
+              const res = await festivalApi.getFestivals({ page, limit, search, includeInactive: false });
+              const list = res?.data?.festivals || res?.festivals || (Array.isArray(res?.data) ? res.data : []) || [];
+              const meta = res?.meta || res?.data?.meta || { totalPages: 1, totalItems: list.length, page, limit };
+              return {
+                items: list.map((f) => ({
+                  id: f.id,
+                  name: f.name,
+                  title: f.name,
+                  description: f.date ? new Date(f.date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' }) : null,
+                })),
+                meta,
+              };
+            }}
+            getSingleItemFn={async (id) => {
+              const res = await festivalApi.getFestivalById(id);
+              return res?.data?.festival || res?.festival || null;
+            }}
+            items={festivalsList}
+            pageSize={10}
           />
         </div>
 
-        {/* Clear Filters Indicator */}
+        {/* Active Filters Bar */}
         {hasActiveFilters && (
-          <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-[#1E293B]">
-            <span className="text-xs text-amber-700 dark:text-amber-400 font-semibold">
-              Filtered results active
+          <div className="flex items-center gap-2 flex-wrap pt-2.5 border-t border-slate-200 dark:border-[#2C384E]/70">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">
+              Active Filters:
             </span>
+            {categoryFilter && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30">
+                <span>Category: {displayCategoryName || 'Selected'}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategoryFilter("");
+                    setSelectedLabels((prev) => ({ ...prev, category: '' }));
+                    setPostPage(1);
+                  }}
+                  className="hover:opacity-75 cursor-pointer ml-0.5 text-xs font-bold"
+                  title="Remove category filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {frameFilter && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30">
+                <span>Frame: {displayFrameName || 'Selected'}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFrameFilter("");
+                    setSelectedLabels((prev) => ({ ...prev, frame: '' }));
+                    setPostPage(1);
+                  }}
+                  className="hover:opacity-75 cursor-pointer ml-0.5 text-xs font-bold"
+                  title="Remove frame filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {templateCategoryFilter && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30">
+                <span>Template: {displayTemplateCategoryName || 'Selected'}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTemplateCategoryFilter("");
+                    setSelectedLabels((prev) => ({ ...prev, templateCategory: '' }));
+                    setPostPage(1);
+                  }}
+                  className="hover:opacity-75 cursor-pointer ml-0.5 text-xs font-bold"
+                  title="Remove template category filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {festivalFilter && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:border-rose-500/30">
+                <span>Festival: {displayFestivalName || 'Selected'}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFestivalFilter("");
+                    setSelectedLabels((prev) => ({ ...prev, festival: '' }));
+                    setPostPage(1);
+                  }}
+                  className="hover:opacity-75 cursor-pointer ml-0.5 text-xs font-bold"
+                  title="Remove festival filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {statusFilter && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+                <span>Status: {statusFilter}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter("");
+                    setPostPage(1);
+                  }}
+                  className="hover:opacity-75 cursor-pointer ml-0.5 text-xs font-bold"
+                  title="Remove status filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {postSearch && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+                <span>Search: "{postSearch}"</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPostSearch("");
+                    setPostPage(1);
+                  }}
+                  className="hover:opacity-75 cursor-pointer ml-0.5 text-xs font-bold"
+                  title="Clear search"
+                >
+                  ×
+                </button>
+              </span>
+            )}
             <button
               type="button"
               onClick={handleClearFilters}
-              className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition cursor-pointer"
+              className="ml-auto text-xs text-rose-600 dark:text-rose-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
-              <span>Reset all filters</span>
+              <span>Clear all filters</span>
             </button>
           </div>
         )}

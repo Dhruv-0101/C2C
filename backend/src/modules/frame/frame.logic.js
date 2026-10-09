@@ -36,7 +36,7 @@ export async function getFrames(queryParams = {}) {
   return getOrSetCache(
     cacheKey,
     async () => {
-      const pagination = parsePaginationParams(queryParams);
+      const pagination = parsePaginationParams(queryParams, 100, 500);
       const { frames, totalCount } = await frameRepository.findPaginatedFrames({
         ...pagination,
         search: pagination.search || queryParams.search,

@@ -28,7 +28,7 @@ export async function getCategories(queryParams = {}) {
   return getOrSetCache(
     cacheKey,
     async () => {
-      const pagination = parsePaginationParams(queryParams, 100, 100);
+      const pagination = parsePaginationParams(queryParams, 100, 500);
       const { categories, totalCount } = await categoryRepository.findPaginatedCategories({
         ...pagination,
         sortBy: queryParams.sortBy || DEFAULT_CATEGORY_SORT_BY,

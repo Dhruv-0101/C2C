@@ -28,7 +28,7 @@ export async function getTemplateCategories(queryParams = {}) {
   return getOrSetCache(
     cacheKey,
     async () => {
-      const pagination = parsePaginationParams(queryParams, 100, 100);
+      const pagination = parsePaginationParams(queryParams, 100, 500);
       const { categories, totalCount } = await templateCategoryRepository.findPaginatedTemplateCategories({
         ...pagination,
         search: queryParams.search,

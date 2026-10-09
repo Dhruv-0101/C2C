@@ -190,10 +190,11 @@ export const AdminDashboardPage = () => {
     isLoading: isLoadingPostAnalytics,
   } = useAdminPostAnalytics();
 
-  // Auxiliary dropdown collections for filters
-  const { frames: allFrames } = useFrames({ limit: 100 });
-  const { categories: allTemplateCategories } = useTemplateCategories();
-  const { festivals: allFestivals } = useFestivals({ limit: 100 });
+  // Auxiliary lookup collections for filter fallbacks (comboboxes handle their own on-demand pagination)
+  const { categories: allBusinessCategories } = useCategories({ limit: 20 });
+  const { categories: allTemplateCategories } = useTemplateCategories({ limit: 20 });
+  const { frames: allFrames } = useFrames({ limit: 20 });
+  const { festivals: allFestivals } = useFestivals({ limit: 20 });
 
   // Create Category Mutation
   const createCategoryMutation = useMutation({
@@ -557,7 +558,7 @@ export const AdminDashboardPage = () => {
         setStatusFilter={setStatusFilter}
         postSearch={postSearch}
         setPostSearch={setPostSearch}
-        allCategories={categories}
+        allCategories={allBusinessCategories}
         allFrames={allFrames}
         allTemplateCategories={allTemplateCategories}
         allFestivals={allFestivals}

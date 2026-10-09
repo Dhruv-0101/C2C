@@ -16,10 +16,8 @@ import {
   Shield,
   CheckCircle2,
   Lock,
-  ChevronDown,
   Menu,
   X,
-  PlusCircle,
   FileCode,
   Users,
   Share2,
@@ -45,9 +43,8 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
-  const [isAdminConsoleExpanded, setIsAdminConsoleExpanded] = useState(true);
 
-  const { user, isSuperAdmin, isSubAdmin } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const { mutate: logout } = useLogout();
   const location = useLocation();
   const navigate = useNavigate();
@@ -69,24 +66,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
     { label: 'Analytics & Insights', path: '/analytics', icon: BarChart3 },
   ];
 
-  const adminConsoleAllSubItems = [
-    { id: 'templates', label: 'Graphic Templates', path: '/admin?tab=templates', icon: PlusCircle },
-    { id: 'template-categories', label: 'Template Categories', path: '/admin?tab=template-categories', icon: FolderTree },
-    { id: 'festivals', label: 'Festival Calendar', path: '/admin?tab=festivals', icon: Calendar },
-    { id: 'frames', label: 'Brand Frames Studio', path: '/admin?tab=frames', icon: Layers },
-    { id: 'styles', label: 'Design System & Palettes', path: '/admin?tab=styles', icon: Palette },
-    { id: 'categories', label: 'Business Categories', path: '/admin?tab=categories', icon: FolderKanban },
-    { id: 'posts', label: 'Generated Posts Audit', path: '/admin?tab=posts', icon: Sparkles },
-    { id: 'subadmins', label: 'SubAdmin Directory', path: '/admin?tab=subadmins', icon: ShieldAlert, superAdminOnly: true },
-    { id: 'users', label: 'Business User Directory', path: '/admin?tab=users', icon: Users },
-  ];
 
-  // RBAC Permission Filter for SubAdmins vs SuperAdmins
-  const adminConsoleSubItems = isSuperAdmin
-    ? adminConsoleAllSubItems
-    : adminConsoleAllSubItems.filter((item) =>
-        !item.superAdminOnly && Array.isArray(user?.allowedTabs) && user.allowedTabs.includes(item.id)
-      );
 
   const isPathActive = (path) => {
     if (path.includes('?tab=')) {
@@ -212,8 +192,8 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
             );
           })}
 
-          {/* SuperAdmin & SubAdmin Console Dropdown Root */}
-          {(isSuperAdmin || isSubAdmin) && (
+          {/* SuperAdmin Console Direct Link (SuperAdmin Only) */}
+          {isSuperAdmin && (
             <div className="pt-3 border-t border-[#2C384E]">
               {(!isCollapsed || isMobileOpen) && (
                 <div className="px-3.5 pb-2">
@@ -223,64 +203,21 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
                 </div>
               )}
 
-              <div className="space-y-1">
-                <button
-                  onClick={() => {
-                    if (isCollapsed && !isMobileOpen) {
-                      navigate('/admin');
-                    } else {
-                      setIsAdminConsoleExpanded(!isAdminConsoleExpanded);
-                    }
-                  }}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
-                    isCollapsed && !isMobileOpen ? 'justify-center px-0' : ''
-                  } ${
-                    isAdminConsolePathActive
-                      ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'text-slate-200 hover:text-white hover:bg-slate-800/60'
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5 overflow-hidden">
-                    <ShieldAlert className={`w-5 h-5 shrink-0 ${isAdminConsolePathActive ? 'text-slate-950' : 'text-amber-400'}`} />
-                    {(!isCollapsed || isMobileOpen) && (
-                      <span className="truncate">Admin Console</span>
-                    )}
-                  </div>
-                  {(!isCollapsed || isMobileOpen) && (
-                    <ChevronDown
-                      className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
-                        isAdminConsoleExpanded ? 'rotate-180' : ''
-                      } ${isAdminConsolePathActive ? 'text-slate-950' : 'text-slate-400'}`}
-                    />
-                  )}
-                </button>
-
-                {/* Sub-menu Dropdown List (RBAC Filtered) */}
-                {isAdminConsoleExpanded && (!isCollapsed || isMobileOpen) && (
-                  <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-slate-800/80 ml-4">
-                    {adminConsoleSubItems.map((subItem) => {
-                      const SubIcon = subItem.icon;
-                      const isSubActive = isPathActive(subItem.path);
-
-                      return (
-                        <NavLink
-                          key={subItem.label}
-                          to={subItem.path}
-                          onClick={() => setIsMobileOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 ${
-                            isSubActive
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                          }`}
-                        >
-                          <SubIcon className={`w-4 h-4 ${isSubActive ? 'text-amber-400' : 'text-slate-500'}`} />
-                          <span className="truncate">{subItem.label}</span>
-                        </NavLink>
-                      );
-                    })}
-                  </div>
+              <NavLink
+                to="/admin"
+                onClick={() => setIsMobileOpen(false)}
+                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                  isAdminConsolePathActive
+                    ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                    : 'text-slate-200 hover:text-white hover:bg-slate-800/60'
+                } ${isCollapsed && !isMobileOpen ? 'justify-center px-0' : ''}`}
+                title={isCollapsed && !isMobileOpen ? "Admin Console" : undefined}
+              >
+                <ShieldAlert className={`w-5 h-5 shrink-0 ${isAdminConsolePathActive ? 'text-slate-950' : 'text-amber-400'}`} />
+                {(!isCollapsed || isMobileOpen) && (
+                  <span className="truncate">Admin Console</span>
                 )}
-              </div>
+              </NavLink>
             </div>
           )}
         </div>
