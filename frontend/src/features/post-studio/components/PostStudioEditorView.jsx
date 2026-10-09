@@ -114,8 +114,8 @@ export const PostStudioEditorView = ({
   const { isDark } = useTheme();
   const customFileInputRef = useRef(null);
 
-  // Step 4 Export Sub-Tab State ('download' | 'publish' | 'schedule')
-  const [exportTab, setExportTab] = useState("download");
+  // Step 4 Export Sub-Tab State ('schedule' | 'download')
+  const [exportTab, setExportTab] = useState("schedule");
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Step 1 Category & Festival Collapsible Dropdown States (default: false / closed)
@@ -1457,7 +1457,7 @@ export const PostStudioEditorView = ({
                     <span className="truncate">Step 4: Export & Publish</span>
                   </h3>
                   <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                    Download HD PNG or publish/schedule to social platforms.
+                    Schedule post to social platforms or download HD PNG.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
@@ -1468,31 +1468,7 @@ export const PostStudioEditorView = ({
               </div>
 
               {/* Step 4 Sub-Tabs Ribbon */}
-              <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#0B0F17] rounded-xl border border-[#2C384E] shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setExportTab("download")}
-                  className={`py-2 px-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    exportTab === "download"
-                      ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Download className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">Download HD</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setExportTab("publish")}
-                  className={`py-2 px-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    exportTab === "publish"
-                      ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Share2 className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">Social Publish</span>
-                </button>
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#0B0F17] rounded-xl border border-[#2C384E] shrink-0">
                 <button
                   type="button"
                   onClick={() => setExportTab("schedule")}
@@ -1504,6 +1480,18 @@ export const PostStudioEditorView = ({
                 >
                   <CalendarClock className="w-3.5 h-3.5 shrink-0" />
                   <span className="truncate">Schedule Post</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExportTab("download")}
+                  className={`py-2 px-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    exportTab === "download"
+                      ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Download className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Download HD</span>
                 </button>
               </div>
 
@@ -1555,7 +1543,36 @@ export const PostStudioEditorView = ({
                   </div>
                 )}
 
-                {/* TAB 1: DOWNLOAD HD */}
+                {/* TAB 1: SCHEDULE POST */}
+                {exportTab === "schedule" && (
+                  <div className="space-y-3 animate-in fade-in duration-200">
+                    <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2 text-xs">
+                      <div className="flex items-center gap-2 text-amber-400 font-bold">
+                        <CalendarClock className="w-4 h-4" />
+                        <span>Automated Queue Publishing</span>
+                      </div>
+                      <p className="text-slate-300 leading-relaxed text-[11px]">
+                        Schedule this graphic to publish automatically at peak audience engagement times or upcoming festival dates.
+                      </p>
+                    </div>
+
+                    <Button
+                      variant="primary"
+                      icon={isExpired ? Lock : (isRendering ? Loader2 : CalendarClock)}
+                      disabled={isRendering || isExpired}
+                      onClick={() => onOpenPublisherModal && onOpenPublisherModal("SCHEDULE")}
+                      className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg ${
+                        isExpired
+                          ? "bg-slate-800 text-slate-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-teal-500 to-amber-500 text-slate-950"
+                      }`}
+                    >
+                      {isRendering ? "Rendering HD Graphic..." : isExpired ? "🔒 Upgrade Plan to Schedule" : "📅 Schedule Post for Later"}
+                    </Button>
+                  </div>
+                )}
+
+                {/* TAB 2: DOWNLOAD HD */}
                 {exportTab === "download" && (
                   <div className="space-y-3 animate-in fade-in duration-200">
                     <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-1.5 text-xs">
@@ -1615,74 +1632,6 @@ export const PostStudioEditorView = ({
                                 : "Download HD PNG & Save to Vault"}
                       </Button>
                     </div>
-                  </div>
-                )}
-
-                {/* TAB 2: SOCIAL PUBLISH */}
-                {exportTab === "publish" && (
-                  <div className="space-y-3 animate-in fade-in duration-200">
-                    <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2.5 text-xs">
-                      <p className="text-slate-300 leading-relaxed text-xs">
-                        Publish your 1080×1080 branded graphic instantly across connected social accounts.
-                      </p>
-                      <div className="grid grid-cols-3 gap-2 pt-1">
-                        <div className="p-2 rounded-lg bg-[#131B2A] border border-[#2C384E] text-center">
-                          <span className="text-[11px] font-bold text-pink-400 block">Instagram</span>
-                          <span className="text-[9px] text-slate-400">Post & Feed</span>
-                        </div>
-                        <div className="p-2 rounded-lg bg-[#131B2A] border border-[#2C384E] text-center">
-                          <span className="text-[11px] font-bold text-blue-400 block">Facebook</span>
-                          <span className="text-[9px] text-slate-400">Page Feed</span>
-                        </div>
-                        <div className="p-2 rounded-lg bg-[#131B2A] border border-[#2C384E] text-center">
-                          <span className="text-[11px] font-bold text-sky-400 block">LinkedIn</span>
-                          <span className="text-[9px] text-slate-400">Company Post</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="primary"
-                      icon={isExpired ? Lock : (isRendering ? Loader2 : Share2)}
-                      disabled={isRendering || isExpired}
-                      onClick={() => onOpenPublisherModal && onOpenPublisherModal("NOW")}
-                      className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg ${
-                        isExpired
-                          ? "bg-slate-800 text-slate-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-amber-500 to-teal-500 text-slate-950"
-                      }`}
-                    >
-                      {isRendering ? "Rendering HD Graphic..." : isExpired ? "🔒 Upgrade Plan to Publish" : "🚀 Launch Social Publisher"}
-                    </Button>
-                  </div>
-                )}
-
-                {/* TAB 3: SCHEDULE POST */}
-                {exportTab === "schedule" && (
-                  <div className="space-y-3 animate-in fade-in duration-200">
-                    <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2 text-xs">
-                      <div className="flex items-center gap-2 text-amber-400 font-bold">
-                        <CalendarClock className="w-4 h-4" />
-                        <span>Automated Queue Publishing</span>
-                      </div>
-                      <p className="text-slate-300 leading-relaxed text-[11px]">
-                        Schedule this graphic to publish automatically at peak audience engagement times or upcoming festival dates.
-                      </p>
-                    </div>
-
-                    <Button
-                      variant="primary"
-                      icon={isExpired ? Lock : (isRendering ? Loader2 : CalendarClock)}
-                      disabled={isRendering || isExpired}
-                      onClick={() => onOpenPublisherModal && onOpenPublisherModal("SCHEDULE")}
-                      className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg ${
-                        isExpired
-                          ? "bg-slate-800 text-slate-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-teal-500 to-amber-500 text-slate-950"
-                      }`}
-                    >
-                      {isRendering ? "Rendering HD Graphic..." : isExpired ? "🔒 Upgrade Plan to Schedule" : "📅 Schedule Post for Later"}
-                    </Button>
                   </div>
                 )}
               </div>
