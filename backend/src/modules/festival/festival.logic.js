@@ -3,7 +3,7 @@ import { logger } from '../../config/logger.js';
 import * as festivalRepository from './festival.repository.js';
 import { uploadFestivalBannerBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
-import { sanitizeFestival } from './festival.helper.js';
+import { sanitizeFestival, parseBoolean } from './festival.helper.js';
 import { getOrSetCache, deleteCachePattern } from '../../common/utils/cache.util.js';
 import { CACHE_KEYS, CACHE_TTL } from '../../common/constants/cache.constants.js';
 
@@ -22,14 +22,17 @@ function slugify(text) {
  */
 export async function getFestivals(queryParams = {}, includeInactive = false) {
   const params = typeof queryParams === 'object' && queryParams !== null ? queryParams : { year: queryParams };
-  const cacheKey = CACHE_KEYS.FESTIVALS_LIST({ ...params, includeInactive });
+  const isInactive = params.includeInactive !== undefined
+    ? parseBoolean(params.includeInactive, false)
+    : parseBoolean(includeInactive, false);
+
+  const cacheKey = CACHE_KEYS.FESTIVALS_LIST({ ...params, includeInactive: isInactive });
 
   return getOrSetCache(
     cacheKey,
     async () => {
       const pagination = parsePaginationParams(params, 500, 500);
       const year = params.year;
-      const isInactive = params.includeInactive !== undefined ? Boolean(params.includeInactive) : includeInactive;
       const startDate = params.startDate;
       const endDate = params.endDate;
 
@@ -62,22 +65,36 @@ export async function getFestivals(queryParams = {}, includeInactive = false) {
 }
 
 /**
- * Fetch a single festival by ID (Redis Cached)
+ * Fetch a single festival by ID (Redis Cached) with role-based active check
  */
-export async function getFestivalById(id) {
+export async function getFestivalById(id, requestingUser = null) {
   const cacheKey = CACHE_KEYS.FESTIVAL_BY_ID(id);
 
-  return getOrSetCache(
+  const festival = await getOrSetCache(
     cacheKey,
     async () => {
-      const festival = await festivalRepository.findFestivalById(id);
-      if (!festival) {
+      const dbFestival = await festivalRepository.findFestivalById(id);
+      if (!dbFestival) {
         throw new NotFoundError('Festival not found.');
       }
-      return sanitizeFestival(festival);
+      return sanitizeFestival(dbFestival);
     },
     CACHE_TTL.ONE_HOUR
   );
+
+  const isAdminUser = Boolean(
+    requestingUser?.isAdmin ||
+    requestingUser?.isSuperAdmin ||
+    requestingUser?.isSubAdmin ||
+    requestingUser?.role === 'SUPER_ADMIN' ||
+    requestingUser?.role === 'SUB_ADMIN'
+  );
+
+  if (festival && festival.isActive === false && !isAdminUser) {
+    throw new NotFoundError('Festival not found.');
+  }
+
+  return festival;
 }
 
 /**
@@ -126,7 +143,7 @@ export async function createFestival({
     date: dateObj,
     targetRegion: targetRegion?.trim() || 'India',
     bannerUrl: finalBannerUrl,
-    isActive: isActive !== undefined ? Boolean(isActive) : true,
+    isActive: parseBoolean(isActive, true),
     createdBy: createdBy || null,
   });
 
@@ -178,7 +195,7 @@ export async function updateFestival(id, data, fileBuffer) {
   }
 
   if (data.isActive !== undefined) {
-    updatePayload.isActive = Boolean(data.isActive);
+    updatePayload.isActive = parseBoolean(data.isActive, existing.isActive);
   }
   if (data.date !== undefined) {
     const dateObj = new Date(data.date);

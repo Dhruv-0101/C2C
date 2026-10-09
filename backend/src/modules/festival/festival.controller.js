@@ -7,7 +7,22 @@ import * as festivalLogic from './festival.logic.js';
  */
 export async function getFestivals(req, res, next) {
   try {
-    const result = await festivalLogic.getFestivals(req.query);
+    const isAdminUser = Boolean(
+      req.user?.isAdmin ||
+      req.user?.isSuperAdmin ||
+      req.user?.isSubAdmin ||
+      req.user?.role === 'SUPER_ADMIN' ||
+      req.user?.role === 'SUB_ADMIN'
+    );
+
+    const queryParams = { ...req.query };
+
+    // Security rule: Non-admin users cannot query inactive draft festivals
+    if (!isAdminUser) {
+      queryParams.includeInactive = false;
+    }
+
+    const result = await festivalLogic.getFestivals(queryParams);
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: 'Festivals retrieved successfully',
@@ -24,7 +39,7 @@ export async function getFestivals(req, res, next) {
  */
 export async function getFestivalById(req, res, next) {
   try {
-    const festival = await festivalLogic.getFestivalById(req.params.id);
+    const festival = await festivalLogic.getFestivalById(req.params.id, req.user);
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
       message: 'Festival retrieved successfully',

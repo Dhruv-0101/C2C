@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { AppLayout } from "@/layouts/AppLayout";
 import { AdminLayout } from "@/layouts/AdminLayout";
+import { PublicLayout } from "@/layouts/PublicLayout";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PageLoader } from '@/components/feedback/PageLoader';
@@ -106,6 +107,21 @@ const AnalyticsPage = lazy(() =>
     default: m.AnalyticsPage || m.default,
   }))
 );
+const PrivacyPolicyPage = lazy(() =>
+  import("../features/legal/pages/PrivacyPolicyPage").then((m) => ({
+    default: m.PrivacyPolicyPage || m.default,
+  }))
+);
+const TermsOfServicePage = lazy(() =>
+  import("../features/legal/pages/TermsOfServicePage").then((m) => ({
+    default: m.TermsOfServicePage || m.default,
+  }))
+);
+const SystemStatusPage = lazy(() =>
+  import("../features/status/pages/SystemStatusPage").then((m) => ({
+    default: m.SystemStatusPage || m.default,
+  }))
+);
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -143,6 +159,16 @@ export const AppRoutes = () => {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/verify-2fa" element={<TwoFactorVerifyPage />} />
           </Route>
+        </Route>
+
+        {/* Public Informational, Legal & System Health Routes */}
+        <Route element={<PublicLayout />}>
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
+          <Route path="/terms-of-service" element={<Navigate to="/terms" replace />} />
+          <Route path="/status" element={<SystemStatusPage />} />
+          <Route path="/system-status" element={<Navigate to="/status" replace />} />
         </Route>
 
         {/* Protected Shared Workspace Routes (SuperAdmin, SubAdmin, Business Users) */}

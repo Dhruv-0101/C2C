@@ -77,6 +77,7 @@ export const AdminFestivalManagerView = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [feedback, setFeedback] = useState({ isOpen: false, type: "success", title: "", message: "" });
   const [formError, setFormError] = useState("");
+  const [togglingId, setTogglingId] = useState(null);
 
   // Form Fields & Banner File Upload State
   const [formData, setFormData] = useState({
@@ -138,7 +139,7 @@ export const AdminFestivalManagerView = () => {
       description: fest.description || "",
       targetRegion: fest.targetRegion || "India",
       bannerUrl: fest.bannerUrl || "",
-      isActive: fest.isActive !== undefined ? fest.isActive : true,
+      isActive: fest.isActive !== false,
     });
     setBannerFile(null);
     setBannerPreview(fest.bannerUrl || "");
@@ -176,7 +177,7 @@ export const AdminFestivalManagerView = () => {
         fd.append("date", formData.date);
         if (formData.description?.trim()) fd.append("description", formData.description.trim());
         if (formData.targetRegion?.trim()) fd.append("targetRegion", formData.targetRegion.trim());
-        fd.append("isActive", String(formData.isActive));
+        fd.append("isActive", formData.isActive ? "true" : "false");
         fd.append("banner", bannerFile);
         festivalPayload = fd;
       } else {
@@ -187,7 +188,7 @@ export const AdminFestivalManagerView = () => {
           description: formData.description?.trim() || "",
           targetRegion: formData.targetRegion?.trim() || "India",
           clearBanner: formData.clearBanner || undefined,
-          isActive: formData.isActive,
+          isActive: Boolean(formData.isActive),
         };
       }
 
@@ -233,6 +234,34 @@ export const AdminFestivalManagerView = () => {
         title: "Delete Failed",
         message: err.response?.data?.message || "Failed to delete festival.",
       });
+    }
+  };
+
+  // Quick 1-Click Active / Inactive Status Toggle Handler
+  const handleToggleStatus = async (fest) => {
+    try {
+      setTogglingId(fest.id);
+      const newStatus = fest.isActive === false ? true : false;
+      await updateFestival({ id: fest.id, data: { isActive: newStatus } });
+      setFeedback({
+        isOpen: true,
+        type: "success",
+        title: newStatus ? "Festival Activated" : "Festival Deactivated",
+        message: `"${fest.name}" is now ${
+          newStatus
+            ? "active and visible across the calendar grid and studio."
+            : "inactive and hidden from all calendars."
+        }`,
+      });
+    } catch (err) {
+      setFeedback({
+        isOpen: true,
+        type: "error",
+        title: "Status Update Failed",
+        message: err.response?.data?.message || err.message || "Failed to update festival status.",
+      });
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -378,6 +407,8 @@ export const AdminFestivalManagerView = () => {
               isLoading={isLoading}
               onEdit={handleOpenEdit}
               onDelete={handleOpenDelete}
+              onToggleStatus={handleToggleStatus}
+              isTogglingId={togglingId}
             />
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
@@ -458,15 +489,28 @@ export const AdminFestivalManagerView = () => {
                             </p>
                           </div>
 
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStatus(fest)}
+                            disabled={togglingId === fest.id}
+                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition cursor-pointer flex items-center gap-1.5 ${
                               fest.isActive !== false
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                                : "bg-slate-800 text-slate-400 border-slate-700"
+                                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25"
+                                : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200"
                             }`}
+                            title={
+                              fest.isActive !== false
+                                ? "Click to deactivate (hide from calendar)"
+                                : "Click to activate (show on calendar)"
+                            }
                           >
-                            {fest.isActive !== false ? "Active" : "Inactive"}
-                          </span>
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                fest.isActive !== false ? "bg-emerald-400" : "bg-slate-500"
+                              }`}
+                            />
+                            <span>{fest.isActive !== false ? "Active" : "Inactive"}</span>
+                          </button>
                         </div>
 
                         <div className="pt-1 flex items-center gap-1.5">

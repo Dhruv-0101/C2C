@@ -45,3 +45,31 @@ export async function authenticate(req, res, next) {
     next(error);
   }
 }
+
+/**
+ * Middleware to optionally extract and verify user token if present.
+ * Allows public requests while enabling role checks for authenticated admins.
+ */
+export async function optionalAuthenticate(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = verifyAccessToken(token);
+      if (!decoded.isPending2FA) {
+        req.user = {
+          id: decoded.userId,
+          email: decoded.email,
+          role: decoded.role,
+          isAdmin: Boolean(decoded.isAdmin),
+          isSuperAdmin: Boolean(decoded.isSuperAdmin),
+          isSubAdmin: Boolean(decoded.isSubAdmin),
+          allowedTabs: decoded.allowedTabs || [],
+        };
+      }
+    }
+  } catch {
+    // Continue unauthenticated
+  }
+  next();
+}

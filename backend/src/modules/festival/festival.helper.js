@@ -7,6 +7,24 @@
  * 2. Nested relationships (creator, templates, counts) are strictly projected with zero internal leakage.
  */
 
+/**
+ * Safely parses any boolean-like value (boolean, 'true', 'false', '1', '0', 1, 0)
+ * @param {any} val - Input value to inspect
+ * @param {boolean} [defaultValue=false] - Default boolean fallback
+ * @returns {boolean}
+ */
+export function parseBoolean(val, defaultValue = false) {
+  if (val === undefined || val === null || val === '') return defaultValue;
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'number') return val === 1;
+  if (typeof val === 'string') {
+    const trimmed = val.trim().toLowerCase();
+    if (trimmed === 'true' || trimmed === '1') return true;
+    if (trimmed === 'false' || trimmed === '0') return false;
+  }
+  return defaultValue;
+}
+
 export function sanitizeFestival(festival) {
   if (!festival) return null;
 

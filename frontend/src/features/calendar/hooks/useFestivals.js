@@ -4,15 +4,20 @@ import { QUERY_KEYS } from '@/shared/constants';
 
 /**
  * Custom TanStack Query Hook for Festival Calendar Data & Operations
- * @param {{ year?: number|string, includeInactive?: boolean }} [options={ includeInactive: true }]
+ * @param {{ year?: number|string, includeInactive?: boolean, limit?: number, page?: number, search?: string }} [options]
  */
-export const useFestivals = (options = { includeInactive: true, limit: 100 }) => {
+export const useFestivals = (options = {}) => {
+  const queryOptions = {
+    includeInactive: false,
+    limit: 100,
+    ...options,
+  };
   const queryClient = useQueryClient();
 
   const festivalsQuery = useQuery({
-    queryKey: [...QUERY_KEYS.FESTIVALS.ALL, options],
+    queryKey: [...QUERY_KEYS.FESTIVALS.ALL, queryOptions],
     queryFn: async () => {
-      const response = await festivalApi.getFestivals(options);
+      const response = await festivalApi.getFestivals(queryOptions);
       const list =
         response?.data?.festivals ||
         response?.festivals ||

@@ -7,6 +7,7 @@ import {
   FESTIVAL_TARGET_REGION_MAX_LENGTH,
   DEFAULT_TARGET_REGION,
 } from './festival.constants.js';
+import { parseBoolean } from './festival.helper.js';
 
 export const getFestivalsQuerySchema = z.object({
   query: paginationQuerySchema.extend({
@@ -15,9 +16,9 @@ export const getFestivalsQuerySchema = z.object({
       .regex(/^\d{4}$/, 'Year must be a 4-digit number (e.g. 2026)')
       .optional(),
     includeInactive: z
-      .enum(['true', 'false', '1', '0'])
+      .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
       .optional()
-      .transform((val) => val === 'true' || val === '1'),
+      .transform((val) => (val !== undefined ? parseBoolean(val, false) : false)),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
   }),
@@ -57,7 +58,7 @@ export const createFestivalSchema = z.object({
     isActive: z
       .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
       .optional()
-      .transform((val) => (val !== undefined ? val === true || val === 'true' || val === '1' : true)),
+      .transform((val) => (val !== undefined ? parseBoolean(val, true) : true)),
   }),
 });
 
@@ -93,11 +94,11 @@ export const updateFestivalSchema = z.object({
       clearBanner: z
         .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
         .optional()
-        .transform((val) => (val !== undefined ? val === true || val === 'true' || val === '1' : undefined)),
+        .transform((val) => (val !== undefined ? parseBoolean(val, false) : undefined)),
       isActive: z
         .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
         .optional()
-        .transform((val) => (val !== undefined ? val === true || val === 'true' || val === '1' : undefined)),
+        .transform((val) => (val !== undefined ? parseBoolean(val, true) : undefined)),
     })
     .refine(
       (data) =>

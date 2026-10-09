@@ -28,7 +28,7 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
     isCreating: isSubmittingFest,
     createError,
     deleteFestival,
-  } = useFestivals({ limit: 500, includeInactive: true });
+  } = useFestivals({ limit: 500, includeInactive: false });
 
   // TanStack Query for User Scheduled & Published Posts
   const {
@@ -158,9 +158,10 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
   };
 
   // Festivals Map by Date (YYYY-MM-DD)
+  // CRITICAL: Strictly exclude inactive festivals from the calendar grid for all roles (users and admins)
   const festivalMap = {};
   safeFestivals.forEach((fest) => {
-    if (!fest || !fest.date) return;
+    if (!fest || !fest.date || fest.isActive === false) return;
     const dateKey = getNormalizedDateKey(fest.date);
     if (!dateKey) return;
     if (!festivalMap[dateKey]) {

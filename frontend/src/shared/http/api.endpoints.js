@@ -174,6 +174,9 @@ export const API_ENDPOINTS = {
     ADMIN_UPDATE_STATUS: '/social/admin/update-status',
     ADMIN_CONNECT_TOKEN: '/social/admin/connect-user-token',
   },
+  SYSTEM: {
+    STATUS: '/system/status',
+  },
 };
 
 export const HTTP_STATUS = {

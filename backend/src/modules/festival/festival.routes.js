@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate } from '../../common/middleware/auth.middleware.js';
+import { authenticate, optionalAuthenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import { uploadSingleImage } from '../../common/middleware/upload.middleware.js';
@@ -16,10 +16,10 @@ import * as festivalController from './festival.controller.js';
 const router = Router();
 
 // Public / Authenticated route to get all festivals with optional year / active filters
-router.get('/', validate(getFestivalsQuerySchema), festivalController.getFestivals);
+router.get('/', optionalAuthenticate, validate(getFestivalsQuerySchema), festivalController.getFestivals);
 
 // Public / Authenticated route to get a single festival by ID
-router.get('/:id', validate(getFestivalByIdSchema), festivalController.getFestivalById);
+router.get('/:id', optionalAuthenticate, validate(getFestivalByIdSchema), festivalController.getFestivalById);
 
 // Authenticated SuperAdmin / SubAdmin Routes with tab authorization
 router.post(

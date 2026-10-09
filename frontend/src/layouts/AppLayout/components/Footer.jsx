@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const Footer = () => {
   return (
@@ -6,9 +7,9 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
         <p>© {new Date().getFullYear()} BrandFlow Platform. Enterprise Social Media Management.</p>
         <div className="flex items-center gap-4 text-slate-400">
-          <a href="#privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</a>
-          <a href="#terms" className="hover:text-amber-400 transition-colors">Terms of Service</a>
-          <a href="#support" className="hover:text-amber-400 transition-colors">System Status</a>
+          <Link to="/privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link>
+          <Link to="/terms" className="hover:text-amber-400 transition-colors">Terms of Service</Link>
+          <Link to="/status" className="hover:text-amber-400 transition-colors">System Status</Link>
         </div>
       </div>
     </footer>

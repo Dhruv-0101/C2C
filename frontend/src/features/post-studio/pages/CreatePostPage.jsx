@@ -163,7 +163,7 @@ export const CreatePostPage = () => {
     page: festPage,
     limit: 8,
     search: debouncedFestSearch || undefined,
-    includeInactive: true,
+    includeInactive: false,
   });
 
   // Fetch Active User BrandKit Details

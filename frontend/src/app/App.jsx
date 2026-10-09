@@ -6,6 +6,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { store } from '../store/store';
 import { AppRoutes } from '../routes/AppRoutes';
 import { queryClient } from './queryClient';
+import { ScrollToTop } from '../components/navigation/ScrollToTop';
 
 const googleClientId =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
@@ -17,6 +18,7 @@ export const App = () => {
       <QueryClientProvider client={queryClient}>
         <GoogleOAuthProvider clientId={googleClientId}>
           <BrowserRouter>
+            <ScrollToTop />
             <AppRoutes />
           </BrowserRouter>
         </GoogleOAuthProvider>
