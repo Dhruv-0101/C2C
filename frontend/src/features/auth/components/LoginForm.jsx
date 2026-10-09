@@ -119,7 +119,7 @@ export const LoginForm = ({
         </div>
 
         {/* Google OAuth Button */}
-        <div className="flex justify-center w-full pt-1">
+        <div className="flex justify-center w-full pt-1" style={{ colorScheme: "light" }}>
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={() => console.error("Google Sign-In Failed")}
