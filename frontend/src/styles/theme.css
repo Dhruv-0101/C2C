@@ -2,6 +2,7 @@
 
 @layer base {
   :root {
+    color-scheme: dark;
     --color-primary: 239 84% 67%;
     --color-accent: 217 91% 60%;
 
@@ -14,8 +15,13 @@
     --text-muted: #94A3B8;
   }
 
+  html.dark {
+    color-scheme: dark;
+  }
+
   /* Rich Cool Slate Light Theme (Not washed-out white!) */
   html.light {
+    color-scheme: light;
     --bg-primary: #E2E8F0;     /* Rich Slate 200 */
     --bg-secondary: #FFFFFF;   /* Elevated Pure White Cards */
     --bg-card: #FFFFFF;
@@ -364,13 +370,99 @@ html.light .glass-panel {
   border: 1px solid #CBD5E1;
 }
 
-/* Browser Autofill Support */
+/* ==============================================================================
+ * 🔐 BROWSER AUTOFILL SUPPORT (DARK & LIGHT THEMES)
+ * ==============================================================================
+ * WebKit / Blink (Chrome, Safari, Edge) forcefully applies user-agent styling
+ * on autofill (light-blue/white background and black text).
+ * In dark mode, this causes the autofilled credentials to be invisible or clash.
+ * We override this using an inner box-shadow with the background color #0F172A,
+ * explicit text fill color #F8FAFC, and caret-color.
+ * ============================================================================== */
+
+/* Dark Mode / Default Autofill */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-text-fill-color: inherit !important;
-  transition: background-color 5000s ease-in-out 0s !important;
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+  -webkit-text-fill-color: #F8FAFC !important;
+  color: #F8FAFC !important;
+  caret-color: #F8FAFC !important;
+  -webkit-box-shadow: 0 0 0 1000px #0F172A inset !important;
+  box-shadow: 0 0 0 1000px #0F172A inset !important;
+  border-color: #334155 !important;
+  transition: background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s !important;
+}
+
+/* Standard :autofill pseudo-class for modern browsers (Firefox, Chromium standard) */
+input:autofill,
+textarea:autofill,
+select:autofill {
+  -webkit-text-fill-color: #F8FAFC !important;
+  color: #F8FAFC !important;
+  caret-color: #F8FAFC !important;
+  -webkit-box-shadow: 0 0 0 1000px #0F172A inset !important;
+  box-shadow: 0 0 0 1000px #0F172A inset !important;
+}
+
+/* Focused Autofilled Field in Dark Mode */
+input:-webkit-autofill:focus,
+input:autofill:focus,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill:focus {
+  border-color: #F59E0B !important;
+  -webkit-box-shadow: 0 0 0 1000px #0F172A inset, 0 0 0 1px rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 0 0 0 1000px #0F172A inset, 0 0 0 1px rgba(245, 158, 11, 0.4) !important;
+}
+
+/* Light Mode Autofill */
+html.light input:-webkit-autofill,
+html.light input:-webkit-autofill:hover,
+html.light input:-webkit-autofill:focus,
+html.light input:-webkit-autofill:active,
+html.light textarea:-webkit-autofill,
+html.light textarea:-webkit-autofill:hover,
+html.light textarea:-webkit-autofill:focus,
+html.light textarea:-webkit-autofill:active,
+html.light select:-webkit-autofill,
+html.light select:-webkit-autofill:hover,
+html.light select:-webkit-autofill:focus,
+html.light select:-webkit-autofill:active {
+  -webkit-text-fill-color: #0F172A !important;
+  color: #0F172A !important;
+  caret-color: #0F172A !important;
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  border-color: #CBD5E1 !important;
+  transition: background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s !important;
+}
+
+html.light input:autofill,
+html.light textarea:autofill,
+html.light select:autofill {
+  -webkit-text-fill-color: #0F172A !important;
+  color: #0F172A !important;
+  caret-color: #0F172A !important;
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+}
+
+/* Focused Autofilled Field in Light Mode */
+html.light input:-webkit-autofill:focus,
+html.light input:autofill:focus,
+html.light textarea:-webkit-autofill:focus,
+html.light select:-webkit-autofill:focus {
+  border-color: #1877F2 !important;
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset, 0 0 0 1px rgba(24, 119, 242, 0.4) !important;
+  box-shadow: 0 0 0 1000px #FFFFFF inset, 0 0 0 1px rgba(24, 119, 242, 0.4) !important;
 }
 
 /* Custom Horizontal & Vertical Scrollbar Styling */

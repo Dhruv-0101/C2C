@@ -38,7 +38,7 @@ export const Input = forwardRef(
         )}
         <div className="relative rounded-xl overflow-hidden">
           {Icon && (
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-400/80">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-400/80 z-10">
               <Icon className="w-4 h-4" />
             </div>
           )}
@@ -49,7 +49,7 @@ export const Input = forwardRef(
             type={inputType}
             placeholder={placeholder}
             className={clsx(
-              'w-full bg-[#0F172A] glass-input text-white font-medium placeholder-slate-400 text-sm rounded-xl py-3 px-4 outline-none transition-all duration-200',
+              'w-full bg-[#0F172A] border text-white font-medium placeholder-slate-400 text-sm rounded-xl py-3 px-4 outline-none transition-all duration-200',
               Icon ? 'pl-10' : 'pl-4',
               isPassword ? 'pr-11' : 'pr-4',
               error
@@ -63,7 +63,7 @@ export const Input = forwardRef(
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors focus:outline-none"
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors focus:outline-none z-10"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >

@@ -80,6 +80,7 @@ export const ForgotPasswordForm = ({
                   placeholder="name@company.com"
                   icon={Mail}
                   error={errors.email?.message}
+                  autoComplete="email"
                   {...register("email")}
                 />
 

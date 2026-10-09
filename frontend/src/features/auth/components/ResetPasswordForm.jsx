@@ -81,6 +81,7 @@ export const ResetPasswordForm = ({
                   placeholder="At least 6 characters"
                   icon={Lock}
                   error={errors.newPassword?.message}
+                  autoComplete="new-password"
                   {...register("newPassword")}
                 />
 
@@ -91,6 +92,7 @@ export const ResetPasswordForm = ({
                   placeholder="Re-enter new password"
                   icon={Lock}
                   error={errors.confirmPassword?.message}
+                  autoComplete="new-password"
                   {...register("confirmPassword")}
                 />
 

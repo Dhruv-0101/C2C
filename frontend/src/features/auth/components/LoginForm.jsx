@@ -62,6 +62,7 @@ export const LoginForm = ({
             icon={Mail}
             disabled={isAuthenticating || !!successMessage}
             error={errors.email?.message}
+            autoComplete="email"
             {...register("email")}
           />
 
@@ -73,6 +74,7 @@ export const LoginForm = ({
             icon={Lock}
             disabled={isAuthenticating || !!successMessage}
             error={errors.password?.message}
+            autoComplete="current-password"
             {...register("password")}
           />
 

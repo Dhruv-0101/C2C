@@ -61,6 +61,7 @@ export const RegisterForm = ({
             icon={User}
             disabled={isCreating || !!successMessage}
             error={errors.fullName?.message}
+            autoComplete="name"
             {...register("fullName")}
           />
 
@@ -72,6 +73,7 @@ export const RegisterForm = ({
             icon={Mail}
             disabled={isCreating || !!successMessage}
             error={errors.email?.message}
+            autoComplete="email"
             {...register("email")}
           />
 
@@ -83,6 +85,7 @@ export const RegisterForm = ({
             icon={Lock}
             disabled={isCreating || !!successMessage}
             error={errors.password?.message}
+            autoComplete="new-password"
             {...register("password")}
           />
 
@@ -94,6 +97,7 @@ export const RegisterForm = ({
             icon={Lock}
             disabled={isCreating || !!successMessage}
             error={errors.confirmPassword?.message}
+            autoComplete="new-password"
             {...register("confirmPassword")}
           />
 
