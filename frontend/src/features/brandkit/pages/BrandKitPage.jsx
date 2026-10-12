@@ -214,7 +214,12 @@ export const BrandKitPage = () => {
       // Check if user has pending scheduled posts in queue to prompt auto-update
       try {
         const schedRes = await postApi.getScheduledPosts({ limit: 50 });
-        const pendingList = schedRes?.data?.scheduledPosts || schedRes?.scheduledPosts || [];
+        const schedData = schedRes?.data?.data || schedRes?.data || schedRes;
+        const pendingList = Array.isArray(schedData?.scheduledPosts)
+          ? schedData.scheduledPosts
+          : Array.isArray(schedData)
+          ? schedData
+          : [];
         if (pendingList.length > 0) {
           setSavedBrandKitSnapshot(updatedBrandKitData);
           setScheduledPostsForSync(pendingList);

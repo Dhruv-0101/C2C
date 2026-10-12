@@ -108,11 +108,24 @@ export const processPostJob = async (jobData) => {
     // 2. Resolve fresh post graphic and content from DB to ensure any updated BrandKit / re-rendered graphic is used
     let finalGraphicUrl = graphicUrl;
     let finalPostContent = postContent;
+    let targetPostId = postId;
 
-    if (postId) {
+    if (!targetPostId && scheduledPostId) {
+      try {
+        const sched = await prisma.scheduledPost.findUnique({
+          where: { id: scheduledPostId },
+          select: { postId: true },
+        });
+        targetPostId = sched?.postId;
+      } catch (schedErr) {
+        logger.debug(`[PostWorker] Note fetching scheduled post reference: ${schedErr.message}`);
+      }
+    }
+
+    if (targetPostId) {
       try {
         const freshPost = await prisma.post.findUnique({
-          where: { id: postId },
+          where: { id: targetPostId },
           select: {
             finalGraphicUrl: true,
             customImageUrl: true,

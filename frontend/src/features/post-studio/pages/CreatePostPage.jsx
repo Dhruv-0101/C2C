@@ -307,11 +307,22 @@ export const CreatePostPage = () => {
   const publisherPayload = {
     templateId: currentTemplate?.id || reusePost?.templateId || null,
     festivalId: currentTemplate?.festivalId || reusePost?.festivalId || null,
+    frameId: selectedFrame?.id || reusePost?.frameId || reusePost?.post?.frameId || null,
     base64Graphic: dataUrl,
-    finalGraphicUrl: customBaseImage || reusePost?.graphicUrl || reusePost?.finalGraphicUrl || null,
-    occasionName: reusePost?.occasionName || reusePost?.post?.occasionName || currentTemplate?.title || "Branded Graphic Post",
+    finalGraphicUrl: reusePost?.finalGraphicUrl || null,
+    occasionName: reusePost?.occasionName || reusePost?.post?.occasionName || currentTemplate?.title || selectedFrame?.title || "Branded Graphic Post",
     caption: reusePost?.captions?.[0]?.captionText || reusePost?.caption || "",
-    userConfigJson: customDetails,
+    userConfigJson: {
+      ...customDetails,
+      frameId: selectedFrame?.id || reusePost?.frameId || reusePost?.post?.frameId || null,
+      selectedFrame: selectedFrame ? {
+        id: selectedFrame.id,
+        title: selectedFrame.title,
+        overlayPngUrl: selectedFrame.overlayPngUrl,
+        previewUrl: selectedFrame.previewUrl,
+        configJson: selectedFrame.configJson,
+      } : (reusePost?.frame || reusePost?.post?.frame || null),
+    },
   };
 
   const [saveError, setSaveError] = useState("");

@@ -53,13 +53,6 @@ export const BrandKitSyncModal = ({
       setStatusMap({ ...newStatusMap });
 
       try {
-        const baseImageUrl =
-          item.post?.template?.baseImageUrl ||
-          item.post?.customImageUrl ||
-          item.post?.finalGraphicUrl;
-
-        const selectedFrame = item.post?.frame || null;
-
         let customDetails = item.post?.userConfigJson || {};
         if (typeof customDetails === "string") {
           try {
@@ -69,21 +62,42 @@ export const BrandKitSyncModal = ({
           }
         }
 
-        if (baseImageUrl) {
-          // Re-render graphic with new BrandKit snapshot via high-res canvas
-          const dataUrl = await renderCompositeGraphicToDataUrl({
-            baseImageUrl,
-            selectedFrame,
-            brandKit: newBrandKit,
-            customDetails,
-          });
+        // Frame can come from post relation, scheduledPost relation, or userConfigJson snapshot
+        const selectedFrame =
+          item.post?.frame ||
+          item.frame ||
+          customDetails?.selectedFrame ||
+          null;
 
-          if (dataUrl) {
-            await postApi.updatePostGraphic(targetPostId, {
-              base64Graphic: dataUrl,
-              userConfigJson: customDetails,
-            });
-          }
+        const baseImageUrl =
+          item.post?.template?.baseImageUrl ||
+          item.post?.customImageUrl ||
+          customDetails?.baseImageUrl ||
+          null;
+
+        // CRITICAL PROTECTION: If post has no frame or clean base template, do NOT overwrite with blank/frameless graphic!
+        if (!selectedFrame || !baseImageUrl) {
+          newStatusMap[targetPostId] = "done";
+          continue;
+        }
+
+        // Re-render graphic with new BrandKit snapshot via high-res canvas
+        const dataUrl = await renderCompositeGraphicToDataUrl({
+          baseImageUrl,
+          selectedFrame,
+          brandKit: newBrandKit,
+          customDetails,
+        });
+
+        if (dataUrl) {
+          await postApi.updatePostGraphic(targetPostId, {
+            base64Graphic: dataUrl,
+            userConfigJson: {
+              ...customDetails,
+              selectedFrame,
+              brandKitSnapshot: newBrandKit,
+            },
+          });
         }
 
         newStatusMap[targetPostId] = "done";

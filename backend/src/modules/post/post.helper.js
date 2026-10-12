@@ -56,6 +56,7 @@ export function sanitizePost(post) {
             title: post.frame.title,
             previewUrl: post.frame.previewUrl || null,
             overlayPngUrl: post.frame.overlayPngUrl || null,
+            configJson: post.frame.configJson || null,
           },
         }
       : {}),

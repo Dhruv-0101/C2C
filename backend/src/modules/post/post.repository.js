@@ -31,6 +31,7 @@ export const POST_FRAME_SELECT = Object.freeze({
   title: true,
   previewUrl: true,
   overlayPngUrl: true,
+  configJson: true,
 });
 
 export const POST_TEMPLATE_SELECT = Object.freeze({
