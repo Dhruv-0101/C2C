@@ -4,12 +4,7 @@ import {
   FileCode2,
   X,
   Search,
-  Image as ImageIcon,
-  Calendar,
-  Sparkles,
   Eye,
-  Layers,
-  CheckCircle2,
 } from "lucide-react";
 import { useTemplates } from "@/features/admin/templates/hooks/useTemplates";
 import { useDebounce } from "@/shared/hooks/useDebounce";
@@ -176,82 +171,51 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {templates.map((tpl) => {
-                  const formattedDate = tpl.createdAt
-                    ? new Date(tpl.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "—";
-
-                  return (
-                    <div
-                      key={tpl.id}
-                      onClick={() => setLightboxItem(tpl)}
-                      className="group relative border border-[#2C384E] rounded-2xl overflow-hidden hover:border-teal-500/60 hover:shadow-xl transition-all cursor-pointer bg-[#0B0F17] flex flex-col justify-between"
-                    >
-                      {/* Image Preview Container */}
-                      <div className="aspect-square relative overflow-hidden bg-slate-950 flex items-center justify-center">
-                        <img
-                          src={tpl.baseImageUrl}
-                          alt={tpl.title}
-                          className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
-                        />
-                        <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 gap-2 text-center">
-                          <span className="px-3 py-1.5 rounded-lg bg-teal-500 text-slate-950 text-xs font-bold shadow-md transform translate-y-1 group-hover:translate-y-0 transition flex items-center gap-1.5">
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Preview Graphic</span>
-                          </span>
-                          <span className="text-[10px] text-slate-300 font-mono">
-                            Click to inspect
-                          </span>
-                        </div>
-
-                        {/* Top Badges */}
-                        <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none">
-                          {tpl.festival?.name ? (
-                            <span className="px-2 py-0.5 rounded-md bg-amber-500/90 text-slate-950 text-[10px] font-bold shadow">
-                              🪔 {tpl.festival.name}
-                            </span>
-                          ) : (
-                            <span />
-                          )}
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase shadow ${
-                              tpl.isActive !== false
-                                ? "bg-emerald-500/90 text-slate-950"
-                                : "bg-rose-500/90 text-white"
-                            }`}
-                          >
-                            {tpl.isActive !== false ? "Active" : "Disabled"}
-                          </span>
-                        </div>
+                {templates.map((tpl) => (
+                  <div
+                    key={tpl.id}
+                    onClick={() => setLightboxItem(tpl)}
+                    className="group relative border border-[#2C384E] rounded-2xl overflow-hidden hover:border-teal-500/60 hover:shadow-xl transition-all cursor-pointer bg-[#0B0F17] flex flex-col justify-between"
+                  >
+                    {/* Image Preview Container */}
+                    <div className="aspect-square relative overflow-hidden bg-slate-950 flex items-center justify-center">
+                      <img
+                        src={tpl.baseImageUrl}
+                        alt={tpl.title}
+                        className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 gap-2 text-center">
+                        <span className="px-3 py-1.5 rounded-lg bg-teal-500 text-slate-950 text-xs font-bold shadow-md transform translate-y-1 group-hover:translate-y-0 transition flex items-center gap-1.5">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Preview Graphic</span>
+                        </span>
+                        <span className="text-[10px] text-slate-300 font-mono">
+                          Click to inspect
+                        </span>
                       </div>
 
-                      {/* Card Metadata Footer */}
-                      <div className="p-3 border-t border-[#2C384E] bg-[#131B2A] space-y-1.5">
-                        <p
-                          className="text-xs font-bold text-white truncate group-hover:text-teal-400 transition-colors"
-                          title={tpl.title}
-                        >
-                          {tpl.title}
-                        </p>
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-slate-500" />
-                            <span>{formattedDate}</span>
+                      {/* Subtle, Lightweight Festival Occasion Tag (Top Left) */}
+                      {tpl.festival?.name && (
+                        <div className="absolute top-2 left-2 max-w-[85%] pointer-events-none">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950/75 backdrop-blur-md border border-slate-700/60 text-slate-300 text-[10px] font-medium shadow-sm truncate">
+                            <span className="text-amber-400 text-[11px] shrink-0">🪔</span>
+                            <span className="truncate">{tpl.festival.name}</span>
                           </span>
-                          {tpl._count?.posts !== undefined && (
-                            <span className="text-teal-400/90 font-semibold">
-                              {tpl._count.posts} {tpl._count.posts === 1 ? "post" : "posts"}
-                            </span>
-                          )}
                         </div>
-                      </div>
+                      )}
                     </div>
-                  );
-                })}
+
+                    {/* Clean Card Title Footer */}
+                    <div className="p-3 border-t border-[#2C384E] bg-[#131B2A]">
+                      <p
+                        className="text-xs font-semibold text-white truncate group-hover:text-teal-400 transition-colors"
+                        title={tpl.title}
+                      >
+                        {tpl.title}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
