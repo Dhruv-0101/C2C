@@ -786,7 +786,7 @@ export const FestivalCalendarView = ({
                           </div>
 
                           {/* Search bar when filtered to single festival or active festival */}
-                          {isCurrentFestActive && festCount > 4 && (
+                          {isCurrentFestActive && festCount > 0 && (
                             <div className="relative">
                               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                               <input
@@ -867,18 +867,31 @@ export const FestivalCalendarView = ({
                               </div>
 
                               {/* Central Pagination Controls */}
-                              {festCount > festivalTemplateLimit && (
+                              {festTemplates.length > 0 && (
                                 <Pagination
-                                  meta={currentMeta}
+                                  meta={
+                                    currentMeta || {
+                                      page: festivalTemplatePage,
+                                      limit: festivalTemplateLimit,
+                                      totalItems: festCount,
+                                      totalPages: Math.max(1, Math.ceil(festCount / festivalTemplateLimit)),
+                                      hasNextPage:
+                                        festivalTemplatePage <
+                                        Math.ceil(festCount / festivalTemplateLimit),
+                                      hasPrevPage: festivalTemplatePage > 1,
+                                    }
+                                  }
                                   currentPage={festivalTemplatePage}
                                   totalPages={
                                     currentMeta?.totalPages ||
-                                    Math.ceil(festCount / festivalTemplateLimit)
+                                    Math.max(1, Math.ceil(festCount / festivalTemplateLimit))
                                   }
-                                  onPageChange={(newPage) => setFestivalTemplatePage(newPage)}
+                                  onPageChange={(newPage) =>
+                                    setFestivalTemplatePage && setFestivalTemplatePage(newPage)
+                                  }
                                   onLimitChange={(newLimit) => {
-                                    setFestivalTemplateLimit(newLimit);
-                                    setFestivalTemplatePage(1);
+                                    if (setFestivalTemplateLimit) setFestivalTemplateLimit(newLimit);
+                                    if (setFestivalTemplatePage) setFestivalTemplatePage(1);
                                   }}
                                   pageSizeOptions={[8, 12, 16, 24]}
                                 />
