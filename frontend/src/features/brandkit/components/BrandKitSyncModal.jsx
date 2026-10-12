@@ -49,8 +49,15 @@ export const BrandKitSyncModal = ({
       const item = scheduledPosts[i];
       const targetPostId = item.post?.id || item.postId;
       setProgressIndex(i + 1);
-      newStatusMap[targetPostId] = "updating";
-      setStatusMap({ ...newStatusMap });
+
+      const setItemStatus = (st) => {
+        if (item.id) newStatusMap[item.id] = st;
+        if (targetPostId) newStatusMap[targetPostId] = st;
+        if (item.postId) newStatusMap[item.postId] = st;
+        setStatusMap({ ...newStatusMap });
+      };
+
+      setItemStatus("updating");
 
       try {
         let customDetails = item.post?.userConfigJson || {};
@@ -77,7 +84,7 @@ export const BrandKitSyncModal = ({
 
         // CRITICAL PROTECTION: If post has no frame or clean base template, do NOT overwrite with blank/frameless graphic!
         if (!selectedFrame || !baseImageUrl) {
-          newStatusMap[targetPostId] = "done";
+          setItemStatus("done");
           continue;
         }
 
@@ -100,16 +107,26 @@ export const BrandKitSyncModal = ({
           });
         }
 
-        newStatusMap[targetPostId] = "done";
+        setItemStatus("done");
       } catch (err) {
         console.error(`Failed to update post ${targetPostId}:`, err);
-        newStatusMap[targetPostId] = "error";
+        setItemStatus("error");
         errorCount++;
       }
-
-      setStatusMap({ ...newStatusMap });
     }
 
+    // Ensure all items are marked resolved once the process completes
+    scheduledPosts.forEach((postItem) => {
+      const pId = postItem.post?.id || postItem.postId;
+      if (newStatusMap[postItem.id] === "updating" || !newStatusMap[postItem.id]) {
+        newStatusMap[postItem.id] = "done";
+      }
+      if (pId && (newStatusMap[pId] === "updating" || !newStatusMap[pId])) {
+        newStatusMap[pId] = "done";
+      }
+    });
+
+    setStatusMap({ ...newStatusMap });
     setIsUpdating(false);
     setIsFinished(true);
 
@@ -199,7 +216,7 @@ export const BrandKitSyncModal = ({
               item.post?.template?.title ||
               item.post?.festival?.name ||
               "Scheduled Post";
-            const status = statusMap[postId];
+            const status = statusMap[item.id] || statusMap[postId];
 
             return (
               <div
@@ -238,12 +255,12 @@ export const BrandKitSyncModal = ({
 
                 {/* Status indicator on right */}
                 <div className="shrink-0">
-                  {status === "updating" ? (
+                  {status === "updating" && !isFinished ? (
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold animate-pulse">
                       <Loader2 className="w-3 h-3 animate-spin" />
                       Updating...
                     </span>
-                  ) : status === "done" ? (
+                  ) : status === "done" || (isFinished && status !== "error") ? (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                       Updated

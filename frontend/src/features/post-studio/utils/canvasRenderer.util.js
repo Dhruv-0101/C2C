@@ -45,13 +45,36 @@ export const drawImageAspectContain = (ctx, img, dx, dy, dWidth, dHeight) => {
   ctx.drawImage(img, 0, 0, imgW, imgH, renderX, renderY, renderW, renderH);
 };
 
-export const loadImageAsync = (src) => {
+export const loadImageAsync = (src, timeoutMs = 6000) => {
   if (!src) return Promise.resolve(null);
   return new Promise((resolve) => {
+    let settled = false;
     const img = new Image();
     img.crossOrigin = 'Anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        resolve(null);
+      }
+    }, timeoutMs);
+
+    img.onload = () => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        resolve(img);
+      }
+    };
+
+    img.onerror = () => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        resolve(null);
+      }
+    };
+
     img.src = src;
   });
 };
