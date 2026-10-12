@@ -10,6 +10,7 @@ import {
   Filter,
 } from "lucide-react";
 import { useTemplates } from "@/features/admin/templates/hooks/useTemplates";
+import { useFestivals } from "@/features/calendar/hooks/useFestivals";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import Pagination from "@/components/ui/Pagination";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
@@ -25,9 +26,24 @@ import { TemplatePostsModal } from "@/features/admin/templates/components/Templa
  * @param {Array} props.festivals - List of available festival entities
  * @param {boolean} props.isLoadingFestivals - Whether parent festivals are loading
  */
-export const TemplatesByFestivalView = ({ festivals = [], isLoadingFestivals = false }) => {
-  const [selectedFestivalId, setSelectedFestivalId] = useState(festivals[0]?.id || "");
+export const TemplatesByFestivalView = ({ festivals: propFestivals = [], isLoadingFestivals = false }) => {
   const [festivalSearch, setFestivalSearch] = useState("");
+  const debouncedFestivalSearch = useDebounce(festivalSearch, 300);
+
+  // Self-sufficient query ensuring all system festivals (up to 100) are loaded with server search fallback
+  const {
+    festivals: fetchedFestivals = [],
+    isLoading: isLoadingFetched,
+  } = useFestivals({
+    limit: 100,
+    search: debouncedFestivalSearch || undefined,
+    includeInactive: true,
+  });
+
+  const festivals = propFestivals.length > 8 ? propFestivals : (fetchedFestivals.length > 0 ? fetchedFestivals : propFestivals);
+  const isLoading = isLoadingFestivals || (festivals.length === 0 && isLoadingFetched);
+
+  const [selectedFestivalId, setSelectedFestivalId] = useState("");
   const [templatePage, setTemplatePage] = useState(1);
   const [templateLimit, setTemplateLimit] = useState(8);
   const [templateSearch, setTemplateSearch] = useState("");
@@ -35,11 +51,10 @@ export const TemplatesByFestivalView = ({ festivals = [], isLoadingFestivals = f
   const [viewingTemplatePosts, setViewingTemplatePosts] = useState(null);
 
   const debouncedTemplateSearch = useDebounce(templateSearch, 300);
-  const debouncedFestivalSearch = useDebounce(festivalSearch, 300);
 
   // Auto-select first festival when festivals become available
   useEffect(() => {
-    if (!selectedFestivalId && festivals.length > 0) {
+    if ((!selectedFestivalId || !festivals.some((f) => f.id === selectedFestivalId)) && festivals.length > 0) {
       setSelectedFestivalId(festivals[0].id);
     }
   }, [festivals, selectedFestivalId]);
@@ -83,7 +98,7 @@ export const TemplatesByFestivalView = ({ festivals = [], isLoadingFestivals = f
     activeFestival?._count?.templates ??
     (Array.isArray(activeFestival?.templates) ? activeFestival.templates.length : templates.length);
 
-  if (isLoadingFestivals && festivals.length === 0) {
+  if (isLoading && festivals.length === 0) {
     return (
       <div className="p-12 text-center text-slate-400 text-sm">
         <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />

@@ -1682,165 +1682,95 @@ export const PostStudioEditorView = ({
         </div>
       </div>
 
-      {/* ZOOMED FRAME LIGHTBOX MODAL (Complete Frame Details) */}
+      {/* ZOOMED FRAME LIGHTBOX MODAL (Matching Admin ImageLightbox High-Res Layout & Amber Border) */}
       {zoomedFrame &&
         createPortal(
           <div
             onClick={() => setZoomedFrame(null)}
             onWheel={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
-            className="modal-backdrop-overlay fixed inset-0 w-full h-full z-[99999] flex flex-col items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 select-none overflow-hidden touch-none cursor-zoom-out"
+            className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[99999] flex flex-col justify-between p-3 sm:p-5 animate-in fade-in duration-200 select-none overflow-hidden touch-none cursor-zoom-out"
           >
-            <div className="flex flex-col items-center justify-center w-full max-w-[560px] gap-3 max-h-[92vh] overflow-hidden">
-              {/* Center High-Res Frame Image */}
+            {/* Top Header Controls Bar */}
+            <div className="w-full max-w-4xl mx-auto flex items-center justify-between shrink-0 z-10 pointer-events-auto">
               <div
-                onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-h-[50vh] sm:max-h-[54vh] aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 flex items-center justify-center cursor-default p-3"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold shadow-xl"
+                style={{
+                  backgroundColor: isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.95)",
+                  borderColor: isDark ? "#334155" : "#CBD5E1",
+                  color: isDark ? "#FFFFFF" : "#0F172A",
+                }}
+              >
+                <Maximize2 className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                <span>High-Res 1080x1080 Graphic Preview</span>
+              </div>
+
+              <button
+                onClick={() => setZoomedFrame(null)}
+                className="p-2.5 rounded-full border transition cursor-pointer shadow-xl"
+                style={{
+                  backgroundColor: isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.95)",
+                  borderColor: isDark ? "#334155" : "#CBD5E1",
+                  color: isDark ? "#CBD5E1" : "#475569",
+                }}
+                title="Close Lightbox (ESC)"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Center Image Container - 100% Edge-to-Edge with Gold Amber Border (Exact Match to Admin Lightbox) */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 min-h-0 w-full flex items-center justify-center py-2 sm:py-3 cursor-default"
+            >
+              <div
+                className="h-full max-h-full max-w-full aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/50 flex items-center justify-center"
                 style={{
                   backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
-                  borderColor: isDark ? "rgba(245, 158, 11, 0.4)" : "#E2E8F0",
                 }}
               >
                 <img
                   src={zoomedFrame.previewUrl || zoomedFrame.overlayPngUrl}
                   alt={zoomedFrame.title}
-                  className="max-w-full max-h-full object-contain rounded-xl"
+                  className="w-full h-full object-contain"
+                  style={{
+                    backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
+                  }}
                 />
               </div>
+            </div>
 
-              {/* Lightbox Complete Frame Details Card */}
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="relative w-full z-10 p-4 sm:p-5 rounded-2xl border shadow-2xl overflow-hidden shrink-0 space-y-3"
-                style={{
-                  backgroundColor: isDark ? "rgba(19, 27, 42, 0.95)" : "rgba(255, 255, 255, 0.95)",
-                  borderColor: isDark ? "#2C384E" : "#E2E8F0",
-                  color: isDark ? "#FFFFFF" : "#0F172A",
-                }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30 shrink-0 mt-0.5">
-                      <Layers className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3
-                        className="font-heading font-extrabold text-base sm:text-lg truncate"
-                        style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
-                      >
-                        {zoomedFrame.title}
-                      </h3>
-                      {zoomedFrame.description && (
-                        <p
-                          className="text-xs mt-1 line-clamp-2 leading-relaxed"
-                          style={{ color: isDark ? "#CBD5E1" : "#475569" }}
-                        >
-                          {zoomedFrame.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setZoomedFrame(null)}
-                    className="p-2 rounded-xl transition cursor-pointer border shrink-0"
+            {/* Lightbox Complete Frame Details & Actions Bar */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-4xl mx-auto z-10 backdrop-blur-xl p-3.5 sm:p-4 rounded-2xl border shadow-2xl space-y-2.5 shrink-0 cursor-default"
+              style={{
+                backgroundColor: isDark ? "rgba(19, 27, 42, 0.95)" : "rgba(255, 255, 255, 0.95)",
+                borderColor: isDark ? "#2C384E" : "#CBD5E1",
+              }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="truncate pr-2">
+                  <h3
+                    className="font-heading font-extrabold text-sm sm:text-base truncate"
                     style={{
-                      backgroundColor: isDark ? "#1E293B" : "#F1F5F9",
-                      borderColor: isDark ? "#334155" : "#E2E8F0",
-                      color: isDark ? "#CBD5E1" : "#475569",
+                      color: isDark ? "#FFFFFF" : "#0F172A",
                     }}
-                    title="Close Zoom Preview"
                   >
-                    <X className="w-4 h-4" />
-                  </button>
+                    {zoomedFrame.title}
+                  </h3>
+                  <p
+                    className="text-xs truncate mt-0.5"
+                    style={{
+                      color: isDark ? "#94A3B8" : "#64748B",
+                    }}
+                  >
+                    {zoomedFrame.description || "Customizable Brand Frame Overlay"}
+                  </p>
                 </div>
 
-                {/* Frame Specifications & Supported Slot Badges */}
-                {(() => {
-                  let rawCfg = zoomedFrame.configJson;
-                  if (typeof rawCfg === "string") {
-                    try {
-                      rawCfg = JSON.parse(rawCfg);
-                    } catch (e) {}
-                  }
-                  const elements = Array.isArray(rawCfg)
-                    ? rawCfg
-                    : rawCfg?.elements && Array.isArray(rawCfg.elements)
-                    ? rawCfg.elements
-                    : [];
-
-                  const hasLogo = elements.some(
-                    (el) => el.dynamicSlot === "LOGO_BOX" || el.fieldKey === "logoUrl"
-                  );
-                  const hasAvatar = elements.some(
-                    (el) => el.dynamicSlot === "AVATAR_CIRCLE" || el.fieldKey === "avatarUrl"
-                  );
-                  const hasPhone = elements.some(
-                    (el) => el.dynamicSlot === "PHONE" || el.dynamicSlot === "WHATSAPP"
-                  );
-                  const hasAddress = elements.some((el) => el.dynamicSlot === "ADDRESS");
-                  const hasSocial = elements.some((el) =>
-                    ["INSTAGRAM", "FACEBOOK", "LINKEDIN"].includes(el.dynamicSlot)
-                  );
-                  const hasUpi = elements.some(
-                    (el) => el.dynamicSlot === "UPI_QR" || el.dynamicSlot === "UPI_VPA"
-                  );
-
-                  const badgeStyle = {
-                    backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
-                    borderColor: isDark ? "#2C384E" : "#E2E8F0",
-                    color: isDark ? "#CBD5E1" : "#475569",
-                  };
-
-                  return (
-                    <div
-                      className="space-y-2 pt-2 border-t"
-                      style={{ borderColor: isDark ? "rgba(44, 56, 78, 0.7)" : "#E2E8F0" }}
-                    >
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 font-bold">
-                          ✓ 1080×1080 HD Square Overlay
-                        </span>
-                        {hasLogo && (
-                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
-                            🖼️ Brand Logo
-                          </span>
-                        )}
-                        {hasAvatar && (
-                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
-                            👤 Owner Portrait
-                          </span>
-                        )}
-                        {hasPhone && (
-                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
-                            📞 Phone & WhatsApp
-                          </span>
-                        )}
-                        {hasAddress && (
-                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
-                            📍 Store Address
-                          </span>
-                        )}
-                        {hasSocial && (
-                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
-                            📱 Social Handles
-                          </span>
-                        )}
-                        {hasUpi && (
-                          <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
-                            💳 UPI QR / Payment
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Bottom Select Action */}
-                <div
-                  className="flex items-center justify-end gap-2 pt-2 border-t"
-                  style={{ borderColor: isDark ? "rgba(44, 56, 78, 0.7)" : "#E2E8F0" }}
-                >
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
                     variant="outline"
                     size="sm"
@@ -1868,6 +1798,85 @@ export const PostStudioEditorView = ({
                   </Button>
                 </div>
               </div>
+
+              {/* Supported Slot Badges */}
+              {(() => {
+                let rawCfg = zoomedFrame.configJson;
+                if (typeof rawCfg === "string") {
+                  try {
+                    rawCfg = JSON.parse(rawCfg);
+                  } catch (e) {}
+                }
+                const elements = Array.isArray(rawCfg)
+                  ? rawCfg
+                  : rawCfg?.elements && Array.isArray(rawCfg.elements)
+                  ? rawCfg.elements
+                  : [];
+
+                const hasLogo = elements.some(
+                  (el) => el.dynamicSlot === "LOGO_BOX" || el.fieldKey === "logoUrl"
+                );
+                const hasAvatar = elements.some(
+                  (el) => el.dynamicSlot === "AVATAR_CIRCLE" || el.fieldKey === "avatarUrl"
+                );
+                const hasPhone = elements.some(
+                  (el) => el.dynamicSlot === "PHONE" || el.dynamicSlot === "WHATSAPP"
+                );
+                const hasAddress = elements.some((el) => el.dynamicSlot === "ADDRESS");
+                const hasSocial = elements.some((el) =>
+                  ["INSTAGRAM", "FACEBOOK", "LINKEDIN"].includes(el.dynamicSlot)
+                );
+                const hasUpi = elements.some(
+                  (el) => el.dynamicSlot === "UPI_QR" || el.dynamicSlot === "UPI_VPA"
+                );
+
+                const badgeStyle = {
+                  backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                  borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                  color: isDark ? "#CBD5E1" : "#475569",
+                };
+
+                return (
+                  <div
+                    className="flex flex-wrap items-center gap-1.5 text-[11px] pt-2 border-t"
+                    style={{ borderColor: isDark ? "rgba(44, 56, 78, 0.7)" : "#E2E8F0" }}
+                  >
+                    <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 font-bold">
+                      ✓ 1080×1080 HD Square Overlay
+                    </span>
+                    {hasLogo && (
+                      <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
+                        🖼️ Brand Logo
+                      </span>
+                    )}
+                    {hasAvatar && (
+                      <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
+                        👤 Owner Portrait
+                      </span>
+                    )}
+                    {hasPhone && (
+                      <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
+                        📞 Phone & WhatsApp
+                      </span>
+                    )}
+                    {hasAddress && (
+                      <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
+                        📍 Store Address
+                      </span>
+                    )}
+                    {hasSocial && (
+                      <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
+                        📱 Social Handles
+                      </span>
+                    )}
+                    {hasUpi && (
+                      <span className="px-2 py-0.5 rounded-lg border" style={badgeStyle}>
+                        💳 UPI QR / Payment
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>,
           document.body,
