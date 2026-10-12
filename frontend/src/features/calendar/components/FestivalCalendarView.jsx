@@ -20,6 +20,7 @@ import {
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
+import Pagination from "@/components/ui/Pagination";
 import { useTheme } from '@/shared/hooks';
 
 /**
@@ -671,16 +672,43 @@ export const FestivalCalendarView = ({
 
                     {/* Render Each Festival and Its Specific Templates */}
                     {festivalsToRender.map((fest) => {
-                      const festTemplates =
-                        selectedFestivalTab === fest.id && paginatedFestivalTemplates?.length > 0
-                          ? paginatedFestivalTemplates
-                          : Array.isArray(fest.templates)
-                            ? fest.templates
-                            : [];
+                      const isCurrentFestActive =
+                        selectedFestivalTab === fest.id ||
+                        safeSelectedFestivals.length === 1;
+
+                      let festTemplates = [];
+                      let currentMeta = null;
+
+                      if (
+                        isCurrentFestActive &&
+                        paginatedFestivalTemplates &&
+                        paginatedFestivalTemplates.length > 0
+                      ) {
+                        festTemplates = paginatedFestivalTemplates;
+                        currentMeta = festivalTemplatesMeta;
+                      } else if (Array.isArray(fest.templates)) {
+                        const allTemplates = fest.templates;
+                        const startIndex = (festivalTemplatePage - 1) * festivalTemplateLimit;
+                        festTemplates = allTemplates.slice(
+                          startIndex,
+                          startIndex + festivalTemplateLimit
+                        );
+                        currentMeta = {
+                          page: festivalTemplatePage,
+                          limit: festivalTemplateLimit,
+                          totalItems: allTemplates.length,
+                          totalPages: Math.ceil(allTemplates.length / festivalTemplateLimit),
+                          hasNextPage:
+                            festivalTemplatePage <
+                            Math.ceil(allTemplates.length / festivalTemplateLimit),
+                          hasPrevPage: festivalTemplatePage > 1,
+                        };
+                      }
 
                       const festCount = Math.max(
                         fest._count?.templates ?? 0,
-                        festTemplates.length
+                        fest.templates?.length || 0,
+                        currentMeta?.totalItems ?? 0
                       );
 
                       return (
@@ -735,7 +763,7 @@ export const FestivalCalendarView = ({
                                   </span>
                                 )}
                                 <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/40 text-[10px] font-mono font-bold">
-                                  {festCount} Template{festCount === 1 ? "" : "s"}
+                                  {festCount} Unique Template{festCount === 1 ? "" : "s"}
                                 </span>
                               </div>
                               <p
@@ -757,13 +785,13 @@ export const FestivalCalendarView = ({
                             )}
                           </div>
 
-                          {/* Search bar when filtered to single festival */}
-                          {selectedFestivalTab === fest.id && (
+                          {/* Search bar when filtered to single festival or active festival */}
+                          {isCurrentFestActive && festCount > 4 && (
                             <div className="relative">
                               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                               <input
                                 type="text"
-                                placeholder={`Filter templates for ${fest.name}...`}
+                                placeholder={`Filter & search among ${festCount} templates for ${fest.name}...`}
                                 value={festivalTemplateSearch}
                                 onChange={(e) => {
                                   setFestivalTemplateSearch(e.target.value);
@@ -779,52 +807,82 @@ export const FestivalCalendarView = ({
                             </div>
                           )}
 
-                          {/* Templates Grid */}
-                          {festTemplates.length > 0 ? (
+                          {/* Templates Grid with Loading Skeleton & Central Pagination */}
+                          {isLoadingFestivalTemplates && isCurrentFestActive ? (
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 pt-1">
-                              {festTemplates.map((template) => (
+                              {Array.from({ length: festivalTemplateLimit }).map((_, i) => (
                                 <div
-                                  key={template.id}
-                                  className="group relative border rounded-xl overflow-hidden hover:border-amber-500/60 hover:shadow-lg transition cursor-pointer flex flex-col justify-between"
-                                  style={{
-                                    backgroundColor: isDark ? "#131B2A" : "#FFFFFF",
-                                    borderColor: isDark ? "#2C384E" : "#E2E8F0",
-                                  }}
-                                  onClick={() => {
-                                    if (onSelectTemplate) {
-                                      onSelectTemplate(template);
-                                    }
-                                  }}
-                                >
-                                  <div className="aspect-square relative overflow-hidden bg-slate-950 flex items-center justify-center">
-                                    <img
-                                      src={template.baseImageUrl}
-                                      alt={template.title}
-                                      className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
-                                    />
-                                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
-                                      <span className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold shadow-md transform translate-y-1 group-hover:translate-y-0 transition">
-                                        Create Post
-                                      </span>
-                                    </div>
-                                  </div>
+                                  key={`skel-tpl-${i}`}
+                                  className="aspect-square rounded-xl animate-pulse"
+                                  style={{ backgroundColor: isDark ? "#1E293B" : "#E2E8F0" }}
+                                />
+                              ))}
+                            </div>
+                          ) : festTemplates.length > 0 ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 pt-1">
+                                {festTemplates.map((template) => (
                                   <div
-                                    className="p-2.5 border-t"
+                                    key={template.id}
+                                    className="group relative border rounded-xl overflow-hidden hover:border-amber-500/60 hover:shadow-lg transition cursor-pointer flex flex-col justify-between"
                                     style={{
                                       backgroundColor: isDark ? "#131B2A" : "#FFFFFF",
                                       borderColor: isDark ? "#2C384E" : "#E2E8F0",
                                     }}
+                                    onClick={() => {
+                                      if (onSelectTemplate) {
+                                        onSelectTemplate(template);
+                                      }
+                                    }}
                                   >
-                                    <p
-                                      className="text-xs font-bold truncate"
-                                      style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
-                                      title={template.title}
+                                    <div className="aspect-square relative overflow-hidden bg-slate-950 flex items-center justify-center">
+                                      <img
+                                        src={template.baseImageUrl}
+                                        alt={template.title}
+                                        className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
+                                      />
+                                      <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                                        <span className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold shadow-md transform translate-y-1 group-hover:translate-y-0 transition">
+                                          Create Post
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div
+                                      className="p-2.5 border-t"
+                                      style={{
+                                        backgroundColor: isDark ? "#131B2A" : "#FFFFFF",
+                                        borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                                      }}
                                     >
-                                      {template.title}
-                                    </p>
+                                      <p
+                                        className="text-xs font-bold truncate"
+                                        style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                                        title={template.title}
+                                      >
+                                        {template.title}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
+
+                              {/* Central Pagination Controls */}
+                              {festCount > festivalTemplateLimit && (
+                                <Pagination
+                                  meta={currentMeta}
+                                  currentPage={festivalTemplatePage}
+                                  totalPages={
+                                    currentMeta?.totalPages ||
+                                    Math.ceil(festCount / festivalTemplateLimit)
+                                  }
+                                  onPageChange={(newPage) => setFestivalTemplatePage(newPage)}
+                                  onLimitChange={(newLimit) => {
+                                    setFestivalTemplateLimit(newLimit);
+                                    setFestivalTemplatePage(1);
+                                  }}
+                                  pageSizeOptions={[8, 12, 16, 24]}
+                                />
+                              )}
                             </div>
                           ) : (
                             <div

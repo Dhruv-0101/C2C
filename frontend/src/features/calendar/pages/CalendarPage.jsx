@@ -39,13 +39,13 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
   // Selected Festival Day Multi-Festival Tab & Template Search State
   const [selectedFestivalTab, setSelectedFestivalTab] = useState("all");
   const [festivalTemplatePage, setFestivalTemplatePage] = useState(1);
-  const [festivalTemplateLimit, setFestivalTemplateLimit] = useState(12);
+  const [festivalTemplateLimit, setFestivalTemplateLimit] = useState(8);
   const [festivalTemplateSearch, setFestivalTemplateSearch] = useState("");
 
   const activeFestivalId =
     selectedFestivalTab !== "all"
       ? selectedFestivalTab
-      : selectedDayDetails?.festivals?.[0]?.id;
+      : selectedDayDetails?.festivals?.[0]?.id || null;
 
   const {
     templates: paginatedFestivalTemplates,
@@ -58,15 +58,20 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
       search: festivalTemplateSearch,
       festivalId: activeFestivalId,
     },
-    { enabled: !!activeFestivalId && !!selectedDayDetails && selectedFestivalTab !== "all" },
+    { enabled: !!activeFestivalId && !!selectedDayDetails },
   );
+
+  // Auto-reset page when switching festival tab or searching
+  useEffect(() => {
+    setFestivalTemplatePage(1);
+  }, [selectedFestivalTab, festivalTemplateSearch]);
 
   // Handle Template Selection -> Direct Navigation to Post Studio
   const handleTemplateSelect = (template) => {
     if (onSelectTemplate) {
       onSelectTemplate(template);
     } else {
-      navigate("/create-post", { state: { template } });
+      navigate("/create-post", { state: { template, festivalId: template.festivalId } });
     }
   };
 
@@ -260,7 +265,8 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
       onAddFestival(cell.dateKey);
       return;
     }
-    setSelectedFestivalTab("all");
+    const initialFestTab = cell.festivals?.length > 0 ? cell.festivals[0].id : "all";
+    setSelectedFestivalTab(initialFestTab);
     setFestivalTemplatePage(1);
     setFestivalTemplateSearch("");
     setSelectedDayDetails(cell);

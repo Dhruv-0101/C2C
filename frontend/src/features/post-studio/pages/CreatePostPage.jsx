@@ -50,7 +50,9 @@ export const CreatePostPage = () => {
   const initialBaseImage = location.state?.customBaseImage || null;
 
   // Wizard Active Step State (1: Template, 2: Frame, 3: Details, 4: Export)
-  const [currentStep, setCurrentStep] = useState(isEditingScheduled ? 3 : 1);
+  const [currentStep, setCurrentStep] = useState(
+    isEditingScheduled ? 3 : (passedTemplate ? 2 : 1)
+  );
 
   const [selectedFrame, setSelectedFrame] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(
@@ -68,7 +70,7 @@ export const CreatePostPage = () => {
 
   // Template Category & Festival Filter States
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedFestival, setSelectedFestival] = useState(festivalIdParam);
+  const [selectedFestival, setSelectedFestival] = useState(festivalIdParam || passedTemplate?.festivalId || "");
 
   // Sync incoming router state
   useEffect(() => {
@@ -77,6 +79,15 @@ export const CreatePostPage = () => {
     }
     if (location.state?.customBaseImage && !customBaseImage) {
       setCustomBaseImage(location.state.customBaseImage);
+    }
+    if (location.state?.template) {
+      setSelectedTemplateId(location.state.template.id);
+      if (!isEditingScheduled) {
+        setCurrentStep(2);
+      }
+      if (location.state.template.festivalId) {
+        setSelectedFestival(location.state.template.festivalId);
+      }
     }
   }, [festivalIdParam, location.state]);
 
