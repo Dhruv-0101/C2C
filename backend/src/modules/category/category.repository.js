@@ -171,3 +171,66 @@ export async function deleteCategory(id) {
     where: { id },
   });
 }
+
+/**
+ * Fetch paginated brand kits (business tenants) attached to a specific category
+ */
+export async function findPaginatedCategoryBrandKits({
+  categoryId,
+  skip,
+  take,
+  search,
+  sortBy = 'createdAt',
+  sortOrder = 'desc',
+}) {
+  const where = {
+    categoryId,
+    ...(search
+      ? {
+          OR: [
+            { businessName: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search, mode: 'insensitive' } },
+            { whatsapp: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { city: { contains: search, mode: 'insensitive' } },
+            { state: { contains: search, mode: 'insensitive' } },
+            { user: { fullName: { contains: search, mode: 'insensitive' } } },
+            { user: { email: { contains: search, mode: 'insensitive' } } },
+          ],
+        }
+      : {}),
+  };
+
+  const [brandKits, totalCount] = await prisma.$transaction([
+    prisma.brandKit.findMany({
+      where,
+      skip,
+      take,
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+            avatarUrl: true,
+            isActive: true,
+            createdAt: true,
+            subscription: {
+              select: {
+                plan: true,
+                status: true,
+                pricePaid: true,
+                currency: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { [sortBy]: sortOrder },
+    }),
+    prisma.brandKit.count({ where }),
+  ]);
+
+  return { brandKits, totalCount };
+}

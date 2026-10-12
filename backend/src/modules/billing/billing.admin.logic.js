@@ -37,6 +37,7 @@ export const getTransactions = async (queryParams = {}) => {
   const result = await getPaginatedTransactions({
     page: pagination.page,
     limit: pagination.limit,
+    userId: queryParams.userId || '',
     search: queryParams.search || pagination.search || '',
     status: queryParams.status || '',
     paymentGateway: queryParams.paymentGateway || '',

@@ -85,3 +85,20 @@ export async function deleteCategory(req, res, next) {
     next(error);
   }
 }
+
+/**
+ * GET /api/v1/categories/:id/tenants - Get business tenants belonging to a category
+ */
+export async function getCategoryTenants(req, res, next) {
+  try {
+    const result = await categoryLogic.getCategoryTenants(req.params.id, req.query);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: 'Category business tenants retrieved successfully',
+      data: result.data,
+      meta: result.meta,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

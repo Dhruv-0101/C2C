@@ -1,11 +1,11 @@
 import React from 'react';
-import { FolderKanban, Plus, User, Pencil, Trash2 } from 'lucide-react';
+import { FolderKanban, Plus, User, Pencil, Trash2, Building2, Eye } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
 
 /**
  * CategoryTable Component
- * Renders master business category cards with creator badges, slugs, and actions.
+ * Renders master business category cards with creator badges, slugs, connected tenant count, and actions.
  */
 export const CategoryTable = ({
   categories = [],
@@ -15,6 +15,7 @@ export const CategoryTable = ({
   onOpenCreate,
   onOpenEdit,
   onOpenDelete,
+  onViewTenants,
 }) => {
   if (isLoading) {
     return (
@@ -103,6 +104,25 @@ export const CategoryTable = ({
 
             {/* Right: Metadata Badges & Actions */}
             <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+              {/* Connected Business Tenants Badge Button */}
+              {(() => {
+                const tenantCount = cat._count?.brandKits ?? 0;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => onViewTenants && onViewTenants(cat)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-500/10 border border-amber-500/25 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/40 transition cursor-pointer group/tbtn"
+                    title={`View ${tenantCount} business tenants connected to ${cat.name}`}
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-amber-400 group-hover/tbtn:scale-110 transition-transform" />
+                    <span>{tenantCount}</span>
+                    <span className="text-[10px] text-amber-400/80 font-normal">
+                      {tenantCount === 1 ? 'tenant' : 'tenants'}
+                    </span>
+                  </button>
+                );
+              })()}
+
               {/* Creator Badge */}
               {cat.creator ? (
                 <span
@@ -133,8 +153,17 @@ export const CategoryTable = ({
                 </span>
               )}
 
-              {/* Action Buttons: Edit & Delete */}
+              {/* Action Buttons: View Tenants, Edit & Delete */}
               <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onViewTenants && onViewTenants(cat)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition cursor-pointer"
+                  title="View Connected Business Tenants"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+
                 <button
                   type="button"
                   onClick={() => onOpenEdit(cat)}

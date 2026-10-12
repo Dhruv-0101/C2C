@@ -5,6 +5,7 @@ import { validate } from '../../common/middleware/validate.middleware.js';
 import {
   getCategoriesQuerySchema,
   getCategoryByIdSchema,
+  getCategoryTenantsSchema,
   createCategorySchema,
   updateCategorySchema,
   deleteCategorySchema,
@@ -15,6 +16,9 @@ const router = Router();
 
 // Public / Authenticated route to get business categories with pagination, search, and sorting
 router.get('/', validate(getCategoriesQuerySchema), categoryController.getCategories);
+
+// Public / Authenticated route to fetch business tenants belonging to a category
+router.get('/:id/tenants', validate(getCategoryTenantsSchema), categoryController.getCategoryTenants);
 
 // Public / Authenticated route to fetch a single business category by ID
 router.get('/:id', validate(getCategoryByIdSchema), categoryController.getCategoryById);

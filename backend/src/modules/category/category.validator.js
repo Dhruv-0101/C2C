@@ -16,6 +16,13 @@ export const getCategoryByIdSchema = z.object({
   }),
 });
 
+export const getCategoryTenantsSchema = z.object({
+  params: z.object({
+    id: z.string().uuid('Invalid Category ID format'),
+  }),
+  query: paginationQuerySchema,
+});
+
 export const createCategorySchema = z.object({
   body: z.object({
     name: z

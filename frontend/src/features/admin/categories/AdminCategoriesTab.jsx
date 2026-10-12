@@ -7,6 +7,7 @@ import Pagination from '@/components/ui/Pagination';
 import { CategoryModal } from "./components/CategoryModal";
 import { DeleteCategoryModal } from "./components/DeleteCategoryModal";
 import { CategoryTable } from "./components/CategoryTable";
+import { CategoryTenantsModal } from "./components/CategoryTenantsModal";
 
 /**
  * AdminCategoriesTab Component
@@ -30,10 +31,11 @@ export const AdminCategoriesTab = ({
   updateCategoryMutation,
   deleteCategoryMutation,
 }) => {
-  // Modal states for Create / Edit / Delete
+  // Modal states for Create / Edit / Delete / Tenants View
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [viewingCategoryTenants, setViewingCategoryTenants] = useState(null);
 
   /**
    * Opens the CategoryModal in creation mode
@@ -141,6 +143,7 @@ export const AdminCategoriesTab = ({
         onOpenCreate={handleOpenCreateModal}
         onOpenEdit={handleOpenEditModal}
         onOpenDelete={setCategoryToDelete}
+        onViewTenants={setViewingCategoryTenants}
       />
 
       {categories.length > 0 && (
@@ -178,6 +181,13 @@ export const AdminCategoriesTab = ({
         category={categoryToDelete}
         onConfirm={handleConfirmDelete}
         isPending={deleteCategoryMutation.isPending}
+      />
+
+      {/* Connected Business Tenants Modal */}
+      <CategoryTenantsModal
+        isOpen={Boolean(viewingCategoryTenants)}
+        onClose={() => setViewingCategoryTenants(null)}
+        category={viewingCategoryTenants}
       />
     </div>
   );

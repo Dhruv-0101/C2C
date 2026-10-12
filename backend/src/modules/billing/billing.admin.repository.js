@@ -197,6 +197,7 @@ export const getFinancialOverview = async () => {
 export const getPaginatedTransactions = async ({
   page = 1,
   limit = 10,
+  userId = '',
   search = '',
   status = '',
   paymentGateway = '',
@@ -210,6 +211,10 @@ export const getPaginatedTransactions = async ({
 
   const where = {};
   const andConditions = [];
+
+  if (userId) {
+    where.userId = userId;
+  }
 
   if (status) {
     where.status = status;

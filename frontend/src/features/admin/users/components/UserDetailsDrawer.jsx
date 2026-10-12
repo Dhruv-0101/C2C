@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Plus,
+  Receipt,
 } from 'lucide-react';
 import { formatDate } from '@/shared/utils/date.util';
 
@@ -36,6 +37,7 @@ export const UserDetailsDrawer = ({
   onOpenTopUp,
   onOpenConnectSocial,
   onToggleStatus,
+  onOpenLedger,
   isToggling,
 }) => {
   if (!isOpen || !user) return null;
@@ -248,6 +250,21 @@ export const UserDetailsDrawer = ({
                 )}
               </div>
             </div>
+
+            {/* View Complete Ledger & Transactions Button */}
+            <button
+              type="button"
+              onClick={() => onOpenLedger && onOpenLedger(user)}
+              className="w-full mt-2.5 py-2.5 px-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:text-white transition cursor-pointer text-xs font-bold flex items-center justify-between group"
+            >
+              <span className="flex items-center gap-2">
+                <Receipt className="w-3.5 h-3.5 text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span>View Complete Billing Ledger</span>
+              </span>
+              <span className="text-[11px] font-mono text-indigo-400/80 group-hover:translate-x-0.5 transition-transform">
+                History & Invoices →
+              </span>
+            </button>
           </div>
 
           {/* Section: Post Generation Quota */}

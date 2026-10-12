@@ -69,4 +69,16 @@ export const categoryApi = {
   deleteCategory: async (id) => {
     return await api.delete(API_ENDPOINTS.CATEGORIES.BY_ID(id));
   },
+
+  /**
+   * GET /api/v1/categories/:id/tenants
+   * Fetches paginated business tenants (brand kits + owners) attached to a category.
+   *
+   * @param {string} id - Category UUID
+   * @param {Object} [params={}] - Pagination & search params
+   * @returns {Promise<Object>} Response containing tenants list and pagination metadata
+   */
+  getCategoryTenants: async (id, params = {}) => {
+    return await api.get(API_ENDPOINTS.CATEGORIES.TENANTS(id), { params });
+  },
 };

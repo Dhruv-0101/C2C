@@ -117,6 +117,7 @@ export const API_ENDPOINTS = {
   CATEGORIES: {
     BASE: '/categories',
     BY_ID: (id) => `/categories/${id}`,
+    TENANTS: (id) => `/categories/${id}/tenants`,
   },
   TEMPLATE_CATEGORIES: {
     BASE: '/template-categories',

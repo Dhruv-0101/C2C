@@ -101,6 +101,7 @@ export const getAdminTransactionsQuerySchema = z.object({
   query: z.object({
     page: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().optional()),
     limit: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().max(100).optional()),
+    userId: z.preprocess(emptyToUndefined, z.string().trim().optional()),
     search: z.preprocess(emptyToUndefined, z.string().trim().optional()),
     status: z.preprocess(emptyToUndefined, z.string().trim().optional()),
     paymentGateway: z.preprocess(emptyToUndefined, z.string().trim().optional()),

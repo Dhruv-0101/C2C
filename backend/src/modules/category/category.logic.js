@@ -177,3 +177,36 @@ export async function deleteCategory(id) {
   };
 }
 
+/**
+ * Get paginated business tenants (brand kits) associated with a category
+ */
+export async function getCategoryTenants(categoryId, queryParams) {
+  const category = await categoryRepository.findCategoryById(categoryId);
+  if (!category) {
+    throw new NotFoundError('Business category not found.');
+  }
+
+  const pagination = parsePaginationParams(queryParams, 10, 50);
+  const { brandKits, totalCount } = await categoryRepository.findPaginatedCategoryBrandKits({
+    categoryId,
+    ...pagination,
+    sortBy: queryParams.sortBy || 'createdAt',
+    sortOrder: queryParams.sortOrder === 'asc' ? 'asc' : 'desc',
+  });
+
+  const paginatedResponse = buildPaginatedResponse({
+    items: brandKits,
+    totalCount,
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+
+  return {
+    data: {
+      category: sanitizeCategory(category),
+      tenants: paginatedResponse.data,
+    },
+    meta: paginatedResponse.meta,
+  };
+}
+

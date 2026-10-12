@@ -11,6 +11,7 @@ import {
   ExternalLink,
   ShieldAlert,
   Eye,
+  Receipt,
 } from 'lucide-react';
 
 /**
@@ -26,6 +27,7 @@ export const UserTableRow = ({
   onOpenConnectSocial,
   onToggleStatus,
   onViewDetails,
+  onOpenLedger,
   isToggling = false,
 }) => {
   const sub = user.subscription;
@@ -95,10 +97,10 @@ export const UserTableRow = ({
       </td>
 
       {/* Column 2: Subscription & Billing */}
-      <td className="py-3 px-4 min-w-[190px]">
+      <td className="py-3 px-4 min-w-[200px]">
         <div className="space-y-1.5">
-          {/* Plan Badge + Price */}
-          <div className="flex items-center gap-2">
+          {/* Plan Badge + Price + Ledger Trigger */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             {isPro ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-500/40 dark:text-indigo-300 font-bold text-[10px] uppercase shadow-xs">
                 <Zap className="w-3 h-3 fill-indigo-500 dark:fill-indigo-400" />
@@ -119,6 +121,16 @@ export const UserTableRow = ({
                 No Plan
               </span>
             )}
+
+            <button
+              type="button"
+              onClick={() => onOpenLedger && onOpenLedger(user)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:text-white transition cursor-pointer text-[10px] font-bold"
+              title="View full billing ledger & transactions history"
+            >
+              <Receipt className="w-2.5 h-2.5" />
+              <span>Ledger</span>
+            </button>
           </div>
 
           {/* Gateway & Status Subline */}

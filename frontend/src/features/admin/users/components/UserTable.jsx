@@ -16,6 +16,7 @@ export const UserTable = ({
   onOpenConnectSocial,
   onToggleStatus,
   onViewDetails,
+  onOpenLedger,
   isToggling,
 }) => {
   if (isLoading) {
@@ -67,6 +68,7 @@ export const UserTable = ({
               onOpenConnectSocial={onOpenConnectSocial}
               onToggleStatus={onToggleStatus}
               onViewDetails={onViewDetails}
+              onOpenLedger={onOpenLedger}
               isToggling={isToggling}
             />
           ))}

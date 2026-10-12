@@ -20,6 +20,7 @@ import { UserTable } from "./components/UserTable";
 import { QuotaTopUpModal } from "./components/QuotaTopUpModal";
 import { ConnectSocialModal } from "./components/ConnectSocialModal";
 import { UserDetailsDrawer } from "./components/UserDetailsDrawer";
+import { UserBillingLedgerModal } from "./components/UserBillingLedgerModal";
 
 /**
  * AdminUsersTab Component
@@ -45,6 +46,7 @@ export const AdminUsersTab = ({
   const [topUpUser, setTopUpUser] = useState(null);
   const [socialModalUser, setSocialModalUser] = useState(null);
   const [inspectUser, setInspectUser] = useState(null);
+  const [ledgerUser, setLedgerUser] = useState(null);
 
   // Quick Filters
   const [planFilter, setPlanFilter] = useState('ALL'); // 'ALL' | 'PRO' | 'FREE' | 'NONE'
@@ -234,6 +236,7 @@ export const AdminUsersTab = ({
         onOpenTopUp={(u) => setTopUpUser(u)}
         onOpenConnectSocial={(u) => setSocialModalUser(u)}
         onViewDetails={(u) => setInspectUser(u)}
+        onOpenLedger={(u) => setLedgerUser(u)}
         onToggleStatus={(u) =>
           toggleUserStatusMutation?.mutate({
             userId: u.id,
@@ -258,6 +261,10 @@ export const AdminUsersTab = ({
         onOpenConnectSocial={(u) => {
           setInspectUser(null);
           setSocialModalUser(u);
+        }}
+        onOpenLedger={(u) => {
+          setInspectUser(null);
+          setLedgerUser(u);
         }}
         onToggleStatus={(u) =>
           toggleUserStatusMutation?.mutate({
@@ -284,6 +291,13 @@ export const AdminUsersTab = ({
         user={socialModalUser}
         onConfirm={(payload) => connectSocialTokenMutation?.mutateAsync(payload)}
         isPending={connectSocialTokenMutation?.isPending}
+      />
+
+      {/* Financial Transactions & Billing Ledger Modal */}
+      <UserBillingLedgerModal
+        isOpen={Boolean(ledgerUser)}
+        onClose={() => setLedgerUser(null)}
+        user={ledgerUser}
       />
 
       {/* Pagination */}
