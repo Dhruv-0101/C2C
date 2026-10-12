@@ -6,6 +6,8 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
@@ -22,6 +24,7 @@ export const TemplateCategoryTable = ({
   onOpenCreate,
   onOpenEdit,
   onOpenDelete,
+  onOpenViewTemplates,
 }) => {
   if (isLoading) {
     return (
@@ -121,20 +124,24 @@ export const TemplateCategoryTable = ({
                     </span>
                   </td>
 
-                  {/* Linked Templates Count */}
+                  {/* Linked Templates Count - Clickable to open CategoryTemplatesModal */}
                   <td className="py-3.5 px-4 text-center">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                    <button
+                      type="button"
+                      onClick={() => onOpenViewTemplates && onOpenViewTemplates(cat)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer group/btn ${
                         templatesCount > 0
-                          ? 'bg-teal-500/10 text-teal-300 border-teal-500/30 font-bold'
-                          : 'bg-slate-800/60 text-slate-400 border-slate-700/60'
+                          ? 'bg-teal-500/10 text-teal-300 border-teal-500/30 hover:bg-teal-500/20 hover:border-teal-500/50 hover:scale-105 shadow-sm font-bold'
+                          : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:bg-slate-800 hover:text-slate-300'
                       }`}
+                      title={`Click to view all ${templatesCount} templates in ${cat.name}`}
                     >
-                      <FileCode2 className="w-3 h-3 text-teal-400" />
+                      <FileCode2 className="w-3.5 h-3.5 text-teal-400 group-hover/btn:scale-110 transition-transform" />
                       <span>
                         {templatesCount} {templatesCount === 1 ? 'Template' : 'Templates'}
                       </span>
-                    </span>
+                      <ExternalLink className="w-3 h-3 text-teal-400/60 group-hover/btn:text-teal-300 ml-0.5" />
+                    </button>
                   </td>
 
                   {/* Created By Badge */}
@@ -170,6 +177,14 @@ export const TemplateCategoryTable = ({
                   {/* Actions */}
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        type="button"
+                        onClick={() => onOpenViewTemplates && onOpenViewTemplates(cat)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-teal-400 hover:bg-teal-500/10 border border-transparent hover:border-teal-500/30 transition cursor-pointer"
+                        title="View Templates in this Category"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => onOpenEdit(cat)}

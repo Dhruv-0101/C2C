@@ -7,6 +7,7 @@ import Pagination from '@/components/ui/Pagination';
 import { TemplateCategoryModal } from "./components/TemplateCategoryModal";
 import { DeleteTemplateCategoryModal } from "./components/DeleteTemplateCategoryModal";
 import { TemplateCategoryTable } from "./components/TemplateCategoryTable";
+import { CategoryTemplatesModal } from "./components/CategoryTemplatesModal";
 
 /**
  * AdminTemplateCategoriesTab Component
@@ -27,10 +28,11 @@ export const AdminTemplateCategoriesTab = ({
   updateTemplateCategoryMutation,
   deleteTemplateCategoryMutation,
 }) => {
-  // Modal states for Create / Edit / Delete
+  // Modal states for Create / Edit / Delete / View Templates
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [viewingCategory, setViewingCategory] = useState(null);
 
   /**
    * Opens the TemplateCategoryModal in creation mode
@@ -139,6 +141,7 @@ export const AdminTemplateCategoriesTab = ({
         onOpenCreate={handleOpenCreateModal}
         onOpenEdit={handleOpenEditModal}
         onOpenDelete={setCategoryToDelete}
+        onOpenViewTemplates={setViewingCategory}
       />
 
       {templateCategories.length > 0 && (
@@ -154,6 +157,13 @@ export const AdminTemplateCategoriesTab = ({
           pageSizeOptions={[10, 20, 30, 50]}
         />
       )}
+
+      {/* View Linked Templates in Category Modal */}
+      <CategoryTemplatesModal
+        isOpen={Boolean(viewingCategory)}
+        onClose={() => setViewingCategory(null)}
+        category={viewingCategory}
+      />
 
       {/* Create / Edit Category Modal */}
       <TemplateCategoryModal
