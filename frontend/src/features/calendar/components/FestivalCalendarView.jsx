@@ -720,19 +720,19 @@ export const FestivalCalendarView = ({
                             borderColor: isDark ? "#2C384E" : "#E2E8F0",
                           }}
                         >
-                          {/* Banner preview if available - Responsive Unclipped Rectangle View */}
+                          {/* Banner preview if available - Sleek Compact View */}
                           {fest.bannerUrl && (
                             <div
-                              className="w-full rounded-2xl overflow-hidden relative border mb-3 flex items-center justify-center shadow-lg"
+                              className="w-full rounded-xl overflow-hidden relative border mb-3 flex items-center justify-center shadow-md"
                               style={{
                                 borderColor: isDark ? "#2C384E" : "#E2E8F0",
-                                backgroundColor: isDark ? "rgba(2, 6, 23, 0.8)" : "#FFFFFF",
+                                backgroundColor: isDark ? "rgba(2, 6, 23, 0.6)" : "#F8FAFC",
                               }}
                             >
                               <img
                                 src={fest.bannerUrl}
                                 alt={fest.name}
-                                className="w-full max-h-[300px] sm:max-h-[360px] object-contain rounded-xl"
+                                className="w-full max-h-[140px] sm:max-h-[160px] object-contain rounded-lg py-1"
                               />
                             </div>
                           )}
