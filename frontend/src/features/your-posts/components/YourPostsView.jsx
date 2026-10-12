@@ -42,6 +42,7 @@ export const YourPostsView = ({
   setScheduledPage,
   scheduledLimit = 10,
   setScheduledLimit,
+  counts,
   activeTab: propActiveTab,
   setActiveTab: propSetActiveTab,
   searchQuery = "",
@@ -60,7 +61,7 @@ export const YourPostsView = ({
   const filteredPosts = useMemo(() => {
     let list = posts || [];
     if (activeTab === "PUBLISHED") {
-      list = list.filter((p) => p.status === "PUBLISHED");
+      list = list.filter((p) => p.status === "PUBLISHED" || p.scheduledPost?.status === "SUCCESS");
     } else if (activeTab === "DRAFT") {
       list = list.filter((p) => p.status === "DRAFT");
     }
@@ -78,23 +79,58 @@ export const YourPostsView = ({
     return list;
   }, [posts, activeTab, searchQuery]);
 
-  // Filter scheduled posts based on search
+  // Filter scheduled posts: ONLY active future queue (never already-published / SUCCESS)
   const filteredScheduled = useMemo(() => {
     if (!scheduledPosts || scheduledPosts.length === 0) return [];
-    if (!searchQuery || !searchQuery.trim()) return scheduledPosts;
-    const q = searchQuery.toLowerCase().trim();
-    return scheduledPosts.filter(
-      (s) =>
-        s.post?.occasionName?.toLowerCase().includes(q) ||
-        s.post?.template?.title?.toLowerCase().includes(q) ||
-        s.post?.festival?.name?.toLowerCase().includes(q)
-    );
+    const activeWindowThreshold = Date.now() - 2 * 60 * 1000;
+
+    let list = scheduledPosts.filter((s) => {
+      // Must NOT be already published or completed
+      if (s.status === "SUCCESS" || s.post?.status === "PUBLISHED") return false;
+      // Must NOT be failed
+      if (s.status === "FAILED" || s.post?.status === "FAILED") return false;
+
+      // Scheduled time must be in future (or actively processing right now)
+      const schedTime = new Date(s.scheduledAt).getTime();
+      if (s.status !== "PROCESSING" && schedTime < activeWindowThreshold) return false;
+
+      return true;
+    });
+
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (s) =>
+          s.post?.occasionName?.toLowerCase().includes(q) ||
+          s.post?.template?.title?.toLowerCase().includes(q) ||
+          s.post?.festival?.name?.toLowerCase().includes(q) ||
+          s.post?.captions?.[0]?.captionText?.toLowerCase().includes(q)
+      );
+    }
+    return list;
   }, [scheduledPosts, searchQuery]);
 
-  const publishedCount = (posts || []).filter((p) => p.status === "PUBLISHED").length;
-  const scheduledCount = scheduledMeta?.totalItems ?? (scheduledPosts || []).length;
-  const draftCount = (posts || []).filter((p) => p.status === "DRAFT").length;
-  const totalPostsCount = postsMeta?.totalItems ?? (posts || []).length;
+  const totalPostsCount =
+    counts?.total ??
+    postsMeta?.counts?.total ??
+    postsMeta?.totalItems ??
+    (posts || []).length;
+
+  const scheduledCount =
+    counts?.scheduled ??
+    scheduledMeta?.counts?.scheduled ??
+    scheduledMeta?.totalItems ??
+    filteredScheduled.length;
+
+  const publishedCount =
+    counts?.published ??
+    postsMeta?.counts?.published ??
+    (posts || []).filter((p) => p.status === "PUBLISHED" || p.scheduledPost?.status === "SUCCESS").length;
+
+  const draftCount =
+    counts?.drafts ??
+    postsMeta?.counts?.drafts ??
+    (posts || []).filter((p) => p.status === "DRAFT").length;
 
   // Global Image Download handler
   const handleDownload = (graphicUrl, title) => {
@@ -512,10 +548,20 @@ export const YourPostsView = ({
             <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto">
               <FolderKanban className="w-7 h-7" />
             </div>
-            <p className="text-white font-bold text-base">No Posts Found</p>
+            <p className="text-white font-bold text-base">
+              {activeTab === "PUBLISHED"
+                ? "No Published Posts Found"
+                : activeTab === "DRAFT"
+                ? "No Saved Drafts Found"
+                : "No Posts Found"}
+            </p>
             <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
               {searchQuery.trim()
                 ? `No posts matched "${searchQuery}". Try a different keyword.`
+                : activeTab === "PUBLISHED"
+                ? "Posts that have been successfully published live to your social media accounts will appear here."
+                : activeTab === "DRAFT"
+                ? "Graphics saved as drafts from the Post Studio will appear here for review."
                 : "Create and save your custom branded graphics using the Post Creator Studio!"}
             </p>
             <div className="pt-2">
@@ -525,7 +571,7 @@ export const YourPostsView = ({
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer"
               >
                 <Plus className="w-4 h-4 stroke-[3]" />
-                <span>Create Your First Post</span>
+                <span>Create New Post</span>
               </button>
             </div>
           </div>

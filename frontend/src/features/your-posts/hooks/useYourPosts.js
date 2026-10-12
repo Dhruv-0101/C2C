@@ -16,16 +16,30 @@ export const useYourPosts = (initialParams = {}) => {
   const [scheduledLimit, setScheduledLimit] = useState(initialParams.scheduledLimit || 10);
 
   const search = initialParams.search || "";
+  const activeTab = initialParams.activeTab || "ALL";
 
-  // Query User All Posts with Pagination & Search
+  const postStatus =
+    activeTab === "PUBLISHED"
+      ? "PUBLISHED"
+      : activeTab === "DRAFT"
+      ? "DRAFT"
+      : undefined;
+
+  // Query User All Posts with Pagination, Search & Status
   const {
     data: postsResponse,
     isLoading: isLoadingPosts,
     error: postsError,
     refetch: refetchPosts,
   } = useQuery({
-    queryKey: [...QUERY_KEYS.POSTS.ALL, postsPage, postsLimit, search],
-    queryFn: () => postApi.getUserPosts({ page: postsPage, limit: postsLimit, search: search.trim() || undefined }),
+    queryKey: [...QUERY_KEYS.POSTS.ALL, postsPage, postsLimit, search, postStatus],
+    queryFn: () =>
+      postApi.getUserPosts({
+        page: postsPage,
+        limit: postsLimit,
+        search: search.trim() || undefined,
+        status: postStatus,
+      }),
     placeholderData: keepPreviousData,
   });
 
@@ -37,7 +51,12 @@ export const useYourPosts = (initialParams = {}) => {
     refetch: refetchScheduled,
   } = useQuery({
     queryKey: [...QUERY_KEYS.POSTS.SCHEDULED, scheduledPage, scheduledLimit, search],
-    queryFn: () => postApi.getScheduledPosts({ page: scheduledPage, limit: scheduledLimit, search: search.trim() || undefined }),
+    queryFn: () =>
+      postApi.getScheduledPosts({
+        page: scheduledPage,
+        limit: scheduledLimit,
+        search: search.trim() || undefined,
+      }),
     placeholderData: keepPreviousData,
   });
 
@@ -57,6 +76,12 @@ export const useYourPosts = (initialParams = {}) => {
   const scheduledPosts = scheduledResponse?.scheduledPosts || scheduledResponse?.data?.scheduledPosts || [];
   const scheduledMeta = scheduledResponse?.meta;
 
+  const counts =
+    postsResponse?.meta?.counts ||
+    postsResponse?.data?.counts ||
+    scheduledResponse?.meta?.counts ||
+    scheduledResponse?.data?.counts;
+
   return {
     posts,
     postsMeta,
@@ -70,6 +95,7 @@ export const useYourPosts = (initialParams = {}) => {
     setScheduledPage,
     scheduledLimit,
     setScheduledLimit,
+    counts,
     isLoading: isLoadingPosts || isLoadingScheduled,
     error: postsError || scheduledError,
     deletePost: deleteMutation.mutate,

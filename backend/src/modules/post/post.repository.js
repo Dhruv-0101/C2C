@@ -98,6 +98,7 @@ export const POST_LIST_INCLUDE = Object.freeze({
     select: {
       id: true,
       scheduledAt: true,
+      publishedAt: true,
       status: true,
       targetPlatforms: true,
     },
@@ -261,9 +262,14 @@ export async function createScheduledPost(data) {
  * @returns {Promise<{ scheduledPosts: Array<Object>, totalCount: number }>}
  */
 export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 10, search }) {
+  // Only active pending / processing posts that have NOT been published yet and are scheduled for future / active queue
+  const activeWindowThreshold = new Date(Date.now() - 2 * 60 * 1000);
   const where = {
+    status: { in: ['PENDING', 'PROCESSING'] },
+    scheduledAt: { gte: activeWindowThreshold },
     post: {
       userId,
+      status: { not: 'PUBLISHED' },
       ...(search
         ? {
             OR: [
@@ -301,9 +307,15 @@ export async function findPaginatedScheduledByUserId(userId, { skip = 0, take = 
  * @returns {Promise<Array<Object>>}
  */
 export async function findScheduledPostsByUserId(userId) {
+  const activeWindowThreshold = new Date(Date.now() - 2 * 60 * 1000);
   return prisma.scheduledPost.findMany({
     where: {
-      post: { userId },
+      status: { in: ['PENDING', 'PROCESSING'] },
+      scheduledAt: { gte: activeWindowThreshold },
+      post: {
+        userId,
+        status: { not: 'PUBLISHED' },
+      },
     },
     include: {
       post: {
@@ -348,23 +360,49 @@ export async function findPaginatedByUserId(
     skip = 0,
     take = 10,
     search,
+    status,
     sortBy = DEFAULT_POST_SORT_BY,
     sortOrder = DEFAULT_POST_SORT_ORDER,
   }
 ) {
   const where = {
     userId,
-    ...(search
+    ...(status === 'PUBLISHED'
       ? {
           OR: [
-            { occasionName: { contains: search, mode: 'insensitive' } },
-            { festival: { name: { contains: search, mode: 'insensitive' } } },
-            { template: { title: { contains: search, mode: 'insensitive' } } },
-            { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
+            { status: 'PUBLISHED' },
+            { scheduledPost: { status: 'SUCCESS' } },
           ],
         }
+      : status === 'SCHEDULED'
+      ? {
+          status: 'SCHEDULED',
+          scheduledPost: {
+            status: { in: ['PENDING', 'PROCESSING'] },
+          },
+        }
+      : status
+      ? { status }
       : {}),
   };
+
+  if (search) {
+    const searchFilter = {
+      OR: [
+        { occasionName: { contains: search, mode: 'insensitive' } },
+        { festival: { name: { contains: search, mode: 'insensitive' } } },
+        { template: { title: { contains: search, mode: 'insensitive' } } },
+        { captions: { some: { captionText: { contains: search, mode: 'insensitive' } } } },
+      ],
+    };
+
+    if (where.OR) {
+      where.AND = [{ OR: where.OR }, searchFilter];
+      delete where.OR;
+    } else {
+      where.AND = [searchFilter];
+    }
+  }
 
   const validSortBy = POST_ALLOWED_SORT_FIELDS.includes(sortBy) ? sortBy : DEFAULT_POST_SORT_BY;
   const validSortOrder = ['asc', 'desc'].includes(sortOrder?.toLowerCase())
@@ -383,6 +421,52 @@ export async function findPaginatedByUserId(
   ]);
 
   return { posts, totalCount };
+}
+
+/**
+ * Get count summary of user's posts segmented into Total Portfolio, Scheduled Queue, Published Live, and Drafts
+ * @param {string} userId
+ * @returns {Promise<{ total: number, published: number, drafts: number, scheduled: number }>}
+ */
+export async function getPostStatusCountsByUserId(userId) {
+  const activeWindowThreshold = new Date(Date.now() - 2 * 60 * 1000);
+  const [total, published, drafts, scheduled] = await Promise.all([
+    prisma.post.count({
+      where: { userId },
+    }),
+    prisma.post.count({
+      where: {
+        userId,
+        OR: [
+          { status: 'PUBLISHED' },
+          { scheduledPost: { status: 'SUCCESS' } },
+        ],
+      },
+    }),
+    prisma.post.count({
+      where: {
+        userId,
+        status: 'DRAFT',
+      },
+    }),
+    prisma.scheduledPost.count({
+      where: {
+        status: { in: ['PENDING', 'PROCESSING'] },
+        scheduledAt: { gte: activeWindowThreshold },
+        post: {
+          userId,
+          status: { not: 'PUBLISHED' },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    total,
+    published,
+    drafts,
+    scheduled,
+  };
 }
 
 /**
@@ -794,6 +878,7 @@ export const postRepository = {
   findScheduledPostsByUserId,
   findDueScheduledPosts,
   findPaginatedByUserId,
+  getPostStatusCountsByUserId,
   findByUserId,
   findById,
   findPendingPostsByUserId,

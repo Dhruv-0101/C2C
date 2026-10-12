@@ -45,7 +45,15 @@ import {
  */
 export async function getUserPosts(userId, queryParams = {}) {
   const pagination = parsePaginationParams(queryParams);
-  const { posts, totalCount } = await postRepository.findPaginatedByUserId(userId, pagination);
+  const status = queryParams.status ? String(queryParams.status).trim() : undefined;
+
+  const [{ posts, totalCount }, counts] = await Promise.all([
+    postRepository.findPaginatedByUserId(userId, {
+      ...pagination,
+      status,
+    }),
+    postRepository.getPostStatusCountsByUserId(userId),
+  ]);
 
   const paginatedResponse = buildPaginatedResponse({
     items: sanitizePosts(posts),
@@ -57,8 +65,12 @@ export async function getUserPosts(userId, queryParams = {}) {
   return {
     data: {
       posts: paginatedResponse.data,
+      counts,
     },
-    meta: paginatedResponse.meta,
+    meta: {
+      ...paginatedResponse.meta,
+      counts,
+    },
   };
 }
 
@@ -66,14 +78,14 @@ export async function getUserPosts(userId, queryParams = {}) {
  * Get user's scheduled queue with pagination
  * @param {string} userId
  * @param {Object} [queryParams={}]
- * @returns {Promise<{ data: { scheduledPosts: Array<Object> }, meta: Object }>}
+ * @returns {Promise<{ data: { scheduledPosts: Array<Object>, counts: Object }, meta: Object }>}
  */
 export async function getScheduledPosts(userId, queryParams = {}) {
   const pagination = parsePaginationParams(queryParams);
-  const { scheduledPosts, totalCount } = await postRepository.findPaginatedScheduledByUserId(
-    userId,
-    pagination
-  );
+  const [{ scheduledPosts, totalCount }, counts] = await Promise.all([
+    postRepository.findPaginatedScheduledByUserId(userId, pagination),
+    postRepository.getPostStatusCountsByUserId(userId),
+  ]);
 
   const paginatedResponse = buildPaginatedResponse({
     items: sanitizeScheduledPosts(scheduledPosts),
@@ -85,8 +97,12 @@ export async function getScheduledPosts(userId, queryParams = {}) {
   return {
     data: {
       scheduledPosts: paginatedResponse.data,
+      counts,
     },
-    meta: paginatedResponse.meta,
+    meta: {
+      ...paginatedResponse.meta,
+      counts,
+    },
   };
 }
 

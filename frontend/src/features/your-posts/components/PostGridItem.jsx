@@ -54,18 +54,24 @@ export const PostGridItem = ({
               onClick={() => onLightbox?.(post)}
             />
 
-            {/* Status Pill - Clean status badge only, no cluttered overlay title tag */}
-            <span
-              className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase z-10 backdrop-blur-md shadow-sm border ${
-                post.status === "PUBLISHED"
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                  : post.status === "SCHEDULED"
-                  ? "bg-teal-500/20 text-teal-300 border-teal-500/40"
-                  : "bg-amber-500/20 text-amber-400 border-amber-500/40"
-              }`}
-            >
-              {post.status}
-            </span>
+            {/* Status Pill - Clean status badge only */}
+            {(() => {
+              const isPublished = post.status === "PUBLISHED" || post.scheduledPost?.status === "SUCCESS";
+              const isScheduled = post.status === "SCHEDULED" || post.scheduledPost?.status === "PENDING";
+              return (
+                <span
+                  className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase z-10 backdrop-blur-md shadow-sm border ${
+                    isPublished
+                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                      : isScheduled
+                      ? "bg-teal-500/20 text-teal-300 border-teal-500/40"
+                      : "bg-amber-500/20 text-amber-400 border-amber-500/40"
+                  }`}
+                >
+                  {isPublished ? "PUBLISHED" : isScheduled ? "SCHEDULED" : post.status}
+                </span>
+              );
+            })()}
 
             {/* Hover Quick View Overlay */}
             <div

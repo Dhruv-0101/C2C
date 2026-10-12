@@ -25,11 +25,13 @@ export const YourPostsPage = () => {
     setScheduledPage,
     scheduledLimit,
     setScheduledLimit,
+    counts,
     isLoading,
     error,
     deletePost,
   } = useYourPosts({
     search: debouncedSearch,
+    activeTab,
   });
 
   // Auto-reset pagination pages to 1 on debounced search change or active tab change
@@ -52,6 +54,7 @@ export const YourPostsPage = () => {
       setScheduledPage={setScheduledPage}
       scheduledLimit={scheduledLimit}
       setScheduledLimit={setScheduledLimit}
+      counts={counts}
       isLoading={isLoading}
       error={error}
       activeTab={activeTab}

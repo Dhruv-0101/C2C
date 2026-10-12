@@ -17,7 +17,8 @@ export const POST_STATUSES = Object.freeze(Object.values(POST_STATUS));
 export const SCHEDULED_POST_STATUS = Object.freeze({
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
-  PUBLISHED: 'PUBLISHED',
+  SUCCESS: 'SUCCESS',
+  PUBLISHED: 'SUCCESS',
   FAILED: 'FAILED',
 });
 export const SCHEDULED_POST_STATUSES = Object.freeze(Object.values(SCHEDULED_POST_STATUS));
