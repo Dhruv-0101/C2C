@@ -372,9 +372,9 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
           {templates.length > 0 && (
             <div className="pt-4 border-t border-[#2C384E]">
               <Pagination
-                meta={meta}
+                meta={templateMeta}
                 currentPage={templatePage}
-                totalPages={meta?.totalPages || Math.max(1, Math.ceil(totalTemplates / templateLimit))}
+                totalPages={templateMeta?.totalPages || Math.max(1, Math.ceil(totalTemplates / templateLimit))}
                 onPageChange={(p) => setTemplatePage(p)}
                 onLimitChange={(l) => {
                   setTemplateLimit(l);
