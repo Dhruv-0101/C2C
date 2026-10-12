@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Trash2, Edit2 } from 'lucide-react';
+import { Calendar, Trash2, Edit2, Layers, Eye } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../../components/ui/Table';
 import { formatDate } from '../../../../shared/utils/date.util';
 import { SkeletonTable } from '@/components/feedback/SkeletonLoader';
@@ -11,11 +11,12 @@ export const FestivalTable = ({
   onDelete,
   onToggleStatus,
   isTogglingId,
+  onOpenViewTemplates,
 }) => {
   if (isLoading) {
     return (
       <div className="py-2">
-        <SkeletonTable rows={5} cols={5} />
+        <SkeletonTable rows={5} cols={6} />
       </div>
     );
   }
@@ -31,6 +32,7 @@ export const FestivalTable = ({
           <TableHead>Festival Name</TableHead>
           <TableHead>Date</TableHead>
           <TableHead>Region</TableHead>
+          <TableHead>Linked Templates</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -73,6 +75,27 @@ export const FestivalTable = ({
               </TableCell>
               <TableCell className="text-slate-400 text-xs">{fest.targetRegion || 'India'}</TableCell>
               <TableCell>
+                {(() => {
+                  const count =
+                    fest._count?.templates ??
+                    (Array.isArray(fest.templates) ? fest.templates.length : 0);
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => onOpenViewTemplates && onOpenViewTemplates(fest)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/10 border border-amber-500/25 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/40 transition cursor-pointer group"
+                      title={`View ${count} templates linked to ${fest.name}`}
+                    >
+                      <Layers className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                      <span>{count}</span>
+                      <span className="text-[10px] text-amber-400/80 font-normal">
+                        {count === 1 ? 'template' : 'templates'}
+                      </span>
+                    </button>
+                  );
+                })()}
+              </TableCell>
+              <TableCell>
                 <button
                   type="button"
                   onClick={() => onToggleStatus && onToggleStatus(fest)}
@@ -89,6 +112,14 @@ export const FestivalTable = ({
                 </button>
               </TableCell>
               <TableCell className="text-right space-x-2">
+                <button
+                  type="button"
+                  onClick={() => onOpenViewTemplates && onOpenViewTemplates(fest)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition cursor-pointer"
+                  title="View Templates"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                </button>
                 <button
                   type="button"
                   onClick={() => onEdit && onEdit(fest)}

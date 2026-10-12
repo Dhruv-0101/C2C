@@ -18,6 +18,7 @@ import {
   Upload,
   Image as ImageIcon,
   User,
+  Eye,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -34,6 +35,8 @@ import { formatDate } from '@/shared/utils/date.util';
 import { FestivalCreateModal } from "./FestivalCreateModal";
 import { FestivalTable } from "./FestivalTable";
 import { SkeletonTable } from "@/components/feedback/SkeletonLoader";
+import { FestivalTemplatesModal } from "./FestivalTemplatesModal";
+import { TemplatesByFestivalView } from "./TemplatesByFestivalView";
 
 /**
  * AdminFestivalManagerView
@@ -70,12 +73,13 @@ export const AdminFestivalManagerView = () => {
     includeInactive: true,
   });
 
-  // Mode View: "list" (Table Management) vs "calendar" (Monthly Grid) vs "form" (Create/Edit Page)
+  // Mode View: "list" (Table Management) vs "calendar" (Monthly Grid) vs "form" (Create/Edit Page) vs "templates" (Templates by Festival)
   const [displayMode, setDisplayMode] = useState("list");
 
   // Modals & Feedback State
   const [editingFestival, setEditingFestival] = useState(null); // null = Create, object = Edit
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [viewingFestivalTemplates, setViewingFestivalTemplates] = useState(null);
   const [feedback, setFeedback] = useState({ isOpen: false, type: "success", title: "", message: "" });
   const [formError, setFormError] = useState("");
   const [togglingId, setTogglingId] = useState(null);
@@ -346,6 +350,17 @@ export const AdminFestivalManagerView = () => {
               <CalendarIcon className="w-3.5 h-3.5" />
               <span>Calendar Grid</span>
             </button>
+            <button
+              onClick={() => setDisplayMode("templates")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                displayMode === "templates"
+                  ? "bg-amber-500 text-slate-950 shadow-glow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Templates by Festival</span>
+            </button>
           </div>
 
           <Button variant="primary" icon={Plus} onClick={() => handleOpenCreate()}>
@@ -357,6 +372,11 @@ export const AdminFestivalManagerView = () => {
       {/* Render Mode 1: Calendar Grid View */}
       {displayMode === "calendar" ? (
         <CalendarPage onAddFestival={handleOpenCreate} />
+      ) : displayMode === "templates" ? (
+        <TemplatesByFestivalView
+          festivals={festivals}
+          isLoadingFestivals={isLoading}
+        />
       ) : (
         /* Render Mode 2: Table / Card Management List */
         <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
@@ -410,6 +430,7 @@ export const AdminFestivalManagerView = () => {
               onDelete={handleOpenDelete}
               onToggleStatus={handleToggleStatus}
               isTogglingId={togglingId}
+              onOpenViewTemplates={(fest) => setViewingFestivalTemplates(fest)}
             />
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
@@ -449,8 +470,16 @@ export const AdminFestivalManagerView = () => {
                           </span>
                         </div>
 
-                        {/* Edit & Delete Actions on top-right of banner */}
+                        {/* Edit, View Templates & Delete Actions on top-right of banner */}
                         <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setViewingFestivalTemplates(fest)}
+                            className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                            title="View Linked Templates"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(fest)}
@@ -530,6 +559,34 @@ export const AdminFestivalManagerView = () => {
                             </span>
                           )}
                         </div>
+
+                        {/* Templates Count Link Button */}
+                        {(() => {
+                          const tplCount =
+                            fest._count?.templates ??
+                            (Array.isArray(fest.templates) ? fest.templates.length : 0);
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setViewingFestivalTemplates(fest)}
+                              className="w-full mt-2.5 py-1.5 px-2.5 rounded-xl text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition flex items-center justify-between cursor-pointer group/tbtn"
+                              title={`View ${tplCount} templates for ${fest.name}`}
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                <span>Templates</span>
+                              </span>
+                              <span className="flex items-center gap-1 font-mono text-[11px] font-bold">
+                                <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
+                                  {tplCount}
+                                </span>
+                                <span className="text-amber-400/80 group-hover/tbtn:translate-x-0.5 transition-transform">
+                                  →
+                                </span>
+                              </span>
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -603,6 +660,13 @@ export const AdminFestivalManagerView = () => {
         type={feedback.type}
         title={feedback.title}
         message={feedback.message}
+      />
+
+      {/* FESTIVAL TEMPLATES MODAL */}
+      <FestivalTemplatesModal
+        isOpen={Boolean(viewingFestivalTemplates)}
+        onClose={() => setViewingFestivalTemplates(null)}
+        festival={viewingFestivalTemplates}
       />
     </div>
   );
