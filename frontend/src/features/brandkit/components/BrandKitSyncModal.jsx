@@ -129,8 +129,8 @@ export const BrandKitSyncModal = ({
               BrandKit Saved Successfully!
             </h4>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Aapki <strong className="text-amber-400 font-bold">{totalPosts} post(s)</strong> currently Scheduled Queue me publishing ke liye wait kar rahi hain.
-              Kya aap in posts ki images ko naye BrandKit details (naya logo, phone number, address) ke sath auto-update karna chahte hain?
+              You currently have <strong className="text-amber-400 font-bold">{totalPosts} post(s)</strong> waiting in the Scheduled Queue.
+              Would you like to auto-update their graphics with your latest BrandKit details (new logo, phone number, and address)?
             </p>
           </div>
         </div>
