@@ -10,6 +10,7 @@ import { QUERY_KEYS } from '@/shared/constants';
 import { createImagePreview } from '@/shared/utils/file.util';
 import { BaseTemplateManagerView } from './components/BaseTemplateManagerView';
 import { TemplateCreateModal } from './components/TemplateCreateModal';
+import { TemplatePostsModal } from './components/TemplatePostsModal';
 
 /**
  * AdminTemplatesTab Component
@@ -22,6 +23,7 @@ export const AdminTemplatesTab = () => {
   // Modal & View State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [fullscreenTemplate, setFullscreenTemplate] = useState(null);
+  const [viewingTemplatePosts, setViewingTemplatePosts] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Form State for Template Creation
@@ -205,6 +207,7 @@ export const AdminTemplatesTab = () => {
           resetForm();
           setIsCreateModalOpen(true);
         }}
+        onViewPosts={setViewingTemplatePosts}
         modalProps={modalProps}
         isModalOpen={isCreateModalOpen}
         setIsModalOpen={setIsCreateModalOpen}
@@ -273,6 +276,13 @@ export const AdminTemplatesTab = () => {
         setFestPage={setFestPage}
         isLoadingFestivals={isLoadingFestivals}
         isUploading={createTemplateMutation.isPending}
+      />
+
+      {/* Template Posts Inspector Modal */}
+      <TemplatePostsModal
+        isOpen={Boolean(viewingTemplatePosts)}
+        onClose={() => setViewingTemplatePosts(null)}
+        template={viewingTemplatePosts}
       />
     </div>
   );

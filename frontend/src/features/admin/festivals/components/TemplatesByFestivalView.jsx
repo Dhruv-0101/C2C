@@ -14,6 +14,7 @@ import { useDebounce } from "@/shared/hooks/useDebounce";
 import Pagination from "@/components/ui/Pagination";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { formatDate } from "@/shared/utils/date.util";
+import { TemplatePostsModal } from "@/features/admin/templates/components/TemplatePostsModal";
 
 /**
  * TemplatesByFestivalView Component
@@ -31,6 +32,7 @@ export const TemplatesByFestivalView = ({ festivals = [], isLoadingFestivals = f
   const [templateLimit, setTemplateLimit] = useState(8);
   const [templateSearch, setTemplateSearch] = useState("");
   const [lightboxItem, setLightboxItem] = useState(null);
+  const [viewingTemplatePosts, setViewingTemplatePosts] = useState(null);
 
   const debouncedTemplateSearch = useDebounce(templateSearch, 300);
   const debouncedFestivalSearch = useDebounce(festivalSearch, 300);
@@ -264,23 +266,49 @@ export const TemplatesByFestivalView = ({ festivals = [], isLoadingFestivals = f
 
                     {/* Subtle Category Tag (Top Left) if present */}
                     {tpl.templateCategory?.name && (
-                      <div className="absolute top-2 left-2 max-w-[85%] pointer-events-none">
+                      <div className="absolute top-2 left-2 max-w-[55%] pointer-events-none">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950/75 backdrop-blur-md border border-slate-700/60 text-slate-300 text-[10px] font-medium shadow-sm truncate">
                           <span className="text-teal-400 text-[11px] shrink-0">📁</span>
                           <span className="truncate">{tpl.templateCategory.name}</span>
                         </span>
                       </div>
                     )}
+
+                    {/* Posts Tracking Badge Button (Top Right) */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewingTemplatePosts(tpl);
+                      }}
+                      className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-950/80 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-400/50 backdrop-blur-md text-slate-200 hover:text-amber-300 transition-all shadow-md cursor-pointer text-[10px] font-semibold"
+                      title={`View ${tpl._count?.posts ?? 0} posts created with this template`}
+                    >
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>{tpl._count?.posts ?? 0}</span>
+                    </button>
                   </div>
 
-                  {/* Clean Card Title Footer */}
-                  <div className="p-3 border-t border-[#2C384E] bg-[#131B2A]">
+                  {/* Clean Card Title & Post Count Footer */}
+                  <div className="p-3 border-t border-[#2C384E] bg-[#131B2A] flex items-center justify-between gap-2">
                     <p
                       className="text-xs font-semibold text-white truncate group-hover:text-amber-400 transition-colors"
                       title={tpl.title}
                     >
                       {tpl.title}
                     </p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewingTemplatePosts(tpl);
+                      }}
+                      className="font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-0.5 cursor-pointer shrink-0 text-[10px]"
+                      title="Inspect posts created with this template"
+                    >
+                      <span>{tpl._count?.posts ?? 0} posts</span>
+                      <span className="text-xs">→</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -320,6 +348,13 @@ export const TemplatesByFestivalView = ({ festivals = [], isLoadingFestivals = f
           onClose={() => setLightboxItem(null)}
         />
       )}
+
+      {/* Template Posts Inspector Modal */}
+      <TemplatePostsModal
+        isOpen={Boolean(viewingTemplatePosts)}
+        onClose={() => setViewingTemplatePosts(null)}
+        template={viewingTemplatePosts}
+      />
     </div>
   );
 };

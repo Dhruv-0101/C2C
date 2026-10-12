@@ -5,11 +5,13 @@ import {
   X,
   Search,
   Eye,
+  Sparkles,
 } from "lucide-react";
 import { useTemplates } from "@/features/admin/templates/hooks/useTemplates";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import Pagination from "@/components/ui/Pagination";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
+import { TemplatePostsModal } from "@/features/admin/templates/components/TemplatePostsModal";
 
 /**
  * CategoryTemplatesModal Component
@@ -26,6 +28,7 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
   const [limit, setLimit] = useState(8);
   const [search, setSearch] = useState("");
   const [lightboxItem, setLightboxItem] = useState(null);
+  const [viewingTemplatePosts, setViewingTemplatePosts] = useState(null);
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -196,23 +199,49 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
 
                       {/* Subtle, Lightweight Festival Occasion Tag (Top Left) */}
                       {tpl.festival?.name && (
-                        <div className="absolute top-2 left-2 max-w-[85%] pointer-events-none">
+                        <div className="absolute top-2 left-2 max-w-[55%] pointer-events-none">
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950/75 backdrop-blur-md border border-slate-700/60 text-slate-300 text-[10px] font-medium shadow-sm truncate">
                             <span className="text-amber-400 text-[11px] shrink-0">🪔</span>
                             <span className="truncate">{tpl.festival.name}</span>
                           </span>
                         </div>
                       )}
+
+                      {/* Posts Tracking Badge Button (Top Right) */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewingTemplatePosts(tpl);
+                        }}
+                        className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-950/80 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-400/50 backdrop-blur-md text-slate-200 hover:text-amber-300 transition-all shadow-md cursor-pointer text-[10px] font-semibold"
+                        title={`View ${tpl._count?.posts ?? 0} posts created with this template`}
+                      >
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>{tpl._count?.posts ?? 0}</span>
+                      </button>
                     </div>
 
-                    {/* Clean Card Title Footer */}
-                    <div className="p-3 border-t border-[#2C384E] bg-[#131B2A]">
+                    {/* Clean Card Title & Post Count Footer */}
+                    <div className="p-3 border-t border-[#2C384E] bg-[#131B2A] flex items-center justify-between gap-2">
                       <p
                         className="text-xs font-semibold text-white truncate group-hover:text-teal-400 transition-colors"
                         title={tpl.title}
                       >
                         {tpl.title}
                       </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewingTemplatePosts(tpl);
+                        }}
+                        className="font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-0.5 cursor-pointer shrink-0 text-[10px]"
+                        title="Inspect posts created with this template"
+                      >
+                        <span>{tpl._count?.posts ?? 0} posts</span>
+                        <span className="text-xs">→</span>
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -253,6 +282,13 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
           onClose={() => setLightboxItem(null)}
         />
       )}
+
+      {/* Template Posts Inspector Modal */}
+      <TemplatePostsModal
+        isOpen={Boolean(viewingTemplatePosts)}
+        onClose={() => setViewingTemplatePosts(null)}
+        template={viewingTemplatePosts}
+      />
     </>
   );
 };

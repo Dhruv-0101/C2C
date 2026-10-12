@@ -36,6 +36,7 @@ import { SkeletonGrid } from '@/components/feedback/SkeletonLoader';
  */
 export const BaseTemplateManagerView = ({
   onOpenCreate,
+  onViewPosts,
   modalProps,
   isModalOpen,
   setIsModalOpen,
@@ -503,6 +504,7 @@ export const BaseTemplateManagerView = ({
                   template={tpl}
                   onPreview={() => setFullscreenTemplate(tpl)}
                   onDelete={() => setTemplateToDelete(tpl)}
+                  onViewPosts={onViewPosts}
                   isDeleting={deleteTemplateMutation.isPending && deleteTemplateMutation.variables === tpl.id}
                 />
               ))}
