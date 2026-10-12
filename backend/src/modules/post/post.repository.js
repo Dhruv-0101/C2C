@@ -78,6 +78,15 @@ export const POST_LIST_INCLUDE = Object.freeze({
       baseImageUrl: true,
     },
   },
+  frame: {
+    select: {
+      id: true,
+      title: true,
+      overlayPngUrl: true,
+      previewUrl: true,
+      configJson: true,
+    },
+  },
   festival: {
     select: {
       id: true,

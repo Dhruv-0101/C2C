@@ -105,12 +105,38 @@ export const processPostJob = async (jobData) => {
       }
     }
 
-    // 2. Call Live Social Publisher Service (with Instagram Meta Graph API support)
+    // 2. Resolve fresh post graphic and content from DB to ensure any updated BrandKit / re-rendered graphic is used
+    let finalGraphicUrl = graphicUrl;
+    let finalPostContent = postContent;
+
+    if (postId) {
+      try {
+        const freshPost = await prisma.post.findUnique({
+          where: { id: postId },
+          select: {
+            finalGraphicUrl: true,
+            customImageUrl: true,
+            occasionName: true,
+            captions: { select: { captionText: true }, take: 1 },
+          },
+        });
+        if (freshPost?.finalGraphicUrl) {
+          finalGraphicUrl = freshPost.finalGraphicUrl;
+        }
+        if (freshPost?.captions?.[0]?.captionText) {
+          finalPostContent = freshPost.captions[0].captionText;
+        }
+      } catch (freshErr) {
+        logger.debug(`[PostWorker] Note fetching fresh post details: ${freshErr.message}`);
+      }
+    }
+
+    // Call Live Social Publisher Service (with Instagram Meta Graph API support)
     const publishResult = await liveSocialPublisherService.publishToPlatforms({
       postId: postId || scheduledPostId,
       userId,
-      postContent,
-      graphicUrl,
+      postContent: finalPostContent,
+      graphicUrl: finalGraphicUrl,
       targetPlatforms: targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],
     });
 

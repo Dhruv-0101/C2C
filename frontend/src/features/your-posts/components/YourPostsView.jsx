@@ -501,6 +501,24 @@ export const YourPostsView = ({
                       {item.status}
                     </span>
 
+                    {/* Edit in Studio to Re-render or Customize Graphic */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate("/create-post", {
+                          state: {
+                            reusePost: item.post,
+                            isEditingScheduled: true,
+                            scheduledPostId: item.id,
+                          },
+                        })
+                      }
+                      className="p-2 rounded-xl bg-[#0B0F17] hover:bg-amber-500/15 border border-[#2C384E] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition cursor-pointer"
+                      title="Edit & Re-render Graphic with Latest BrandKit in Post Studio"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                    </button>
+
                     {/* Preview Full HD Graphic */}
                     {item.post?.finalGraphicUrl && (
                       <button
