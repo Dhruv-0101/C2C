@@ -73,15 +73,6 @@ export const AdminFestivalManagerView = () => {
     includeInactive: true,
   });
 
-  // Complete Festivals Query (All system occasions) for "Templates by Festival" Catalog Explorer
-  const {
-    festivals: allFestivals = [],
-    isLoading: isLoadingAllFestivals,
-  } = useFestivals({
-    limit: 100,
-    includeInactive: true,
-  });
-
   // Mode View: "list" (Table Management) vs "calendar" (Monthly Grid) vs "form" (Create/Edit Page) vs "templates" (Templates by Festival)
   const [displayMode, setDisplayMode] = useState("list");
 
@@ -382,10 +373,7 @@ export const AdminFestivalManagerView = () => {
       {displayMode === "calendar" ? (
         <CalendarPage onAddFestival={handleOpenCreate} />
       ) : displayMode === "templates" ? (
-        <TemplatesByFestivalView
-          festivals={allFestivals}
-          isLoadingFestivals={isLoadingAllFestivals}
-        />
+        <TemplatesByFestivalView />
       ) : (
         /* Render Mode 2: Table / Card Management List */
         <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">

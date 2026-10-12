@@ -26,24 +26,43 @@ import { TemplatePostsModal } from "@/features/admin/templates/components/Templa
  * @param {Array} props.festivals - List of available festival entities
  * @param {boolean} props.isLoadingFestivals - Whether parent festivals are loading
  */
-export const TemplatesByFestivalView = ({ festivals: propFestivals = [], isLoadingFestivals = false }) => {
+export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFestivals: propLoading = false }) => {
+  // 1. Festivals Occasions State & Pagination
+  const [festPage, setFestPage] = useState(1);
+  const [festLimit, setFestLimit] = useState(8);
   const [festivalSearch, setFestivalSearch] = useState("");
   const debouncedFestivalSearch = useDebounce(festivalSearch, 300);
 
-  // Self-sufficient query ensuring all system festivals (up to 100) are loaded with server search fallback
+  // Reset festival page on search filter change
+  useEffect(() => {
+    setFestPage(1);
+  }, [debouncedFestivalSearch]);
+
+  // Festivals Server-Side Paginated Query
   const {
-    festivals: fetchedFestivals = [],
-    isLoading: isLoadingFetched,
+    festivals = [],
+    meta: festivalMeta,
+    isLoading: isFetchingFestivals,
   } = useFestivals({
-    limit: 100,
+    page: festPage,
+    limit: festLimit,
     search: debouncedFestivalSearch || undefined,
     includeInactive: true,
   });
 
-  const festivals = propFestivals.length > 8 ? propFestivals : (fetchedFestivals.length > 0 ? fetchedFestivals : propFestivals);
-  const isLoading = isLoadingFestivals || (festivals.length === 0 && isLoadingFetched);
+  const isLoadingFestivals = propLoading || isFetchingFestivals;
 
-  const [selectedFestivalId, setSelectedFestivalId] = useState("");
+  // Active Selected Festival Object
+  const [activeFestival, setActiveFestival] = useState(null);
+
+  // Auto-select first festival when data first loads
+  useEffect(() => {
+    if (!activeFestival && festivals.length > 0) {
+      setActiveFestival(festivals[0]);
+    }
+  }, [festivals, activeFestival]);
+
+  // 2. Templates State & Pagination for Active Festival
   const [templatePage, setTemplatePage] = useState(1);
   const [templateLimit, setTemplateLimit] = useState(8);
   const [templateSearch, setTemplateSearch] = useState("");
@@ -52,24 +71,15 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals = [], isLoadi
 
   const debouncedTemplateSearch = useDebounce(templateSearch, 300);
 
-  // Auto-select first festival when festivals become available
-  useEffect(() => {
-    if ((!selectedFestivalId || !festivals.some((f) => f.id === selectedFestivalId)) && festivals.length > 0) {
-      setSelectedFestivalId(festivals[0].id);
-    }
-  }, [festivals, selectedFestivalId]);
-
-  // Reset template pagination when switching festivals or searching
+  // Reset template pagination when switching active festival or searching
   useEffect(() => {
     setTemplatePage(1);
-  }, [selectedFestivalId, debouncedTemplateSearch]);
+  }, [activeFestival?.id, debouncedTemplateSearch]);
 
-  const activeFestival = festivals.find((f) => f.id === selectedFestivalId) || festivals[0] || null;
-
-  // Query templates for active festival
+  // Query templates attached to the active festival
   const {
     templates = [],
-    meta,
+    meta: templateMeta,
     isLoading: isLoadingTemplates,
     error,
   } = useTemplates(
@@ -82,101 +92,129 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals = [], isLoadi
     { enabled: Boolean(activeFestival?.id) }
   );
 
-  // Filter festivals list for selector pills
-  const filteredFestivals = festivals.filter((f) => {
-    if (!debouncedFestivalSearch) return true;
-    const q = debouncedFestivalSearch.toLowerCase();
-    return (
-      f.name?.toLowerCase().includes(q) ||
-      f.targetRegion?.toLowerCase().includes(q) ||
-      f.description?.toLowerCase().includes(q)
-    );
-  });
-
   const totalTemplates =
-    meta?.totalItems ??
+    templateMeta?.totalItems ??
     activeFestival?._count?.templates ??
     (Array.isArray(activeFestival?.templates) ? activeFestival.templates.length : templates.length);
 
-  if (isLoading && festivals.length === 0) {
-    return (
-      <div className="p-12 text-center text-slate-400 text-sm">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p>Loading festival templates catalog...</p>
-      </div>
-    );
-  }
-
-  if (festivals.length === 0) {
-    return (
-      <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl text-slate-400 text-xs space-y-2 bg-[#131B2A]/40">
-        <CalendarIcon className="w-8 h-8 text-amber-400 mx-auto opacity-40" />
-        <p className="font-heading font-bold text-sm text-white">No festivals available</p>
-        <p>Create a festival first to view and manage its attached graphic templates.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* 1. Festival Selector Tabs & Search Strip */}
-      <div className="p-5 rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-3.5 shadow-md">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-3">
+      {/* 1. Festival Selector Box with Search & Pagination */}
+      <div className="p-5 rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-4 shadow-md">
+        {/* Header: Title, Total Occasions Badge, and Search Filter */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-3.5">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
             <h4 className="font-heading font-extrabold text-sm text-white">
               Select Festival Occasion
             </h4>
-            <span className="text-[11px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-              {festivals.length} Occasions
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-900 px-2.5 py-0.5 rounded border border-slate-800">
+              {festivalMeta?.totalItems ?? festivals.length} Occasions
             </span>
           </div>
 
-          <div className="relative w-full sm:w-64">
+          <div className="relative w-full sm:w-72">
             <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Filter festivals..."
+              placeholder="Search festival occasion..."
               value={festivalSearch}
               onChange={(e) => setFestivalSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition"
+              className="w-full pl-8 pr-7 py-1.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition"
             />
+            {festivalSearch && (
+              <button
+                type="button"
+                onClick={() => setFestivalSearch("")}
+                className="absolute right-2.5 top-1.5 text-slate-400 hover:text-white text-xs cursor-pointer"
+                title="Clear filter"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Scrollable Festival Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
-          {filteredFestivals.map((fest) => {
-            const isSelected = fest.id === activeFestival?.id;
-            const count =
-              fest._count?.templates ??
-              (Array.isArray(fest.templates) ? fest.templates.length : 0);
+        {/* Festival Cards Responsive Grid */}
+        {isLoadingFestivals ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 py-1">
+            {Array.from({ length: festLimit }).map((_, i) => (
+              <div
+                key={`fest-skel-${i}`}
+                className="h-11 rounded-xl bg-slate-800/60 animate-pulse border border-[#2C384E]"
+              />
+            ))}
+          </div>
+        ) : festivals.length === 0 ? (
+          <div className="p-8 text-center border border-dashed border-[#2C384E] rounded-2xl text-slate-400 text-xs space-y-1.5 bg-[#0B0F17]/40">
+            <CalendarIcon className="w-6 h-6 text-amber-400 mx-auto opacity-50" />
+            <p className="font-semibold text-white">
+              {festivalSearch
+                ? `No festivals matching "${festivalSearch}".`
+                : "No festivals available."}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              {festivalSearch
+                ? "Try adjusting your search query."
+                : "Add festival occasions in Festival Management to see them here."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+            {festivals.map((fest) => {
+              const isSelected = fest.id === activeFestival?.id;
+              const count =
+                fest._count?.templates ??
+                (Array.isArray(fest.templates) ? fest.templates.length : 0);
 
-            return (
-              <button
-                key={fest.id}
-                type="button"
-                onClick={() => setSelectedFestivalId(fest.id)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-2 border cursor-pointer ${
-                  isSelected
-                    ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md font-bold scale-[1.02]"
-                    : "bg-[#0B0F17] text-slate-300 border-[#2C384E] hover:border-slate-500 hover:text-white"
-                }`}
-              >
-                <span>🪔 {fest.name}</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+              return (
+                <button
+                  key={fest.id}
+                  type="button"
+                  onClick={() => setActiveFestival(fest)}
+                  className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-between gap-2 border cursor-pointer text-left truncate ${
                     isSelected
-                      ? "bg-slate-950/20 text-slate-950"
-                      : "bg-slate-800 text-amber-400 border border-slate-700/60"
+                      ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md font-bold scale-[1.01]"
+                      : "bg-[#0B0F17] text-slate-300 border-[#2C384E] hover:border-slate-500 hover:text-white"
                   }`}
+                  title={`${fest.name} (${count} templates)`}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  <span className="truncate flex items-center gap-1.5">
+                    <span>🪔</span>
+                    <span className="truncate">{fest.name}</span>
+                  </span>
+                  <span
+                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold shrink-0 ${
+                      isSelected
+                        ? "bg-slate-950/20 text-slate-950"
+                        : "bg-slate-800 text-amber-400 border border-slate-700/60"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Festival Selector Pagination Controls */}
+        {festivalMeta && (festivalMeta.totalPages > 1 || festivalMeta.totalItems > festLimit) && (
+          <div className="pt-3 border-t border-[#2C384E]">
+            <Pagination
+              meta={festivalMeta}
+              currentPage={festPage}
+              totalPages={festivalMeta?.totalPages || Math.ceil((festivalMeta?.totalItems || festivals.length) / festLimit) || 1}
+              onPageChange={(p) => setFestPage(p)}
+              onLimitChange={(l) => {
+                setFestLimit(l);
+                setFestPage(1);
+              }}
+              pageSizeOptions={[4, 8, 12, 16]}
+              className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 py-2.5 px-3.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl shadow-xs"
+            />
+          </div>
+        )}
       </div>
 
       {/* 2. Active Festival Showcase & Templates Grid */}
