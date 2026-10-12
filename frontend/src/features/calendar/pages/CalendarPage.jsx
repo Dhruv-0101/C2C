@@ -30,11 +30,11 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
     deleteFestival,
   } = useFestivals({ limit: 500, includeInactive: false });
 
-  // TanStack Query for User Scheduled & Published Posts
+  // TanStack Query for User Scheduled & Published Posts (fetch up to 500 to ensure full calendar coverage)
   const {
     posts: userPosts,
     scheduledPosts,
-  } = useYourPosts();
+  } = useYourPosts({ postsLimit: 500, scheduledLimit: 500 });
 
   // Selected Festival Day Multi-Festival Tab & Template Search State
   const [selectedFestivalTab, setSelectedFestivalTab] = useState("all");
@@ -171,11 +171,14 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
   });
 
   // Published Posts Map by Date (YYYY-MM-DD)
+  // Maps by publishing execution target date (scheduledAt or publishedAt) if scheduled, falling back to createdAt for direct instant posts.
   const publishedMap = {};
   const publishedPostIds = new Set();
   userPosts.forEach((post) => {
-    if (post.status !== "PUBLISHED" || !post.createdAt) return;
-    const dateKey = getNormalizedDateKey(post.createdAt);
+    if (post.status !== "PUBLISHED") return;
+    const targetDate = post.scheduledPost?.publishedAt || post.scheduledPost?.scheduledAt || post.createdAt;
+    if (!targetDate) return;
+    const dateKey = getNormalizedDateKey(targetDate);
     if (!dateKey) return;
     if (!publishedMap[dateKey]) {
       publishedMap[dateKey] = [];
@@ -203,6 +206,19 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
     scheduledMap[dateKey].push(item);
   });
 
+  // Created / Authored Posts Map by Date (YYYY-MM-DD)
+  // Tracks user's creation activity on that specific day for "Your Work Today" modal tracking
+  const createdMap = {};
+  userPosts.forEach((post) => {
+    if (!post.createdAt) return;
+    const dateKey = getNormalizedDateKey(post.createdAt);
+    if (!dateKey) return;
+    if (!createdMap[dateKey]) {
+      createdMap[dateKey] = [];
+    }
+    createdMap[dateKey].push(post);
+  });
+
   const calendarCells = [];
   for (let i = 0; i < firstDayOfWeek; i++) {
     calendarCells.push({ key: `empty-${i}`, isPadding: true });
@@ -227,12 +243,20 @@ export const CalendarPage = ({ onSelectTemplate, onAddFestival }) => {
       festivals: festivalMap[dateKey] || [],
       scheduledPosts: scheduledMap[dateKey] || [],
       publishedPosts: publishedMap[dateKey] || [],
+      createdPosts: createdMap[dateKey] || [],
     });
   }
 
   const handleCellClick = (cell) => {
     if (cell.isPadding) return;
-    if (isAdmin && onAddFestival && cell.festivals.length === 0 && cell.scheduledPosts.length === 0 && cell.publishedPosts.length === 0) {
+    if (
+      isAdmin &&
+      onAddFestival &&
+      cell.festivals.length === 0 &&
+      cell.scheduledPosts.length === 0 &&
+      cell.publishedPosts.length === 0 &&
+      (!cell.createdPosts || cell.createdPosts.length === 0)
+    ) {
       onAddFestival(cell.dateKey);
       return;
     }

@@ -73,6 +73,7 @@ export const FestivalCalendarView = ({
   const safeSelectedFestivals = selectedDayDetails?.festivals || [];
   const rawScheduledPosts = selectedDayDetails?.scheduledPosts || [];
   const safePublishedPosts = selectedDayDetails?.publishedPosts || [];
+  const safeCreatedPosts = selectedDayDetails?.createdPosts || [];
 
   // Deduplicate: filter out scheduled queue items whose post has already been published
   const publishedIdsSet = new Set(safePublishedPosts.map((p) => p.id));
@@ -851,7 +852,8 @@ export const FestivalCalendarView = ({
                   </div>
                 ) : (
                   safeScheduledPosts.length === 0 &&
-                  safePublishedPosts.length === 0 && (
+                  safePublishedPosts.length === 0 &&
+                  safeCreatedPosts.length === 0 && (
                     <div
                       className="p-12 text-center text-xs"
                       style={{ color: isDark ? "#64748B" : "#94A3B8" }}
@@ -859,6 +861,127 @@ export const FestivalCalendarView = ({
                       No events, scheduled posts, or publications recorded for this date.
                     </div>
                   )
+                )}
+
+                {/* 4. Your Work Today / On This Day */}
+                {(safeCreatedPosts.length > 0 || selectedDayDetails.isToday) && (
+                  <div
+                    className="space-y-3 pt-4 border-t"
+                    style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4
+                        className="font-heading font-bold text-sm flex items-center gap-2"
+                        style={{ color: isDark ? "#F59E0B" : "#D97706" }}
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span>
+                          {selectedDayDetails.isToday
+                            ? "Your Work Today"
+                            : `Your Work on This Day (${safeCreatedPosts.length})`}
+                        </span>
+                      </h4>
+                      {safeCreatedPosts.length > 0 && (
+                        <span
+                          className="text-[11px] font-mono px-2 py-0.5 rounded-full border"
+                          style={{
+                            backgroundColor: isDark ? "#0B0F17" : "#F1F5F9",
+                            borderColor: isDark ? "#2C384E" : "#CBD5E1",
+                            color: isDark ? "#94A3B8" : "#64748B",
+                          }}
+                        >
+                          {safeCreatedPosts.length} post{safeCreatedPosts.length > 1 ? "s" : ""} crafted
+                        </span>
+                      )}
+                    </div>
+
+                    {safeCreatedPosts.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {safeCreatedPosts.map((post) => {
+                          const sched = post.scheduledPost;
+                          const isLive = post.status === "PUBLISHED" || sched?.status === "SUCCESS";
+                          const hasSchedule = Boolean(sched?.scheduledAt);
+
+                          return (
+                            <div
+                              key={`created-${post.id}`}
+                              className="p-3 rounded-xl border flex items-center gap-3 transition hover:border-amber-500/50"
+                              style={{
+                                backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                                borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                              }}
+                            >
+                              {post.finalGraphicUrl ? (
+                                <img
+                                  src={post.finalGraphicUrl}
+                                  alt="Crafted Graphic"
+                                  className="w-12 h-12 rounded-lg object-cover border shrink-0"
+                                  style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
+                                />
+                              ) : (
+                                <div
+                                  className="w-12 h-12 rounded-lg border flex items-center justify-center shrink-0"
+                                  style={{
+                                    backgroundColor: isDark ? "#131B2A" : "#F1F5F9",
+                                    borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                                  }}
+                                >
+                                  <ImageIcon className="w-5 h-5 text-slate-500" />
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1 space-y-0.5">
+                                <p
+                                  className="text-xs font-bold line-clamp-1"
+                                  style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                                  title={post.occasionName || post.template?.title || "Branded Graphic"}
+                                >
+                                  {post.occasionName || post.template?.title || "Branded Graphic"}
+                                </p>
+
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                                  Created: {new Date(post.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                </p>
+
+                                <div className="pt-0.5">
+                                  {isLive ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                      <CheckCircle2 className="w-3 h-3 shrink-0" />
+                                      {hasSchedule && sched?.publishedAt
+                                        ? `Live on ${new Date(sched.publishedAt).toLocaleDateString([], { month: "short", day: "numeric" })}`
+                                        : "Live (Published)"}
+                                    </span>
+                                  ) : hasSchedule ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-teal-600 dark:text-teal-400 font-semibold">
+                                      <Clock className="w-3 h-3 shrink-0" />
+                                      Scheduled for {new Date(sched.scheduledAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 font-semibold">
+                                      Draft Graphic
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div
+                        className="p-4 rounded-xl border border-dashed text-center text-xs space-y-0.5"
+                        style={{
+                          backgroundColor: isDark ? "rgba(11, 15, 23, 0.4)" : "#F8FAFC",
+                          borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                          color: isDark ? "#94A3B8" : "#64748B",
+                        }}
+                      >
+                        <p className="font-semibold">No graphics created yet today.</p>
+                        <p className="text-[11px] opacity-75">
+                          Pick any festival template above to design and schedule your posts!
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
