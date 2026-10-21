@@ -38,12 +38,12 @@ export const PostAnalyticsList = ({
   return (
     <div className="space-y-4">
       {/* Section Header & Sub-toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#131B2A] p-4 rounded-2xl border border-[#2C384E]">
-        <div className="space-y-0.5">
-          <h2 className="font-heading font-extrabold text-base text-white flex items-center gap-2">
-            <Layers className="w-4 h-4 text-amber-400" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#131B2A] p-3.5 sm:p-4 rounded-2xl border border-[#2C384E]">
+        <div className="space-y-0.5 min-w-0">
+          <h2 className="font-heading font-extrabold text-sm sm:text-base text-white flex items-center gap-2 flex-wrap">
+            <Layers className="w-4 h-4 text-amber-400 shrink-0" />
             <span>Individual Post Insights & Performance</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono shrink-0">
               {(meta?.totalCount !== undefined && meta?.totalCount !== null) ? meta.totalCount : posts.length}{' '}
               {((meta?.totalCount !== undefined && meta?.totalCount !== null) ? meta.totalCount : posts.length) === 1 ? 'post' : 'posts'}
             </span>
@@ -54,38 +54,40 @@ export const PostAnalyticsList = ({
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
           {/* Search Box */}
-          <div className="relative min-w-[180px] sm:min-w-[220px]">
+          <div className="relative w-full sm:w-auto min-w-0 sm:min-w-[220px] flex-1">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => onSearchChange?.(e.target.value)}
               placeholder="Search post caption or title..."
-              className="w-full bg-[#0B0F17] border border-[#2C384E] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/80 transition"
+              className="w-full bg-[#0B0F17] border border-[#2C384E] rounded-xl pl-8 pr-3 py-2 min-h-[38px] text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/80 transition"
             />
           </div>
 
           {/* Sort Selector */}
-          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2.5 py-1 shrink-0 gap-1.5">
-            <ArrowUpDown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <select
-              value={sortBy}
-              onChange={(e) => onSortChange?.(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 font-bold focus:outline-none cursor-pointer py-1"
-            >
-              <option value="createdAt" className="bg-[#131B2A]">Latest Published</option>
-              <option value="reach" className="bg-[#131B2A]">Highest Reach</option>
-              <option value="engagementRate" className="bg-[#131B2A]">Best Engagement Rate</option>
-              <option value="impressions" className="bg-[#131B2A]">Most Impressions</option>
-              <option value="likes" className="bg-[#131B2A]">Most Likes</option>
-            </select>
+          <div className="flex items-center justify-between bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2.5 py-1 w-full sm:w-auto shrink-0 gap-1.5 min-h-[38px]">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-initial">
+              <ArrowUpDown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <select
+                value={sortBy}
+                onChange={(e) => onSortChange?.(e.target.value)}
+                className="bg-transparent text-xs text-slate-200 font-bold focus:outline-none cursor-pointer py-1 truncate w-full sm:w-auto"
+              >
+                <option value="createdAt" className="bg-[#131B2A]">Latest Published</option>
+                <option value="reach" className="bg-[#131B2A]">Highest Reach</option>
+                <option value="engagementRate" className="bg-[#131B2A]">Best Engagement Rate</option>
+                <option value="impressions" className="bg-[#131B2A]">Most Impressions</option>
+                <option value="likes" className="bg-[#131B2A]">Most Likes</option>
+              </select>
+            </div>
 
             <button
               type="button"
               onClick={() => onSortOrderChange?.(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-2 py-0.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-[10px] font-mono font-extrabold text-amber-400 border border-slate-700/80 transition cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-[10px] font-mono font-extrabold text-amber-400 border border-slate-700/80 transition cursor-pointer shrink-0 min-h-[28px] active:scale-95"
               title={`Currently sorted ${sortOrder === 'desc' ? 'High to Low (Descending)' : 'Low to High (Ascending)'}. Click to reverse order.`}
             >
               {sortOrder === 'desc' ? 'DESC ↓' : 'ASC ↑'}
@@ -96,7 +98,7 @@ export const PostAnalyticsList = ({
 
       {/* Loading Skeleton Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
           {[1, 2, 3].map((n) => (
             <div
               key={n}
@@ -111,7 +113,7 @@ export const PostAnalyticsList = ({
         </div>
       ) : posts.length === 0 ? (
         /* Empty State */
-        <div className="p-10 rounded-2xl bg-[#131B2A] border border-[#2C384E] text-center space-y-3">
+        <div className="p-8 sm:p-10 rounded-2xl bg-[#131B2A] border border-[#2C384E] text-center space-y-3">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
             <BarChart3 className="w-5 h-5" />
           </div>
@@ -127,7 +129,7 @@ export const PostAnalyticsList = ({
       ) : (
         /* Grid of Post Analytics Cards */
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
             {posts.map((post) => (
               <PostAnalyticsCard
                 key={post.id}

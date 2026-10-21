@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireAdmin } from '../../common/middleware/role.middleware.js';
+import { requireTabPermission } from '../../common/middleware/role.middleware.js';
+import { ADMIN_TABS } from '../auth/auth.constants.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import { validateOptionalImageUpload } from '../../common/middleware/upload.middleware.js';
 import {
@@ -21,13 +22,13 @@ router.use(authenticate);
 // --- 🛡️ Enterprise Admin Post Tracking & Analytics Endpoints ---
 router.get(
   '/admin/analytics',
-  requireAdmin,
+  requireTabPermission(ADMIN_TABS.POSTS),
   postController.getAdminPostAnalytics
 );
 
 router.get(
   '/admin/all',
-  requireAdmin,
+  requireTabPermission(ADMIN_TABS.POSTS),
   validate(getAdminPostsQuerySchema),
   postController.getAdminPosts
 );

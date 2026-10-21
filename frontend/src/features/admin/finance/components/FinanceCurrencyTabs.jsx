@@ -28,7 +28,7 @@ export const FinanceCurrencyTabs = ({ currency, onSelectCurrency }) => {
   ];
 
   return (
-    <div className="flex items-center gap-2 p-1.5 bg-[#131B2A] border border-[#2C384E] rounded-2xl overflow-x-auto text-xs">
+    <div className="flex items-center gap-2 p-1.5 bg-[#131B2A] border border-[#2C384E] rounded-2xl overflow-x-auto custom-scrollbar text-xs">
       {tabs.map((tab) => {
         const isActive = currency === tab.id;
         return (
@@ -36,7 +36,7 @@ export const FinanceCurrencyTabs = ({ currency, onSelectCurrency }) => {
             key={tab.id}
             type="button"
             onClick={() => onSelectCurrency(tab.id)}
-            className={`px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center gap-2.5 whitespace-nowrap cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center gap-2.5 whitespace-nowrap cursor-pointer shrink-0 min-h-[38px] ${
               isActive
                 ? 'bg-slate-800/90 text-white font-bold border border-amber-500/40 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-[#0B0F17]/60 border border-transparent font-medium'

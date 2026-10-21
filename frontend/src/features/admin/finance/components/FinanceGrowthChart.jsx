@@ -46,12 +46,12 @@ const CustomChartTooltip = ({ active, payload, label }) => {
  */
 export const FinanceGrowthChart = ({ timelineChartData, currency, scopeInfo }) => {
   return (
-    <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-4">
+    <Card className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border-[#2C384E] space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2C384E] pb-3">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-400" />
+            <h3 className="font-heading font-bold text-sm sm:text-base text-white flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>Revenue Growth & Trajectory Graph</span>
             </h3>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono font-semibold">
@@ -62,21 +62,21 @@ export const FinanceGrowthChart = ({ timelineChartData, currency, scopeInfo }) =
             Multi-currency revenue trajectory over {scopeInfo?.label}.
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs font-mono font-bold">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono font-bold flex-wrap">
           <span className="flex items-center gap-1.5 text-amber-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shrink-0" />
             <span>INR (₹) Volume</span>
           </span>
           <span className="flex items-center gap-1.5 text-purple-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block shrink-0" />
             <span>USD ($) Volume</span>
           </span>
         </div>
       </div>
 
-      <div className="h-64 w-full pt-2">
+      <div className="h-56 sm:h-64 w-full min-w-0 pt-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={timelineChartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+          <AreaChart data={timelineChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="inrGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.4} />

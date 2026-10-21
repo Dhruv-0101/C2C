@@ -19,7 +19,8 @@ import {
   generateBackupCodes,
   verifyBackupCode,
 } from '../../common/helpers/two-factor.helper.js';
-import { addWelcomeEmailJob, addPasswordResetEmailJob } from '../../queues/email.queue.js';
+import { addWelcomeEmailJob, addPasswordResetEmailJob, addRegistrationOtpEmailJob } from '../../queues/email.queue.js';
+import { generate4DigitOtp, saveRegistrationOtp, verifyRegistrationOtp } from './auth.otp.js';
 import { getRefreshTokenExpiryDate } from './auth.constants.js';
 import { sanitizeUser } from './auth.helper.js';
 import * as authRepository from './auth.repository.js';
@@ -45,6 +46,12 @@ export async function loginWithGoogle({ idToken }) {
 
   if (!payload || !payload.email) {
     throw new UnauthorizedError('Unable to retrieve valid profile data from Google account.');
+  }
+
+  // Strictly enforce verified email to prevent Google account-linking takeover attacks
+  if (!payload.email_verified) {
+    logger.warn(`🛑 [AuthLogic] Rejected unverified Google email attempt: ${payload.email}`);
+    throw new UnauthorizedError('Your Google email address is not verified. Please verify it with Google before signing in.');
   }
 
   const email = payload.email.toLowerCase();
@@ -122,19 +129,66 @@ export async function loginWithGoogle({ idToken }) {
 }
 
 /**
- * Register a new regular user (by default END_USER, non-admin)
+ * Request a 4-digit verification code before registration
+ * Validates uniqueness, enforces 120s cooldown, saves in Redis, and dispatches email asynchronously
+ * 
+ * @param {{ email: string, fullName?: string }} params
+ * @returns {Promise<{ message: string, expiresInSeconds: number, cooldownSeconds: number }>}
  */
-export async function signupUser({ email, password, fullName }) {
-  const existingUser = await authRepository.findUserByEmail(email.toLowerCase());
+export async function sendRegistrationOtp({ email, fullName }) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // 1. Prevent generating OTPs for already registered email accounts
+  const existingUser = await authRepository.findUserByEmail(normalizedEmail);
   if (existingUser) {
-    throw new ConflictError('A user with this email address already exists.');
+    throw new ConflictError('An account with this email address already exists. Please sign in instead.');
+  }
+
+  // 2. Generate 4-digit numeric OTP
+  const otp = generate4DigitOtp();
+
+  // 3. Save OTP in Redis with 120s cooldown and 10-minute expiry
+  const saveResult = await saveRegistrationOtp(normalizedEmail, otp);
+
+  // 4. Dispatch Email via BullMQ (producer completes in < 5ms)
+  addRegistrationOtpEmailJob({
+    email: normalizedEmail,
+    otp,
+    fullName: fullName?.trim() || '',
+    expiresInMinutes: 10,
+  }).catch((err) => {
+    logger.error('Failed to dispatch registration OTP email job:', err.message);
+  });
+
+  return {
+    message: 'A 4-digit verification code has been sent to your email address.',
+    expiresInSeconds: saveResult.expiresInSeconds,
+    cooldownSeconds: saveResult.cooldownSeconds,
+    ...(env.NODE_ENV !== 'production' ? { devOtp: otp } : {}),
+  };
+}
+
+/**
+ * Register a new regular user (by default END_USER, non-admin)
+ * Strictly verifies the 4-digit email OTP before database persistence
+ */
+export async function signupUser({ email, password, fullName, otp }) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // 1. Verify 4-digit OTP from Redis (checks brute-force limit & single-use burn)
+  await verifyRegistrationOtp(normalizedEmail, otp);
+
+  // 2. Concurrency guard: Ensure email wasn't registered in the interim
+  const existingUser = await authRepository.findUserByEmail(normalizedEmail);
+  if (existingUser) {
+    throw new ConflictError('An account with this email address already exists.');
   }
 
   const saltRounds = 12;
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
   const newUser = await authRepository.createUser({
-    email: email.toLowerCase(),
+    email: normalizedEmail,
     passwordHash,
     fullName,
     role: 'END_USER',
@@ -349,9 +403,48 @@ export async function enable2FA(userId, code) {
 }
 
 /**
- * Disable 2FA
+ * Disable 2FA with mandatory re-authentication verification
+ * @param {string} userId
+ * @param {Object} [payload] - { password, code }
  */
-export async function disable2FA(userId) {
+export async function disable2FA(userId, { password, code } = {}) {
+  const user = await authRepository.findUserById(userId);
+  if (!user) {
+    throw new NotFoundError('User not found.');
+  }
+
+  if (!user.isTwoFactorEnabled) {
+    return { isTwoFactorEnabled: false };
+  }
+
+  let isVerified = false;
+
+  // 1. Check TOTP Authenticator code or backup recovery code
+  if (code) {
+    if (user.twoFactorSecret && verifyTwoFactorToken(code, user.twoFactorSecret)) {
+      isVerified = true;
+    } else if (user.backupCodes?.length > 0) {
+      const backupCheck = verifyBackupCode(code, user.backupCodes);
+      if (backupCheck.isValid) {
+        isVerified = true;
+      }
+    }
+  }
+
+  // 2. Check current account password
+  if (!isVerified && password && user.passwordHash) {
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (isPasswordValid) {
+      isVerified = true;
+    }
+  }
+
+  if (!isVerified) {
+    throw new UnauthorizedError(
+      'Security verification failed: Incorrect password or invalid 6-digit authenticator code.'
+    );
+  }
+
   await authRepository.disableTwoFactor(userId);
   return {
     isTwoFactorEnabled: false,
@@ -464,15 +557,30 @@ export async function getUsers(queryParams = {}) {
 
 /**
  * Toggle User Account Active/Deactivated Status (Admin Privilege)
+ * Strictly ensures:
+ * - SuperAdmin accounts can never be deactivated
+ * - Only SuperAdmin can activate/deactivate SubAdmin staff accounts
+ * - Users cannot deactivate their own active session
  */
-export async function toggleUserActiveStatus(userId, isActive) {
+export async function toggleUserActiveStatus(requestingUser, userId, isActive) {
   const user = await authRepository.findUserById(userId);
   if (!user) {
     throw new NotFoundError('User account not found.');
   }
 
+  // Prevent self-deactivation
+  if (requestingUser?.id === userId && !isActive) {
+    throw new BadRequestError('You cannot deactivate your own account.');
+  }
+
+  // SuperAdmin accounts can never be deactivated
   if (user.isSuperAdmin) {
     throw new ForbiddenError('SuperAdmin account status cannot be modified.');
+  }
+
+  // SubAdmins cannot deactivate fellow SubAdmins (SuperAdmin only privilege)
+  if ((user.isSubAdmin || user.role === 'SUB_ADMIN') && !requestingUser?.isSuperAdmin) {
+    throw new ForbiddenError('Access denied. Only SuperAdmin can activate or deactivate SubAdmin accounts.');
   }
 
   const updatedUser = await authRepository.updateUserActiveStatus(userId, isActive);
@@ -622,9 +730,27 @@ export async function requestPasswordReset({ email, clientUrl }) {
     expiresAt,
   });
 
-  const baseUrl = (clientUrl && typeof clientUrl === 'string' && clientUrl.startsWith('http')) 
-    ? clientUrl.replace(/\/$/, '') 
-    : env.CLIENT_URL;
+  // 🛡️ Security: Enforce strict whitelist to prevent Password Reset Poisoning (CWE-640)
+  const allowedClientUrls = [
+    env.CLIENT_URL,
+    env.CLIENT_URL_PROD,
+    env.CLIENT_URL_DEV,
+    'https://65-0-208-238.sslip.io',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
+  ]
+    .filter(Boolean)
+    .map((u) => u.replace(/\/$/, ''));
+
+  let baseUrl = env.CLIENT_URL ? env.CLIENT_URL.replace(/\/$/, '') : 'http://localhost:5173';
+  if (clientUrl && typeof clientUrl === 'string') {
+    const cleanClientUrl = clientUrl.replace(/\/$/, '');
+    if (allowedClientUrls.includes(cleanClientUrl)) {
+      baseUrl = cleanClientUrl;
+    }
+  }
 
   const resetUrl = `${baseUrl}/reset-password?token=${rawToken}`;
 

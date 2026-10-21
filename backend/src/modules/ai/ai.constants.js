@@ -50,3 +50,41 @@ export const DEFAULT_FALLBACK_HASHTAGS = Object.freeze([
   '#SocialMedia',
   '#DigitalMarketing',
 ]);
+
+// 🎨 NANO BANANA AI IMAGE GENERATION CONSTANTS
+export const AI_IMAGE_MODELS = Object.freeze({
+  NANO_BANANA_2_1: 'gemini-nano-banana-2.1',
+  NANO_BANANA_2: 'gemini-3.1-flash-image',
+  NANO_BANANA_PRO: 'nano-banana-pro-preview',
+});
+
+export const AI_IMAGE_STYLES = Object.freeze([
+  'Photorealistic',
+  'Festive Luxury',
+  'Modern Minimalist',
+  'Studio Product',
+  'Vibrant 3D Render',
+  'Warm Indian Heritage',
+]);
+
+export const DEFAULT_AI_IMAGE_STYLE = 'Photorealistic';
+
+export const AI_ASPECT_RATIOS = Object.freeze(['1:1', '4:5', '16:9']);
+export const DEFAULT_AI_ASPECT_RATIO = '1:1';
+
+// 🚦 BullMQ Asynchronous AI Job Lifecycle Statuses
+export const AI_JOB_STATUS = Object.freeze({
+  WAITING: 'WAITING',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+});
+
+// 📊 Step-by-Step UI Execution Trackers
+export const AI_JOB_STEPS = Object.freeze({
+  IN_QUEUE: 'IN_QUEUE',
+  GENERATING_AI: 'GENERATING_AI',
+  UPLOADING_CDN: 'UPLOADING_CDN',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+});

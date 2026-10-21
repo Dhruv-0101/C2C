@@ -6,17 +6,17 @@ import { Sparkles, Layers, Building2, Calendar, Share2 } from 'lucide-react';
  */
 export const AuthHeroBanner = () => {
   return (
-    <div className="space-y-5 pr-4 text-left">
+    <div className="space-y-4 lg:space-y-5 pr-0 lg:pr-4 text-left">
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-500/30 text-amber-400 text-xs font-semibold">
         <Sparkles className="w-3.5 h-3.5" />
         <span>Branded Social Media Platform</span>
       </div>
 
-      <h1 className="font-heading font-extrabold text-3xl xl:text-4xl leading-tight tracking-tight text-white">
+      <h1 className="font-heading font-extrabold text-2xl lg:text-3xl xl:text-4xl leading-tight tracking-tight text-white">
         Supercharge your brand with <span className="text-gradient">Custom Marketing</span>
       </h1>
 
-      <p className="text-slate-400 text-sm leading-relaxed">
+      <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
         BrandFlow empowers small businesses to composite custom brand frame overlays, auto-fill master BrandKits, and schedule festival marketing content seamlessly.
       </p>
 

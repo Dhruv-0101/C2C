@@ -116,31 +116,31 @@ export const ClientOnboardingHelpModal = ({
         </div>
 
         {/* Tab Switcher: Approval vs Step-by-Step Setup */}
-        <div className="grid grid-cols-2 p-1 rounded-xl bg-[#0B0F17] border border-[#2C384E] gap-1">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 p-1 rounded-xl bg-[#0B0F17] border border-[#2C384E] gap-1">
           <button
             type="button"
             onClick={() => setActiveTab('approval')}
-            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition cursor-pointer ${
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition cursor-pointer min-h-[38px] ${
               activeTab === 'approval'
                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-[#131B2A]'
             }`}
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>1. Approve & Connect (Fast)</span>
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span className="truncate">1. Approve & Connect (Fast)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('setup')}
-            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition cursor-pointer ${
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition cursor-pointer min-h-[38px] ${
               activeTab === 'setup'
                 ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-[#131B2A]'
             }`}
           >
-            <Smartphone className="w-4 h-4" />
-            <span>2. Create Page / Link Accounts</span>
+            <Smartphone className="w-4 h-4 shrink-0" />
+            <span className="truncate">2. Create Page / Link Accounts</span>
           </button>
         </div>
 
@@ -148,10 +148,10 @@ export const ClientOnboardingHelpModal = ({
         {activeTab === 'approval' && (
           <div className="space-y-3.5">
             {/* Step 1: Prerequisites with Helper Link */}
-            <div className="p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-2.5">
-              <div className="flex items-center justify-between">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                 <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-                  <span className="w-5 h-5 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-[11px]">
+                  <span className="w-5 h-5 rounded-full bg-amber-500 text-black flex items-center justify-center font-black text-[11px] shrink-0">
                     1
                   </span>
                   <span>Prerequisites (Check Before Connecting)</span>
@@ -159,7 +159,7 @@ export const ClientOnboardingHelpModal = ({
                 <button
                   type="button"
                   onClick={() => setActiveTab('setup')}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1 cursor-pointer transition hover:underline"
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1 cursor-pointer transition hover:underline self-start sm:self-auto"
                 >
                   <span>Need to create them? Click here</span>
                   <ArrowRight className="w-3 h-3" />
@@ -391,14 +391,14 @@ export const ClientOnboardingHelpModal = ({
         {/* TAB 2: STARTING FROM ZERO - TAP-BY-TAP MOBILE SETUP */}
         {activeTab === 'setup' && (
           <div className="space-y-3.5">
-            <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-between gap-2">
+            <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
               <p className="text-indigo-200 text-xs">
                 Follow these 3 simple mobile steps below. Each step takes less than 60 seconds on your phone!
               </p>
               <button
                 type="button"
                 onClick={handleCopyWhatsAppGuide}
-                className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-semibold text-[11px] transition cursor-pointer"
+                className="self-stretch sm:self-auto shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-semibold text-[11px] transition cursor-pointer min-h-[36px]"
               >
                 {copiedWhatsApp ? (
                   <>
@@ -500,14 +500,14 @@ export const ClientOnboardingHelpModal = ({
 
             {/* Sub-Step C: Link Instagram to Facebook Page */}
             <div className="p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-1.5">
                 <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                  <span className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center font-black text-[11px]">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center font-black text-[11px] shrink-0">
                     C
                   </span>
                   <span>Connect Instagram to Facebook Page (30 Seconds)</span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold self-start min-[420px]:self-auto">
                   Recommended via Facebook
                 </span>
               </div>

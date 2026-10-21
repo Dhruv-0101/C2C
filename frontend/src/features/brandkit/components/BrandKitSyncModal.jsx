@@ -282,12 +282,12 @@ export const BrandKitSyncModal = ({
         </div>
 
         {/* Action Controls */}
-        <div className="pt-2 border-t border-[#2C384E] flex flex-col sm:flex-row items-center justify-end gap-2.5">
+        <div className="pt-2 border-t border-[#2C384E] flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
           {isFinished ? (
             <Button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md"
+              className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md justify-center min-h-[38px]"
             >
               Done & Close
             </Button>
@@ -298,7 +298,7 @@ export const BrandKitSyncModal = ({
                 variant="outline"
                 disabled={isUpdating}
                 onClick={onClose}
-                className="w-full sm:w-auto text-xs border-[#2C384E] text-slate-400 hover:text-white"
+                className="w-full sm:w-auto text-xs border-[#2C384E] text-slate-400 hover:text-white justify-center min-h-[38px]"
               >
                 Keep Existing Graphics
               </Button>
@@ -312,7 +312,7 @@ export const BrandKitSyncModal = ({
                     onClose();
                     navigate("/posts");
                   }}
-                  className="w-full sm:w-auto text-xs border-[#2C384E] text-slate-300 hover:text-amber-400"
+                  className="w-full sm:w-auto text-xs border-[#2C384E] text-slate-300 hover:text-amber-400 justify-center min-h-[38px]"
                 >
                   <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
                   Review in Scheduled Queue
@@ -323,7 +323,7 @@ export const BrandKitSyncModal = ({
                 type="button"
                 disabled={isUpdating || totalPosts === 0}
                 onClick={handleUpdateAll}
-                className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20"
+                className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20 justify-center min-h-[38px]"
               >
                 {isUpdating ? (
                   <>

@@ -5,18 +5,29 @@ import { registerSchema } from "@/features/auth/validations/auth.validation";
 import { useRegister } from "../hooks/useRegister";
 import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import { RegisterForm } from "../components/RegisterForm";
+import { OtpVerificationModal } from "../components/OtpVerificationModal";
 
 /**
  * RegisterPage
- * Canonical Page component handling form state, Zod validation, and account registration mutations.
+ * Canonical Page component handling form state, Zod validation, and two-step OTP account registration.
  */
 export const RegisterPage = () => {
   const {
-    mutate: registerUser,
-    isPending,
-    error: apiError,
+    initiateRegistration,
+    verifyAndRegister,
+    resendOtp,
+    closeOtpModal,
+    isOtpModalOpen,
+    pendingEmail,
+    isSendingOtp,
+    isRegistering,
+    sendOtpError,
+    registerError,
+    resendSuccessMessage,
     successMessage: regSuccess,
+    devOtp,
   } = useRegister();
+
   const {
     mutate: googleAuth,
     isPending: isGooglePending,
@@ -41,8 +52,7 @@ export const RegisterPage = () => {
   });
 
   const onSubmit = (data) => {
-    sessionStorage.setItem("just_authenticated", "register");
-    registerUser(data);
+    initiateRegistration(data);
   };
 
   const handleGoogleSuccess = (credentialResponse) => {
@@ -52,21 +62,38 @@ export const RegisterPage = () => {
     }
   };
 
-  const activeError = apiError || googleError;
-  const isCreating = isPending || isGooglePending;
+  const activeError = sendOtpError || googleError;
+  const isCreating = isSendingOtp || isGooglePending;
 
   return (
-    <RegisterForm
-      register={register}
-      handleSubmit={handleSubmit}
-      errors={errors}
-      onSubmit={onSubmit}
-      handleGoogleSuccess={handleGoogleSuccess}
-      activeError={activeError}
-      isCreating={isCreating}
-      successMessage={successMessage}
-    />
+    <>
+      <RegisterForm
+        register={register}
+        handleSubmit={handleSubmit}
+        errors={errors}
+        onSubmit={onSubmit}
+        handleGoogleSuccess={handleGoogleSuccess}
+        activeError={activeError}
+        isCreating={isCreating}
+        successMessage={successMessage}
+      />
+
+      <OtpVerificationModal
+        isOpen={isOtpModalOpen}
+        email={pendingEmail}
+        onVerify={verifyAndRegister}
+        onResend={resendOtp}
+        onClose={closeOtpModal}
+        isVerifying={isRegistering}
+        isResending={isSendingOtp}
+        verifyError={registerError}
+        resendSuccessMessage={resendSuccessMessage}
+        initialCooldown={120}
+        devOtp={devOtp}
+      />
+    </>
   );
 };
 
 export default RegisterPage;
+

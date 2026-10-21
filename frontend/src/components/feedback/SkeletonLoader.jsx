@@ -48,7 +48,7 @@ export const SkeletonCard = ({
 }) => {
   return (
     <div
-      className={`rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-4 space-y-3.5 backdrop-blur-sm ${className}`}
+      className={`rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-3.5 sm:p-4 space-y-3.5 backdrop-blur-sm min-w-0 overflow-hidden ${className}`}
     >
       {/* Visual Thumbnail Area */}
       <div className="relative aspect-square w-full rounded-xl overflow-hidden skeleton-shimmer">
@@ -90,7 +90,7 @@ export const SkeletonGrid = ({
   const items = Array.from({ length: count });
 
   return (
-    <div className={`grid ${columns} gap-4 sm:gap-6 ${className}`}>
+    <div className={`grid ${columns} gap-3 sm:gap-5 w-full min-w-0 ${className}`}>
       {items.map((_, idx) => (
         <SkeletonCard key={idx} variant={variant} />
       ))}
@@ -105,11 +105,11 @@ export const SkeletonKPI = ({ count = 4, className = '' }) => {
   const items = Array.from({ length: count });
 
   return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
+    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full min-w-0 ${className}`}>
       {items.map((_, idx) => (
         <div
           key={idx}
-          className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-5 space-y-4"
+          className="rounded-2xl border border-slate-700/50 bg-[#131B2A]/80 p-4 sm:p-5 space-y-4 min-w-0 overflow-hidden"
         >
           <div className="flex items-center justify-between">
             <div className="h-3.5 w-24 rounded skeleton-shimmer opacity-80" />
@@ -138,8 +138,8 @@ export const SkeletonTable = ({
   const colItems = Array.from({ length: cols });
 
   return (
-    <div className={`overflow-x-auto rounded-2xl border border-[#2C384E] bg-[#131B2A] ${className}`}>
-      <table className="w-full text-left text-xs">
+    <div className={`overflow-x-auto rounded-2xl border border-[#2C384E] bg-[#131B2A] w-full min-w-0 ${className}`}>
+      <table className="w-full text-left text-xs min-w-[520px]">
         <thead className="bg-[#0B0F17] text-slate-400 uppercase font-semibold text-[11px] border-b border-[#2C384E]">
           <tr>
             {headers && headers.length > 0 ? (

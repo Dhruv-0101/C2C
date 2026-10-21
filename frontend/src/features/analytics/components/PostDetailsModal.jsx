@@ -59,19 +59,19 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
       description={`Full breakdown & live Meta metrics for: ${title}`}
       maxWidth="max-w-3xl"
     >
-      <div className="space-y-6 text-xs text-slate-700 dark:text-slate-300 max-h-[75vh] overflow-y-auto pr-1">
+      <div className="space-y-5 sm:space-y-6 text-xs text-slate-700 dark:text-slate-300 max-h-[82vh] overflow-y-auto custom-scrollbar pr-0.5 sm:pr-1">
         {/* Main Content Grid: Graphic + Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E]">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E]">
           {/* Post Graphic Preview */}
-          <div className="md:col-span-5 flex flex-col items-center justify-center bg-black/40 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2C384E] relative group">
+          <div className={`md:col-span-5 aspect-square w-full max-w-[280px] md:max-w-none mx-auto flex items-center justify-center bg-black/40 rounded-xl overflow-hidden relative group shadow-xl ${graphicUrl ? 'border-2 border-amber-500/80' : 'border border-slate-200 dark:border-[#2C384E]'}`}>
             {graphicUrl ? (
               <img
                 src={graphicUrl}
                 alt={title}
-                className="w-full h-auto max-h-64 object-contain transition duration-300 group-hover:scale-105"
+                className="w-full h-full object-contain transition duration-300 group-hover:scale-105"
               />
             ) : (
-              <div className="h-48 w-full flex items-center justify-center text-slate-400 font-mono text-xs">
+              <div className="h-44 sm:h-48 w-full flex items-center justify-center text-slate-400 font-mono text-xs">
                 No Graphic Available
               </div>
             )}
@@ -119,7 +119,7 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
                 </span>
               </div>
 
-              <h3 className="font-heading font-extrabold text-base text-slate-900 dark:text-white leading-snug">
+              <h3 className="font-heading font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
                 {title}
               </h3>
 
@@ -151,7 +151,7 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
             </div>
 
             {/* Live Sync Status Tag */}
-            <div className="pt-1 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-mono border-t border-slate-200 dark:border-[#2C384E]">
+            <div className="pt-1 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-mono border-t border-slate-200 dark:border-[#2C384E] flex-wrap gap-1">
               <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Meta Graph API Live Verified</span>
@@ -167,66 +167,66 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
         </div>
 
         {/* Aggregate KPI Badges for This Specific Post */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-          <div className="p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-2.5">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase block flex items-center justify-center gap-1">
               <Eye className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Impr
             </span>
-            <span className="text-base font-extrabold text-slate-900 dark:text-white font-mono">
+            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white font-mono">
               {formatNumber(metrics.impressions || 0)}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase block flex items-center justify-center gap-1">
               <Users className="w-3 h-3 text-amber-500 dark:text-amber-400" /> Reach
             </span>
-            <span className="text-base font-extrabold text-slate-900 dark:text-white font-mono">
+            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white font-mono">
               {formatNumber(metrics.reach || 0)}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase block flex items-center justify-center gap-1">
               <Heart className="w-3 h-3 text-rose-500 dark:text-rose-400" /> Likes
             </span>
-            <span className="text-base font-extrabold text-rose-600 dark:text-rose-400 font-mono">
+            <span className="text-sm sm:text-base font-extrabold text-rose-600 dark:text-rose-400 font-mono">
               {formatNumber(metrics.likes || 0)}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase block flex items-center justify-center gap-1">
               <MessageCircle className="w-3 h-3 text-sky-500 dark:text-sky-400" /> Comments
             </span>
-            <span className="text-base font-extrabold text-sky-600 dark:text-sky-400 font-mono">
+            <span className="text-sm sm:text-base font-extrabold text-sky-600 dark:text-sky-400 font-mono">
               {formatNumber(metrics.comments || 0)}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center space-y-0.5 shadow-2xs">
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase block flex items-center justify-center gap-1">
               <Share2 className="w-3 h-3 text-emerald-500 dark:text-emerald-400" /> Shares
             </span>
-            <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
+            <span className="text-sm sm:text-base font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
               {formatNumber(metrics.shares || 0)}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-gradient-to-br dark:from-amber-500/10 dark:to-indigo-500/10 border border-amber-300 dark:border-amber-500/30 text-center space-y-0.5 shadow-2xs">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-amber-50 dark:bg-gradient-to-br dark:from-amber-500/10 dark:to-indigo-500/10 border border-amber-300 dark:border-amber-500/30 text-center space-y-0.5 shadow-2xs">
             <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase block flex items-center justify-center gap-1">
               <TrendingUp className="w-3 h-3" /> Rate
             </span>
-            <span className="text-base font-extrabold text-amber-700 dark:text-amber-300 font-mono">
+            <span className="text-sm sm:text-base font-extrabold text-amber-700 dark:text-amber-300 font-mono">
               {metrics.engagementRate || 0}%
             </span>
           </div>
         </div>
 
         {/* Calculation Walkthrough Card */}
-        <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 dark:bg-gradient-to-r dark:from-amber-500/5 dark:via-indigo-500/5 dark:to-transparent dark:border-amber-500/20 space-y-1.5 font-mono text-[11px]">
+        <div className="p-3 sm:p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 dark:bg-gradient-to-r dark:from-amber-500/5 dark:via-indigo-500/5 dark:to-transparent dark:border-amber-500/20 space-y-1.5 font-mono text-[10px] sm:text-[11px] break-words">
           <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-bold text-xs font-sans">
-            <Calculator className="w-3.5 h-3.5" />
+            <Calculator className="w-3.5 h-3.5 shrink-0" />
             <span>Calculation for this post:</span>
           </div>
           <div className="text-slate-700 dark:text-slate-300">
@@ -243,7 +243,7 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
             Platform Breakdown (Channel-by-Channel)
           </h4>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             {platformBreakdown.length === 0 ? (
               <div className="p-4 text-center text-xs text-slate-500 col-span-2">
                 No channel breakdown records available.
@@ -255,7 +255,7 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
                 return (
                   <div
                     key={item.platform}
-                    className={`p-4 rounded-xl border space-y-3 ${
+                    className={`p-3.5 sm:p-4 rounded-xl border space-y-3 ${
                       isIg
                         ? 'bg-rose-50/60 dark:bg-gradient-to-br dark:from-rose-950/20 dark:via-[#0B0F17] dark:to-[#0B0F17] border-rose-200 dark:border-rose-500/30'
                         : isFb
@@ -304,7 +304,7 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200 dark:border-[#2C384E] font-mono">
+                    <div className="flex flex-col min-[380px]:flex-row items-start min-[380px]:items-center justify-between text-[10px] sm:text-[11px] pt-1.5 border-t border-slate-200 dark:border-[#2C384E] font-mono gap-1">
                       <span className="text-slate-600 dark:text-slate-400">
                         Reach: <strong className="text-slate-900 dark:text-white">{formatNumber(item.reach)}</strong>
                       </span>
@@ -324,7 +324,7 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
 
         {/* Modal Footer */}
         <div className="pt-2 flex justify-end">
-          <Button variant="outline" size="sm" onClick={onClose} className="px-5 font-bold">
+          <Button variant="outline" size="sm" onClick={onClose} className="w-full sm:w-auto px-5 font-bold min-h-[38px] active:scale-95">
             Close
           </Button>
         </div>

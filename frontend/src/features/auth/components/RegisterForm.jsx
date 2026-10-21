@@ -22,8 +22,8 @@ export const RegisterForm = ({
   successMessage,
 }) => {
   return (
-    <Card className="w-full max-w-md mx-auto p-5 sm:p-6 border-[#2C384E] bg-[#131B2A]/90 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-3.5">
+    <Card className="w-full max-w-md mx-auto p-4 min-[380px]:p-5 sm:p-6 border-[#2C384E] bg-[#131B2A]/90 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-2xl sm:rounded-3xl">
+      <div className="space-y-3 sm:space-y-3.5">
         {/* Form Header */}
         <div className="space-y-1 text-center sm:text-left">
           <h2 className="font-heading text-xl sm:text-2xl font-extrabold tracking-tight text-white">
@@ -36,9 +36,9 @@ export const RegisterForm = ({
 
         {/* Success Alert */}
         {successMessage && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in duration-300">
+          <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in duration-300">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-            <span>{successMessage}</span>
+            <span className="break-words">{successMessage}</span>
           </div>
         )}
 
@@ -108,13 +108,13 @@ export const RegisterForm = ({
             isLoading={isCreating}
             disabled={isCreating || !!successMessage}
             icon={UserPlus}
-            className="w-full shadow-lg shadow-amber-500/20 mt-1"
+            className="w-full shadow-lg shadow-amber-500/20 mt-1 py-3 sm:py-3.5 text-sm sm:text-base font-bold"
           >
             {isCreating
-              ? "Creating Account..."
+              ? "Sending Verification Code..."
               : successMessage
               ? "Redirecting..."
-              : "Create Account"}
+              : "Continue & Verify Email ✨"}
           </Button>
         </form>
 
@@ -127,7 +127,7 @@ export const RegisterForm = ({
         </div>
 
         {/* Google OAuth Button */}
-        <div className="flex justify-center w-full pt-0.5" style={{ colorScheme: "light" }}>
+        <div className="flex justify-center w-full pt-0.5 [&>div]:!w-full [&_iframe]:!w-full max-w-full overflow-hidden" style={{ colorScheme: "light" }}>
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={() => console.error("Google Sign-In Failed")}

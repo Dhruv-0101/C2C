@@ -14,7 +14,8 @@ export const ThemeToggle = ({ className = "", showText = true }) => {
       onClick={toggleTheme}
       type="button"
       title={`Switch to ${isDark ? "Light" : "Dark"} Mode`}
-      className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center justify-center gap-2 group ${
+      aria-label={`Switch to ${isDark ? "Light" : "Dark"} Mode`}
+      className={`p-2 sm:p-2.5 rounded-xl border transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 group shrink-0 ${
         isDark
           ? "bg-[#131B2A] border-[#2C384E] text-amber-400 hover:bg-slate-800 hover:border-amber-500/50 shadow-md"
           : "bg-white border-slate-200 text-indigo-600 hover:bg-slate-100 hover:border-indigo-400 shadow-sm"
@@ -24,7 +25,7 @@ export const ThemeToggle = ({ className = "", showText = true }) => {
         <>
           <Sun className="w-4 h-4 text-amber-400 group-hover:rotate-45 transition-transform duration-300 fill-amber-400/20 shrink-0" />
           {showText && (
-            <span className="text-xs font-bold text-slate-200 group-hover:text-white truncate">
+            <span className="hidden sm:inline text-xs font-bold text-slate-200 group-hover:text-white truncate">
               Light Mode
             </span>
           )}
@@ -33,7 +34,7 @@ export const ThemeToggle = ({ className = "", showText = true }) => {
         <>
           <Moon className="w-4 h-4 text-indigo-600 group-hover:-rotate-12 transition-transform duration-300 fill-indigo-600/20 shrink-0" />
           {showText && (
-            <span className="text-xs font-bold text-slate-800 group-hover:text-slate-950 truncate">
+            <span className="hidden sm:inline text-xs font-bold text-slate-800 group-hover:text-slate-950 truncate">
               Dark Mode
             </span>
           )}

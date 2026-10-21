@@ -68,22 +68,22 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
   return (
     <>
       <div
-        className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-50 flex items-center justify-center p-3 sm:p-5 animate-in fade-in bg-slate-950/80 backdrop-blur-sm overflow-hidden"
+        className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-50 flex items-center justify-center p-2.5 sm:p-4 md:p-5 animate-in fade-in bg-slate-950/80 backdrop-blur-sm overflow-hidden"
         onClick={onClose}
       >
         <div
-          className="w-full max-w-5xl max-h-[90vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+          className="w-full max-w-5xl max-h-[94vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Header */}
-          <div className="p-5 sm:p-6 border-b border-[#2C384E] flex items-center justify-between gap-4 shrink-0 bg-[#0B0F17]">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
-                <FolderTree className="w-5 h-5" />
+          <div className="p-3.5 sm:p-5 md:p-6 border-b border-[#2C384E] flex items-start sm:items-center justify-between gap-3 shrink-0 bg-[#0B0F17]">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
+                <FolderTree className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-heading font-extrabold text-lg text-white truncate">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <h3 className="font-heading font-extrabold text-base sm:text-lg text-white truncate">
                     Templates in {category.name}
                   </h3>
                   <span className="text-[11px] font-mono text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/30 font-semibold shrink-0">
@@ -102,7 +102,7 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
               title="Close Modal"
             >
               <X className="w-5 h-5" />
@@ -110,9 +110,9 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
           </div>
 
           {/* Search Filter Header Bar */}
-          <div className="px-5 py-3.5 border-b border-[#2C384E] bg-[#0E1522] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+          <div className="px-3.5 sm:px-5 py-3 border-b border-[#2C384E] bg-[#0E1522] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
             <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder={`Search templates in ${category.name}...`}
@@ -124,7 +124,7 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white text-xs"
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white text-xs cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -140,9 +140,9 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
           </div>
 
           {/* Modal Scrollable Content Body */}
-          <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+          <div className="p-3.5 sm:p-5 md:p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
             {isLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                 {Array.from({ length: limit }).map((_, i) => (
                   <div
                     key={`skel-cat-tpl-${i}`}
@@ -155,11 +155,11 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
                 ))}
               </div>
             ) : error ? (
-              <div className="p-8 text-center text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs">
+              <div className="p-6 sm:p-8 text-center text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs">
                 Failed to load templates for this category. Please try again.
               </div>
             ) : templates.length === 0 ? (
-              <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl text-slate-400 text-xs space-y-2 bg-[#0B0F17]/40">
+              <div className="p-8 sm:p-12 text-center border border-dashed border-[#2C384E] rounded-2xl text-slate-400 text-xs space-y-2 bg-[#0B0F17]/40">
                 <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center mx-auto">
                   <FileCode2 className="w-6 h-6 text-teal-400" />
                 </div>
@@ -173,7 +173,7 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                 {templates.map((tpl) => (
                   <div
                     key={tpl.id}
@@ -251,7 +251,7 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
 
           {/* Modal Footer with Pagination */}
           {templates.length > 0 && (
-            <div className="p-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
+            <div className="p-3 sm:p-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
               <Pagination
                 meta={meta}
                 currentPage={page}
@@ -262,7 +262,7 @@ export const CategoryTemplatesModal = ({ isOpen, onClose, category }) => {
                   setPage(1);
                 }}
                 pageSizeOptions={[8, 12, 16, 24]}
-                className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300"
+                className="flex flex-col min-[480px]:flex-row items-center justify-between gap-3 text-xs text-slate-300"
               />
             </div>
           )}

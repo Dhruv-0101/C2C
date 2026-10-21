@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import {
   FileCode2,
   Calendar,
@@ -90,22 +90,36 @@ export const AdminSidebar = ({
   const { user } = useAuth();
   const { mutate: logout } = useLogout();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  // Close mobile sidebar on Escape key
+  React.useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && setIsMobileOpen) setIsMobileOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileOpen, setIsMobileOpen]);
 
   const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const currentTab = searchParams.get("tab") || ADMIN_TABS.DASHBOARD;
+  const legacyTab = searchParams.get("tab");
 
   const handleSelectTab = (tabId) => {
-    setSearchParams({ tab: tabId });
+    if (tabId === ADMIN_TABS.DASHBOARD) {
+      navigate("/admin/dashboard");
+    } else {
+      navigate(`/admin/${tabId}`);
+    }
     if (setIsMobileOpen) {
       setIsMobileOpen(false);
     }
   };
 
   const handleLogout = () => {
-    logout(undefined, {
-      onSuccess: () => navigate("/login"),
-    });
+    if (setIsMobileOpen) setIsMobileOpen(false);
+    logout();
   };
 
   // Filter sections and items based on SubAdmin RBAC permissions
@@ -124,16 +138,16 @@ export const AdminSidebar = ({
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
-          className="modal-backdrop-overlay fixed inset-0 z-40 lg:hidden animate-in fade-in"
+          className="modal-backdrop-overlay fixed inset-0 z-40 lg:hidden backdrop-blur-xs animate-in fade-in"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen bg-[#131B2A] border-r border-[#2C384E] transition-all duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 left-0 z-50 h-screen h-[100dvh] bg-[#131B2A] border-r border-[#2C384E] transition-all duration-300 ease-in-out flex flex-col ${
           isCollapsed ? "w-20" : "w-64"
         } ${
-          isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"
+          isMobileOpen ? "translate-x-0 w-[280px] max-w-[calc(100vw-3rem)] shadow-2xl" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Sidebar Header Branding */}
@@ -144,7 +158,7 @@ export const AdminSidebar = ({
         >
           {!isCollapsed || isMobileOpen ? (
             <>
-              <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="flex items-center gap-2.5 overflow-hidden pr-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-glow">
                   <Shield className="w-5 h-5 text-amber-400" />
                 </div>
@@ -167,7 +181,7 @@ export const AdminSidebar = ({
               {isMobileOpen ? (
                 <button
                   onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
-                  className="lg:hidden p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition"
+                  className="lg:hidden p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
                   title="Close Sidebar"
                 >
                   <X className="w-4 h-4" />
@@ -175,7 +189,7 @@ export const AdminSidebar = ({
               ) : (
                 <button
                   onClick={handleToggle}
-                  className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
+                  className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 cursor-pointer"
                   title="Collapse Sidebar"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -185,7 +199,7 @@ export const AdminSidebar = ({
           ) : (
             <button
               onClick={handleToggle}
-              className="hidden lg:flex w-10 h-10 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition items-center justify-center group shadow-sm"
+              className="hidden lg:flex w-10 h-10 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition items-center justify-center group shadow-sm cursor-pointer"
               title="Expand Sidebar"
             >
               <Shield className="w-5 h-5 text-amber-400 group-hover:hidden" />
@@ -195,11 +209,11 @@ export const AdminSidebar = ({
         </div>
 
         {/* Categorized Navigation Links List */}
-        <div className="flex-1 py-4 px-3 space-y-4 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 py-3.5 px-3 space-y-3.5 sm:space-y-4 overflow-y-auto custom-scrollbar min-h-0">
           {filteredSections.map((section) => (
             <div key={section.title || section.items[0]?.id || "main-section"} className="space-y-1">
               {(!isCollapsed || isMobileOpen) && Boolean(section.title) && (
-                <div className="px-3 pb-1.5 pt-1">
+                <div className="px-3 pb-1 pt-0.5">
                   <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     {section.title}
                   </span>
@@ -208,15 +222,26 @@ export const AdminSidebar = ({
 
               {section.items.map((item) => {
                 const Icon = item.icon;
+                const isDashboard =
+                  location.pathname === "/admin" ||
+                  location.pathname === "/admin/" ||
+                  location.pathname === "/admin/dashboard" ||
+                  location.pathname === "/subadmin/dashboard";
+
                 const isActive =
-                  currentTab === item.id ||
-                  (item.id === ADMIN_TABS.FESTIVALS && currentTab === "calendar");
+                  (item.id === ADMIN_TABS.DASHBOARD && (isDashboard || legacyTab === ADMIN_TABS.DASHBOARD)) ||
+                  (item.id !== ADMIN_TABS.DASHBOARD &&
+                    (location.pathname === `/admin/${item.id}` ||
+                      location.pathname.startsWith(`/admin/${item.id}/`) ||
+                      legacyTab === item.id ||
+                      (item.id === ADMIN_TABS.FESTIVALS &&
+                        (location.pathname.startsWith("/admin/calendar") || legacyTab === "calendar"))));
 
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleSelectTab(item.id)}
-                    className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer ${
+                    className={`w-full flex items-center gap-3.5 px-3.5 py-2 sm:py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer ${
                       isCollapsed && !isMobileOpen ? "justify-center px-0" : ""
                     } ${
                       isActive
@@ -241,12 +266,15 @@ export const AdminSidebar = ({
         </div>
 
         {/* Sidebar Footer User Info & Controls */}
-        <div className="p-3 border-t border-[#2C384E] space-y-2 shrink-0 bg-[#0B0F17]">
+        <div className="p-2.5 sm:p-3 border-t border-[#2C384E] space-y-1.5 sm:space-y-2 shrink-0 bg-[#0B0F17]">
           {/* Admin User Profile Summary Card */}
           {(!isCollapsed || isMobileOpen) && (
             <div
-              onClick={() => navigate("/profile")}
-              className="p-2.5 rounded-xl bg-[#131B2A] hover:bg-slate-800/80 border border-[#2C384E] hover:border-amber-500/40 flex items-center justify-between transition cursor-pointer group"
+              onClick={() => {
+                if (setIsMobileOpen) setIsMobileOpen(false);
+                navigate("/profile");
+              }}
+              className="p-2 sm:p-2.5 rounded-xl bg-[#131B2A] hover:bg-slate-800/80 border border-[#2C384E] hover:border-amber-500/40 flex items-center justify-between transition cursor-pointer group"
               title="Manage Admin Profile"
             >
               <div className="flex items-center gap-2 overflow-hidden">
@@ -288,7 +316,7 @@ export const AdminSidebar = ({
             className={`transition cursor-pointer ${
               isCollapsed && !isMobileOpen
                 ? "w-10 h-10 p-0 mx-auto flex items-center justify-center rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700"
-                : "w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700"
+                : "w-full flex items-center justify-between p-2 sm:p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700"
             }`}
           >
             <span className="text-slate-300 font-medium flex items-center gap-1.5">
@@ -309,12 +337,13 @@ export const AdminSidebar = ({
 
           {/* Sign Out Button */}
           <button
+            type="button"
             onClick={handleLogout}
             title={isCollapsed && !isMobileOpen ? "Sign Out" : undefined}
-            className={`font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition cursor-pointer ${
+            className={`font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition cursor-pointer min-h-[38px] ${
               isCollapsed && !isMobileOpen
                 ? "w-10 h-10 p-0 mx-auto flex items-center justify-center"
-                : "w-full flex items-center gap-2 p-2.5 text-xs"
+                : "w-full flex items-center gap-2 p-2 sm:p-2.5 text-xs"
             }`}
           >
             <LogOut className="w-4 h-4 shrink-0" />

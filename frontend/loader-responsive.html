@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrandFlow - Next-Gen Responsive AI Loader Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: #F59E0B;
+            --primary-light: #FDE047;
+            --bg-dark: #080C14;
+            --card-bg: #0E1626;
+            --card-border: #1F2E45;
+            --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 70px rgba(245, 158, 11, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            --brick-bg: #0B111E;
+            --brick-mortar: #1E293B;
+            --brick-line: rgba(30, 41, 59, 0.25);
+            --navbar-bg: rgba(15, 23, 42, 0.7);
+            --navbar-border: rgba(30, 41, 59, 0.8);
+            --sidebar-bg: rgba(15, 23, 42, 0.35);
+            --sidebar-border: rgba(30, 41, 59, 0.6);
+            --post-bg: linear-gradient(145deg, #182438, #0D1626);
+            --post-border: rgba(245, 158, 11, 0.4);
+            --post-text: #FFFFFF;
+            --post-subtext: #94A3B8;
+            --title-color: #FFFFFF;
+            --subtitle-color: #94A3B8;
+            --badge-bg: rgba(245, 158, 11, 0.14);
+            --badge-border: rgba(245, 158, 11, 0.4);
+            --badge-color: #FBBF24;
+            --track-bg: #162032;
+            --track-border: rgba(255, 255, 255, 0.08);
+            --hint-color: #64748B;
+            --wire-color: rgba(71, 85, 105, 0.5);
+            --search-bg: rgba(30, 41, 59, 0.4);
+            --search-border: rgba(51, 65, 85, 0.4);
+            --skeleton-start: rgba(30, 41, 59, 0.4);
+            --skeleton-mid: rgba(51, 65, 85, 0.6);
+            --toolbar-h: 58px;
+            --device-scale: 1;
+
+            /* Simulator Frame Tokens (Dark) */
+            --sim-bg: #030712;
+            --sim-toolbar-bg: rgba(11, 17, 30, 0.95);
+            --sim-toolbar-border: rgba(30, 41, 59, 0.85);
+            --sim-workspace-bg: radial-gradient(circle at 50% 30%, #0d1527 0%, #030712 100%);
+            --sim-tab-group-bg: rgba(15, 23, 42, 0.85);
+            --sim-tab-border: rgba(51, 65, 85, 0.6);
+            --sim-tab-text: #94A3B8;
+            --sim-tab-active-bg: #1E293B;
+            --sim-tab-active-text: #FFFFFF;
+            --sim-btn-bg: rgba(30, 41, 59, 0.6);
+            --sim-btn-border: rgba(51, 65, 85, 0.6);
+            --sim-btn-color: #CBD5E1;
+            --sim-frame-bg: #080C14;
+            --sim-frame-border: #1E293B;
+            --sim-frame-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.9), 0 0 50px rgba(245, 158, 11, 0.08);
+            --sim-hardware-bg: #080C14;
+            --sim-hardware-text: #94A3B8;
+            --sim-windowbar-bg: #0B111E;
+            --sim-urlbar-bg: #080C14;
+            --sim-urlbar-text: #64748B;
+        }
+
+        /* ==========================================================================
+           LIGHT MODE PALETTE: SOHO ART LOFT STUDIO & NORDIC LIGHT SIMULATOR
+           ========================================================================== */
+        body.light-mode {
+            --bg-dark: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --card-border: #E2E8F0;
+            --card-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.08), 0 0 50px rgba(245, 158, 11, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            --brick-bg: #F8FAFC;
+            --brick-mortar: #CBD5E1;
+            --brick-line: rgba(203, 213, 225, 0.45);
+            --navbar-bg: rgba(255, 255, 255, 0.88);
+            --navbar-border: rgba(226, 232, 240, 0.9);
+            --sidebar-bg: rgba(255, 255, 255, 0.65);
+            --sidebar-border: rgba(226, 232, 240, 0.85);
+            --post-bg: linear-gradient(145deg, #FFFFFF, #F8FAFC);
+            --post-border: rgba(245, 158, 11, 0.45);
+            --post-text: #0F172A;
+            --post-subtext: #64748B;
+            --title-color: #0F172A;
+            --subtitle-color: #475569;
+            --badge-bg: rgba(245, 158, 11, 0.12);
+            --badge-border: rgba(245, 158, 11, 0.4);
+            --badge-color: #B45309;
+            --track-bg: #E2E8F0;
+            --track-border: #CBD5E1;
+            --hint-color: #64748B;
+            --wire-color: rgba(148, 163, 184, 0.7);
+            --search-bg: rgba(241, 245, 249, 0.9);
+            --search-border: rgba(203, 213, 225, 0.8);
+            --skeleton-start: rgba(226, 232, 240, 0.7);
+            --skeleton-mid: rgba(255, 255, 255, 0.9);
+
+            /* Simulator Frame Tokens (Light Mode) */
+            --sim-bg: #F1F5F9;
+            --sim-toolbar-bg: rgba(255, 255, 255, 0.92);
+            --sim-toolbar-border: rgba(226, 232, 240, 0.95);
+            --sim-workspace-bg: radial-gradient(circle at 50% 30%, #E2E8F0 0%, #CBD5E1 100%);
+            --sim-tab-group-bg: rgba(241, 245, 249, 0.95);
+            --sim-tab-border: rgba(203, 213, 225, 0.85);
+            --sim-tab-text: #64748B;
+            --sim-tab-active-bg: #FFFFFF;
+            --sim-tab-active-text: #0F172A;
+            --sim-btn-bg: #FFFFFF;
+            --sim-btn-border: #CBD5E1;
+            --sim-btn-color: #334155;
+            --sim-frame-bg: #F8FAFC;
+            --sim-frame-border: #CBD5E1;
+            --sim-frame-shadow: 0 25px 70px -15px rgba(15, 23, 42, 0.12), 0 0 40px rgba(245, 158, 11, 0.08);
+            --sim-hardware-bg: #F8FAFC;
+            --sim-hardware-text: #0F172A;
+            --sim-windowbar-bg: #F1F5F9;
+            --sim-urlbar-bg: #FFFFFF;
+            --sim-urlbar-text: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--sim-bg);
+            color: var(--title-color);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* ==========================================================================
+           RESPONSIVE SIMULATOR TOOLBAR
+           ========================================================================== */
+        .simulator-toolbar {
+            height: var(--toolbar-h);
+            background: var(--sim-toolbar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--sim-toolbar-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            gap: 12px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .simulator-toolbar.hidden {
+            transform: translateY(-100%);
+        }
+
+        .tool-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: max-content;
+        }
+
+        .tool-brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            color: var(--title-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.4s ease;
+        }
+
+        .tool-brand span {
+            color: var(--primary-glow);
+            transition: color 0.6s ease;
+        }
+
+        .tool-pill {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 7px;
+            border-radius: 99px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            color: var(--badge-color);
+            transition: all 0.4s ease;
+        }
+
+        /* Center Device Switcher Tabs */
+        .device-selector-group {
+            display: flex;
+            align-items: center;
+            background: var(--sim-tab-group-bg);
+            border: 1px solid var(--sim-tab-border);
+            border-radius: 12px;
+            padding: 3px;
+            gap: 2px;
+            overflow-x: auto;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .device-btn {
+            background: transparent;
+            border: none;
+            color: var(--sim-tab-text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .device-btn:hover {
+            color: var(--title-color);
+            background: rgba(125, 125, 125, 0.1);
+        }
+
+        .device-btn.active {
+            color: var(--sim-tab-active-text);
+            background: var(--sim-tab-active-bg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .device-btn.active .btn-icon {
+            color: var(--primary-glow);
+        }
+
+        /* Right Actions */
+        .tool-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: max-content;
+        }
+
+        .spec-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--sim-tab-text);
+            background: var(--sim-tab-group-bg);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--sim-tab-border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.4s ease;
+        }
+
+        .spec-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+        }
+
+        .action-icon-btn {
+            background: var(--sim-btn-bg);
+            border: 1px solid var(--sim-btn-border);
+            color: var(--sim-btn-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .action-icon-btn:hover {
+            background: var(--sim-tab-active-bg);
+            color: var(--title-color);
+            border-color: rgba(245, 158, 11, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Zoom scale buttons */
+        .zoom-selector-group {
+            display: flex;
+            align-items: center;
+            background: var(--sim-tab-group-bg);
+            border: 1px solid var(--sim-tab-border);
+            border-radius: 8px;
+            padding: 2px;
+            gap: 1px;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .zoom-btn {
+            background: transparent;
+            border: none;
+            color: var(--sim-tab-text);
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .zoom-btn.active {
+            background: var(--sim-tab-active-bg);
+            color: #F59E0B;
+        }
+
+        /* Float Show Toolbar Pill */
+        .unhide-toolbar-pill {
+            position: fixed;
+            top: 12px;
+            right: 14px;
+            z-index: 1001;
+            background: var(--sim-toolbar-bg);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #F59E0B;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 99px;
+            cursor: pointer;
+            display: none;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+            animation: bounce-in 0.3s ease;
+        }
+
+        @keyframes bounce-in {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ==========================================================================
+           MAIN STAGE VIEWPORT WORKSPACE
+           ========================================================================== */
+        .viewport-workspace {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            position: relative;
+            background: var(--sim-workspace-bg);
+            overflow: auto;
+            transition: background 0.4s ease;
+        }
+
+        /* Device Frame Shell Scaling */
+        .device-scaler-container {
+            transform: scale(var(--device-scale, 1));
+            transform-origin: center center;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .device-frame-shell {
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--sim-frame-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--sim-frame-shadow);
+        }
+
+        /* 1. Phone Mockup Frame (iPhone 15 Pro Style) */
+        .mode-phone .device-frame-shell {
+            width: 393px;
+            height: 840px;
+            border-radius: 50px;
+            border: 9px solid var(--sim-frame-border);
+            outline: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Phone Landscape */
+        .mode-phone.is-landscape .device-frame-shell {
+            width: 840px;
+            height: 393px;
+            border-radius: 44px;
+        }
+
+        /* 2. Compact Phone (Galaxy S24 / Android) */
+        .mode-phone-compact .device-frame-shell {
+            width: 360px;
+            height: 760px;
+            border-radius: 40px;
+            border: 8px solid var(--sim-frame-border);
+            outline: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mode-phone-compact.is-landscape .device-frame-shell {
+            width: 760px;
+            height: 360px;
+        }
+
+        /* 3. Tablet Mockup Frame (iPad Style) */
+        .mode-tablet .device-frame-shell {
+            width: 768px;
+            height: 940px;
+            border-radius: 36px;
+            border: 12px solid var(--sim-frame-border);
+            outline: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mode-tablet.is-landscape .device-frame-shell {
+            width: 940px;
+            height: 768px;
+        }
+
+        /* 4. Desktop Window Mockup Frame */
+        .mode-desktop .device-frame-shell {
+            width: 1140px;
+            height: 740px;
+            border-radius: 20px;
+            border: 1px solid var(--sim-frame-border);
+        }
+
+        /* ==================================================================
+           MOBILE & COMPACT FIXES: REMOVE SIDEBAR & OPTIMIZE LAYOUT
+           ================================================================== */
+        /* Specifically remove sidebar in Mobile, Compact and Tablet modes */
+        .mode-phone .resp-sidebar,
+        .mode-phone-compact .resp-sidebar,
+        .mode-tablet .resp-sidebar {
+            display: none !important;
+        }
+
+        /* Hide desktop search in phone & compact navbar */
+        .mode-phone .resp-ghost-search,
+        .mode-phone-compact .resp-ghost-search {
+            display: none !important;
+        }
+
+        /* Center and expand main body in mobile & compact */
+        .mode-phone .resp-app-body,
+        .mode-phone-compact .resp-app-body {
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+        }
+
+        .mode-phone .resp-stage-area,
+        .mode-phone-compact .resp-stage-area {
+            padding: 14px 10px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex: 1 !important;
+        }
+
+        .mode-phone .studio-wall-card,
+        .mode-phone-compact .studio-wall-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 20px 12px 18px 12px !important;
+            border-radius: 20px !important;
+            box-shadow: 0 15px 35px -8px rgba(0, 0, 0, 0.7), 0 0 35px rgba(245, 158, 11, 0.1) !important;
+        }
+
+        .mode-phone .scene-viewport,
+        .mode-phone-compact .scene-viewport {
+            width: 100% !important;
+            max-width: 100% !important;
+            aspect-ratio: 540 / 250 !important;
+            margin-bottom: 12px !important;
+        }
+
+        .mode-phone .stage-status-box,
+        .mode-phone-compact .stage-status-box {
+            width: 100% !important;
+            padding: 0 2px !important;
+        }
+
+        .mode-phone .badge-capsule,
+        .mode-phone-compact .badge-capsule {
+            padding: 3px 10px !important;
+            font-size: 9.5px !important;
+            margin-bottom: 6px !important;
+        }
+
+        .mode-phone .status-title,
+        .mode-phone-compact .status-title {
+            font-size: 17px !important;
+            margin-bottom: 3px !important;
+            line-height: 1.2 !important;
+        }
+
+        .mode-phone .status-subtitle,
+        .mode-phone-compact .status-subtitle {
+            font-size: 11.5px !important;
+            line-height: 1.35 !important;
+            max-width: 320px !important;
+            min-height: 28px !important;
+        }
+
+        .mode-phone .progress-track,
+        .mode-phone-compact .progress-track {
+            max-width: 240px !important;
+            width: 85% !important;
+            height: 5px !important;
+            margin-top: 12px !important;
+        }
+
+        .mode-phone .interactive-hint,
+        .mode-phone-compact .interactive-hint {
+            font-size: 9px !important;
+            margin-top: 8px !important;
+        }
+
+        /* 5. Full Native Viewport (Direct 100% Fluid Edge-to-Edge) */
+        .mode-native .device-frame-shell {
+            width: 100%;
+            height: 100%;
+            min-height: calc(100vh - var(--toolbar-h));
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            outline: none;
+        }
+
+        .mode-native .device-scaler-container {
+            width: 100%;
+            height: 100%;
+            transform: none !important;
+        }
+
+        .mode-native .viewport-workspace {
+            padding: 0;
+        }
+
+        /* Simulated Mobile Device Hardware (Dynamic Island + Status Bar) */
+        .mobile-hardware-bar {
+            height: 38px;
+            background: var(--sim-hardware-bg);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--sim-hardware-text);
+            position: relative;
+            z-index: 50;
+            flex-shrink: 0;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        .mode-phone .mobile-hardware-bar,
+        .mode-phone-compact .mobile-hardware-bar {
+            display: flex;
+        }
+
+        .is-landscape .mobile-hardware-bar {
+            display: none !important;
+        }
+
+        .dynamic-island {
+            width: 96px;
+            height: 22px;
+            background: #000;
+            border-radius: 99px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .island-camera-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #0d1527;
+            border: 1.5px solid #1e293b;
+        }
+
+        .mobile-home-bar {
+            height: 20px;
+            background: var(--sim-hardware-bg);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            flex-shrink: 0;
+            transition: background 0.4s ease;
+        }
+
+        .mode-phone .mobile-home-bar,
+        .mode-phone-compact .mobile-home-bar {
+            display: flex;
+        }
+
+        .home-pill {
+            width: 120px;
+            height: 4px;
+            border-radius: 99px;
+            background: var(--sim-hardware-text);
+            opacity: 0.4;
+            transition: background 0.4s ease;
+        }
+
+        /* Desktop Window Chrome (Mac Traffic Lights) */
+        .desktop-window-bar {
+            height: 36px;
+            background: var(--sim-windowbar-bg);
+            border-bottom: 1px solid var(--card-border);
+            display: none;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            z-index: 50;
+            flex-shrink: 0;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .mode-desktop .desktop-window-bar {
+            display: flex;
+        }
+
+        .traffic-lights {
+            display: flex;
+            gap: 7px;
+        }
+
+        .traffic-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+        }
+
+        .dot-red {
+            background: #EF4444;
+        }
+
+        .dot-yellow {
+            background: #F59E0B;
+        }
+
+        .dot-green {
+            background: #10B981;
+        }
+
+        .desktop-url-bar {
+            flex: 1;
+            max-width: 440px;
+            margin: 0 auto;
+            background: var(--sim-urlbar-bg);
+            height: 22px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--sim-urlbar-text);
+            font-family: 'JetBrains Mono', monospace;
+            transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* ==========================================================================
+           MULTI-DEVICE MATRIX (SPLIT VIEW)
+           ========================================================================== */
+        .multi-split-grid {
+            display: none;
+            width: 100%;
+            max-width: 1480px;
+            gap: 20px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 10px;
+        }
+
+        .mode-split .device-scaler-container {
+            display: none;
+        }
+
+        .mode-split .multi-split-grid {
+            display: flex;
+        }
+
+        .split-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .split-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--sim-tab-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--sim-tab-group-bg);
+            padding: 4px 12px;
+            border-radius: 99px;
+            border: 1px solid var(--sim-tab-border);
+            transition: all 0.4s ease;
+        }
+
+        .split-label span {
+            color: var(--primary-glow);
+        }
+
+        .split-card {
+            border-radius: 24px;
+            border: 1px solid var(--sim-frame-border);
+            background: var(--sim-frame-bg);
+            overflow: hidden;
+            box-shadow: var(--sim-frame-shadow);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .split-desktop-frame {
+            width: 530px;
+            height: 640px;
+            border-radius: 20px;
+            border: 4px solid var(--sim-frame-border);
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.4s ease;
+        }
+
+        .split-desktop-frame iframe {
+            width: 1080px;
+            height: 1300px;
+            transform: scale(0.49);
+            transform-origin: 0 0;
+            border: none;
+        }
+
+        .split-tablet-frame {
+            width: 480px;
+            height: 640px;
+            border-radius: 28px;
+            border: 6px solid var(--sim-frame-border);
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.4s ease;
+        }
+
+        .split-tablet-frame iframe {
+            width: 768px;
+            height: 1024px;
+            transform: scale(0.625);
+            transform-origin: 0 0;
+            border: none;
+        }
+
+        .split-mobile-frame {
+            width: 375px;
+            height: 640px;
+            border-radius: 36px;
+            border: 6px solid var(--sim-frame-border);
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.4s ease;
+        }
+
+        .split-mobile-frame iframe {
+            width: 375px;
+            height: 760px;
+            transform: scale(0.84);
+            transform-origin: 0 0;
+            border: none;
+        }
+
+        /* ==========================================================================
+           THE ACTUAL EMBEDDED RESPONSIVE LOADER CONTAINER
+           ========================================================================== */
+        .loader-embed-viewport {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: var(--bg-dark);
+            color: #F8FAFC;
+        }
+
+        .loader-embed-viewport::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .loader-embed-viewport::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.3);
+            border-radius: 99px;
+        }
+
+        /* Sparkle Particle Canvas */
+        .stage-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        /* Ambient Glow Orbs */
+        .studio-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            opacity: 0.16;
+            transition: background 1s ease;
+        }
+
+        .orb-top-right {
+            top: -15%;
+            right: 5%;
+            width: clamp(220px, 45vw, 420px);
+            height: clamp(220px, 45vw, 420px);
+            background: var(--primary-glow);
+        }
+
+        .orb-bottom-left {
+            bottom: -15%;
+            left: 5%;
+            width: clamp(200px, 40vw, 380px);
+            height: clamp(200px, 40vw, 380px);
+            background: #3B82F6;
+        }
+
+        /* Top Navbar (Responsive) */
+        .resp-navbar {
+            height: clamp(52px, 8vw, 64px);
+            border-bottom: 1px solid var(--navbar-border);
+            background: var(--navbar-bg);
+            backdrop-filter: blur(16px);
+            padding: 0 clamp(14px, 4vw, 28px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            position: relative;
+            flex-shrink: 0;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .resp-logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(17px, 3.2vw, 22px);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--title-color);
+            transition: color 0.4s ease;
+        }
+
+        .resp-logo-accent {
+            color: var(--primary-glow);
+            transition: color 0.8s ease;
+        }
+
+        .resp-nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .resp-ghost-search {
+            width: clamp(120px, 20vw, 200px);
+            height: 32px;
+            border-radius: 8px;
+            background: var(--search-bg);
+            border: 1px solid var(--search-border);
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        @media (max-width: 580px) {
+            .resp-ghost-search {
+                display: none;
+            }
+        }
+
+        .resp-ghost-avatar {
+            width: clamp(28px, 5vw, 34px);
+            height: clamp(28px, 5vw, 34px);
+            border-radius: 9px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(59, 130, 246, 0.4));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* Main App Stage Layout */
+        .resp-app-body {
+            flex: 1;
+            display: flex;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Ghost Sidebar (Hides on screens < 900px) */
+        .resp-sidebar {
+            width: clamp(200px, 22vw, 250px);
+            border-right: 1px solid var(--sidebar-border);
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0.75;
+            flex-shrink: 0;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        @media (max-width: 880px) {
+            .resp-sidebar {
+                display: none;
+            }
+        }
+
+        .ghost-skeleton-line {
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--skeleton-start) 0%, var(--skeleton-mid) 50%, var(--skeleton-start) 100%);
+            background-size: 200% 100%;
+            animation: shimmer-sweep-bar 2.4s infinite ease-in-out;
+        }
+
+        @keyframes shimmer-sweep-bar {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* Responsive Central Stage Container */
+        .resp-stage-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(12px, 3.5vw, 28px);
+            position: relative;
+            min-height: min-content;
+        }
+
+        /* ==========================================================================
+           THE STUDIO WALL CARD (FLUID RESPONSIVE MASTER CONTAINER)
+           ========================================================================== */
+        .studio-wall-card {
+            position: relative;
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: clamp(20px, 4vw, 32px);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(22px, 4vw, 38px) clamp(16px, 3.5vw, 30px) clamp(18px, 3.5vw, 30px);
+            transition: all 0.5s ease;
+        }
+
+        /* Dark / Light Responsive Loft Brick Pattern */
+        .brick-wall-bg {
+            position: absolute;
+            inset: 0;
+            background-color: var(--brick-bg);
+            background-image:
+                radial-gradient(var(--brick-mortar) 1px, transparent 1px),
+                linear-gradient(to right, var(--brick-line) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--brick-line) 1px, transparent 1px);
+            background-size: 32px 32px, 48px 24px, 48px 24px;
+            opacity: 0.35;
+            pointer-events: none;
+            transition: background-color 0.4s ease;
+        }
+
+        /* Hanging Fairy Bulbs */
+        .fairy-lights-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: clamp(24px, 5cqw, 38px);
+            pointer-events: none;
+            z-index: 4;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 clamp(16px, 5vw, 40px);
+        }
+
+        .string-wire {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: clamp(10px, 2.5vw, 18px);
+            border-bottom: 2px solid var(--wire-color);
+            border-radius: 50%;
+            transition: border-color 0.4s ease;
+        }
+
+        .fairy-bulb {
+            width: clamp(6px, 1.8vw, 9px);
+            height: clamp(10px, 2.6vw, 14px);
+            background: #FDE047;
+            border-radius: 50% 50% 35% 35%;
+            position: relative;
+            top: clamp(8px, 2.4vw, 14px);
+            box-shadow: 0 0 14px #F59E0B, 0 0 24px rgba(245, 158, 11, 0.6);
+            animation: bulb-flicker 3s infinite ease-in-out alternate;
+        }
+
+        .fairy-bulb:nth-child(2) {
+            animation-delay: 0.4s;
+            background: #67E8F9;
+            box-shadow: 0 0 14px #06B6D4;
+        }
+
+        .fairy-bulb:nth-child(3) {
+            animation-delay: 0.9s;
+            background: #F472B6;
+            box-shadow: 0 0 14px #EC4899;
+        }
+
+        .fairy-bulb:nth-child(4) {
+            animation-delay: 1.4s;
+            background: #FDE047;
+            box-shadow: 0 0 14px #F59E0B;
+        }
+
+        .fairy-bulb:nth-child(5) {
+            animation-delay: 0.7s;
+            background: #A78BFA;
+            box-shadow: 0 0 14px #8B5CF6;
+        }
+
+        @keyframes bulb-flicker {
+
+            0%,
+            100% {
+                opacity: 0.9;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.55;
+                transform: scale(0.9);
+            }
+        }
+
+        /* Spotlight Glow */
+        .spotlight-glow {
+            position: absolute;
+            top: 5px;
+            right: 25px;
+            width: clamp(180px, 40vw, 280px);
+            height: clamp(160px, 35vw, 240px);
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            opacity: 0.22;
+            filter: blur(35px);
+            pointer-events: none;
+            transition: background 1s ease;
+        }
+
+        /* ==========================================================================
+           CONTAINER QUERY BASED SCENE VIEWPORT (540x250 Native Ratio)
+           ========================================================================== */
+        .scene-viewport {
+            position: relative;
+            width: 100%;
+            max-width: 540px;
+            aspect-ratio: 540 / 250;
+            container-type: inline-size;
+            container-name: scene;
+            margin-bottom: clamp(10px, 2.5vw, 20px);
+        }
+
+        /* Wipe & Reveal Social Card */
+        .wall-post-card {
+            position: absolute;
+            right: 3.7cqw;
+            top: 10%;
+            width: 48.15cqw;
+            height: 74%;
+            border-radius: clamp(8px, 3.3cqw, 18px);
+            background: var(--post-bg);
+            border: 1.5px solid var(--post-border);
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.15);
+            padding: clamp(6px, 2.2cqw, 12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            z-index: 2;
+
+            /* Mask reveal animation triggered by roller motion */
+            clip-path: polygon(0 0, 0% 0, 0% 100%, 0 100%);
+            animation: wall-reveal 2.6s infinite ease-in-out;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        body.light-mode .wall-post-card {
+            box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.1), 0 0 20px rgba(245, 158, 11, 0.12);
+        }
+
+        @keyframes wall-reveal {
+            0% {
+                clip-path: polygon(0 0, 0% 0, 0% 100%, 0 100%);
+                opacity: 0.3;
+            }
+
+            45%,
+            85% {
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                opacity: 1;
+            }
+
+            100% {
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                opacity: 0.8;
+            }
+        }
+
+        /* Inner Post Elements Scaled via Container Query Units */
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: clamp(4px, 1.5cqw, 8px);
+        }
+
+        .post-avatar {
+            width: clamp(14px, 4cqw, 22px);
+            height: clamp(14px, 4cqw, 22px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F59E0B, #EC4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(8px, 2cqw, 11px);
+            flex-shrink: 0;
+        }
+
+        .post-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .post-biz-name {
+            font-size: clamp(7.5px, 1.85cqw, 10px);
+            font-weight: 800;
+            color: var(--post-text);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.4s ease;
+        }
+
+        .post-subtext {
+            font-size: clamp(6px, 1.48cqw, 8px);
+            color: var(--post-subtext);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.4s ease;
+        }
+
+        .post-body-visual {
+            height: 43%;
+            border-radius: clamp(6px, 2cqw, 12px);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(236, 72, 153, 0.25), rgba(59, 130, 246, 0.3));
+            border: 1px dashed rgba(245, 158, 11, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: clamp(2px, 1cqw, 6px);
+            position: relative;
+            overflow: hidden;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .post-visual-shimmer {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            animation: shimmer-sweep 2s infinite linear;
+        }
+
+        @keyframes shimmer-sweep {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .post-headline {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(7.5px, 2cqw, 11px);
+            font-weight: 800;
+            color: #FFF;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            line-height: 1.1;
+        }
+
+        .post-tag {
+            font-size: clamp(6px, 1.48cqw, 8px);
+            font-weight: 700;
+            color: #FDE047;
+            background: rgba(0, 0, 0, 0.4);
+            padding: clamp(1px, 0.4cqw, 2px) clamp(3px, 1cqw, 6px);
+            border-radius: clamp(2px, 0.74cqw, 4px);
+            margin-top: 3px;
+        }
+
+        body.light-mode .post-headline {
+            color: #0F172A;
+            text-shadow: none;
+        }
+
+        body.light-mode .post-tag {
+            color: #92400E;
+            background: #FEF3C7;
+        }
+
+        body.light-mode .post-body-visual {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(236, 72, 153, 0.14), rgba(59, 130, 246, 0.15));
+            border: 1px dashed rgba(245, 158, 11, 0.45);
+        }
+
+        body.light-mode .post-footer-metrics {
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            color: #64748B;
+        }
+
+        .post-footer-metrics {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: clamp(2px, 0.74cqw, 4px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: clamp(6.5px, 1.65cqw, 9px);
+            color: #94A3B8;
+            font-weight: 600;
+        }
+
+        .post-metric-item {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* SVG Cartoon Scene Layer */
+        .mascot-svg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+        }
+
+        /* Roller Arm Painting Motion */
+        .arm-group {
+            transform-origin: 185px 145px;
+            animation: paint-roll 2.6s infinite ease-in-out;
+        }
+
+        @keyframes paint-roll {
+
+            0%,
+            100% {
+                transform: rotate(-18deg) translate(0, 0);
+            }
+
+            38% {
+                transform: rotate(26deg) translate(28px, -35px);
+            }
+
+            72% {
+                transform: rotate(-6deg) translate(5px, -6px);
+            }
+        }
+
+        /* Tail Wagging */
+        .fox-tail {
+            transform-origin: 130px 175px;
+            animation: tail-wag 2.2s infinite ease-in-out;
+        }
+
+        @keyframes tail-wag {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(18deg) translateY(-2px);
+            }
+        }
+
+        /* Head Bobbing */
+        .fox-head {
+            transform-origin: 165px 120px;
+            animation: head-bob 2.6s infinite ease-in-out;
+        }
+
+        @keyframes head-bob {
+
+            0%,
+            100% {
+                transform: rotate(0deg) translateY(0);
+            }
+
+            38% {
+                transform: rotate(5deg) translateY(-4px);
+            }
+
+            70% {
+                transform: rotate(-2deg) translateY(2px);
+            }
+        }
+
+        /* Eyes Blinking */
+        .eye-lid {
+            animation: eye-blink 3.5s infinite;
+            transform-origin: center;
+        }
+
+        @keyframes eye-blink {
+
+            0%,
+            96%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            98% {
+                transform: scaleY(0.1);
+            }
+        }
+
+        /* Wall Paint Stroke */
+        .dynamic-paint-stroke {
+            stroke-dasharray: 450;
+            stroke-dashoffset: 450;
+            animation: stroke-paint 2.6s infinite ease-in-out;
+            filter: drop-shadow(0 0 12px var(--primary-glow));
+            transition: stroke 0.8s ease;
+        }
+
+        @keyframes stroke-paint {
+            0% {
+                stroke-dashoffset: 450;
+                opacity: 0.2;
+            }
+
+            40% {
+                stroke-dashoffset: 60;
+                opacity: 1;
+            }
+
+            80%,
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 0.95;
+            }
+        }
+
+        /* Paint Drips */
+        .paint-drip-drop {
+            animation: drip-gravity 2.6s infinite ease-in;
+        }
+
+        @keyframes drip-gravity {
+
+            0%,
+            35% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(34px);
+                opacity: 0;
+            }
+        }
+
+        /* Floating Sparks */
+        .floating-spark {
+            animation: float-rise 2.6s infinite ease-out;
+        }
+
+        .spark-delay-1 {
+            animation-delay: 0.3s;
+        }
+
+        .spark-delay-2 {
+            animation-delay: 0.8s;
+        }
+
+        .spark-delay-3 {
+            animation-delay: 1.3s;
+        }
+
+        @keyframes float-rise {
+            0% {
+                transform: translateY(0) scale(0.4) rotate(0deg);
+                opacity: 0;
+            }
+
+            35% {
+                opacity: 1;
+            }
+
+            85% {
+                transform: translateY(-26px) scale(1.1) rotate(25deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-38px) scale(0.6) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        /* ==========================================================================
+           DYNAMIC STATUS & PROGRESS BAR (FLUID RESPONSIVE TYPOGRAPHY)
+           ========================================================================== */
+        .stage-status-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 5;
+            width: 100%;
+        }
+
+        .badge-capsule {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: clamp(4px, 1.2cqw, 6px) clamp(10px, 3cqw, 16px);
+            border-radius: 9999px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            color: var(--badge-color);
+            font-size: clamp(9.5px, 2.2cqw, 11px);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: clamp(6px, 2cqw, 12px);
+            transition: all 0.6s ease;
+        }
+
+        .status-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(16px, 3.8cqw, 22px);
+            color: var(--title-color);
+            margin-bottom: clamp(3px, 1cqw, 6px);
+            letter-spacing: -0.3px;
+            line-height: 1.25;
+            transition: color 0.4s ease;
+        }
+
+        .status-subtitle {
+            font-size: clamp(11.5px, 2.4cqw, 13.5px);
+            color: var(--subtitle-color);
+            min-height: 20px;
+            transition: opacity 0.3s ease, transform 0.3s ease, color 0.4s ease;
+            font-weight: 500;
+            max-width: 480px;
+        }
+
+        .progress-track {
+            width: 90%;
+            max-width: 360px;
+            height: clamp(5px, 1.2cqw, 7px);
+            background: var(--track-bg);
+            border-radius: 999px;
+            margin-top: clamp(14px, 3.2cqw, 22px);
+            overflow: hidden;
+            border: 1px solid var(--track-border);
+            position: relative;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .progress-slider {
+            height: 100%;
+            width: 40%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--primary-glow), var(--primary-light), var(--primary-glow));
+            background-size: 200% 100%;
+            animation: progress-loop 2s infinite linear;
+            box-shadow: 0 0 16px var(--primary-glow);
+            transition: background 0.8s ease;
+        }
+
+        @keyframes progress-loop {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(360%);
+            }
+        }
+
+        .interactive-hint {
+            margin-top: clamp(8px, 2cqw, 14px);
+            font-size: clamp(9px, 2cqw, 11px);
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .interactive-hint span {
+            display: inline-block;
+            animation: wiggle 1.5s infinite ease-in-out;
+        }
+
+        @keyframes wiggle {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-14deg);
+            }
+
+            75% {
+                transform: rotate(14deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="mode-phone">
+
+    <!-- Simulator Top Controller Bar -->
+    <header class="simulator-toolbar" id="toolbar">
+        <div class="tool-left">
+            <div class="tool-brand">Brand<span>Flow</span></div>
+            <span class="tool-pill">Responsive Studio</span>
+        </div>
+
+        <!-- Mode Switcher Tabs -->
+        <div class="device-selector-group">
+            <button class="device-btn active" data-mode="mode-phone" title="iPhone 15 Pro (393px)">
+                <span class="btn-icon">📱</span> Mobile (393px)
+            </button>
+            <button class="device-btn" data-mode="mode-phone-compact" title="Galaxy S24 / Android (360px)">
+                <span class="btn-icon">📱</span> Compact (360px)
+            </button>
+            <button class="device-btn" data-mode="mode-tablet" title="iPad 11 inch (768px)">
+                <span class="btn-icon">📟</span> Tablet (768px)
+            </button>
+            <button class="device-btn" data-mode="mode-desktop" title="Desktop / Laptop (1140px)">
+                <span class="btn-icon">💻</span> Desktop (1140px)
+            </button>
+            <button class="device-btn" data-mode="mode-split" title="Multi-Device Side-by-Side Comparison">
+                <span class="btn-icon">🔲</span> Split View (All 3)
+            </button>
+            <button class="device-btn" data-mode="mode-native" title="Native Full Browser View (100% Fluid)">
+                <span class="btn-icon">🌐</span> Native 100%
+            </button>
+        </div>
+
+        <!-- Right Quick Actions -->
+        <div class="tool-right">
+            <!-- Zoom scale -->
+            <div class="zoom-selector-group">
+                <button class="zoom-btn active" data-zoom="fit" title="Auto Fit screen height">Fit</button>
+                <button class="zoom-btn" data-zoom="1" title="100% Actual Scale">100%</button>
+                <button class="zoom-btn" data-zoom="0.85" title="85% Scale">85%</button>
+                <button class="zoom-btn" data-zoom="0.75" title="75% Scale">75%</button>
+            </div>
+
+            <!-- Orientation Flip -->
+            <button class="action-icon-btn" id="orientationBtn" title="Rotate device orientation (Portrait / Landscape)">
+                <span>🔄</span> Rotate
+            </button>
+
+            <!-- Light / Dark Mode Toggle -->
+            <button class="action-icon-btn" id="themeModeBtn" title="Toggle Light / Dark Mode (Shortcut: 'T')">
+                <span id="themeModeIcon">☀️</span> <span id="themeModeText">Light</span>
+            </button>
+
+            <!-- Theme Cycle -->
+            <button class="action-icon-btn" id="themeCycleBtn" title="Manually cycle creative theme palette">
+                <span>🎨</span> Palette
+            </button>
+
+            <div class="spec-badge" id="specBadge">
+                <div class="dot"></div>
+                <span id="specText">393 × 840 px</span>
+            </div>
+
+            <button class="action-icon-btn" id="hideToolbarBtn" title="Hide Toolbar (Press 'H' or Click to unhide)">
+                <span>✕</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Floating Restore Toolbar Button -->
+    <button class="unhide-toolbar-pill" id="unhideToolbarBtn">
+        ⚙️ Controls
+    </button>
+
+    <!-- Main Workspace Stage -->
+    <main class="viewport-workspace" id="viewportWorkspace">
+
+        <!-- ==============================================================
+             SINGLE DEVICE MOCKUP FRAME (Mobile / Tablet / Desktop / Native)
+             ============================================================== -->
+        <div class="device-scaler-container" id="deviceScaler">
+            <div class="device-frame-shell" id="deviceFrame">
+
+                <!-- Hardware Bar: Dynamic Island + Mobile Status (For Phone Mockup) -->
+                <div class="mobile-hardware-bar">
+                    <span>9:41</span>
+                    <div class="dynamic-island">
+                        <div class="island-camera-dot"></div>
+                    </div>
+                    <span>5G 􀛨 100%</span>
+                </div>
+
+                <!-- Hardware Bar: Desktop Mac Traffic Lights (For Desktop Mockup) -->
+                <div class="desktop-window-bar">
+                    <div class="traffic-lights">
+                        <div class="traffic-dot dot-red"></div>
+                        <div class="traffic-dot dot-yellow"></div>
+                        <div class="traffic-dot dot-green"></div>
+                    </div>
+                    <div class="desktop-url-bar">https://app.brandflow.ai/studio/creative-loader</div>
+                </div>
+
+                <!-- Embedded Master Loader Scene -->
+                <div class="loader-embed-viewport" id="primaryLoader">
+
+                    <!-- Interactive Particle Sparkle Canvas -->
+                    <canvas class="stage-canvas" id="interactiveCanvas"></canvas>
+
+                    <!-- Ambient Glow Orbs -->
+                    <div class="studio-orb orb-top-right" id="orb1"></div>
+                    <div class="studio-orb orb-bottom-left"></div>
+
+                    <!-- Simulated Top Navbar -->
+                    <div class="resp-navbar">
+                        <div class="resp-logo">
+                            <span>Brand<span class="resp-logo-accent" id="logoAccent">Flow</span></span>
+                        </div>
+                        <div class="resp-nav-controls">
+                            <div class="resp-ghost-search"></div>
+                            <div class="resp-ghost-avatar"></div>
+                        </div>
+                    </div>
+
+                    <div class="resp-app-body">
+                        <!-- Ghost Sidebar Skeleton (hides on mobile & tablet) -->
+                        <div class="resp-sidebar">
+                            <div class="ghost-skeleton-line" style="width: 55%; height: 20px; margin-bottom: 6px;"></div>
+                            <div class="ghost-skeleton-line"></div>
+                            <div class="ghost-skeleton-line"></div>
+                            <div class="ghost-skeleton-line"></div>
+                            <div class="ghost-skeleton-line"></div>
+                            <div class="ghost-skeleton-line" style="margin-top: auto; opacity: 0.5;"></div>
+                        </div>
+
+                        <!-- Center Stage: The Creative Studio Wall -->
+                        <div class="resp-stage-area">
+                            <div class="studio-wall-card" id="wallCard">
+                                <div class="brick-wall-bg"></div>
+                                <div class="spotlight-glow" id="spotlightGlow"></div>
+
+                                <!-- Hanging Fairy String Lights -->
+                                <div class="fairy-lights-container">
+                                    <div class="string-wire"></div>
+                                    <div class="fairy-bulb"></div>
+                                    <div class="fairy-bulb"></div>
+                                    <div class="fairy-bulb"></div>
+                                    <div class="fairy-bulb"></div>
+                                    <div class="fairy-bulb"></div>
+                                </div>
+
+                                <!-- Scene Viewport (Aspect Ratio 540x250 with Container Queries) -->
+                                <div class="scene-viewport">
+
+                                    <!-- FEATURE 1: Wipe & Reveal Social Card on Wall -->
+                                    <div class="wall-post-card">
+                                        <div class="post-header">
+                                            <div class="post-avatar">🦊</div>
+                                            <div class="post-meta">
+                                                <div class="post-biz-name" id="postBizName">Chai & Co. Cafe</div>
+                                                <div class="post-subtext">Sponsored · BrandFlow AI</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="post-body-visual">
+                                            <div class="post-visual-shimmer"></div>
+                                            <div class="post-headline" id="postHeadline">🪔 Happy Diwali Flash Sale!</div>
+                                            <div class="post-tag" id="postTag">FLAT 50% OFF TODAY</div>
+                                        </div>
+
+                                        <div class="post-footer-metrics">
+                                            <span class="post-metric-item">❤️ 1.4k</span>
+                                            <span class="post-metric-item">💬 98</span>
+                                            <span class="post-metric-item">🚀 320</span>
+                                            <span class="post-metric-item">⭐ 4.9</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vector Cartoon Mascot & Studio Painter SVG -->
+                                    <svg class="mascot-svg-layer" viewBox="0 0 540 250" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <filter id="rollerGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                                <feGaussianBlur stdDeviation="5" result="blur" />
+                                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                            </filter>
+
+                                            <linearGradient id="paintStreamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#F59E0B" id="gradStop1" />
+                                                <stop offset="50%" stop-color="#FDE047" id="gradStop2" />
+                                                <stop offset="100%" stop-color="#F59E0B" id="gradStop3" />
+                                            </linearGradient>
+
+                                            <linearGradient id="woodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" stop-color="#B45309" />
+                                                <stop offset="100%" stop-color="#78350F" />
+                                            </linearGradient>
+                                        </defs>
+
+                                        <!-- 1. Wooden Step Stool & Studio Paint Cans -->
+                                        <g id="studioFurniture">
+                                            <ellipse cx="155" cy="242" rx="48" ry="7" fill="rgba(0,0,0,0.4)" />
+                                            <line x1="130" y1="190" x2="118" y2="240" stroke="#78350F" stroke-width="6"
+                                                stroke-linecap="round" />
+                                            <line x1="178" y1="190" x2="190" y2="240" stroke="#78350F" stroke-width="6"
+                                                stroke-linecap="round" />
+                                            <line x1="125" y1="216" x2="183" y2="216" stroke="#92400E" stroke-width="4"
+                                                stroke-linecap="round" />
+                                            <rect x="115" y="184" width="78" height="11" rx="4" fill="url(#woodGrad)"
+                                                stroke="#D97706" stroke-width="1.5" />
+
+                                            <!-- Paint Splatters on Stool -->
+                                            <ellipse cx="132" cy="187" rx="7" ry="2.5" fill="#F59E0B" id="stoolSplatter1" />
+                                            <circle cx="174" cy="188" r="3" fill="#EC4899" />
+                                            <circle cx="155" cy="186" r="2" fill="#06B6D4" />
+
+                                            <!-- Bucket 1: Golden Brand Paint -->
+                                            <rect x="74" y="218" width="24" height="22" rx="3" fill="#334155"
+                                                stroke="#475569" stroke-width="1.5" />
+                                            <ellipse cx="86" cy="218" rx="12" ry="3.5" fill="#F59E0B" id="canPaintColor" />
+                                            <text x="86" y="233" font-size="7" font-weight="900" fill="#FFF"
+                                                text-anchor="middle" font-family="'Plus Jakarta Sans'">AI</text>
+                                            <path d="M 76 220 Q 76 229, 78 229 Q 80 229, 80 220" fill="#F59E0B" />
+
+                                            <!-- Bucket 2: Viral Vibe -->
+                                            <rect x="202" y="222" width="20" height="18" rx="3" fill="#1E293B"
+                                                stroke="#334155" stroke-width="1" />
+                                            <ellipse cx="212" cy="222" rx="10" ry="2.5" fill="#EC4899" />
+                                            <text x="212" y="234" font-size="6" font-weight="900" fill="#FFF"
+                                                text-anchor="middle">GLOW</text>
+                                        </g>
+
+                                        <!-- 2. Dynamic Wall Paint Stroke Curve -->
+                                        <path class="dynamic-paint-stroke" id="dynamicStroke"
+                                            d="M 235 155 Q 310 80, 420 100 T 470 160" stroke="url(#paintStreamGrad)"
+                                            stroke-width="20" stroke-linecap="round" fill="none" />
+                                        <path class="dynamic-paint-stroke" d="M 235 155 Q 310 80, 420 100 T 470 160"
+                                            stroke="#FFFBEB" stroke-width="7" stroke-linecap="round" fill="none"
+                                            opacity="0.8" />
+
+                                        <!-- Falling Paint Drips -->
+                                        <circle class="paint-drip-drop" cx="340" cy="105" r="3.5" fill="#FDE047"
+                                            id="drip1" />
+                                        <circle class="paint-drip-drop" cx="430" cy="125" r="3" fill="#F59E0B"
+                                            id="drip2" />
+                                        <circle class="paint-drip-drop" cx="290" cy="120" r="2.5" fill="#F59E0B" />
+
+                                        <!-- Floating Social Icons -->
+                                        <g class="floating-spark spark-delay-1" transform="translate(390, 65)">
+                                            <path d="M 0 4 A 4 4 0 0 1 8 4 A 4 4 0 0 1 16 4 Q 16 10, 8 16 Q 0 10, 0 4 Z"
+                                                fill="#F43F5E" filter="url(#rollerGlow)" />
+                                        </g>
+                                        <g class="floating-spark spark-delay-2" transform="translate(450, 115)">
+                                            <rect x="0" y="2" width="16" height="12" rx="3" fill="#F59E0B"
+                                                filter="url(#rollerGlow)" />
+                                            <circle cx="8" cy="8" r="3" fill="#0B111E" />
+                                            <circle cx="8" cy="8" r="1.5" fill="#FFF" />
+                                            <rect x="3" y="0" width="4" height="2" rx="0.5" fill="#F59E0B" />
+                                        </g>
+                                        <g class="floating-spark spark-delay-3" transform="translate(320, 75)">
+                                            <polygon points="8,0 10,6 16,8 10,10 8,16 6,10 0,8 6,6" fill="#FDE047"
+                                                filter="url(#rollerGlow)" />
+                                        </g>
+
+                                        <!-- 3. Fox Mascot (Fluffy Tail, Overalls, Artist Beret) -->
+                                        <g id="foxMascot">
+                                            <!-- Fluffy Tail -->
+                                            <g class="fox-tail">
+                                                <path d="M 125 168 C 90 160, 65 185, 75 145 C 82 120, 118 135, 138 152 Z"
+                                                    fill="#EA580C" stroke="#C2410C" stroke-width="1.8" />
+                                                <path d="M 75 145 C 78 135, 88 130, 98 138 C 90 148, 80 155, 75 145 Z"
+                                                    fill="#FFFBEB" />
+                                            </g>
+
+                                            <!-- Legs & Sneakers -->
+                                            <rect x="135" y="160" width="11" height="28" rx="5" fill="#EA580C" />
+                                            <rect x="165" y="160" width="11" height="28" rx="5" fill="#EA580C" />
+                                            <path d="M 132 186 L 149 186 C 151 186, 151 190, 149 190 L 132 190 Z"
+                                                fill="#FFF" />
+                                            <ellipse cx="140" cy="186" rx="8" ry="4" fill="#3B82F6" />
+                                            <path d="M 162 186 L 179 186 C 181 186, 181 190, 179 190 L 162 190 Z"
+                                                fill="#FFF" />
+                                            <ellipse cx="170" cy="186" rx="8" ry="4" fill="#3B82F6" />
+
+                                            <!-- Body in Overalls -->
+                                            <ellipse cx="155" cy="145" rx="23" ry="26" fill="#EA580C" />
+                                            <path d="M 138 134 L 172 134 L 169 168 L 141 168 Z" fill="#1D4ED8"
+                                                stroke="#1E40AF" stroke-width="1.5" />
+                                            <line x1="144" y1="126" x2="144" y2="136" stroke="#1E3A8A" stroke-width="3" />
+                                            <circle cx="144" cy="136" r="2" fill="#CBD5E1" />
+                                            <line x1="166" y1="126" x2="166" y2="136" stroke="#1E3A8A" stroke-width="3" />
+                                            <circle cx="166" cy="136" r="2" fill="#CBD5E1" />
+                                            <rect x="148" y="144" width="14" height="12" rx="3" fill="#2563EB"
+                                                stroke="#1D4ED8" stroke-width="1" />
+                                            <line x1="151" y1="140" x2="149" y2="146" stroke="#B45309" stroke-width="2"
+                                                stroke-linecap="round" />
+                                            <line x1="157" y1="138" x2="157" y2="146" stroke="#94A3B8" stroke-width="2"
+                                                stroke-linecap="round" />
+                                            <circle cx="152" cy="150" r="2" fill="#F59E0B" />
+                                            <circle cx="159" cy="152" r="1.5" fill="#10B981" />
+                                            <circle cx="142" cy="160" r="1.8" fill="#EC4899" />
+
+                                            <!-- Head & Facial Expression -->
+                                            <g class="fox-head" id="foxHeadGroup">
+                                                <polygon points="140,88 131,58 158,72" fill="#EA580C" stroke="#C2410C"
+                                                    stroke-width="1.5" />
+                                                <polygon points="143,84 137,67 154,75" fill="#FEE2E2" />
+                                                <polygon points="174,80 198,62 186,88" fill="#EA580C" stroke="#C2410C"
+                                                    stroke-width="1.5" />
+                                                <polygon points="177,80 191,68 183,86" fill="#FEE2E2" />
+
+                                                <!-- French Artist Beret -->
+                                                <ellipse cx="156" cy="74" rx="26" ry="10" fill="#2563EB" stroke="#1D4ED8"
+                                                    stroke-width="1.5" />
+                                                <circle cx="156" cy="65" r="3.5" fill="#1E40AF" />
+
+                                                <circle cx="160" cy="95" r="21" fill="#EA580C" />
+                                                <path d="M 152 90 C 152 110, 180 110, 180 90 Z" fill="#FFFBEB" />
+                                                <ellipse cx="174" cy="94" rx="3" ry="2.2" fill="#0F172A" />
+
+                                                <g class="eye-lid">
+                                                    <path d="M 148 90 Q 153 84, 158 90" stroke="#0F172A" stroke-width="2.6"
+                                                        stroke-linecap="round" fill="none" />
+                                                    <path d="M 163 88 Q 168 82, 173 88" stroke="#0F172A" stroke-width="2.6"
+                                                        stroke-linecap="round" fill="none" />
+                                                </g>
+
+                                                <path d="M 161 100 Q 168 108, 175 100" stroke="#0F172A" stroke-width="2.2"
+                                                    stroke-linecap="round" fill="#DC2626" />
+                                                <circle cx="147" cy="97" r="4" fill="#FDA4AF" opacity="0.8" />
+                                            </g>
+
+                                            <!-- 4. Painter Arm & Active Roller -->
+                                            <g class="arm-group">
+                                                <path d="M 168 132 Q 200 118, 230 104" stroke="#EA580C" stroke-width="9"
+                                                    stroke-linecap="round" />
+                                                <circle cx="230" cy="104" r="5.5" fill="#C2410C" />
+                                                <polyline points="230,104 242,98 238,76 254,72" stroke="#CBD5E1"
+                                                    stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                <rect x="246" y="58" width="18" height="34" rx="6" fill="#F59E0B"
+                                                    stroke="#FDE047" stroke-width="2.5" filter="url(#rollerGlow)"
+                                                    id="rollerHead" />
+                                                <line x1="250" y1="63" x2="250" y2="87" stroke="#FFFBEB" stroke-width="2.5"
+                                                    stroke-linecap="round" opacity="0.85" />
+                                            </g>
+                                        </g>
+                                    </svg>
+                                </div>
+
+                                <!-- Dynamic Typography & Real-Time Progress -->
+                                <div class="stage-status-box">
+                                    <div class="badge-capsule" id="statusBadge">
+                                        <span id="badgeIcon">🎨</span> <span id="badgeText">BrandFlow Creative Studio</span>
+                                    </div>
+
+                                    <h2 class="status-title" id="stageTitle">Crafting Your Social Studio</h2>
+                                    <p class="status-subtitle" id="stageSubtitle">Mixing your brand color palette &
+                                        typography...</p>
+
+                                    <div class="progress-track">
+                                        <div class="progress-slider" id="progressSlider"></div>
+                                    </div>
+
+                                    <div class="interactive-hint">
+                                        <span>✨</span> Move your mouse or touch anywhere to paint magic sparkles!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hardware Bar: Mobile Home Indicator Pill (For Phone Mockup) -->
+                <div class="mobile-home-bar">
+                    <div class="home-pill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================================
+             SPLIT VIEW: ALL 3 DEVICES SIMULTANEOUSLY (Desktop + Tablet + Mobile)
+             ============================================================== -->
+        <div class="multi-split-grid">
+
+            <!-- 1. Desktop View Preview -->
+            <div class="split-column">
+                <div class="split-label">💻 <span>Desktop View</span> (1140px Scale)</div>
+                <div class="split-card split-desktop-frame">
+                    <iframe src="about:blank" id="splitIframeDesktop"></iframe>
+                </div>
+            </div>
+
+            <!-- 2. Tablet View Preview -->
+            <div class="split-column">
+                <div class="split-label">📟 <span>Tablet View</span> (768px iPad)</div>
+                <div class="split-card split-tablet-frame">
+                    <iframe src="about:blank" id="splitIframeTablet"></iframe>
+                </div>
+            </div>
+
+            <!-- 3. Mobile View Preview -->
+            <div class="split-column">
+                <div class="split-label">📱 <span>Mobile View</span> (375px iPhone)</div>
+                <div class="split-card split-mobile-frame">
+                    <iframe src="about:blank" id="splitIframeMobile"></iframe>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // =========================================================================
+        // FEATURE 1: DYNAMIC CHAMELEON COLOR & STATUS TRANSITIONS
+        // =========================================================================
+        const colorThemes = [
+            {
+                name: "Brand Amber",
+                primary: "#F59E0B",
+                light: "#FDE047",
+                title: "Crafting Your Social Studio",
+                subtitle: "Mixing your brand color palette & typography...",
+                badgeText: "Brand Palette Active",
+                badgeIcon: "🎨",
+                postHeadline: "🪔 Happy Diwali Flash Sale!",
+                postTag: "FLAT 50% OFF TODAY"
+            },
+            {
+                name: "Instagram Neon Rose",
+                primary: "#EC4899",
+                light: "#F472B6",
+                title: "Styling Social Viral Aesthetics",
+                subtitle: "Rendering 4K aspect-ratios for Instagram & Facebook...",
+                badgeText: "Viral Engine Active",
+                badgeIcon: "🔥",
+                postHeadline: "☕ Weekend Special Brunch Vibe",
+                postTag: "NEW SEASON MENU"
+            },
+            {
+                name: "Gemini Cyber Cyan",
+                primary: "#06B6D4",
+                light: "#67E8F9",
+                title: "Tuning Gemini Nano Banana AI",
+                subtitle: "Synthesizing custom creative visuals without rigid templates...",
+                badgeText: "Nano Banana 2.1 Online",
+                badgeIcon: "🍌",
+                postHeadline: "🚀 Product Launch 2026",
+                postTag: "EARLY ACCESS LIVE"
+            },
+            {
+                name: "Royal Purple",
+                primary: "#8B5CF6",
+                light: "#C084FC",
+                title: "Synchronizing Multi-Platform Queue",
+                subtitle: "Preparing smart calendar scheduling & analytics telemetry...",
+                badgeText: "Auto-Scheduler Ready",
+                badgeIcon: "📅",
+                postHeadline: "✨ Modern Luxury Collection",
+                postTag: "LIMITED EDITION"
+            }
+        ];
+
+        let currentThemeIndex = 0;
+
+        function applyTheme(theme) {
+            document.documentElement.style.setProperty('--primary-glow', theme.primary);
+            document.documentElement.style.setProperty('--primary-light', theme.light);
+
+            const logoAccent = document.getElementById('logoAccent');
+            const orb1 = document.getElementById('orb1');
+            const spotlightGlow = document.getElementById('spotlightGlow');
+            const rollerHead = document.getElementById('rollerHead');
+            const canPaintColor = document.getElementById('canPaintColor');
+            const gradStop1 = document.getElementById('gradStop1');
+            const gradStop2 = document.getElementById('gradStop2');
+            const gradStop3 = document.getElementById('gradStop3');
+            const drip1 = document.getElementById('drip1');
+            const drip2 = document.getElementById('drip2');
+
+            if (logoAccent) logoAccent.style.color = theme.primary;
+            if (orb1) orb1.style.background = theme.primary;
+            if (spotlightGlow) spotlightGlow.style.background = `radial-gradient(circle, ${theme.primary} 0%, transparent 70%)`;
+            if (rollerHead) rollerHead.setAttribute('fill', theme.primary);
+            if (canPaintColor) canPaintColor.setAttribute('fill', theme.primary);
+            if (gradStop1) gradStop1.setAttribute('stop-color', theme.primary);
+            if (gradStop2) gradStop2.setAttribute('stop-color', theme.light);
+            if (gradStop3) gradStop3.setAttribute('stop-color', theme.primary);
+            if (drip1) drip1.setAttribute('fill', theme.light);
+            if (drip2) drip2.setAttribute('fill', theme.primary);
+
+            const subtitleEl = document.getElementById('stageSubtitle');
+            const titleEl = document.getElementById('stageTitle');
+            const badgeTextEl = document.getElementById('badgeText');
+            const badgeIconEl = document.getElementById('badgeIcon');
+            const postHeadlineEl = document.getElementById('postHeadline');
+            const postTagEl = document.getElementById('postTag');
+
+            if (subtitleEl && titleEl && badgeTextEl && badgeIconEl) {
+                subtitleEl.style.opacity = '0';
+                subtitleEl.style.transform = 'translateY(4px)';
+
+                setTimeout(() => {
+                    titleEl.innerText = theme.title;
+                    subtitleEl.innerText = theme.subtitle;
+                    badgeTextEl.innerText = theme.badgeText;
+                    badgeIconEl.innerText = theme.badgeIcon;
+                    if (postHeadlineEl) postHeadlineEl.innerText = theme.postHeadline;
+                    if (postTagEl) postTagEl.innerText = theme.postTag;
+
+                    subtitleEl.style.opacity = '1';
+                    subtitleEl.style.transform = 'translateY(0)';
+                }, 280);
+            }
+        }
+
+        let themeInterval = setInterval(() => {
+            currentThemeIndex = (currentThemeIndex + 1) % colorThemes.length;
+            applyTheme(colorThemes[currentThemeIndex]);
+        }, 2800);
+
+        document.getElementById('themeCycleBtn').addEventListener('click', () => {
+            clearInterval(themeInterval);
+            currentThemeIndex = (currentThemeIndex + 1) % colorThemes.length;
+            applyTheme(colorThemes[currentThemeIndex]);
+            themeInterval = setInterval(() => {
+                currentThemeIndex = (currentThemeIndex + 1) % colorThemes.length;
+                applyTheme(colorThemes[currentThemeIndex]);
+            }, 2800);
+        });
+
+        // =========================================================================
+        // FEATURE 2: INTERACTIVE SPARKLE PARTICLES (MOUSE & TOUCH SUPPORT)
+        // =========================================================================
+        const canvas = document.getElementById('interactiveCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 100);
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = Math.random() * 4 + 2;
+                this.speedX = (Math.random() - 0.5) * 4;
+                this.speedY = (Math.random() - 0.5) * 4 - 1;
+                this.life = 1;
+                this.decay = Math.random() * 0.03 + 0.02;
+                this.shape = Math.random() > 0.5 ? 'star' : 'circle';
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+                this.size *= 0.95;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+
+                if (this.shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    const r = this.size * 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y - r);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x + r, this.y);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x, this.y + r);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x - r, this.y);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x, this.y - r);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function addSparkles(clientX, clientY, count = 3) {
+            const rect = canvas.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) return;
+
+            const activeColor = colorThemes[currentThemeIndex].primary;
+            const lightColor = colorThemes[currentThemeIndex].light;
+            for (let i = 0; i < count; i++) {
+                const col = Math.random() > 0.4 ? activeColor : lightColor;
+                particles.push(new Particle(x, y, col));
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            addSparkles(e.clientX, e.clientY, 2);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches[0]) {
+                addSparkles(e.touches[0].clientX, e.touches[0].clientY, 3);
+            }
+        }, { passive: true });
+
+        document.getElementById('wallCard').addEventListener('click', (e) => {
+            for (let i = 0; i < 20; i++) {
+                addSparkles(e.clientX, e.clientY, 1);
+            }
+        });
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0 || particles[i].size <= 0.5) {
+                    particles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // =========================================================================
+        // FEATURE 3: DEVICE SWITCHER & RESPONSIVE SIMULATION LOGIC
+        // =========================================================================
+        const deviceBtns = document.querySelectorAll('.device-btn');
+        const specText = document.getElementById('specText');
+        const toolbar = document.getElementById('toolbar');
+        const unhideBtn = document.getElementById('unhideToolbarBtn');
+        const orientationBtn = document.getElementById('orientationBtn');
+        const zoomBtns = document.querySelectorAll('.zoom-btn');
+        const deviceScaler = document.getElementById('deviceScaler');
+        const deviceFrame = document.getElementById('deviceFrame');
+        const viewportWorkspace = document.getElementById('viewportWorkspace');
+
+        let currentMode = 'mode-phone';
+        let isLandscape = false;
+        let isLightMode = false;
+        let splitLoaded = false;
+        let currentZoom = 'fit';
+
+        const modeSpecs = {
+            'mode-phone': { portrait: '393 × 840 px (iPhone 15)', landscape: '840 × 393 px (iPhone 15)' },
+            'mode-phone-compact': { portrait: '360 × 760 px (Galaxy S24)', landscape: '760 × 360 px (Galaxy S24)' },
+            'mode-tablet': { portrait: '768 × 940 px (iPad 11")', landscape: '940 × 768 px (iPad 11")' },
+            'mode-desktop': { portrait: '1140 × 740 px (MacBook)', landscape: '1140 × 740 px (MacBook)' },
+            'mode-split': { portrait: 'Multi-Device Matrix', landscape: 'Multi-Device Matrix' },
+            'mode-native': { portrait: 'Fluid 100% Window', landscape: 'Fluid 100% Window' }
+        };
+
+        function updateSpecBadge() {
+            const spec = modeSpecs[currentMode];
+            if (specText && spec) {
+                specText.innerText = isLandscape ? spec.landscape : spec.portrait;
+            }
+        }
+
+        function calculateAutoFitScale() {
+            if (currentMode === 'mode-native' || currentMode === 'mode-split') {
+                return 1;
+            }
+            const availW = viewportWorkspace.clientWidth - 32;
+            const availH = viewportWorkspace.clientHeight - 32;
+
+            const frameW = deviceFrame.offsetWidth || 393;
+            const frameH = deviceFrame.offsetHeight || 840;
+
+            const scaleW = availW / frameW;
+            const scaleH = availH / frameH;
+
+            const scale = Math.min(scaleW, scaleH, 1);
+            return Math.max(scale, 0.4);
+        }
+
+        function applyZoom() {
+            if (currentZoom === 'fit') {
+                const autoScale = calculateAutoFitScale();
+                document.documentElement.style.setProperty('--device-scale', autoScale);
+            } else {
+                document.documentElement.style.setProperty('--device-scale', parseFloat(currentZoom));
+            }
+            setTimeout(resizeCanvas, 150);
+        }
+
+        function setDeviceMode(mode) {
+            currentMode = mode;
+            document.body.className = `${mode} ${isLandscape ? 'is-landscape' : ''} ${isLightMode ? 'light-mode' : ''}`.trim();
+
+            deviceBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            updateSpecBadge();
+            applyZoom();
+
+            if (mode === 'mode-split' && !splitLoaded) {
+                loadSplitFrames();
+                splitLoaded = true;
+            }
+        }
+
+        deviceBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setDeviceMode(btn.dataset.mode);
+            });
+        });
+
+        // =========================================================================
+        // FEATURE 4: LIGHT / DARK MODE SIMULATOR TOGGLE
+        // =========================================================================
+        const themeModeBtn = document.getElementById('themeModeBtn');
+        const themeModeIcon = document.getElementById('themeModeIcon');
+        const themeModeText = document.getElementById('themeModeText');
+
+        function setThemeMode(isLight) {
+            isLightMode = isLight;
+            document.body.classList.toggle('light-mode', isLightMode);
+            if (themeModeIcon) themeModeIcon.innerText = isLightMode ? '🌙' : '☀️';
+            if (themeModeText) themeModeText.innerText = isLightMode ? 'Dark' : 'Light';
+            localStorage.setItem('brandflow_loader_theme', isLightMode ? 'light' : 'dark');
+
+            if (splitLoaded) {
+                loadSplitFrames();
+            }
+        }
+
+        if (themeModeBtn) {
+            themeModeBtn.addEventListener('click', () => {
+                setThemeMode(!isLightMode);
+            });
+        }
+
+        // 'T' key shortcut for Light/Dark mode
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 't' || e.key === 'T') {
+                setThemeMode(!isLightMode);
+            }
+        });
+
+        // Orientation Rotation
+        orientationBtn.addEventListener('click', () => {
+            isLandscape = !isLandscape;
+            document.body.classList.toggle('is-landscape', isLandscape);
+            updateSpecBadge();
+            applyZoom();
+        });
+
+        // Zoom Selection
+        zoomBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                zoomBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentZoom = btn.dataset.zoom;
+                applyZoom();
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (currentZoom === 'fit') {
+                applyZoom();
+            }
+            resizeCanvas();
+        });
+
+        // Hide/Show Toolbar
+        document.getElementById('hideToolbarBtn').addEventListener('click', () => {
+            toolbar.classList.add('hidden');
+            unhideBtn.style.display = 'block';
+            setTimeout(applyZoom, 350);
+        });
+
+        unhideBtn.addEventListener('click', () => {
+            toolbar.classList.remove('hidden');
+            unhideBtn.style.display = 'none';
+            setTimeout(applyZoom, 350);
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'h' || e.key === 'H') {
+                if (toolbar.classList.contains('hidden')) {
+                    toolbar.classList.remove('hidden');
+                    unhideBtn.style.display = 'none';
+                } else {
+                    toolbar.classList.add('hidden');
+                    unhideBtn.style.display = 'block';
+                }
+                setTimeout(applyZoom, 350);
+            }
+        });
+
+        // Load content into Split View iframes
+        function loadSplitFrames() {
+            const rawContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        ${document.querySelector('style').innerHTML}
+        body { min-height: 100vh; overflow: hidden; background: ${isLightMode ? '#F1F5F9' : '#080C14'}; }
+        .simulator-toolbar, .unhide-toolbar-pill, .mobile-hardware-bar, .desktop-window-bar, .mobile-home-bar, .multi-split-grid { display: none !important; }
+        .device-scaler-container { width: 100% !important; height: 100% !important; transform: none !important; }
+        .device-frame-shell { width: 100% !important; height: 100vh !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; }
+    </style>
+</head>
+<body class="mode-native ${isLightMode ? 'light-mode' : ''}">
+    <div class="device-scaler-container">
+        <div class="device-frame-shell">
+            ${document.getElementById('primaryLoader').outerHTML}
+        </div>
+    </div>
+</body>
+</html>`;
+
+            const desktopContent = rawContent.replace('class="mode-native', 'class="mode-desktop');
+            const tabletContent = rawContent.replace('class="mode-native', 'class="mode-tablet');
+            const mobileContent = rawContent.replace('class="mode-native', 'class="mode-phone');
+
+            const fDesktop = document.getElementById('splitIframeDesktop');
+            const fTablet = document.getElementById('splitIframeTablet');
+            const fMobile = document.getElementById('splitIframeMobile');
+
+            if (fDesktop) fDesktop.srcdoc = desktopContent;
+            if (fTablet) fTablet.srcdoc = tabletContent;
+            if (fMobile) fMobile.srcdoc = mobileContent;
+        }
+
+        // Check URL parameters for direct mode: e.g. ?mode=native or ?mode=desktop
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedMode = urlParams.get('mode');
+        if (requestedMode && modeSpecs['mode-' + requestedMode]) {
+            setDeviceMode('mode-' + requestedMode);
+        } else if (requestedMode === 'native' || requestedMode === 'standalone') {
+            setDeviceMode('mode-native');
+            toolbar.classList.add('hidden');
+        } else if (window.innerWidth <= 768) {
+            setDeviceMode('mode-native');
+        } else {
+            setDeviceMode('mode-phone');
+        }
+
+        if (localStorage.getItem('brandflow_loader_theme') === 'light') {
+            setThemeMode(true);
+        }
+    </script>
+</body>
+
+</html>

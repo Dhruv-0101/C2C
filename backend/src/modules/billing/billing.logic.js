@@ -1,5 +1,6 @@
-import { BadRequestError, NotFoundError, UnauthorizedError } from '../../common/errors/custom-errors.js';
+import { BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError, ConflictError } from '../../common/errors/custom-errors.js';
 import { env } from '../../config/env.js';
+import { ADMIN_TABS } from '../auth/auth.constants.js';
 import {
   FREE_PLAN_LIMITS,
   PRO_SLIDER_LIMITS,
@@ -13,6 +14,7 @@ import {
 import {
   calculatePlanPricing,
   createRazorpayOrderHelper,
+  fetchRazorpayOrderHelper,
   createStripeIntentHelper,
   retrieveStripeIntentHelper,
   verifyRazorpaySignature,
@@ -26,6 +28,8 @@ import {
   createTransaction,
   findPaginatedUserTransactions,
   findTransactionById,
+  findTransactionByPaymentId,
+  findTransactionByOrderId,
 } from './billing.repository.js';
 import { buildInvoicePdfBuffer } from './billing.pdf.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
@@ -85,16 +89,18 @@ export const getSubscriptionStatus = async (userId) => {
 export const activateFreePlan = async (userId) => {
   const existing = await findByUserId(userId);
 
-  // If user already activated Free plan and used all 5 posts from plan quota
-  if (
-    existing &&
-    existing.plan === BILLING_PLANS.FREE &&
-    existing.totalPostsAllowed >= FREE_PLAN_LIMITS.POST_LIMIT &&
-    existing.postsUsed >= FREE_PLAN_LIMITS.POST_LIMIT
-  ) {
-    throw new BadRequestError(
-      'Free plan quota of 5 posts has been exhausted. Please purchase a Paid Pro Plan to continue.'
-    );
+  // Free Starter Plan can strictly only be activated ONCE per account
+  if (existing) {
+    if (existing.plan === BILLING_PLANS.FREE) {
+      throw new BadRequestError(
+        'Free Starter Plan has already been activated for this account. Please upgrade to a Pro Plan to get more post credits.'
+      );
+    }
+    if (existing.plan === BILLING_PLANS.PRO) {
+      throw new BadRequestError(
+        'You already have an active Pro Plan. Free plan activation is not available.'
+      );
+    }
   }
 
   const sub = await upsertSubscription(userId, {
@@ -158,6 +164,10 @@ export const createRazorpayOrder = async (userId, postCount) => {
     amountInPaise,
     currency: BILLING_CURRENCIES.INR,
     receipt: `rcpt_${userId.substring(0, 8)}_${Date.now()}`,
+    notes: {
+      userId,
+      postCount: pricing.postCount.toString(),
+    },
   });
 
   return {
@@ -169,6 +179,7 @@ export const createRazorpayOrder = async (userId, postCount) => {
 
 /**
  * Verify Razorpay Payment API & Activate Pro Plan
+ * Includes Replay Attack & Double-Spend Defenses, Server-Side Order Verification & Quota Security
  *
  * @param {string} userId - User ID
  * @param {Object} payload - Payment payload
@@ -182,6 +193,14 @@ export const verifyRazorpayPayment = async (
     throw new BadRequestError('Missing required payment parameters (orderId, paymentId, signature).');
   }
 
+  // 1. Anti-Replay / Double-Spend Protection: Check if paymentId or orderId was already processed
+  const existingTx = (await findTransactionByPaymentId(paymentId)) || (await findTransactionByOrderId(orderId));
+  if (existingTx) {
+    logger.warn(`⚠️ [BillingLogic] Replay attempt detected for Razorpay paymentId: ${paymentId}, orderId: ${orderId}`);
+    throw new ConflictError('This payment transaction has already been verified and processed.');
+  }
+
+  // 2. Cryptographic HMAC-SHA256 Signature Verification
   const isValid = verifyRazorpaySignature(orderId, paymentId, signature);
   if (!isValid) {
     logger.error(
@@ -190,10 +209,20 @@ export const verifyRazorpayPayment = async (
     throw new BadRequestError('Payment signature verification failed. Untrusted payment attempt.');
   }
 
+  // 3. Server-side Order Verification (Tamper-Proof Quota)
+  const remoteOrder = await fetchRazorpayOrderHelper(orderId);
+  if (remoteOrder?.notes?.userId && remoteOrder.notes.userId !== userId) {
+    logger.error(`❌ [BillingLogic] User ${userId} attempted to claim order ${orderId} owned by ${remoteOrder.notes.userId}`);
+    throw new BadRequestError('Payment order ownership mismatch.');
+  }
+
   const existing = await findByUserId(userId);
+  const serverPostCount = Number(remoteOrder?.notes?.postCount);
+  const rawPostCount = !isNaN(serverPostCount) && serverPostCount > 0 ? serverPostCount : Number(postCount);
+
   const count = Math.max(
     PRO_SLIDER_LIMITS.MIN_POSTS,
-    Math.min(PRO_SLIDER_LIMITS.MAX_POSTS, Number(postCount) || PRO_SLIDER_LIMITS.DEFAULT_POSTS)
+    Math.min(PRO_SLIDER_LIMITS.MAX_POSTS, rawPostCount || PRO_SLIDER_LIMITS.DEFAULT_POSTS)
   );
   const pricing = calculatePlanPricing(count, BILLING_CURRENCIES.INR);
 
@@ -231,7 +260,10 @@ export const verifyRazorpayPayment = async (
     orderId,
     paymentId,
     status: TRANSACTION_STATUSES.COMPLETED,
-  }).catch(() => null);
+  }).catch((txErr) => {
+    logger.error(`❌ [BillingLogic] Failed to record Razorpay transaction: ${txErr.message}`);
+    return null;
+  });
 
   if (rzpTx?.id) {
     addInvoiceEmailJob({ userId, transactionId: rzpTx.id }).catch(() => {});
@@ -261,7 +293,7 @@ export const createStripeIntent = async (userId, postCount) => {
   const intentData = await createStripeIntentHelper({
     amountInCents,
     currency: 'usd',
-    metadata: { userId, postCount: postCount.toString() },
+    metadata: { userId, postCount: pricing.postCount.toString() },
   });
 
   return {
@@ -274,6 +306,7 @@ export const createStripeIntent = async (userId, postCount) => {
 
 /**
  * Verify Stripe Payment API & Activate Pro Plan
+ * Includes Replay Attack & Double-Spend Defenses, Metadata Verification & Quota Security
  *
  * @param {string} userId - User ID
  * @param {Object} payload - Payment details
@@ -284,6 +317,13 @@ export const verifyStripePayment = async (userId, { intentId, postCount }) => {
     throw new BadRequestError('Missing required Stripe payment intent ID.');
   }
 
+  // 1. Anti-Replay / Double-Spend Protection: Check if Stripe intentId was already processed
+  const existingStripeTx = await findTransactionByPaymentId(intentId);
+  if (existingStripeTx) {
+    logger.warn(`⚠️ [BillingLogic] Replay attempt detected for Stripe intentId: ${intentId}`);
+    throw new ConflictError('This Stripe payment transaction has already been verified and processed.');
+  }
+
   const verifiedIntent = await retrieveStripeIntentHelper(intentId);
   if (verifiedIntent?.status !== 'succeeded') {
     logger.error(
@@ -292,10 +332,19 @@ export const verifyStripePayment = async (userId, { intentId, postCount }) => {
     throw new BadRequestError('Stripe payment has not succeeded. Pro plan activation halted.');
   }
 
+  // 2. Ownership & Server-Side Metadata Verification
+  if (verifiedIntent.metadata?.userId && verifiedIntent.metadata.userId !== userId) {
+    logger.error(`❌ [BillingLogic] User ${userId} attempted to claim Stripe intent owned by ${verifiedIntent.metadata.userId}`);
+    throw new BadRequestError('Stripe payment intent ownership mismatch.');
+  }
+
   const existing = await findByUserId(userId);
+  const serverPostCount = Number(verifiedIntent.metadata?.postCount);
+  const rawPostCount = !isNaN(serverPostCount) && serverPostCount > 0 ? serverPostCount : Number(postCount);
+
   const count = Math.max(
     PRO_SLIDER_LIMITS.MIN_POSTS,
-    Math.min(PRO_SLIDER_LIMITS.MAX_POSTS, Number(postCount) || PRO_SLIDER_LIMITS.DEFAULT_POSTS)
+    Math.min(PRO_SLIDER_LIMITS.MAX_POSTS, rawPostCount || PRO_SLIDER_LIMITS.DEFAULT_POSTS)
   );
   const pricing = calculatePlanPricing(count, BILLING_CURRENCIES.USD);
 
@@ -331,7 +380,10 @@ export const verifyStripePayment = async (userId, { intentId, postCount }) => {
     postCount: count,
     paymentId: intentId,
     status: TRANSACTION_STATUSES.COMPLETED,
-  }).catch(() => null);
+  }).catch((txErr) => {
+    logger.error(`❌ [BillingLogic] Failed to record Stripe transaction: ${txErr.message}`);
+    return null;
+  });
 
   if (stripeTx?.id) {
     addInvoiceEmailJob({ userId, transactionId: stripeTx.id }).catch(() => {});
@@ -459,20 +511,23 @@ export const getBillingHistory = async (userId, queryParams = {}) => {
  * @param {string} [requesterRole='END_USER'] - Requesting role
  * @returns {Promise<Object>} Invoice PDF buffer and filename
  */
-export const generateInvoicePdf = async (userId, transactionId, requesterRole = 'END_USER') => {
+export const generateInvoicePdf = async (userId, transactionId, requester = 'END_USER') => {
   const tx = await findTransactionById(transactionId);
   if (!tx) {
     throw new NotFoundError('Billing transaction record not found.');
   }
 
-  // Access control: User can only download their own invoice unless Admin
-  if (
-    tx.userId !== userId &&
-    requesterRole !== 'ADMIN' &&
-    requesterRole !== 'SUPER_ADMIN' &&
-    requesterRole !== 'SUB_ADMIN'
-  ) {
-    throw new UnauthorizedError('Unauthorized access to invoice document.');
+  // 🛡️ Access Control: Granular authorization to prevent IDOR vulnerabilities (OWASP A01)
+  const requesterUser = typeof requester === 'object' && requester !== null ? requester : { role: requester };
+  const isSuperAdmin = Boolean(requesterUser.isSuperAdmin || requesterUser.role === 'ADMIN');
+  const isFinanceSubAdmin = Boolean(
+    requesterUser.isSubAdmin &&
+    Array.isArray(requesterUser.allowedTabs) &&
+    (requesterUser.allowedTabs.includes(ADMIN_TABS.FINANCE) || requesterUser.allowedTabs.includes('billing'))
+  );
+
+  if (tx.userId !== userId && !isSuperAdmin && !isFinanceSubAdmin) {
+    throw new ForbiddenError('Access denied: You do not have permission to view or download this invoice.');
   }
 
   const pdfBuffer = await buildInvoicePdfBuffer(tx, tx.user, tx.user?.brandKit || {});

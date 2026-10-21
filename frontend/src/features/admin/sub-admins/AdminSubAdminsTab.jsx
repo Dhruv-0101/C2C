@@ -66,20 +66,20 @@ export const AdminSubAdminsTab = ({
   };
 
   return (
-    <div className="animate-in fade-in duration-200 space-y-4">
+    <div className="animate-in fade-in duration-200 space-y-4 sm:space-y-5">
       {/* SubAdmin Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4 border-b border-[#2C384E] pb-4">
         <div>
-          <h3 className="font-heading font-extrabold text-xl text-white flex items-center gap-2">
-            <Shield className="w-5 h-5 text-amber-400" />
+          <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white flex items-center gap-2">
+            <Shield className="w-5 h-5 text-amber-400 shrink-0" />
             <span>SubAdmin Accounts Directory</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
             SuperAdmin exclusive privilege to create, edit permissions, and revoke SubAdmin tab access.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col min-[520px]:flex-row items-stretch min-[520px]:items-center gap-2.5 sm:gap-3 w-full lg:w-auto">
           <SearchBar
             value={subAdminSearch}
             onChange={(val) => {
@@ -88,27 +88,30 @@ export const AdminSubAdminsTab = ({
               setSubAdminPage(1);
             }}
             placeholder="Search subadmins..."
-            className="max-w-sm"
+            className="w-full min-[520px]:w-64"
           />
 
-          {onNavigateTab && (
-            <Button
-              variant="outline"
-              icon={Activity}
-              onClick={() => onNavigateTab(ADMIN_TABS.SUB_ADMIN_ACTIVITY)}
-              className="border-[#2C384E] text-amber-400 hover:text-amber-300 hover:border-amber-500/50"
-            >
-              View Works & Audit
-            </Button>
-          )}
+          <div className="flex flex-col min-[380px]:flex-row items-stretch min-[380px]:items-center gap-2 sm:gap-3 w-full min-[520px]:w-auto">
+            {onNavigateTab && (
+              <Button
+                variant="outline"
+                icon={Activity}
+                onClick={() => onNavigateTab(ADMIN_TABS.SUB_ADMIN_ACTIVITY)}
+                className="border-[#2C384E] text-amber-400 hover:text-amber-300 hover:border-amber-500/50 flex-1 min-[380px]:flex-initial justify-center min-h-[40px]"
+              >
+                View Works & Audit
+              </Button>
+            )}
 
-          <Button
-            variant="primary"
-            icon={UserPlus}
-            onClick={() => setIsModalOpen(true)}
-          >
-            Create SubAdmin
-          </Button>
+            <Button
+              variant="primary"
+              icon={UserPlus}
+              onClick={() => setIsModalOpen(true)}
+              className="flex-1 min-[380px]:flex-initial justify-center min-h-[40px]"
+            >
+              Create SubAdmin
+            </Button>
+          </div>
         </div>
       </div>
 

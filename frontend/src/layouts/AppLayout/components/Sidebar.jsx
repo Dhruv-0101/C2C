@@ -23,15 +23,26 @@ import {
   Share2,
   User,
   BarChart3,
+  CreditCard,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
+import { useSubscription } from '@/features/billing/hooks/useSubscription';
 import { TwoFactorSettingsModal } from '@/features/auth/components/TwoFactorSettingsModal';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
-export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
+export const Sidebar = ({
+  isCollapsed: propCollapsed,
+  onToggle,
+  isMobileOpen: propMobileOpen,
+  setIsMobileOpen: propSetIsMobileOpen,
+}) => {
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const isCollapsed = propCollapsed !== undefined ? propCollapsed : localCollapsed;
+
+  const [localMobileOpen, setLocalMobileOpen] = useState(false);
+  const isMobileOpen = propMobileOpen !== undefined ? propMobileOpen : localMobileOpen;
+  const setIsMobileOpen = propSetIsMobileOpen !== undefined ? propSetIsMobileOpen : setLocalMobileOpen;
 
   const handleToggle = () => {
     if (onToggle) {
@@ -41,18 +52,27 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
     }
   };
 
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
 
   const { user, isSuperAdmin } = useAuth();
+  const { postsRemaining = 0, hasPlan = false, planName = 'FREE' } = useSubscription();
   const { mutate: logout } = useLogout();
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Close mobile sidebar on Escape key
+  React.useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsMobileOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileOpen, setIsMobileOpen]);
+
   const handleLogout = () => {
-    logout(undefined, {
-      onSuccess: () => navigate('/login'),
-    });
+    setIsMobileOpen(false);
+    logout();
   };
 
   const navItems = [
@@ -60,13 +80,18 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
     { label: 'Festival Calendar', path: '/calendar', icon: Calendar },
     { label: 'Post Studio', path: '/create-post', icon: Sparkles },
     { label: 'Your Posts & Queue', path: '/posts', icon: Share2 },
+    {
+      label: 'Your Plan & Billing',
+      path: '/plan',
+      icon: CreditCard,
+      badge: hasPlan ? `${postsRemaining} left` : 'No Plan',
+      isWarningBadge: !hasPlan || postsRemaining <= 0,
+    },
     { label: 'Graphic Vault', path: '/vault', icon: FolderKanban },
     { label: 'BrandKit', path: '/brandkit', icon: Building2 },
     { label: 'Social Integrations', path: '/connections', icon: Share2 },
     { label: 'Analytics & Insights', path: '/analytics', icon: BarChart3 },
   ];
-
-
 
   const isPathActive = (path) => {
     if (path.includes('?tab=')) {
@@ -76,6 +101,9 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
       return location.pathname === basePath && currentTab === tabParam;
     }
     if (path === '/posts' && (location.pathname === '/posts' || location.pathname === '/your-posts')) {
+      return true;
+    }
+    if (path === '/plan' && (location.pathname === '/plan' || location.pathname === '/billing' || location.pathname === '/subscription')) {
       return true;
     }
     if (path === '/brandkit' && (location.pathname === '/brandkit' || location.pathname === '/brand-kit')) {
@@ -91,39 +119,20 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
 
   return (
     <>
-      {/* Mobile Header Bar Toggle */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#131B2A] border-b border-[#2C384E] px-4 py-3 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-2">
-          <span className="font-heading font-extrabold text-lg text-white">
-            Brand<span className="text-amber-400">Flow</span>
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <button
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
-          >
-            {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
       {/* Mobile Backdrop Overlay */}
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen(false)}
-          className="modal-backdrop-overlay lg:hidden fixed inset-0 z-40 animate-in fade-in"
+          className="modal-backdrop-overlay lg:hidden fixed inset-0 z-50 backdrop-blur-xs animate-in fade-in"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen bg-[#131B2A] border-r border-[#2C384E] transition-all duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 left-0 z-50 h-screen h-[100dvh] bg-[#131B2A] border-r border-[#2C384E] transition-all duration-300 ease-in-out flex flex-col ${
           isCollapsed ? 'w-20' : 'w-64'
         } ${
-          isMobileOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
+          isMobileOpen ? 'translate-x-0 w-[280px] max-w-[calc(100vw-3rem)] shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Sidebar Header Banner */}
@@ -134,28 +143,38 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
         >
           {(!isCollapsed || isMobileOpen) ? (
             <>
-              <div className="flex flex-col">
+              <div className="flex flex-col overflow-hidden pr-2">
                 <span className="font-heading font-extrabold text-lg tracking-tight text-white leading-none">
                   Brand<span className="text-amber-400">Flow</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium tracking-wider uppercase mt-1">
+                <span className="text-[10px] text-slate-400 font-medium tracking-wider uppercase mt-1 truncate">
                   Social Media Manager
                 </span>
               </div>
 
-              {/* Desktop Collapse Toggle */}
-              <button
-                onClick={handleToggle}
-                className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
-                title="Collapse Sidebar"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
+              {/* Close Button on Mobile / Collapse on Desktop */}
+              {isMobileOpen ? (
+                <button
+                  onClick={() => setIsMobileOpen(false)}
+                  className="lg:hidden p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
+                  title="Close Sidebar"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleToggle}
+                  className="hidden lg:flex p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 cursor-pointer"
+                  title="Collapse Sidebar"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              )}
             </>
           ) : (
             <button
               onClick={handleToggle}
-              className="hidden lg:flex w-10 h-10 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition items-center justify-center group"
+              className="hidden lg:flex w-10 h-10 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition items-center justify-center group cursor-pointer"
               title="Expand Sidebar"
             >
               <span className="font-heading font-extrabold text-xs tracking-tight text-white group-hover:hidden">
@@ -167,7 +186,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
         </div>
 
         {/* Navigation Links List */}
-        <div className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 py-3.5 px-3 space-y-1.5 overflow-y-auto custom-scrollbar min-h-0">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isPathActive(item.path);
@@ -177,16 +196,41 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
                 key={item.label}
                 to={item.path}
                 onClick={() => setIsMobileOpen(false)}
-                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                className={`relative flex items-center gap-3.5 px-3.5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer ${
                   active
                     ? 'bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                 } ${isCollapsed && !isMobileOpen ? 'justify-center px-0' : ''}`}
-                title={isCollapsed && !isMobileOpen ? item.label : undefined}
+                title={isCollapsed && !isMobileOpen ? `${item.label}${item.badge ? ` (${item.badge})` : ''}` : undefined}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-slate-950' : 'text-slate-400'}`} />
+                <div className="relative shrink-0 flex items-center justify-center">
+                  <Icon className={`w-5 h-5 ${active ? 'text-slate-950' : 'text-slate-400'}`} />
+                  {/* Collapsed Warning / Quota Dot */}
+                  {isCollapsed && !isMobileOpen && item.badge && (
+                    <span
+                      className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-[#131B2A] ${
+                        item.isWarningBadge ? 'bg-rose-500 animate-pulse' : 'bg-amber-400'
+                      }`}
+                    />
+                  )}
+                </div>
                 {(!isCollapsed || isMobileOpen) && (
-                  <span className="truncate">{item.label}</span>
+                  <div className="flex items-center justify-between flex-1 min-w-0 gap-2">
+                    <span className="truncate">{item.label}</span>
+                    {item.badge && (
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 transition-colors ${
+                          active
+                            ? 'bg-slate-950/25 text-slate-950 font-extrabold'
+                            : item.isWarningBadge
+                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/35 animate-pulse'
+                            : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
                 )}
               </NavLink>
             );
@@ -206,7 +250,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
               <NavLink
                 to="/admin"
                 onClick={() => setIsMobileOpen(false)}
-                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                className={`flex items-center gap-3.5 px-3.5 py-2.5 sm:py-3 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
                   isAdminConsolePathActive
                     ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
                     : 'text-slate-200 hover:text-white hover:bg-slate-800/60'
@@ -223,13 +267,13 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
         </div>
 
         {/* Sidebar Footer User Info & Actions */}
-        <div className="p-3 border-t border-[#2C384E] space-y-2 shrink-0 bg-[#0B0F17]">
+        <div className="p-2.5 sm:p-3 border-t border-[#2C384E] space-y-1.5 sm:space-y-2 shrink-0 bg-[#0B0F17]">
           {/* User Profile Summary */}
           {(!isCollapsed || isMobileOpen) && (
             <NavLink
               to="/profile"
               onClick={() => setIsMobileOpen(false)}
-              className="p-2.5 rounded-xl bg-[#131B2A] hover:bg-slate-800/80 border border-[#2C384E] hover:border-amber-500/40 flex items-center justify-between transition cursor-pointer group"
+              className="p-2 sm:p-2.5 rounded-xl bg-[#131B2A] hover:bg-slate-800/80 border border-[#2C384E] hover:border-amber-500/40 flex items-center justify-between transition cursor-pointer group"
               title="View & Manage User Profile"
             >
               <div className="flex items-center gap-2 overflow-hidden">
@@ -263,7 +307,7 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
             className={`transition cursor-pointer ${
               isCollapsed && !isMobileOpen
                 ? "w-10 h-10 p-0 mx-auto flex items-center justify-center rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700"
-                : "w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700"
+                : "w-full flex items-center justify-between p-2 sm:p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs hover:border-slate-700"
             }`}
           >
             <span className="text-slate-300 font-medium flex items-center gap-1.5">
@@ -285,12 +329,13 @@ export const Sidebar = ({ isCollapsed: propCollapsed, onToggle }) => {
 
           {/* Sign Out Button */}
           <button
+            type="button"
             onClick={handleLogout}
             title={isCollapsed && !isMobileOpen ? 'Sign Out' : undefined}
-            className={`font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition cursor-pointer ${
+            className={`font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition cursor-pointer min-h-[38px] ${
               isCollapsed && !isMobileOpen
                 ? "w-10 h-10 p-0 mx-auto flex items-center justify-center"
-                : "w-full flex items-center gap-2 p-2.5 text-xs"
+                : "w-full flex items-center gap-2 p-2 sm:p-2.5 text-xs"
             }`}
           >
             <LogOut className="w-4 h-4 shrink-0" />

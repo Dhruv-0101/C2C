@@ -1,10 +1,17 @@
 // Central barrel export for Admin Feature
 export { AdminDashboardPage } from "./pages/AdminDashboardPage";
-export { SubAdminDashboardPage } from "./pages/SubAdminDashboardPage";
+export { AdminTemplatesPage } from "./pages/AdminTemplatesPage";
+export { AdminTemplateCategoriesPage } from "./pages/AdminTemplateCategoriesPage";
+export { AdminFestivalsPage } from "./pages/AdminFestivalsPage";
+export { AdminFramesPage } from "./pages/AdminFramesPage";
+export { AdminCategoriesPage } from "./pages/AdminCategoriesPage";
+export { AdminUsersPage } from "./pages/AdminUsersPage";
+export { AdminSubAdminsPage } from "./pages/AdminSubAdminsPage";
+export { AdminSubAdminActivityPage } from "./pages/AdminSubAdminActivityPage";
+export { AdminFinancePage } from "./pages/AdminFinancePage";
+export { AdminPostsPage } from "./pages/AdminPostsPage";
 export { default as AdminDashboardPageDefault } from "./pages/AdminDashboardPage";
-export * from "./components/AdminDashboardView";
 export * from "./components/AdminStatsHeader";
-export * from "./components/SubAdminDashboardView";
 export * from "./finance";
 export * from "./templates";
 export * from "./categories";

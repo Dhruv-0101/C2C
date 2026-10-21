@@ -296,15 +296,15 @@ export const AdminFestivalManagerView = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header Banner & Mode Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-6 rounded-2xl shadow-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
-            <CalendarIcon className="w-6 h-6" />
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-3.5 sm:p-5 md:p-6 rounded-2xl shadow-xl">
+        <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
+            <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <h1 className="font-heading font-extrabold text-2xl text-white flex items-center gap-2">
+          <div className="min-w-0">
+            <h1 className="font-heading font-extrabold text-lg sm:text-2xl text-white flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span>Festival & Special Days Management</span>
-              <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full shrink-0">
                 {meta?.totalItems ?? festivals.length} Events
               </span>
             </h1>
@@ -314,12 +314,12 @@ export const AdminFestivalManagerView = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end">
           {/* Display Mode Toggle */}
-          <div className="flex items-center p-1 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
+          <div className="flex items-center p-1 rounded-xl bg-[#0B0F17] border border-[#2C384E] overflow-x-auto max-w-full custom-scrollbar -mx-1 px-1 sm:mx-0">
             <button
               onClick={() => setDisplayMode("list")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer ${
                 displayMode === "list"
                   ? "bg-amber-500 text-slate-950 shadow-glow"
                   : "text-slate-400 hover:text-white"
@@ -330,7 +330,7 @@ export const AdminFestivalManagerView = () => {
             </button>
             <button
               onClick={() => setDisplayMode("table")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer ${
                 displayMode === "table"
                   ? "bg-amber-500 text-slate-950 shadow-glow"
                   : "text-slate-400 hover:text-white"
@@ -341,7 +341,7 @@ export const AdminFestivalManagerView = () => {
             </button>
             <button
               onClick={() => setDisplayMode("calendar")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer ${
                 displayMode === "calendar"
                   ? "bg-amber-500 text-slate-950 shadow-glow"
                   : "text-slate-400 hover:text-white"
@@ -352,7 +352,7 @@ export const AdminFestivalManagerView = () => {
             </button>
             <button
               onClick={() => setDisplayMode("templates")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer ${
                 displayMode === "templates"
                   ? "bg-amber-500 text-slate-950 shadow-glow"
                   : "text-slate-400 hover:text-white"
@@ -363,7 +363,12 @@ export const AdminFestivalManagerView = () => {
             </button>
           </div>
 
-          <Button variant="primary" icon={Plus} onClick={() => handleOpenCreate()}>
+          <Button
+            variant="primary"
+            icon={Plus}
+            onClick={() => handleOpenCreate()}
+            className="w-full sm:w-auto min-h-[40px] justify-center text-xs font-bold shrink-0 shadow-sm"
+          >
             <span>Add Festival</span>
           </Button>
         </div>
@@ -376,9 +381,9 @@ export const AdminFestivalManagerView = () => {
         <TemplatesByFestivalView />
       ) : (
         /* Render Mode 2: Table / Card Management List */
-        <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-5">
+        <Card className="p-3.5 sm:p-5 md:p-6 bg-[#131B2A] border-[#2C384E] space-y-4 sm:space-y-5">
           {/* Search Bar & Action Header */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-b border-[#2C384E] pb-4">
             <SearchBar
               placeholder="Search festival by name, description, or region..."
               value={search}
@@ -389,8 +394,9 @@ export const AdminFestivalManagerView = () => {
               className="w-full sm:max-w-md"
             />
 
-            <div className="text-xs text-slate-400 font-mono">
-              Showing {paginatedFestivals.length} of {totalFiltered} festivals
+            <div className="text-xs text-slate-400 font-mono text-left sm:text-right shrink-0">
+              Showing <span className="text-slate-200 font-semibold">{paginatedFestivals.length}</span> of{" "}
+              <span className="text-slate-200 font-semibold">{totalFiltered}</span> festivals
             </div>
           </div>
 
@@ -430,7 +436,7 @@ export const AdminFestivalManagerView = () => {
               onOpenViewTemplates={(fest) => setViewingFestivalTemplates(fest)}
             />
           ) : (
-            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
+            <div className={`grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : "opacity-100"}`}>
               {paginatedFestivals.map((fest) => {
                 const formattedDate = formatDate(fest.date) || "N/A";
 
@@ -472,7 +478,7 @@ export const AdminFestivalManagerView = () => {
                           <button
                             type="button"
                             onClick={() => setViewingFestivalTemplates(fest)}
-                            className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                            className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
                             title="View Linked Templates"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -480,7 +486,7 @@ export const AdminFestivalManagerView = () => {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(fest)}
-                            className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                            className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-amber-400 hover:border-amber-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
                             title="Edit Festival"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -488,7 +494,7 @@ export const AdminFestivalManagerView = () => {
                           <button
                             type="button"
                             onClick={() => handleOpenDelete(fest.id)}
-                            className="p-1.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-red-400 hover:border-red-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
+                            className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-xl bg-slate-950/70 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-red-400 hover:border-red-400/50 hover:bg-slate-900/90 transition cursor-pointer shadow-md"
                             title="Delete Festival"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -499,13 +505,13 @@ export const AdminFestivalManagerView = () => {
                     <div className="p-4 space-y-3">
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <div>
-                            <h3 className="font-heading font-bold text-sm text-slate-900 dark:text-white truncate max-w-[160px]">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-heading font-bold text-sm text-slate-900 dark:text-white truncate">
                               {fest.name}
                             </h3>
                             <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1 mt-0.5">
-                              <Clock className="w-3 h-3" />
-                              <span>{formattedDate}</span>
+                              <Clock className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{formattedDate}</span>
                             </p>
                           </div>
 
@@ -513,7 +519,7 @@ export const AdminFestivalManagerView = () => {
                             type="button"
                             onClick={() => handleToggleStatus(fest)}
                             disabled={togglingId === fest.id}
-                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition cursor-pointer flex items-center gap-1.5 ${
+                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
                               fest.isActive !== false
                                 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25"
                                 : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200"
@@ -614,17 +620,17 @@ export const AdminFestivalManagerView = () => {
       {/* CONFIRM DELETE MODAL */}
       {deleteConfirmId &&
         createPortal(
-          <div className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-6 shadow-2xl space-y-4 text-center"
+              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-4 sm:p-6 shadow-2xl space-y-4 text-center mx-2"
             >
               <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center">
                 <AlertCircle className="w-6 h-6" />
               </div>
 
               <div>
-                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">
+                <h3 className="font-heading font-extrabold text-base sm:text-lg text-slate-900 dark:text-white">
                   Delete Festival?
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -632,13 +638,17 @@ export const AdminFestivalManagerView = () => {
                 </p>
               </div>
 
-              <div className="flex items-center justify-center gap-3 pt-2">
-                <Button variant="ghost" onClick={() => setDeleteConfirmId(null)}>
+              <div className="flex flex-col-reverse min-[360px]:flex-row items-stretch min-[360px]:items-center justify-center gap-2 sm:gap-3 pt-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="min-h-[38px] justify-center text-xs"
+                >
                   Cancel
                 </Button>
                 <Button
                   variant="primary"
-                  className="bg-red-600 hover:bg-red-500 text-white"
+                  className="bg-red-600 hover:bg-red-500 text-white min-h-[38px] justify-center text-xs font-bold"
                   disabled={isDeleting}
                   onClick={handleConfirmDelete}
                 >

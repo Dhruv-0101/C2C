@@ -26,17 +26,17 @@ export const FinanceLedgerFilters = ({
   scopeInfo,
 }) => {
   return (
-    <div className="space-y-3 p-3.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs">
+    <div className="space-y-3 p-3 sm:p-3.5 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs">
       {/* Row 1: Search, Currency, Gateway, Status, Plan, Type */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
         {/* Search Input */}
         <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-500 pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search user, email, payment ID..."
-            className="bg-[#131B2A] border-[#2C384E] text-xs text-white pl-8 py-1.5"
+            className="bg-[#131B2A] border-[#2C384E] text-xs text-white pl-8 py-2 min-h-[38px]"
           />
         </div>
 
@@ -44,7 +44,7 @@ export const FinanceLedgerFilters = ({
         <select
           value={currency}
           onChange={(e) => onCurrencyChange(e.target.value)}
-          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
+          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-2 min-h-[38px] text-xs text-white focus:outline-none focus:border-amber-500 font-bold cursor-pointer"
         >
           <option value="">All Currencies</option>
           <option value="INR">INR (₹)</option>
@@ -55,7 +55,7 @@ export const FinanceLedgerFilters = ({
         <select
           value={paymentGateway}
           onChange={(e) => onPaymentGatewayChange(e.target.value)}
-          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
+          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-2 min-h-[38px] text-xs text-white focus:outline-none focus:border-amber-500 font-bold cursor-pointer"
         >
           <option value="">All Gateways</option>
           <option value="RAZORPAY">Razorpay</option>
@@ -70,7 +70,7 @@ export const FinanceLedgerFilters = ({
         <select
           value={status}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
+          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-2 min-h-[38px] text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer"
         >
           <option value="">All Statuses</option>
           <option value="COMPLETED">Completed</option>
@@ -83,7 +83,7 @@ export const FinanceLedgerFilters = ({
         <select
           value={plan}
           onChange={(e) => onPlanChange(e.target.value)}
-          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
+          className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl px-3 py-2 min-h-[38px] text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer"
         >
           <option value="">All Plans</option>
           <option value="FREE">Free</option>
@@ -94,7 +94,7 @@ export const FinanceLedgerFilters = ({
         <select
           value={transactionType}
           onChange={(e) => onTransactionTypeChange(e.target.value)}
-          className={`w-full bg-[#131B2A] border rounded-xl px-3 py-1.5 text-xs focus:outline-none transition font-semibold ${
+          className={`w-full bg-[#131B2A] border rounded-xl px-3 py-2 min-h-[38px] text-xs focus:outline-none transition font-semibold cursor-pointer ${
             transactionType === 'ADMIN_BONUS'
               ? 'border-purple-500 text-purple-300 bg-purple-950/30'
               : 'border-[#2C384E] text-white focus:border-amber-500'
@@ -108,19 +108,19 @@ export const FinanceLedgerFilters = ({
       </div>
 
       {/* Row 2: Quick Bonus Toggle & Date Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#2C384E]/60">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2 border-t border-[#2C384E]/60">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Quick Bonus Transactions Filter Button */}
           <button
             type="button"
             onClick={() => onTransactionTypeChange(transactionType === 'ADMIN_BONUS' ? '' : 'ADMIN_BONUS')}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer ${
+            className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 flex items-center gap-1.5 border cursor-pointer min-h-[34px] ${
               transactionType === 'ADMIN_BONUS'
                 ? 'bg-purple-500/25 text-purple-300 border-purple-500/60 shadow-sm font-bold'
                 : 'bg-[#131B2A] text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 border-[#2C384E]'
             }`}
           >
-            <Gift className="w-3.5 h-3.5 text-purple-400" />
+            <Gift className="w-3.5 h-3.5 text-purple-400 shrink-0" />
             <span>Bonus Transactions</span>
             {transactionType === 'ADMIN_BONUS' && (
               <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse ml-0.5" />
@@ -130,34 +130,36 @@ export const FinanceLedgerFilters = ({
           <span className="text-slate-600 hidden sm:inline">|</span>
 
           <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-amber-400" />
+            <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span>Date Range:</span>
           </span>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-slate-500 uppercase font-mono">From:</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => onStartDateChange(e.target.value)}
-              className="bg-[#131B2A] border border-[#2C384E] rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-amber-500"
-            />
-          </div>
+          <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-slate-500 uppercase font-mono">From:</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => onStartDateChange(e.target.value)}
+                className="bg-[#131B2A] border border-[#2C384E] rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-amber-500 min-h-[34px]"
+              />
+            </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-slate-500 uppercase font-mono">To:</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => onEndDateChange(e.target.value)}
-              className="bg-[#131B2A] border border-[#2C384E] rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-amber-500"
-            />
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-slate-500 uppercase font-mono">To:</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => onEndDateChange(e.target.value)}
+                className="bg-[#131B2A] border border-[#2C384E] rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-amber-500 min-h-[34px]"
+              />
+            </div>
           </div>
 
           {(startDate || endDate) && (
             <button
               onClick={onClearDates}
-              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-rose-400 hover:text-white hover:bg-rose-500/20 border border-rose-500/30 transition flex items-center gap-1"
+              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-rose-400 hover:text-white hover:bg-rose-500/20 border border-rose-500/30 transition flex items-center gap-1 min-h-[34px] cursor-pointer"
             >
               <X className="w-3 h-3" />
               <span>Clear Dates</span>
@@ -165,7 +167,7 @@ export const FinanceLedgerFilters = ({
           )}
         </div>
 
-        <div className="text-[11px] text-slate-400 font-mono">
+        <div className="text-[11px] text-slate-400 font-mono break-words">
           Covering: <span className="text-emerald-400 font-bold">{scopeInfo?.daysText}</span> ({scopeInfo?.label})
         </div>
       </div>

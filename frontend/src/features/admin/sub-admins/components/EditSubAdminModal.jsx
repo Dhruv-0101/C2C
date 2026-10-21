@@ -39,19 +39,29 @@ export const EditSubAdminModal = ({ subAdmin, onClose, onBack = onClose, updateS
   };
 
   return (
-    <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto">
-      <div className="w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
-          <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-            <Pencil className="w-4 h-4 text-amber-400" />
+    <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in overflow-y-auto">
+      <div className="w-full max-w-lg max-h-[92vh] flex flex-col bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl overflow-hidden">
+        {/* Modal Header */}
+        <div className="p-4 sm:p-5 border-b border-[#2C384E] shrink-0 flex items-center justify-between">
+          <h3 className="font-heading font-bold text-sm sm:text-base text-white flex items-center gap-2">
+            <Pencil className="w-4 h-4 text-amber-400 shrink-0" />
             <span>Update SubAdmin Permissions</span>
           </h3>
-          <button onClick={handleDismiss} className="text-slate-400 hover:text-white">
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="p-1.5 min-w-[36px] min-h-[36px] rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center"
+            aria-label="Close dialog"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Modal Form Body */}
+        <form
+          onSubmit={handleSubmit}
+          className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4"
+        >
           <Input
             label="Full Name"
             value={fullName}
@@ -71,26 +81,26 @@ export const EditSubAdminModal = ({ subAdmin, onClose, onBack = onClose, updateS
             <label className="text-xs font-bold text-white block">
               Permitted Admin Console Tabs:
             </label>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-400 leading-relaxed">
               Only checked tabs will be visible to this SubAdmin upon login.
             </p>
 
-            <div className="grid grid-cols-2 gap-2 pt-2">
+            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2 pt-2">
               {SUBADMIN_TAB_CONFIG.map((tab) => {
                 const isChecked = editTabs.includes(tab.id);
                 return (
                   <label
                     key={tab.id}
                     onClick={() => handleToggle(tab.id)}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between cursor-pointer transition ${
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between cursor-pointer transition select-none ${
                       isChecked
                         ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
                         : "bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:text-white"
                     }`}
                   >
-                    <span>{tab.label}</span>
+                    <span className="truncate pr-2">{tab.label}</span>
                     <div
-                      className={`w-4 h-4 rounded border flex items-center justify-center ${
+                      className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                         isChecked
                           ? "bg-amber-500 border-amber-500 text-slate-950"
                           : "border-slate-600 bg-slate-900"
@@ -104,14 +114,21 @@ export const EditSubAdminModal = ({ subAdmin, onClose, onBack = onClose, updateS
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#2C384E]">
-            <Button variant="ghost" type="button" onClick={handleDismiss}>
+          {/* Modal Footer Actions */}
+          <div className="flex flex-col-reverse min-[360px]:flex-row justify-end gap-2.5 sm:gap-3 pt-3 border-t border-[#2C384E]">
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={handleDismiss}
+              className="w-full min-[360px]:w-auto min-h-[40px] justify-center"
+            >
               Cancel
             </Button>
             <Button
               variant="primary"
               type="submit"
               isLoading={updateSubAdminMutation.isPending}
+              className="w-full min-[360px]:w-auto min-h-[40px] justify-center"
             >
               Save Permissions
             </Button>

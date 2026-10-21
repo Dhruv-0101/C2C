@@ -55,14 +55,14 @@ export const CalendarPostModal = ({
     >
       <form onSubmit={handleSubmit} className="space-y-5 p-1">
         {/* Date & Time Header info */}
-        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300">
+        <div className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300">
           <Calendar className="w-5 h-5 text-indigo-400 shrink-0" />
-          <div className="text-xs">
-            <span className="font-semibold text-white block">
+          <div className="text-xs min-w-0">
+            <span className="font-semibold text-white block truncate">
               {selectedDate ? formatDate(selectedDate, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Today'}
             </span>
             {festivalName && (
-              <span className="text-indigo-400 font-medium">{festivalName} Event</span>
+              <span className="text-indigo-400 font-medium truncate block">{festivalName} Event</span>
             )}
           </div>
         </div>
@@ -123,18 +123,18 @@ export const CalendarPostModal = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-          <Button type="button" variant="outline" onClick={onClose}>
+        <div className="flex flex-col-reverse min-[420px]:flex-row items-stretch min-[420px]:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-slate-800">
+          <Button type="button" variant="outline" onClick={onClose} className="w-full min-[420px]:w-auto justify-center">
             Cancel
           </Button>
           <Button
             type="submit"
             variant="primary"
             disabled={isScheduling}
-            className="flex items-center gap-2"
+            className="w-full min-[420px]:w-auto flex items-center justify-center gap-2 font-bold"
           >
-            <Clock className="w-4 h-4" />
-            {isScheduling ? 'Scheduling...' : 'Schedule Post'}
+            <Clock className="w-4 h-4 shrink-0" />
+            <span>{isScheduling ? 'Scheduling...' : 'Schedule Post'}</span>
           </Button>
         </div>
       </form>

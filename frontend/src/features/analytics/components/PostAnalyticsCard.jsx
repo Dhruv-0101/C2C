@@ -44,7 +44,7 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
   });
 
   return (
-    <Card className="p-4 bg-white dark:bg-[#131B2A] border-slate-200 dark:border-[#2C384E] hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between group shadow-sm dark:shadow-lg">
+    <Card className="p-3.5 sm:p-4 bg-white dark:bg-[#131B2A] border-slate-200 dark:border-[#2C384E] hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between group shadow-sm dark:shadow-lg rounded-2xl">
       <div className="space-y-3">
         {/* Top Graphic + Platform Badge */}
         <div className="relative aspect-video sm:aspect-square w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-[#2C384E] flex items-center justify-center">
@@ -119,17 +119,17 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
         </div>
 
         {/* Key Metrics Pill Grid */}
-        <div className="grid grid-cols-3 gap-1.5 p-2 rounded-xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center font-mono">
+        <div className="grid grid-cols-3 gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-center font-mono">
           <div className="space-y-0.5">
             <span className="text-[9px] text-slate-500 dark:text-slate-400 uppercase flex items-center justify-center gap-0.5 font-sans font-semibold">
               <Eye className="w-2.5 h-2.5 text-indigo-600 dark:text-indigo-400" /> Impr
             </span>
-            <span className="text-xs font-bold text-slate-900 dark:text-white block font-mono">
+            <span className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white block font-mono truncate">
               {formatNumber(metrics.impressions || 0)}
             </span>
             {platformBreakdown.length > 1 && (
               <span
-                className="text-[9px] text-slate-500 dark:text-slate-400 block truncate font-mono"
+                className="text-[8px] sm:text-[9px] text-slate-500 dark:text-slate-400 block truncate font-mono"
                 title={platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.impressions)}`).join(' • ')}
               >
                 {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.impressions)}`).join(' • ')}
@@ -141,12 +141,12 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
             <span className="text-[9px] text-slate-500 dark:text-slate-400 uppercase flex items-center justify-center gap-0.5 font-sans font-semibold">
               <Users className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" /> Reach
             </span>
-            <span className="text-xs font-bold text-slate-900 dark:text-white block font-mono">
+            <span className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white block font-mono truncate">
               {formatNumber(metrics.reach || 0)}
             </span>
             {platformBreakdown.length > 1 && (
               <span
-                className="text-[9px] text-amber-700 dark:text-amber-400/90 block truncate font-mono font-medium"
+                className="text-[8px] sm:text-[9px] text-amber-700 dark:text-amber-400/90 block truncate font-mono font-medium"
                 title={platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.reach)}`).join(' • ')}
               >
                 {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.reach)}`).join(' • ')}
@@ -158,12 +158,12 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
             <span className="text-[9px] text-slate-500 dark:text-slate-400 uppercase flex items-center justify-center gap-0.5 font-sans font-semibold">
               <Heart className="w-2.5 h-2.5 text-rose-600 dark:text-rose-400" /> Likes
             </span>
-            <span className="text-xs font-bold text-rose-600 dark:text-rose-400 block font-mono">
+            <span className="text-[11px] sm:text-xs font-bold text-rose-600 dark:text-rose-400 block font-mono truncate">
               {formatNumber(metrics.likes || 0)}
             </span>
             {platformBreakdown.length > 1 && (
               <span
-                className="text-[9px] text-slate-500 dark:text-slate-400 block truncate font-mono"
+                className="text-[8px] sm:text-[9px] text-slate-500 dark:text-slate-400 block truncate font-mono"
                 title={platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.likes)}`).join(' • ')}
               >
                 {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : p.platform === 'FACEBOOK' ? 'FB' : p.platform}: ${formatNumber(p.likes)}`).join(' • ')}
@@ -173,7 +173,7 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
         </div>
 
         {/* Additional Micro Counters */}
-        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono px-1">
+        <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-mono px-1">
           <span className="flex items-center gap-1 font-medium">
             <MessageCircle className="w-3 h-3 text-sky-600 dark:text-sky-400" />
             <span>{formatNumber(metrics.comments || 0)} Comments</span>
@@ -191,7 +191,7 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
           variant="outline"
           size="sm"
           onClick={() => onSelectPost?.(post)}
-          className="w-full text-xs font-bold border-slate-200 dark:border-[#2C384E] hover:border-amber-500/50 hover:bg-amber-500/10 flex items-center justify-center gap-1.5"
+          className="w-full text-xs font-bold border-slate-200 dark:border-[#2C384E] hover:border-amber-500/50 hover:bg-amber-500/10 flex items-center justify-center gap-1.5 min-h-[36px] active:scale-95"
         >
           <BarChart2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
           <span>Deep Insights</span>

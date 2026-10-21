@@ -11,7 +11,7 @@ import { ContentLoader } from '@/components/feedback/ContentLoader';
  */
 export const PublicLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#0B0F17] text-slate-100 font-body relative">
+    <div className="min-h-screen flex flex-col justify-between bg-[#0B0F17] text-slate-100 font-body relative overflow-x-hidden">
       <Header />
 
       <main className="flex-1 w-full">

@@ -33,13 +33,13 @@ export const QuotaTopUpModal = ({ isOpen, onClose, user, onConfirm, isPending })
           <label className="block text-slate-300 font-bold mb-1.5">
             Quick Bonus Presets
           </label>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2">
             {PRESETS.map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setQuota(String(p))}
-                className={`py-1.5 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1 ${
+                className={`py-2 min-h-[36px] rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${
                   Number(quota) === p
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 ring-1 ring-amber-500/40'
                     : 'bg-[#0B0F17] text-slate-400 border-[#2C384E] hover:text-white hover:border-slate-600'
@@ -66,11 +66,23 @@ export const QuotaTopUpModal = ({ isOpen, onClose, user, onConfirm, isPending })
           />
         </div>
 
-        <div className="pt-3 flex justify-end gap-2 border-t border-[#2C384E]">
-          <Button variant="ghost" type="button" size="sm" onClick={onClose}>
+        <div className="pt-3 flex flex-col-reverse min-[360px]:flex-row justify-end gap-2 border-t border-[#2C384E]">
+          <Button
+            variant="ghost"
+            type="button"
+            size="sm"
+            onClick={onClose}
+            className="w-full min-[360px]:w-auto min-h-[38px] justify-center"
+          >
             Cancel
           </Button>
-          <Button variant="primary" type="submit" size="sm" isLoading={isPending}>
+          <Button
+            variant="primary"
+            type="submit"
+            size="sm"
+            isLoading={isPending}
+            className="w-full min-[360px]:w-auto min-h-[38px] justify-center font-bold"
+          >
             Confirm +{quota} Credits
           </Button>
         </div>

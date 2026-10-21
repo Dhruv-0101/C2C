@@ -280,7 +280,7 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-200">
           {/* User Personal Details Card */}
-          <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
+          <Card className="p-3.5 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
             <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 border-b border-[#2C384E] pb-3">
               <User className="w-4 h-4 text-amber-400" />
               <span>Personal Information</span>
@@ -325,7 +325,7 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
           </Card>
 
           {/* Business & BrandKit Information Card */}
-          <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
+          <Card className="p-3.5 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
               <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-amber-400" />
@@ -427,7 +427,7 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
               )}
 
               {/* Main Quota Overview Header */}
-              <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-6">
+              <Card className="p-3.5 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -538,8 +538,8 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
 
       {/* TAB 3: Purchased Plans & Billing History */}
       {activeTab === "history" && (
-        <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+        <Card className="p-3.5 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-4 animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2C384E] pb-3">
             <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
               <Receipt className="w-4 h-4 text-amber-400" />
               <span>Purchased Plans & Order Invoices</span>
@@ -561,8 +561,114 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-300">
+              {/* Mobile Transaction Cards View (Visible on <768px) */}
+              <div className="block md:hidden space-y-3">
+                {historyItems.map((tx) => {
+                  const txDate = tx.createdAt
+                    ? new Date(tx.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "N/A";
+                  const isBonus = tx.transactionType === "ADMIN_BONUS" || tx.paymentGateway === "ADMIN_BONUS";
+                  const isPro = tx.plan === "PRO";
+                  const refId = tx.paymentId || tx.orderId || "tx_grant";
+
+                  return (
+                    <div
+                      key={tx.id}
+                      className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 text-xs"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Zap className={`w-4 h-4 shrink-0 ${isPro ? "text-indigo-400 fill-indigo-400" : "text-amber-400"}`} />
+                          <span className="font-bold text-white text-xs truncate">
+                            {isBonus
+                              ? `Admin Bonus (+${tx.postCount || 10} Posts)`
+                              : `${tx.plan} Plan (${tx.postCount || 5} Posts)`}
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase shrink-0">
+                          {tx.status || "COMPLETED"}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-800/80">
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Price Paid</span>
+                          <span className="font-bold text-white text-xs">
+                            {tx.pricePaid > 0
+                              ? `${tx.currency === "USD" ? "$" : "₹"}${tx.pricePaid}`
+                              : isBonus
+                              ? "Bonus ($0)"
+                              : "Free ($0)"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Date</span>
+                          <span className="text-slate-300 font-medium">{txDate}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Gateway</span>
+                          <span className={`inline-block px-1.5 py-0.5 rounded border text-[9px] font-mono font-bold mt-0.5 ${
+                            tx.paymentGateway === "STRIPE"
+                              ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"
+                              : tx.paymentGateway === "RAZORPAY"
+                              ? "bg-teal-500/20 text-teal-300 border-teal-500/30"
+                              : tx.paymentGateway === "ADMIN_BONUS"
+                              ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                              : "bg-slate-800 text-slate-300 border-slate-700"
+                          }`}>
+                            {tx.paymentGateway || "FREE"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Order ID</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (refId) {
+                                navigator.clipboard.writeText(refId);
+                                setCopiedTxId(refId);
+                                setTimeout(() => setCopiedTxId(null), 2000);
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 text-[10px] text-slate-300 font-mono hover:text-white mt-0.5"
+                          >
+                            <span className="truncate max-w-[90px]">{refId}</span>
+                            {copiedTxId === refId ? (
+                              <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                            ) : (
+                              <Copy className="w-3 h-3 text-slate-500 shrink-0" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadInvoice(tx.id)}
+                          disabled={downloadingTxId === tx.id}
+                          className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition disabled:opacity-50 min-h-[38px]"
+                        >
+                          {downloadingTxId === tx.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Download className="w-3.5 h-3.5" />
+                          )}
+                          <span>Download PDF Invoice</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View (Visible on >=768px) */}
+              <div className="hidden md:block overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left text-xs text-slate-300 min-w-[700px]">
                   <thead className="bg-[#0B0F17] text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#2C384E] font-bold">
                     <tr>
                       <th className="p-3">Plan / Description</th>
@@ -649,7 +755,7 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
                               type="button"
                               onClick={() => handleDownloadInvoice(tx.id)}
                               disabled={downloadingTxId === tx.id}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[11px] font-bold transition disabled:opacity-50 cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[11px] font-bold transition disabled:opacity-50 cursor-pointer min-h-[32px]"
                               title="Download Official PDF Invoice"
                             >
                               {downloadingTxId === tx.id ? (

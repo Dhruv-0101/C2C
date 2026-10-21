@@ -109,10 +109,10 @@ export const AnalyticsView = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-16">
       {/* Header & Filter Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-[#131B2A] via-[#1A2538] to-[#0B0F17] p-4 sm:p-5 rounded-2xl border border-[#2C384E] shadow-xl">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-[#131B2A] via-[#1A2538] to-[#0B0F17] p-3.5 sm:p-5 rounded-2xl border border-[#2C384E] shadow-xl">
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="font-heading font-extrabold text-xl text-white flex items-center gap-2">
+            <h1 className="font-heading font-extrabold text-lg sm:text-xl text-white flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-amber-400 shrink-0" />
               <span>Analytics & Insights</span>
             </h1>
@@ -130,14 +130,14 @@ export const AnalyticsView = ({
         </div>
 
         {/* Action Controls Toolbar */}
-        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
           {/* Range Selector */}
           <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] p-1 shrink-0">
             {['7d', '30d', '90d'].map((r) => (
               <button
                 key={r}
                 onClick={() => onRangeChange?.(r)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer min-h-[34px] flex items-center justify-center active:scale-95 ${
                   range === r
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
@@ -149,12 +149,12 @@ export const AnalyticsView = ({
           </div>
 
           {/* Platform Filter */}
-          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2.5 py-1 shrink-0">
+          <div className="flex items-center bg-[#0B0F17] rounded-xl border border-[#2C384E] px-2.5 py-1 shrink-0 min-h-[36px]">
             <Filter className="w-3.5 h-3.5 text-slate-400 mr-1.5 shrink-0" />
             <select
               value={platformFilter}
               onChange={(e) => onPlatformChange?.(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 font-bold focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs text-slate-200 font-bold focus:outline-none cursor-pointer py-0.5"
             >
               <option value="ALL" className="bg-[#131B2A]">All Platforms</option>
               <option value="INSTAGRAM" className="bg-[#131B2A]">Instagram</option>
@@ -167,7 +167,7 @@ export const AnalyticsView = ({
             variant="outline"
             onClick={onSync}
             isLoading={isSyncing}
-            className="py-1 px-3 text-xs font-bold border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-1.5 shrink-0"
+            className="py-1 px-3 text-xs font-bold border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial shrink-0 min-h-[36px] active:scale-95"
             title="Fetch real-time metrics directly from Meta Graph API"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
@@ -178,11 +178,11 @@ export const AnalyticsView = ({
           <Button
             variant="outline"
             onClick={() => setIsExplanationOpen(true)}
-            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-1.5 shrink-0"
+            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-slate-300 hover:bg-slate-800 hover:text-white flex items-center justify-center gap-1.5 shrink-0 min-h-[36px] active:scale-95"
             title="How are analytics and engagement rates calculated?"
           >
-            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Metrics Guide</span>
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="inline">Metrics Guide</span>
           </Button>
 
           {/* Seed Demo Button */}
@@ -190,28 +190,28 @@ export const AnalyticsView = ({
             variant="outline"
             onClick={onSeedDemo}
             isLoading={isSeeding}
-            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 flex items-center gap-1 shrink-0"
+            className="py-1 px-2.5 text-xs font-bold border-[#2C384E] text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 flex items-center justify-center gap-1 shrink-0 min-h-[36px] active:scale-95"
             title="Seed engagement analytics for testing"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden md:inline">Seed</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="hidden sm:inline">Seed</span>
           </Button>
         </div>
       </div>
 
       {/* Formula & Calculation Consistency Banner */}
-      <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-50/90 dark:bg-gradient-to-r dark:from-amber-500/10 dark:via-[#131B2A] dark:to-[#0B0F17] border border-amber-300/80 dark:border-amber-500/30 text-xs shadow-xs">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-xl bg-amber-50/90 dark:bg-gradient-to-r dark:from-amber-500/10 dark:via-[#131B2A] dark:to-[#0B0F17] border border-amber-300/80 dark:border-amber-500/30 text-xs shadow-xs gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
           <Calculator className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
           <span className="text-slate-800 dark:text-slate-300 font-semibold">Official Standard Formula:</span>
-          <span className="font-mono text-amber-800 dark:text-amber-300 font-bold hidden sm:inline">
+          <span className="font-mono text-amber-800 dark:text-amber-300 font-bold hidden sm:inline truncate">
             Engagement Rate (%) = (Total Interactions ÷ Audience Reach) × 100
           </span>
         </div>
 
         <button
           onClick={() => setIsExplanationOpen(true)}
-          className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 font-bold text-xs underline underline-offset-2 flex items-center gap-1 shrink-0 cursor-pointer"
+          className="text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 font-bold text-xs underline underline-offset-2 flex items-center gap-1 shrink-0 cursor-pointer min-h-[30px]"
         >
           <span>Calculation Details</span>
           <ShieldCheck className="w-3.5 h-3.5" />
@@ -228,34 +228,34 @@ export const AnalyticsView = ({
         </div>
       ) : !hasData ? (
         /* Empty State Card */
-        <Card className="p-12 text-center bg-[#131B2A] border-[#2C384E] space-y-4">
+        <Card className="p-6 sm:p-12 text-center bg-[#131B2A] border-[#2C384E] space-y-4 rounded-2xl">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
             <BarChart3 className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="font-heading font-extrabold text-lg text-white">No Analytics Data Found</h3>
+            <h3 className="font-heading font-extrabold text-base sm:text-lg text-white">No Analytics Data Found</h3>
             <p className="text-xs text-slate-400 max-w-md mx-auto">
               Publish graphics to Instagram or Facebook via Post Studio or click Sync Live Data to fetch real-time engagement.
             </p>
           </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 pt-2 w-full sm:w-auto">
             <Button
               variant="primary"
               onClick={onSync}
               isLoading={isSyncing}
-              className="py-2.5 px-5 text-xs font-bold"
+              className="w-full sm:w-auto py-2.5 px-5 text-xs font-bold min-h-[40px] justify-center"
             >
               <RefreshCw className="w-4 h-4 mr-1.5" />
-              Sync Live Meta Data
+              <span>Sync Live Meta Data</span>
             </Button>
             <Button
               variant="outline"
               onClick={onSeedDemo}
               isLoading={isSeeding}
-              className="py-2.5 px-5 text-xs font-bold border-[#2C384E]"
+              className="w-full sm:w-auto py-2.5 px-5 text-xs font-bold border-[#2C384E] min-h-[40px] justify-center"
             >
               <Sparkles className="w-4 h-4 mr-1.5 text-amber-400" />
-              Seed Demo Analytics
+              <span>Seed Demo Analytics</span>
             </Button>
           </div>
         </Card>
@@ -263,11 +263,11 @@ export const AnalyticsView = ({
         <div className="space-y-8">
           {/* SECTION 1: MASTER KPI CARDS (Aggregated across all published posts) */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-              <span className="font-bold uppercase tracking-wider text-slate-400">
+            <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between text-xs text-slate-400 px-1 gap-1">
+              <span className="font-bold uppercase tracking-wider text-slate-400 truncate">
                 Performance Overview ({postsMeta.totalCount || posts.length} Published {postsMeta.totalCount === 1 ? 'Post' : 'Posts'})
               </span>
-              <span className="font-mono text-emerald-400">100% Meta Verified</span>
+              <span className="font-mono text-emerald-400 shrink-0">100% Meta Verified</span>
             </div>
             <AnalyticsKpiCards kpi={kpi} />
           </div>
@@ -278,15 +278,15 @@ export const AnalyticsView = ({
             <EngagementChart trends={trends} />
 
             {/* Two-Column Grid: Platform Breakdown & Top Design Templates */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Left Box: Platform Engagement Split */}
-              <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
-                <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+              <Card className="p-4 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-4 rounded-2xl">
+                <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between border-b border-[#2C384E] pb-3 gap-1">
                   <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-                    <Share2 className="w-4 h-4 text-amber-400" />
+                    <Share2 className="w-4 h-4 text-amber-400 shrink-0" />
                     <span>Social Channel Distribution</span>
                   </h3>
-                  <span className="text-[11px] font-mono text-slate-400">
+                  <span className="text-[11px] font-mono text-slate-400 shrink-0">
                     Total Reach: <strong className="text-white">{formatNumber(kpi.totalReach || 0)}</strong>
                   </span>
                 </div>
@@ -297,7 +297,7 @@ export const AnalyticsView = ({
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="h-52 w-full">
+                    <div className="h-52 w-full min-w-0">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
@@ -306,8 +306,8 @@ export const AnalyticsView = ({
                             nameKey="platform"
                             cx="50%"
                             cy="50%"
-                            innerRadius={50}
-                            outerRadius={80}
+                            innerRadius={45}
+                            outerRadius={75}
                             paddingAngle={4}
                           >
                             {platforms.map((entry, index) => (
@@ -323,20 +323,20 @@ export const AnalyticsView = ({
                     </div>
 
                     {/* Legend Table */}
-                    <div className="space-y-2 pt-2 border-t border-[#2C384E]">
+                    <div className="space-y-2.5 pt-2 border-t border-[#2C384E]">
                       {platforms.map((p) => {
                         const totalPlatformReach = platforms.reduce((acc, curr) => acc + (curr.reach || 0), 0);
                         const reachPct = totalPlatformReach > 0 ? Math.round(((p.reach || 0) / totalPlatformReach) * 100) : 0;
                         return (
-                          <div key={p.platform} className="flex items-center justify-between text-xs">
+                          <div key={p.platform} className="flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between text-xs gap-1">
                             <div className="flex items-center gap-2 font-bold text-slate-200">
                               <span
-                                className="w-3 h-3 rounded-full"
+                                className="w-3 h-3 rounded-full shrink-0"
                                 style={{ backgroundColor: PLATFORM_COLORS[p.platform] || '#4F46E5' }}
                               />
                               <span>{p.platform}</span>
                             </div>
-                            <div className="font-mono text-slate-400">
+                            <div className="font-mono text-slate-400 text-left min-[380px]:text-right text-[11px] sm:text-xs">
                               <strong className="text-white">{formatNumber(p.reach)}</strong> Reach ({reachPct}%) • {p.postCount} {p.postCount === 1 ? 'post' : 'posts'}
                             </div>
                           </div>
@@ -348,9 +348,9 @@ export const AnalyticsView = ({
               </Card>
 
               {/* Right Box: Top Performing Design Templates */}
-              <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
+              <Card className="p-4 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-4 rounded-2xl">
                 <h3 className="font-heading font-bold text-base text-white flex items-center gap-2 border-b border-[#2C384E] pb-3">
-                  <Award className="w-4 h-4 text-emerald-400" />
+                  <Award className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Top Performing Design Templates</span>
                 </h3>
 
@@ -359,19 +359,19 @@ export const AnalyticsView = ({
                     No template analytics available.
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 sm:space-y-3">
                     {topTemplates.map((t, idx) => (
                       <div
                         key={t.id}
-                        className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between gap-3 hover:border-amber-500/40 transition"
+                        className="p-2.5 sm:p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between gap-3 hover:border-amber-500/40 transition"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                           <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 font-extrabold text-xs flex items-center justify-center border border-amber-500/20 shrink-0">
                             #{idx + 1}
                           </div>
-                          <div className="space-y-0.5">
-                            <h4 className="font-bold text-xs text-white line-clamp-1">{t.title}</h4>
-                            <span className="text-[10px] font-bold text-amber-400/90 uppercase px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                          <div className="space-y-0.5 min-w-0 flex-1">
+                            <h4 className="font-bold text-xs text-white truncate">{t.title}</h4>
+                            <span className="text-[10px] font-bold text-amber-400/90 uppercase px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 inline-block truncate max-w-full">
                               {t.category}
                             </span>
                           </div>

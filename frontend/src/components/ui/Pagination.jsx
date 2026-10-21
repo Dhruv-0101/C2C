@@ -50,9 +50,9 @@ export default function Pagination({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className={className || "flex flex-col sm:flex-row items-center justify-between gap-4 py-3.5 px-4 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-slate-300 shadow-sm mt-4"}>
+    <div className={className || "flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 py-3 px-3.5 sm:px-4 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-slate-300 shadow-sm mt-4"}>
       {/* Items count summary & Per Page Selector */}
-      <div className="flex items-center gap-1.5 shrink-0 min-w-0">
+      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 shrink-0 min-w-0">
         <span className="text-slate-400 whitespace-nowrap text-xs truncate">
           <span className="font-semibold text-white">{startItem}</span>-
           <span className="font-semibold text-white">{endItem}</span> of{' '}
@@ -69,7 +69,7 @@ export default function Pagination({
               id="page-limit-select"
               value={limit}
               onChange={(e) => onLimitChange(Number(e.target.value))}
-              className="bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold rounded-lg px-1.5 py-0.5 focus:outline-none focus:border-amber-500 cursor-pointer"
+              className="bg-[#131B2A] border border-[#2C384E] text-white text-xs font-semibold rounded-lg px-2 py-1 min-h-[32px] focus:outline-none focus:border-amber-500 cursor-pointer"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -82,14 +82,14 @@ export default function Pagination({
       </div>
 
       {/* Pagination numeric buttons */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 flex-wrap justify-center">
         <button
           onClick={() => onPageChange && onPageChange(page - 1)}
           disabled={!hasPrev}
-          className="flex items-center justify-center p-1.5 rounded-lg border border-[#2C384E] bg-[#131B2A] hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+          className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] rounded-lg border border-[#2C384E] bg-[#131B2A] hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
           title="Previous Page"
         >
-          <ChevronLeft className="w-3.5 h-3.5" />
+          <ChevronLeft className="w-4 h-4" />
         </button>
 
         {pageNumbers.map((pNum) => {
@@ -98,7 +98,7 @@ export default function Pagination({
             <button
               key={pNum}
               onClick={() => onPageChange && onPageChange(pNum)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold font-mono min-h-[36px] min-w-[36px] flex items-center justify-center transition-all cursor-pointer ${
                 isActive
                   ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold scale-105'
                   : 'bg-[#131B2A] text-slate-300 border border-[#2C384E] hover:bg-slate-800 hover:text-white'
@@ -112,10 +112,10 @@ export default function Pagination({
         <button
           onClick={() => onPageChange && onPageChange(page + 1)}
           disabled={!hasNext}
-          className="flex items-center justify-center p-1.5 rounded-lg border border-[#2C384E] bg-[#131B2A] hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+          className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] rounded-lg border border-[#2C384E] bg-[#131B2A] hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
           title="Next Page"
         >
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>

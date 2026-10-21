@@ -1,7 +1,10 @@
 export * from './api/billing.api';
 export * from './hooks/useSubscription';
+export * from './hooks/useBillingHistory';
+export * from './pages/YourPlanPage';
 export * from './components/PaymentSuccessModal';
 export * from './components/PlanSelectionModal';
 export * from './components/PostQuotaSlider';
 export * from './components/PricingCard';
 export * from './components/StripeElementsModal';
+

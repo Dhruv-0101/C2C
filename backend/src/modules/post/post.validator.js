@@ -66,7 +66,21 @@ export const schedulePostSchema = z.object({
     targetPlatforms: z.array(z.enum(POST_TARGET_PLATFORMS)).optional(),
     scheduledAt: z
       .string({ required_error: 'Scheduled date/time is required' })
-      .min(1, 'Scheduled date/time cannot be empty'),
+      .min(1, 'Scheduled date/time cannot be empty')
+      .refine(
+        (val) => {
+          const timestamp = Date.parse(val);
+          return !Number.isNaN(timestamp);
+        },
+        { message: 'Invalid scheduled date/time format. Must be a valid date string.' }
+      )
+      .refine(
+        (val) => {
+          const scheduledTime = new Date(val).getTime();
+          return scheduledTime > Date.now();
+        },
+        { message: 'Scheduled date/time must be in the future.' }
+      ),
   }),
 });
 

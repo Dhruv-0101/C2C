@@ -36,11 +36,11 @@ export const WelcomeSplashPage = () => {
   // Typewriter Animation State
   const [typedText, setTypedText] = useState("");
   const phrases = [
-    "In Under 30 Seconds",
+    "In Under 60 Seconds",
     "For Festivals & Offers",
     "For Your Business",
-    "100% Always On-Brand",
-    "Across All Platforms",
+    "100% On-Brand",
+    "Across 3 Platforms",
   ];
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -82,18 +82,18 @@ export const WelcomeSplashPage = () => {
 
       <main className="w-full">
         {/* HERO SECTION */}
-        <section className="pt-16 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto text-center space-y-8 relative z-10">
+        <section className="pt-10 sm:pt-16 pb-14 sm:pb-20 px-3.5 sm:px-6 lg:px-8 max-w-6xl mx-auto text-center space-y-6 sm:space-y-8 relative z-10">
           <ScrollReveal animation="fade-up" delay={0}>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#131B2A] border border-amber-500/30 text-amber-300 text-xs font-extrabold uppercase tracking-wider shadow-lg hover:border-amber-400/50 transition-colors cursor-default">
-              <Zap className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-              <span>Autonomous Social Media Manager</span>
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[#131B2A] border border-amber-500/30 text-amber-300 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider shadow-lg hover:border-amber-400/50 transition-colors cursor-default max-w-full">
+              <Zap className="w-3.5 h-3.5 text-amber-400 animate-bounce shrink-0" />
+              <span className="truncate">Autonomous Social Media Manager</span>
             </div>
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={100}>
-            <h1 className="font-heading font-extrabold text-4xl sm:text-6xl text-white tracking-tight leading-tight max-w-4xl mx-auto">
-              Create Branded Social Posts{" "}
-              <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-teal-400 bg-clip-text text-transparent block sm:inline-block min-w-[280px]">
+            <h1 className="font-heading font-extrabold text-2xl min-[360px]:text-3xl min-[400px]:text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight max-w-4xl mx-auto">
+              Create Social Posts{" "}
+              <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-teal-400 bg-clip-text text-transparent block sm:inline-block break-words">
                 {typedText}
                 <span className="animate-pulse text-amber-400 font-normal ml-0.5">
                   |
@@ -103,21 +103,21 @@ export const WelcomeSplashPage = () => {
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={200}>
-            <p className="text-slate-300 text-base sm:text-xl max-w-2xl mx-auto leading-relaxed font-medium">
+            <p className="text-slate-300 text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed font-medium px-2 sm:px-0">
               Turn your business offers, festival greetings, and promotions into
-              professional, on-brand social media post with instant
+              professional, on-brand social media posts with instant
               multi-platform scheduling.
             </p>
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={300}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 pt-2 w-full max-w-sm sm:max-w-none mx-auto">
               <Button
                 variant="primary"
                 size="lg"
                 icon={UserPlus}
                 onClick={() => navigate("/register")}
-                className="w-full sm:w-auto px-8 py-3.5 text-base font-extrabold shadow-xl shadow-amber-500/20 hover:scale-105 hover:shadow-amber-500/30 transition-all duration-300"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-extrabold shadow-xl shadow-amber-500/20 hover:scale-105 hover:shadow-amber-500/30 transition-all duration-300"
               >
                 Start Free Trial
               </Button>
@@ -126,7 +126,7 @@ export const WelcomeSplashPage = () => {
                 size="lg"
                 icon={LogIn}
                 onClick={() => navigate("/login")}
-                className="w-full sm:w-auto px-8 py-3.5 text-base border-[#2C384E] text-slate-200 hover:text-white hover:border-slate-500 hover:scale-105 transition-all duration-300"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base border-[#2C384E] text-slate-200 hover:text-white hover:border-slate-500 hover:scale-105 transition-all duration-300"
               >
                 Log In to Workspace
               </Button>
@@ -134,46 +134,46 @@ export const WelcomeSplashPage = () => {
           </ScrollReveal>
 
           {/* Stats Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-[#2C384E]/60 max-w-3xl mx-auto">
-            <ScrollReveal animation="zoom-in" delay={350}>
-              <div className="space-y-1 p-3.5 rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-amber-500/40 hover:-translate-y-1 transition-all duration-300">
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-400">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 pt-6 sm:pt-8 border-t border-[#2C384E]/60 max-w-3xl mx-auto">
+            <ScrollReveal animation="zoom-in" delay={350} className="min-w-0">
+              <div className="space-y-0.5 sm:space-y-1 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-amber-500/40 hover:-translate-y-1 transition-all duration-300 min-w-0">
+                <p className="font-heading font-extrabold text-xl min-[360px]:text-2xl sm:text-3xl text-amber-400 truncate">
                   &lt; 30s
                 </p>
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-[10px] min-[360px]:text-xs text-slate-400 font-medium truncate">
                   Post Creation
                 </p>
               </div>
             </ScrollReveal>
 
-            <ScrollReveal animation="zoom-in" delay={450}>
-              <div className="space-y-1 p-3.5 rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-teal-500/40 hover:-translate-y-1 transition-all duration-300">
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-teal-400">
+            <ScrollReveal animation="zoom-in" delay={450} className="min-w-0">
+              <div className="space-y-0.5 sm:space-y-1 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-teal-500/40 hover:-translate-y-1 transition-all duration-300 min-w-0">
+                <p className="font-heading font-extrabold text-xl min-[360px]:text-2xl sm:text-3xl text-teal-400 truncate">
                   100%
                 </p>
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-[10px] min-[360px]:text-xs text-slate-400 font-medium truncate">
                   Always On-Brand
                 </p>
               </div>
             </ScrollReveal>
 
-            <ScrollReveal animation="zoom-in" delay={550}>
-              <div className="space-y-1 p-3.5 rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-300">
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-indigo-400">
+            <ScrollReveal animation="zoom-in" delay={550} className="min-w-0">
+              <div className="space-y-0.5 sm:space-y-1 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-300 min-w-0">
+                <p className="font-heading font-extrabold text-xl min-[360px]:text-2xl sm:text-3xl text-indigo-400 truncate">
                   1-Click
                 </p>
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-[10px] min-[360px]:text-xs text-slate-400 font-medium truncate">
                   Multi-Publish
                 </p>
               </div>
             </ScrollReveal>
 
-            <ScrollReveal animation="zoom-in" delay={650}>
-              <div className="space-y-1 p-3.5 rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-emerald-500/40 hover:-translate-y-1 transition-all duration-300">
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-emerald-400">
+            <ScrollReveal animation="zoom-in" delay={650} className="min-w-0">
+              <div className="space-y-0.5 sm:space-y-1 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-[#131B2A]/40 border border-[#2C384E]/40 hover:border-emerald-500/40 hover:-translate-y-1 transition-all duration-300 min-w-0">
+                <p className="font-heading font-extrabold text-xl min-[360px]:text-2xl sm:text-3xl text-emerald-400 truncate">
                   365 Days
                 </p>
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-[10px] min-[360px]:text-xs text-slate-400 font-medium truncate">
                   Festival Ready
                 </p>
               </div>
@@ -182,16 +182,16 @@ export const WelcomeSplashPage = () => {
         </section>
 
         {/* LIVE INTERACTIVE DEMO SECTION */}
-        <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10">
+        <section className="py-8 sm:py-12 px-3 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10">
           <ScrollReveal animation="fade-up" delay={0}>
             <div className="text-center space-y-2 mb-6">
-              <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3.5 py-1 rounded-full inline-flex items-center gap-1.5 shadow-lg shadow-amber-500/5">
+              <span className="text-[11px] sm:text-xs font-mono font-extrabold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3.5 py-1 rounded-full inline-flex items-center gap-1.5 shadow-lg shadow-amber-500/5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: "6s" }} /> Interactive Preview
               </span>
               <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
                 See BrandFlow in Action
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+              <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto px-2 sm:px-0">
                 Test how business details seamlessly auto-populate onto custom brand
                 frames in real-time.
               </p>
@@ -199,53 +199,53 @@ export const WelcomeSplashPage = () => {
           </ScrollReveal>
 
           <ScrollReveal animation="glow-pulse" delay={150} duration={800}>
-            <div className="p-1 rounded-3xl bg-gradient-to-b from-amber-500/20 via-[#2C384E]/40 to-teal-500/20 border border-amber-500/30 shadow-2xl shadow-amber-500/5">
+            <div className="p-1 sm:p-1.5 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-500/20 via-[#2C384E]/40 to-teal-500/20 border border-amber-500/30 shadow-2xl shadow-amber-500/5">
               <InteractiveWorkflowDemo />
             </div>
           </ScrollReveal>
         </section>
 
         {/* 3-STEP WORKFLOW SECTION */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto text-center space-y-12 relative z-10">
+        <section className="py-10 sm:py-16 px-3.5 sm:px-6 lg:px-8 max-w-6xl mx-auto text-center space-y-8 sm:space-y-12 relative z-10">
           <ScrollReveal animation="fade-up" delay={0}>
             <div className="space-y-2 max-w-xl mx-auto">
-              <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-teal-400 bg-teal-500/10 border border-teal-500/30 px-3.5 py-1 rounded-full inline-flex items-center gap-1.5">
+              <span className="text-[11px] sm:text-xs font-mono font-extrabold uppercase tracking-widest text-teal-400 bg-teal-500/10 border border-teal-500/30 px-3.5 py-1 rounded-full inline-flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-teal-400" /> How It Works
               </span>
-              <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
+              <h2 className="font-heading font-extrabold text-2xl min-[400px]:text-3xl sm:text-4xl text-white tracking-tight">
                 Simple 3-Step Content Creation
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-xs sm:text-sm text-slate-400">
                 No complex design software needed. Pick your event, auto-brand,
                 and publish.
               </p>
             </div>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-left relative">
 
             <ScrollReveal animation="fade-up" delay={100} className="z-10">
               <div
                 onClick={() => setActiveStep(1)}
-                className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 relative group ${activeStep === 1
-                  ? "bg-[#131B2A] border-amber-400/80 shadow-2xl shadow-amber-500/15 -translate-y-2"
+                className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all duration-300 cursor-pointer space-y-3 sm:space-y-4 relative group ${activeStep === 1
+                  ? "bg-[#131B2A] border-amber-400/80 shadow-2xl shadow-amber-500/15 -translate-y-1 sm:-translate-y-2"
                   : "bg-[#131B2A]/60 border-[#2C384E] hover:border-amber-500/40 hover:-translate-y-1"
                   }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-400 flex items-center justify-center font-extrabold text-sm font-mono group-hover:scale-110 transition-transform">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-400 flex items-center justify-center font-extrabold text-xs sm:text-sm font-mono group-hover:scale-110 transition-transform">
                     01
                   </div>
-                  <Zap className="w-5 h-5 text-amber-400 group-hover:rotate-12 transition-transform" />
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 group-hover:rotate-12 transition-transform" />
                 </div>
-                <h3 className="font-heading font-extrabold text-lg text-white">
+                <h3 className="font-heading font-extrabold text-base sm:text-lg text-white">
                   1. Select Event or Offer
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   Choose from upcoming festivals, seasonal holidays, or custom business promotions.
                 </p>
                 <div className="pt-2 text-xs font-mono text-amber-400 flex items-center gap-1.5 font-bold border-t border-amber-500/20">
-                  <Check className="w-4 h-4" /> Ready-made templates
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> Ready-made templates
                 </div>
               </div>
             </ScrollReveal>
@@ -253,18 +253,18 @@ export const WelcomeSplashPage = () => {
             <ScrollReveal animation="fade-up" delay={250} className="z-10">
               <div
                 onClick={() => setActiveStep(2)}
-                className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 relative group ${activeStep === 2
-                  ? "bg-[#131B2A] border-teal-400/80 shadow-2xl shadow-teal-500/15 -translate-y-2"
+                className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all duration-300 cursor-pointer space-y-3 sm:space-y-4 relative group ${activeStep === 2
+                  ? "bg-[#131B2A] border-teal-400/80 shadow-2xl shadow-teal-500/15 -translate-y-1 sm:-translate-y-2"
                   : "bg-[#131B2A]/60 border-[#2C384E] hover:border-teal-500/40 hover:-translate-y-1"
                   }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-2xl bg-teal-500/10 border border-teal-500/40 text-teal-400 flex items-center justify-center font-extrabold text-sm font-mono group-hover:scale-110 transition-transform">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-teal-500/10 border border-teal-500/40 text-teal-400 flex items-center justify-center font-extrabold text-xs sm:text-sm font-mono group-hover:scale-110 transition-transform">
                     02
                   </div>
-                  <Layers className="w-5 h-5 text-teal-400 group-hover:rotate-12 transition-transform" />
+                  <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-teal-400 group-hover:rotate-12 transition-transform" />
                 </div>
-                <h3 className="font-heading font-extrabold text-lg text-white">
+                <h3 className="font-heading font-extrabold text-base sm:text-lg text-white">
                   2. Auto-Brand Frame
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
@@ -272,7 +272,7 @@ export const WelcomeSplashPage = () => {
                   overlay onto custom brand frames.
                 </p>
                 <div className="pt-2 text-xs font-mono text-teal-400 flex items-center gap-1.5 font-bold border-t border-teal-500/20">
-                  <Check className="w-4 h-4" /> 100% Brand consistency
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> 100% Brand consistency
                 </div>
               </div>
             </ScrollReveal>
@@ -280,18 +280,18 @@ export const WelcomeSplashPage = () => {
             <ScrollReveal animation="fade-up" delay={400} className="z-10">
               <div
                 onClick={() => setActiveStep(3)}
-                className={`p-6 rounded-3xl border transition-all duration-300 cursor-pointer space-y-4 relative group ${activeStep === 3
-                  ? "bg-[#131B2A] border-indigo-400/80 shadow-2xl shadow-indigo-500/15 -translate-y-2"
+                className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all duration-300 cursor-pointer space-y-3 sm:space-y-4 relative group ${activeStep === 3
+                  ? "bg-[#131B2A] border-indigo-400/80 shadow-2xl shadow-indigo-500/15 -translate-y-1 sm:-translate-y-2"
                   : "bg-[#131B2A]/60 border-[#2C384E] hover:border-indigo-500/40 hover:-translate-y-1"
                   }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/40 text-indigo-400 flex items-center justify-center font-extrabold text-sm font-mono group-hover:scale-110 transition-transform">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-indigo-500/10 border border-indigo-500/40 text-indigo-400 flex items-center justify-center font-extrabold text-xs sm:text-sm font-mono group-hover:scale-110 transition-transform">
                     03
                   </div>
-                  <Send className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
                 </div>
-                <h3 className="font-heading font-extrabold text-lg text-white">
+                <h3 className="font-heading font-extrabold text-base sm:text-lg text-white">
                   3. Multi-Platform Publish
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
@@ -299,7 +299,7 @@ export const WelcomeSplashPage = () => {
                   schedule directly to your channels.
                 </p>
                 <div className="pt-2 text-xs font-mono text-indigo-400 flex items-center gap-1.5 font-bold border-t border-indigo-500/20">
-                  <Check className="w-4 h-4" /> Instagram, FB, LinkedIn
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> Instagram, FB, LinkedIn
                 </div>
               </div>
             </ScrollReveal>
@@ -307,22 +307,22 @@ export const WelcomeSplashPage = () => {
         </section>
 
         {/* KEY FEATURES SECTION */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-10 relative z-10">
+        <section className="py-10 sm:py-16 px-3.5 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-8 sm:space-y-10 relative z-10">
           <ScrollReveal animation="fade-up" delay={0}>
             <div className="text-center space-y-2 max-w-xl mx-auto">
-              <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 px-3.5 py-1 rounded-full">
+              <span className="text-[11px] sm:text-xs font-mono font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 px-3.5 py-1 rounded-full">
                 Platform Capabilities
               </span>
-              <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
+              <h2 className="font-heading font-extrabold text-2xl min-[400px]:text-3xl sm:text-4xl text-white tracking-tight">
                 Built for Modern Small Businesses
               </h2>
             </div>
           </ScrollReveal>
 
-          <div className="space-y-5 text-left">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="space-y-4 sm:space-y-5 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
               <ScrollReveal animation="fade-up" delay={100}>
-                <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-amber-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 space-y-2.5 group">
+                <Card className="p-4 sm:p-5 rounded-2xl border-[#2C384E] bg-[#131B2A]/80 hover:border-amber-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 space-y-2.5 group">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Building2 className="w-4.5 h-4.5" />
                   </div>
@@ -337,7 +337,7 @@ export const WelcomeSplashPage = () => {
               </ScrollReveal>
 
               <ScrollReveal animation="fade-up" delay={200}>
-                <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-teal-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 space-y-2.5 group">
+                <Card className="p-4 sm:p-5 rounded-2xl border-[#2C384E] bg-[#131B2A]/80 hover:border-teal-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 space-y-2.5 group">
                   <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Wand2 className="w-4.5 h-4.5" />
                   </div>
@@ -351,7 +351,7 @@ export const WelcomeSplashPage = () => {
               </ScrollReveal>
 
               <ScrollReveal animation="fade-up" delay={300}>
-                <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-indigo-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 space-y-2.5 sm:col-span-2 lg:col-span-1 group">
+                <Card className="p-4 sm:p-5 rounded-2xl border-[#2C384E] bg-[#131B2A]/80 hover:border-indigo-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 space-y-2.5 sm:col-span-2 lg:col-span-1 group">
                   <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Calendar className="w-4.5 h-4.5" />
                   </div>
@@ -366,9 +366,9 @@ export const WelcomeSplashPage = () => {
               </ScrollReveal>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-center items-stretch gap-5">
+            <div className="flex flex-col sm:flex-row justify-center items-stretch gap-3.5 sm:gap-5">
               <ScrollReveal animation="fade-up" delay={400} className="w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
-                <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-emerald-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 space-y-2.5 h-full group">
+                <Card className="p-4 sm:p-5 rounded-2xl border-[#2C384E] bg-[#131B2A]/80 hover:border-emerald-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 space-y-2.5 h-full group">
                   <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Wand2 className="w-4.5 h-4.5" />
                   </div>
@@ -383,7 +383,7 @@ export const WelcomeSplashPage = () => {
               </ScrollReveal>
 
               <ScrollReveal animation="fade-up" delay={500} className="w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
-                <Card className="p-5 border-[#2C384E] bg-[#131B2A]/80 hover:border-cyan-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300 space-y-2.5 h-full group">
+                <Card className="p-4 sm:p-5 rounded-2xl border-[#2C384E] bg-[#131B2A]/80 hover:border-cyan-500/50 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300 space-y-2.5 h-full group">
                   <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Clock className="w-4.5 h-4.5" />
                   </div>
@@ -401,32 +401,29 @@ export const WelcomeSplashPage = () => {
         </section>
 
         {/* CALL TO ACTION BANNER */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10">
+        <section className="py-12 sm:py-20 px-3.5 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10">
           <ScrollReveal animation="glow-pulse" delay={100} duration={800}>
-            <Card className="p-8 sm:p-12 border-amber-500/30 bg-gradient-to-tr from-[#131B2A] via-[#1A2335] to-amber-500/10 text-center space-y-6 shadow-2xl rounded-3xl relative overflow-hidden">
+            <Card className="p-6 sm:p-10 lg:p-12 border-amber-500/30 bg-gradient-to-tr from-[#131B2A] via-[#1A2335] to-amber-500/10 text-center space-y-5 sm:space-y-6 shadow-2xl rounded-2xl sm:rounded-3xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="space-y-3 max-w-2xl mx-auto relative z-10">
-                {/* <div className="inline-flex items-center gap-1.5 text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> Join 1,000+ Active Businesses
-                </div> */}
-                <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
+              <div className="space-y-2 sm:space-y-3 max-w-2xl mx-auto relative z-10">
+                <h2 className="font-heading font-extrabold text-2xl min-[400px]:text-3xl sm:text-4xl text-white tracking-tight">
                   Ready to Automate Your Social Media?
                 </h2>
-                <p className="text-sm text-slate-300 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed px-2 sm:px-0">
                   Join business owners using BrandFlow to create professional,
                   on-brand promotional posts in under 30 seconds.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 relative z-10">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 pt-2 relative z-10 w-full max-w-sm sm:max-w-none mx-auto">
                 <Button
                   variant="primary"
                   size="lg"
                   icon={UserPlus}
                   onClick={() => navigate("/register")}
-                  className="w-full sm:w-auto px-8 py-3.5 text-base font-extrabold shadow-xl shadow-amber-500/30 hover:scale-105 transition-all duration-300"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-extrabold shadow-xl shadow-amber-500/30 hover:scale-105 transition-all duration-300"
                 >
                   Start Your Free Trial
                 </Button>
@@ -435,20 +432,11 @@ export const WelcomeSplashPage = () => {
                   size="lg"
                   icon={LogIn}
                   onClick={() => navigate("/login")}
-                  className="w-full sm:w-auto px-8 py-3.5 text-base border-[#2C384E] text-slate-200 hover:text-white hover:border-slate-500 hover:scale-105 transition-all duration-300"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base border-[#2C384E] text-slate-200 hover:text-white hover:border-slate-500 hover:scale-105 transition-all duration-300"
                 >
                   Log In to Account
                 </Button>
               </div>
-
-              {/* <div className="flex items-center justify-center gap-6 pt-4 text-xs text-slate-400 font-medium relative z-10">
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> No credit card required
-                </span>
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-400" /> Instant setup
-                </span>
-              </div> */}
             </Card>
           </ScrollReveal>
         </section>

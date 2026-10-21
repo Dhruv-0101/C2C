@@ -121,7 +121,7 @@ export const GraphicCard = ({
                     e.stopPropagation();
                     onDownload(imageUrl, title);
                   }}
-                  className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition cursor-pointer"
+                  className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition cursor-pointer min-w-[34px] min-h-[34px] flex items-center justify-center shrink-0 active:scale-95"
                   title="Download HD PNG"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -135,7 +135,7 @@ export const GraphicCard = ({
                     onDelete();
                   }}
                   disabled={isDeleting}
-                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/20 hover:border-rose-600 transition cursor-pointer disabled:opacity-50"
+                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/20 hover:border-rose-600 transition cursor-pointer disabled:opacity-50 min-w-[34px] min-h-[34px] flex items-center justify-center shrink-0 active:scale-95"
                   title="Delete Template"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -179,10 +179,10 @@ export const VaultAssetGrid = ({
 
   if (vaultItems.length === 0) {
     return (
-      <Card className="p-12 text-center border-dashed border-[#2C384E] bg-[#131B2A] rounded-2xl space-y-3">
-        <ImageIcon className="w-12 h-12 text-slate-600 mx-auto" />
-        <h3 className="text-slate-200 font-bold text-base">Your Vault is Empty</h3>
-        <p className="text-xs text-slate-400 max-w-md mx-auto">
+      <Card className="p-6 sm:p-12 text-center border-dashed border-[#2C384E] bg-[#131B2A] rounded-2xl space-y-3">
+        <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 text-slate-600 mx-auto" />
+        <h3 className="text-slate-200 font-bold text-sm sm:text-base">Your Vault is Empty</h3>
+        <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
           When you create post graphics in the Post Creator or Festival Studio, final PNG images are automatically saved to your Vault!
         </p>
       </Card>
@@ -191,7 +191,7 @@ export const VaultAssetGrid = ({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
         {vaultItems.map((item) => (
           <GraphicCard
             key={item.id}

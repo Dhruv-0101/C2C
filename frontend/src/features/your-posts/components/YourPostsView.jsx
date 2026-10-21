@@ -172,16 +172,16 @@ export const YourPostsView = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-12">
       {/* Top Header Banner with Action */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-6 rounded-2xl shadow-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shadow-inner">
-            <Layers className="w-6 h-6" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-3.5 sm:p-6 rounded-2xl shadow-xl">
+        <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+          <div className="p-2.5 sm:p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shadow-inner shrink-0">
+            <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <h1 className="font-heading font-extrabold text-2xl text-white tracking-tight">
+          <div className="min-w-0">
+            <h1 className="font-heading font-extrabold text-base sm:text-2xl text-white tracking-tight truncate sm:text-clip">
               Your Social Posts & Publishing Queue
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 mt-0.5 line-clamp-2 sm:line-clamp-none">
               Inspect your created branded graphics, active scheduled publishing pipelines, and live social media publications.
             </p>
           </div>
@@ -190,7 +190,7 @@ export const YourPostsView = ({
         <button
           type="button"
           onClick={() => navigate("/create-post")}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer shrink-0"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer w-full sm:w-auto shrink-0 active:scale-95 min-h-[42px]"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>Create New Post</span>
@@ -198,59 +198,59 @@ export const YourPostsView = ({
       </div>
 
       {/* Metrics Summary Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Total Portfolio */}
-        <Card className="p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200">
-          <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <FolderKanban className="w-5 h-5" />
+        <Card className="p-2.5 sm:p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-2 sm:gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200 active:scale-[0.98] min-w-0">
+          <div className="p-2 sm:p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+            <FolderKanban className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Portfolio</p>
-            <p className="text-xl font-heading font-extrabold text-white mt-0.5">{totalPostsCount}</p>
+          <div className="min-w-0">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">Total Portfolio</p>
+            <p className="text-base sm:text-xl font-heading font-extrabold text-white mt-0.5">{totalPostsCount}</p>
           </div>
         </Card>
 
         {/* Scheduled Queue */}
-        <Card className="p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200">
-          <div className="p-3 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
-            <Clock className="w-5 h-5" />
+        <Card className="p-2.5 sm:p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-2 sm:gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200 active:scale-[0.98] min-w-0">
+          <div className="p-2 sm:p-3 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Scheduled Queue</p>
-            <p className="text-xl font-heading font-extrabold text-teal-400 mt-0.5">{scheduledCount}</p>
+          <div className="min-w-0">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">Scheduled Queue</p>
+            <p className="text-base sm:text-xl font-heading font-extrabold text-teal-400 mt-0.5">{scheduledCount}</p>
           </div>
         </Card>
 
         {/* Published Live */}
-        <Card className="p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200">
-          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <CheckCircle2 className="w-5 h-5" />
+        <Card className="p-2.5 sm:p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-2 sm:gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200 active:scale-[0.98] min-w-0">
+          <div className="p-2 sm:p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Published Live</p>
-            <p className="text-xl font-heading font-extrabold text-emerald-400 mt-0.5">{publishedCount}</p>
+          <div className="min-w-0">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">Published Live</p>
+            <p className="text-base sm:text-xl font-heading font-extrabold text-emerald-400 mt-0.5">{publishedCount}</p>
           </div>
         </Card>
 
         {/* Saved Drafts */}
-        <Card className="p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200">
-          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <Sparkles className="w-5 h-5" />
+        <Card className="p-2.5 sm:p-4 bg-[#131B2A] border-[#2C384E] flex items-center gap-2 sm:gap-3.5 rounded-2xl hover:border-slate-500 transition duration-200 active:scale-[0.98] min-w-0">
+          <div className="p-2 sm:p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Saved Drafts</p>
-            <p className="text-xl font-heading font-extrabold text-amber-400 mt-0.5">{draftCount}</p>
+          <div className="min-w-0">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">Saved Drafts</p>
+            <p className="text-base sm:text-xl font-heading font-extrabold text-amber-400 mt-0.5">{draftCount}</p>
           </div>
         </Card>
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-4">
         {/* Navigation Tabs with Badges */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-xs font-bold overflow-x-auto">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-xs font-bold overflow-x-auto custom-scrollbar whitespace-nowrap -mx-1 px-1">
           <button
             onClick={() => setActiveTab("ALL")}
-            className={`px-3.5 py-2 rounded-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === "ALL"
                 ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/60"
@@ -351,26 +351,26 @@ export const YourPostsView = ({
 
         /* ==================== SCHEDULED QUEUE VIEW ==================== */
         filteredScheduled.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3 bg-[#131B2A]">
-            <div className="w-14 h-14 rounded-2xl bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center justify-center mx-auto">
-              <Clock className="w-7 h-7" />
+          <div className="p-6 sm:p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3 bg-[#131B2A]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center justify-center mx-auto">
+              <Clock className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
-            <p className="text-white font-bold text-base">No Scheduled Posts in Queue</p>
+            <p className="text-white font-bold text-sm sm:text-base">No Scheduled Posts in Queue</p>
             <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
               Schedule your branded graphics from the Festival Calendar or Post Studio to automate your social media publishing pipeline.
             </p>
-            <div className="pt-2 flex items-center justify-center gap-3">
+            <div className="pt-2 flex flex-col min-[380px]:flex-row items-stretch min-[380px]:items-center justify-center gap-2.5 sm:gap-3">
               <button
                 type="button"
                 onClick={() => navigate("/calendar")}
-                className="px-4 py-2 rounded-xl bg-[#0B0F17] hover:bg-slate-800 text-slate-200 border border-[#2C384E] text-xs font-semibold transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-[#0B0F17] hover:bg-slate-800 text-slate-200 border border-[#2C384E] text-xs font-semibold transition cursor-pointer min-h-[40px] flex items-center justify-center"
               >
                 Browse Calendar
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/create-post")}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition cursor-pointer min-h-[40px] flex items-center justify-center"
               >
                 Create & Schedule
               </button>
@@ -423,12 +423,12 @@ export const YourPostsView = ({
               return (
                 <Card
                   key={item.id}
-                  className="p-4 bg-[#131B2A] border-[#2C384E] hover:border-slate-500/80 transition-all rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                  className="p-3.5 sm:p-4 bg-[#131B2A] border-[#2C384E] hover:border-slate-500/80 transition-all rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 sm:gap-4"
                 >
                   {/* Left: Thumbnail & Details */}
-                  <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
+                  <div className="flex items-start sm:items-center gap-3 sm:gap-3.5 flex-1 min-w-0 w-full">
                     {item.post?.finalGraphicUrl ? (
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] shrink-0 group/img cursor-pointer">
+                      <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] shrink-0 group/img cursor-pointer">
                         <img
                           src={item.post.finalGraphicUrl}
                           alt={postTitle}
@@ -443,33 +443,33 @@ export const YourPostsView = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-center text-[10px] text-slate-500 shrink-0">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-center text-[10px] text-slate-500 shrink-0">
                         No Graphic
                       </div>
                     )}
 
                     <div className="space-y-1.5 min-w-0 flex-1">
-                      <h4 className="font-bold text-sm text-white truncate" title={postTitle}>
+                      <h4 className="font-bold text-xs sm:text-sm text-white truncate" title={postTitle}>
                         {postTitle}
                       </h4>
 
                       {/* Dual Dates: Created Date & Scheduled Date */}
-                      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-[11px]">
                         {createdDateFormatted && (
-                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#0B0F17] border border-[#2C384E] text-slate-400">
+                          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-md bg-[#0B0F17] border border-[#2C384E] text-slate-400">
                             <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
                             <span>Created: <strong className="text-slate-300 font-medium">{createdDateFormatted}</strong></span>
                           </div>
                         )}
 
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#0B0F17] border border-[#2C384E] text-slate-400">
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-md bg-[#0B0F17] border border-[#2C384E] text-slate-400">
                           <Clock className="w-3 h-3 text-teal-400 shrink-0" />
                           <span>Scheduled for: <strong className="text-teal-300 font-semibold">{scheduledDateFormatted}</strong></span>
                         </div>
 
                         {brandKitNeedsReview && (
                           <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-semibold">
-                            <AlertCircle className="w-3 h-3 text-amber-400" />
+                            <AlertCircle className="w-3 h-3 text-amber-400 shrink-0" />
                             <span>BrandKit Updated</span>
                           </div>
                         )}
@@ -478,17 +478,17 @@ export const YourPostsView = ({
                   </div>
 
                   {/* Right: Target Platforms, Status & Actions */}
-                  <div className="flex flex-wrap items-center gap-3 shrink-0 self-end md:self-center">
+                  <div className="flex flex-wrap items-center justify-between md:justify-end gap-2 sm:gap-2.5 w-full md:w-auto shrink-0 border-t md:border-t-0 pt-2.5 md:pt-0 border-[#2C384E]/60">
                     {/* Platforms Badges */}
                     {item.targetPlatforms && item.targetPlatforms.length > 0 && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         {item.targetPlatforms.map(renderPlatformBadge)}
                       </div>
                     )}
 
                     {/* Status Pill */}
                     <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
+                      className={`px-2.5 sm:px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border shrink-0 ${
                         item.status === "SUCCESS"
                           ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                           : item.status === "PROCESSING"
@@ -501,57 +501,60 @@ export const YourPostsView = ({
                       {item.status}
                     </span>
 
-                    {/* Edit in Studio to Re-render or Customize Graphic */}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigate("/create-post", {
-                          state: {
-                            reusePost: item.post,
-                            isEditingScheduled: true,
-                            scheduledPostId: item.id,
-                          },
-                        })
-                      }
-                      className="p-2 rounded-xl bg-[#0B0F17] hover:bg-amber-500/15 border border-[#2C384E] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition cursor-pointer"
-                      title="Edit & Re-render Graphic with Latest BrandKit in Post Studio"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                    </button>
-
-                    {/* Preview Full HD Graphic */}
-                    {item.post?.finalGraphicUrl && (
+                    {/* Action buttons row */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                      {/* Edit in Studio to Re-render or Customize Graphic */}
                       <button
                         type="button"
-                        onClick={() => setLightboxImage(postForLightbox)}
-                        className="p-2 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-slate-500 text-slate-300 hover:text-white transition cursor-pointer"
-                        title="View Full HD Graphic & Caption"
+                        onClick={() =>
+                          navigate("/create-post", {
+                            state: {
+                              reusePost: item.post,
+                              isEditingScheduled: true,
+                              scheduledPostId: item.id,
+                            },
+                          })
+                        }
+                        className="p-2 sm:p-2.5 rounded-xl bg-[#0B0F17] hover:bg-amber-500/15 border border-[#2C384E] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0 active:scale-95"
+                        title="Edit & Re-render Graphic with Latest BrandKit in Post Studio"
                       >
-                        <Maximize2 className="w-4 h-4" />
+                        <Sparkles className="w-4 h-4" />
                       </button>
-                    )}
 
-                    {/* Download Graphic PNG */}
-                    {item.post?.finalGraphicUrl && (
+                      {/* Preview Full HD Graphic */}
+                      {item.post?.finalGraphicUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setLightboxImage(postForLightbox)}
+                          className="p-2 sm:p-2.5 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-slate-500 text-slate-300 hover:text-white transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0 active:scale-95"
+                          title="View Full HD Graphic & Caption"
+                        >
+                          <Maximize2 className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* Download Graphic PNG */}
+                      {item.post?.finalGraphicUrl && (
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(item.post.finalGraphicUrl, postTitle)}
+                          className="p-2 sm:p-2.5 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0 active:scale-95"
+                          title="Download Graphic PNG"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* Delete / Cancel Scheduled Post Action */}
                       <button
                         type="button"
-                        onClick={() => handleDownload(item.post.finalGraphicUrl, postTitle)}
-                        className="p-2 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition cursor-pointer"
-                        title="Download Graphic PNG"
+                        className="p-2 sm:p-2.5 rounded-xl bg-[#0B0F17] hover:bg-rose-500/15 border border-[#2C384E] hover:border-rose-500/40 text-slate-400 hover:text-rose-400 transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0 active:scale-95"
+                        title="Cancel & Delete Scheduled Post"
+                        onClick={() => onDeletePost(item.postId || item.post?.id || item.id)}
                       >
-                        <Download className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
-                    )}
-
-                    {/* Delete / Cancel Scheduled Post Action */}
-                    <button
-                      type="button"
-                      className="p-2 rounded-xl bg-[#0B0F17] hover:bg-rose-500/15 border border-[#2C384E] hover:border-rose-500/40 text-slate-400 hover:text-rose-400 transition cursor-pointer"
-                      title="Cancel & Delete Scheduled Post"
-                      onClick={() => onDeletePost(item.postId || item.post?.id || item.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    </div>
                   </div>
                 </Card>
               );
@@ -562,11 +565,11 @@ export const YourPostsView = ({
 
         /* ==================== PORTFOLIO POSTS GRID VIEW ==================== */
         filteredPosts.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3 bg-[#131B2A]">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto">
-              <FolderKanban className="w-7 h-7" />
+          <div className="p-6 sm:p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3 bg-[#131B2A]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto">
+              <FolderKanban className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
-            <p className="text-white font-bold text-base">
+            <p className="text-white font-bold text-sm sm:text-base">
               {activeTab === "PUBLISHED"
                 ? "No Published Posts Found"
                 : activeTab === "DRAFT"
@@ -586,7 +589,7 @@ export const YourPostsView = ({
               <button
                 type="button"
                 onClick={() => navigate("/create-post")}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md transition cursor-pointer min-h-[40px] w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 stroke-[3]" />
                 <span>Create New Post</span>
@@ -594,7 +597,7 @@ export const YourPostsView = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5">
             {filteredPosts.map((post) => (
               <PostGridItem
                 key={post.id}

@@ -9,3 +9,4 @@ export * from './pages/RegisterPage';
 export * from './pages/ForgotPasswordPage';
 export * from './pages/ResetPasswordPage';
 export * from './pages/TwoFactorVerifyPage';
+export * from './components/OtpVerificationModal';

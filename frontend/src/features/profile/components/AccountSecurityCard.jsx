@@ -13,7 +13,7 @@ export const AccountSecurityCard = ({
   onChangePassword,
 }) => {
   return (
-    <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
+    <Card className="p-3.5 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
       <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
         <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
           <Shield className="w-4 h-4 text-emerald-400" />
@@ -26,7 +26,7 @@ export const AccountSecurityCard = ({
 
       <div className="space-y-4 text-xs">
         {/* Authentication Mode */}
-        <div className="flex items-center justify-between py-2 border-b border-slate-800">
+        <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-2 py-2 border-b border-slate-800">
           <div>
             <p className="font-semibold text-slate-200">Sign-in Method</p>
             <p className="text-[11px] text-slate-400">Primary login credential provider</p>
@@ -45,7 +45,7 @@ export const AccountSecurityCard = ({
         </div>
 
         {/* Two-Factor Authentication Status & Toggle */}
-        <div className="flex items-center justify-between py-2 border-b border-slate-800">
+        <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-2.5 py-2 border-b border-slate-800">
           <div>
             <div className="flex items-center gap-1.5">
               <p className="font-semibold text-slate-200">Two-Factor Authentication (2FA)</p>
@@ -63,7 +63,7 @@ export const AccountSecurityCard = ({
             size="sm"
             variant={profile.isTwoFactorEnabled ? "outline" : "primary"}
             onClick={onOpen2FA}
-            className={`text-xs font-bold ${
+            className={`text-xs font-bold w-full min-[420px]:w-auto justify-center min-h-[36px] ${
               profile.isTwoFactorEnabled
                 ? "border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
                 : "bg-emerald-600 hover:bg-emerald-500 text-white"

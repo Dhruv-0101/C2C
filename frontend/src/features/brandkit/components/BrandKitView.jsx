@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Building2,
   Upload,
@@ -18,6 +18,8 @@ import {
   FolderKanban,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Search,
   Users,
   Mail,
   MapPin,
@@ -300,6 +302,78 @@ export const BrandKitView = ({
   };
 
   // -------------------------------------------------------------
+  // Dropdown States for Target Audience, Language & Business USPs
+  // -------------------------------------------------------------
+  const [isAudienceDropdownOpen, setIsAudienceDropdownOpen] = useState(false);
+  const [audienceSearch, setAudienceSearch] = useState("");
+  const audienceDropdownRef = useRef(null);
+
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const [langSearch, setLangSearch] = useState("");
+  const langDropdownRef = useRef(null);
+
+  const [isUspDropdownOpen, setIsUspDropdownOpen] = useState(false);
+  const [uspSearch, setUspSearch] = useState("");
+  const uspDropdownRef = useRef(null);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (audienceDropdownRef.current && !audienceDropdownRef.current.contains(e.target)) {
+        setIsAudienceDropdownOpen(false);
+      }
+      if (langDropdownRef.current && !langDropdownRef.current.contains(e.target)) {
+        setIsLangDropdownOpen(false);
+      }
+      if (uspDropdownRef.current && !uspDropdownRef.current.contains(e.target)) {
+        setIsUspDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleClearAllAudiences = () => {
+    setValue("targetAudience", "", { shouldDirty: true });
+  };
+
+  const handleClearAllUsps = () => {
+    setValue("businessUsps", "", { shouldDirty: true });
+  };
+
+  const filteredPresetAudiences = useMemo(() => {
+    if (!audienceSearch.trim()) return PRESET_AUDIENCES;
+    return PRESET_AUDIENCES.filter((a) =>
+      a.toLowerCase().includes(audienceSearch.toLowerCase().trim())
+    );
+  }, [audienceSearch]);
+
+  const filteredLanguages = useMemo(() => {
+    if (!langSearch.trim()) return CAPTION_LANGUAGES;
+    return CAPTION_LANGUAGES.filter(
+      (l) =>
+        l.label.toLowerCase().includes(langSearch.toLowerCase().trim()) ||
+        l.desc.toLowerCase().includes(langSearch.toLowerCase().trim())
+    );
+  }, [langSearch]);
+
+  const filteredPresetUsps = useMemo(() => {
+    if (!uspSearch.trim()) return PRESET_USPS;
+    return PRESET_USPS.filter((u) =>
+      u.toLowerCase().includes(uspSearch.toLowerCase().trim())
+    );
+  }, [uspSearch]);
+
+  const selectedLangObj = useMemo(() => {
+    if (!captionLangValue) return null;
+    return CAPTION_LANGUAGES.find(
+      (l) => l.id.toLowerCase() === captionLangValue.toLowerCase()
+    );
+  }, [captionLangValue]);
+
+  // -------------------------------------------------------------
   // Category Display Helper
   // -------------------------------------------------------------
   const totalCategoryPages = categoryMeta?.totalPages || 1;
@@ -318,7 +392,7 @@ export const BrandKitView = ({
       {/* ========================================================= */}
       {/* 1. HERO HEADER                                            */}
       {/* ========================================================= */}
-      <div className="p-5 sm:p-6 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17] shadow-xl">
+      <div className="p-4 sm:p-6 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17] shadow-xl">
         <div className="space-y-2 max-w-3xl">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-semibold border border-amber-500/30">
             <Sparkles className="w-3 h-3 text-amber-400" />
@@ -375,13 +449,13 @@ export const BrandKitView = ({
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex items-center gap-3 pt-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => navigate("/calendar")}
-              className="text-xs"
+              className="text-xs w-full sm:w-auto justify-center min-h-[38px]"
             >
               Go to Calendar & Scheduled Posts
             </Button>
@@ -390,7 +464,7 @@ export const BrandKitView = ({
               variant="primary"
               size="sm"
               onClick={onDismissNotice}
-              className="text-xs"
+              className="text-xs w-full sm:w-auto justify-center min-h-[38px]"
             >
               Keep Existing Layouts & Dismiss
             </Button>
@@ -401,7 +475,7 @@ export const BrandKitView = ({
       {/* ========================================================= */}
       {/* 3. HORIZONTAL NAVIGATION TABS                             */}
       {/* ========================================================= */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 p-1.5 rounded-2xl bg-[#131B2A] border border-[#2C384E] custom-scrollbar shadow-inner">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 p-1.5 rounded-2xl bg-[#131B2A] border border-[#2C384E] custom-scrollbar shadow-inner whitespace-nowrap -mx-1 px-1 sm:mx-0 sm:px-1.5">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -410,7 +484,7 @@ export const BrandKitView = ({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer min-h-[40px] active:scale-95 ${
                 isActive
                   ? "bg-amber-500 text-slate-950 shadow-md font-black"
                   : "bg-transparent text-slate-300 hover:text-white hover:bg-[#1A2538]"
@@ -429,10 +503,10 @@ export const BrandKitView = ({
       {isLoadingBrandKit ? (
         <SkeletonForm fields={8} />
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6" noValidate>
           {/* TAB 1: IDENTITY & NICHE */}
           {(activeTab === "identity" || activeTab === "all") && (
-            <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6 rounded-2xl shadow-xl">
+            <Card className="border-[#2C384E] bg-[#131B2A] p-4 sm:p-6 space-y-4 sm:space-y-6 rounded-2xl shadow-xl">
               <div className="border-b border-[#2C384E] pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
@@ -468,7 +542,7 @@ export const BrandKitView = ({
                   </label>
 
                   {currentCategoryDisplay ? (
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F17] border border-amber-500/40 text-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 rounded-xl bg-[#0B0F17] border border-amber-500/40 text-xs gap-2">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                           <FolderKanban className="w-4 h-4" />
@@ -482,7 +556,7 @@ export const BrandKitView = ({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                         <Button
                           type="button"
                           variant="outline"
@@ -531,7 +605,7 @@ export const BrandKitView = ({
 
           {/* TAB 2: AI COPYWRITING */}
           {(activeTab === "ai" || activeTab === "all") && (
-            <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6 rounded-2xl shadow-xl">
+            <Card className="border-[#2C384E] bg-[#131B2A] p-4 sm:p-6 space-y-4 sm:space-y-6 rounded-2xl shadow-xl">
               <div className="border-b border-[#2C384E] pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
@@ -551,117 +625,194 @@ export const BrandKitView = ({
                 </span>
               </div>
 
-              {/* A. Target Audience Interactive Chips */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
+              {/* A. Target Audience Multi-Select Dropdown */}
+              <div className="space-y-2 relative" ref={audienceDropdownRef}>
+                <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-1.5">
                   <div>
                     <label className="text-xs font-semibold text-slate-200 uppercase tracking-wider block">
                       Target Audience (Select Applicable Demographics)
                     </label>
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                      Click to choose the audience demographics that best describe your buyers.
+                      Choose the audience demographics that best describe your prospective customers.
                     </p>
                   </div>
                   {parsedAudiences.length > 0 && (
-                    <span className="text-[11px] text-amber-400 font-bold bg-[#0B0F17] px-2.5 py-1 rounded-lg border border-[#2C384E]">
-                      {parsedAudiences.length} Selected
-                    </span>
+                    <div className="flex items-center gap-2 self-start min-[420px]:self-auto">
+                      <span className="text-[11px] text-amber-400 font-bold bg-[#0B0F17] px-2.5 py-1 rounded-lg border border-[#2C384E] shrink-0">
+                        {parsedAudiences.length} Selected
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleClearAllAudiences}
+                        className="text-[11px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer underline"
+                      >
+                        Clear All
+                      </button>
+                    </div>
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
-                  {PRESET_AUDIENCES.map((audience) => {
-                    const isSelected = activePresetAudiences.includes(audience);
-                    return (
-                      <button
-                        key={audience}
-                        type="button"
-                        onClick={() => handleTogglePresetAudience(audience)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 cursor-pointer border ${
-                          isSelected
-                            ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold shadow-sm"
-                            : "bg-[#131B2A] border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-500"
-                        }`}
-                      >
-                        {isSelected ? (
-                          <Check className="w-3.5 h-3.5 text-amber-400" />
-                        ) : (
-                          <Plus className="w-3.5 h-3.5 text-slate-500" />
-                        )}
-                        <span>{audience}</span>
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    type="button"
-                    onClick={() => setShowCustomAudienceField((prev) => !prev)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border ${
-                      showCustomAudienceField || customAudiences.length > 0
-                        ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold shadow-sm"
-                        : "bg-[#131B2A] border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-400"
+                {/* Dropdown Selector Button Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setIsAudienceDropdownOpen((prev) => !prev)}
+                  className={`w-full p-3 rounded-xl bg-[#0B0F17] border text-left text-xs transition flex items-center justify-between gap-2 cursor-pointer min-h-[42px] ${
+                    isAudienceDropdownOpen
+                      ? "border-amber-500 shadow-md ring-1 ring-amber-500/40"
+                      : "border-[#2C384E] hover:border-amber-500/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Users className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span className="truncate text-slate-200 font-medium">
+                      {parsedAudiences.length > 0
+                        ? `${parsedAudiences.length} Demographics Selected (${parsedAudiences.slice(0, 3).join(", ")}${parsedAudiences.length > 3 ? "..." : ""})`
+                        : "Select Target Audience Demographics (Dropdown)..."}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                      isAudienceDropdownOpen ? "rotate-180 text-amber-400" : ""
                     }`}
-                  >
-                    <Tag className="w-3.5 h-3.5 text-amber-400" />
-                    <span>+ Other (Custom Audience)</span>
-                  </button>
-                </div>
+                  />
+                </button>
 
-                {/* Custom Audience Tag Input */}
-                {showCustomAudienceField && (
-                  <div className="p-3 rounded-xl bg-[#131B2A] border border-[#2C384E] space-y-2">
-                    <div className="flex items-center gap-2">
+                {/* Dropdown Menu Popover */}
+                {isAudienceDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 z-40 p-3 rounded-2xl bg-[#0B0F17] border border-[#2C384E] shadow-2xl space-y-2.5 animate-in fade-in zoom-in-95 duration-150">
+                    {/* Search inside dropdown */}
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
                         type="text"
-                        value={customAudienceInput}
-                        onChange={(e) => setCustomAudienceInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddCustomAudience();
-                          }
-                        }}
-                        placeholder="Type custom audience and press Enter..."
-                        className="flex-1 px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-400"
+                        value={audienceSearch}
+                        onChange={(e) => setAudienceSearch(e.target.value)}
+                        placeholder="Filter demographics..."
+                        className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+                        onClick={(e) => e.stopPropagation()}
                       />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddCustomAudience}
-                        className="text-xs shrink-0 py-1.5"
-                      >
-                        Add Tag
-                      </Button>
                     </div>
 
-                    {customAudiences.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {customAudiences.map((tag) => (
-                          <span
-                            key={tag}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-medium"
-                          >
-                            <span>{tag}</span>
+                    {/* Preset Demographics List */}
+                    <div className="max-h-56 overflow-y-auto custom-scrollbar space-y-1 pr-1">
+                      {filteredPresetAudiences.length === 0 ? (
+                        <p className="p-3 text-center text-xs text-slate-500">
+                          No matching demographics found.
+                        </p>
+                      ) : (
+                        filteredPresetAudiences.map((audience) => {
+                          const isSelected = activePresetAudiences.includes(audience);
+                          return (
                             <button
+                              key={audience}
                               type="button"
-                              onClick={() => handleRemoveCustomAudience(tag)}
-                              className="text-amber-400 hover:text-white cursor-pointer"
+                              onClick={() => handleTogglePresetAudience(audience)}
+                              className={`w-full p-2.5 rounded-xl text-xs font-medium text-left transition flex items-center justify-between gap-2 cursor-pointer ${
+                                isSelected
+                                  ? "bg-amber-500/15 border border-amber-500/60 text-amber-300 font-bold"
+                                  : "text-slate-300 hover:text-white hover:bg-[#131B2A] border border-transparent"
+                              }`}
                             >
-                              <X className="w-3 h-3" />
+                              <div className="flex items-center gap-2 truncate">
+                                <div
+                                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                                    isSelected
+                                      ? "bg-amber-500 border-amber-500 text-slate-950"
+                                      : "border-slate-600 bg-[#131B2A]"
+                                  }`}
+                                >
+                                  {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                </div>
+                                <span className="truncate">{audience}</span>
+                              </div>
+                              {isSelected && (
+                                <span className="text-[10px] text-amber-400 uppercase font-mono shrink-0">Selected</span>
+                              )}
                             </button>
-                          </span>
-                        ))}
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Add Custom Demographics Tag Input */}
+                    <div className="pt-2 border-t border-[#2C384E] space-y-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={customAudienceInput}
+                          onChange={(e) => setCustomAudienceInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddCustomAudience();
+                            }
+                          }}
+                          placeholder="+ Type custom audience..."
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddCustomAudience}
+                          className="text-xs shrink-0 py-1.5"
+                        >
+                          Add
+                        </Button>
                       </div>
-                    )}
+                    </div>
+
+                    {/* Popover Footer */}
+                    <div className="flex items-center justify-between pt-1 border-t border-[#2C384E]">
+                      <span className="text-[11px] text-slate-400">
+                        {parsedAudiences.length} selected
+                      </span>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setIsAudienceDropdownOpen(false)}
+                        className="text-xs py-1 px-3"
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected Audience Chips Display */}
+                {parsedAudiences.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {parsedAudiences.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-medium"
+                      >
+                        <span>{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (activePresetAudiences.includes(tag)) {
+                              handleTogglePresetAudience(tag);
+                            } else {
+                              handleRemoveCustomAudience(tag);
+                            }
+                          }}
+                          className="text-amber-400/80 hover:text-white cursor-pointer ml-0.5"
+                          title={`Remove ${tag}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
                   </div>
                 )}
 
                 <input type="hidden" {...register("targetAudience")} />
               </div>
 
-              {/* B. Default AI Caption Language (Flag Grid Cards) */}
-              <div className="space-y-2 pt-3 border-t border-[#2C384E]">
+              {/* B. Default AI Caption Language (Dropdown Selector) */}
+              <div className="space-y-2 pt-3 border-t border-[#2C384E] relative" ref={langDropdownRef}>
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="text-xs font-semibold text-slate-200 uppercase tracking-wider block">
@@ -682,48 +833,114 @@ export const BrandKitView = ({
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                  {CAPTION_LANGUAGES.map((lang) => {
-                    const isSelected =
-                      captionLangValue &&
-                      captionLangValue.toLowerCase() === lang.id.toLowerCase();
-                    return (
-                      <button
-                        key={lang.id}
-                        type="button"
-                        onClick={() =>
-                          setValue("captionLanguage", lang.id, { shouldDirty: true })
-                        }
-                        className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer ${
-                          isSelected
-                            ? "bg-amber-500/15 border-amber-500 text-white shadow-sm ring-1 ring-amber-500/50"
-                            : "bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:text-white hover:border-slate-500 hover:bg-[#1A2538]"
-                        }`}
-                      >
+                {/* Dropdown Selector Button Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setIsLangDropdownOpen((prev) => !prev)}
+                  className={`w-full p-3 rounded-xl bg-[#0B0F17] border text-left text-xs transition flex items-center justify-between gap-2 cursor-pointer min-h-[42px] ${
+                    isLangDropdownOpen
+                      ? "border-amber-500 shadow-md ring-1 ring-amber-500/40"
+                      : "border-[#2C384E] hover:border-amber-500/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {selectedLangObj ? (
+                      <span className="text-xl shrink-0">{selectedLangObj.flag}</span>
+                    ) : (
+                      <Globe className="w-4 h-4 text-amber-400 shrink-0" />
+                    )}
+                    <div className="truncate">
+                      {selectedLangObj ? (
                         <div className="flex items-center gap-2 truncate">
-                          <span className="text-lg">{lang.flag}</span>
-                          <div className="truncate">
-                            <p className={`text-xs font-bold truncate ${isSelected ? "text-amber-400" : "text-white"}`}>
-                              {lang.label}
-                            </p>
-                            <p className="text-[10px] text-slate-400 truncate">
-                              {lang.desc}
-                            </p>
-                          </div>
+                          <span className="font-bold text-amber-400 text-xs">
+                            {selectedLangObj.label}
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-mono truncate">
+                            — {selectedLangObj.desc}
+                          </span>
                         </div>
-                        {isSelected && (
-                          <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                      ) : (
+                        <span className="text-slate-400 font-medium">
+                          Select Default AI Caption Language (Dropdown)...
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                      isLangDropdownOpen ? "rotate-180 text-amber-400" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown Menu Popover */}
+                {isLangDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 z-40 p-3 rounded-2xl bg-[#0B0F17] border border-[#2C384E] shadow-2xl space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                    {/* Search inside language dropdown */}
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={langSearch}
+                        onChange={(e) => setLangSearch(e.target.value)}
+                        placeholder="Search language or tone..."
+                        className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+
+                    <div className="max-h-60 overflow-y-auto custom-scrollbar space-y-1 pr-1">
+                      {filteredLanguages.length === 0 ? (
+                        <p className="p-3 text-center text-xs text-slate-500">
+                          No matching languages found.
+                        </p>
+                      ) : (
+                        filteredLanguages.map((lang) => {
+                          const isSelected =
+                            captionLangValue &&
+                            captionLangValue.toLowerCase() === lang.id.toLowerCase();
+                          return (
+                            <button
+                              key={lang.id}
+                              type="button"
+                              onClick={() => {
+                                setValue("captionLanguage", lang.id, { shouldDirty: true });
+                                setIsLangDropdownOpen(false);
+                              }}
+                              className={`w-full p-2.5 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer ${
+                                isSelected
+                                  ? "bg-amber-500/15 border-amber-500 text-white shadow-sm ring-1 ring-amber-500/50"
+                                  : "bg-transparent border-transparent text-slate-400 hover:text-white hover:bg-[#131B2A]"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 truncate">
+                                <span className="text-xl shrink-0">{lang.flag}</span>
+                                <div className="truncate">
+                                  <p className={`text-xs font-bold truncate ${isSelected ? "text-amber-400" : "text-white"}`}>
+                                    {lang.label}
+                                  </p>
+                                  <p className="text-[10px] text-slate-400 truncate">
+                                    {lang.desc}
+                                  </p>
+                                </div>
+                              </div>
+                              {isSelected && (
+                                <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                              )}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <input type="hidden" {...register("captionLanguage")} />
               </div>
 
-              {/* C. Business USPs & Highlights */}
-              <div className="space-y-2 pt-3 border-t border-[#2C384E]">
-                <div className="flex items-center justify-between">
+              {/* C. Business USPs & Key Features Multi-Select Dropdown */}
+              <div className="space-y-2 pt-3 border-t border-[#2C384E] relative" ref={uspDropdownRef}>
+                <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-1.5">
                   <div>
                     <label className="text-xs font-semibold text-slate-200 uppercase tracking-wider block">
                       Business USPs & Key Features (AI Highlights - Optional)
@@ -733,97 +950,174 @@ export const BrandKitView = ({
                     </p>
                   </div>
                   {parsedUsps.length > 0 && (
-                    <span className="text-[11px] text-amber-400 font-bold bg-[#0B0F17] px-2.5 py-1 rounded-lg border border-[#2C384E]">
-                      {parsedUsps.length} Selected
-                    </span>
+                    <div className="flex items-center gap-2 self-start min-[420px]:self-auto">
+                      <span className="text-[11px] text-amber-400 font-bold bg-[#0B0F17] px-2.5 py-1 rounded-lg border border-[#2C384E] shrink-0">
+                        {parsedUsps.length} Selected
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleClearAllUsps}
+                        className="text-[11px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer underline"
+                      >
+                        Clear All
+                      </button>
+                    </div>
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
-                  {PRESET_USPS.map((usp) => {
-                    const isSelected = activePresetUsps.includes(usp);
-                    return (
-                      <button
-                        key={usp}
-                        type="button"
-                        onClick={() => handleTogglePresetUsp(usp)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 cursor-pointer border ${
-                          isSelected
-                            ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold shadow-sm"
-                            : "bg-[#131B2A] border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-500"
-                        }`}
-                      >
-                        {isSelected ? (
-                          <Check className="w-3.5 h-3.5 text-amber-400" />
-                        ) : (
-                          <Plus className="w-3.5 h-3.5 text-slate-500" />
-                        )}
-                        <span>{usp}</span>
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    type="button"
-                    onClick={() => setShowCustomUspField((prev) => !prev)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border ${
-                      showCustomUspField || customUsps.length > 0
-                        ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold shadow-sm"
-                        : "bg-[#131B2A] border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-400"
+                {/* Dropdown Selector Button Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setIsUspDropdownOpen((prev) => !prev)}
+                  className={`w-full p-3 rounded-xl bg-[#0B0F17] border text-left text-xs transition flex items-center justify-between gap-2 cursor-pointer min-h-[42px] ${
+                    isUspDropdownOpen
+                      ? "border-amber-500 shadow-md ring-1 ring-amber-500/40"
+                      : "border-[#2C384E] hover:border-amber-500/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span className="truncate text-slate-200 font-medium">
+                      {parsedUsps.length > 0
+                        ? `${parsedUsps.length} Highlights Selected (${parsedUsps.slice(0, 3).join(", ")}${parsedUsps.length > 3 ? "..." : ""})`
+                        : "Select Business USPs & Key Features (Dropdown)..."}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                      isUspDropdownOpen ? "rotate-180 text-amber-400" : ""
                     }`}
-                  >
-                    <Tag className="w-3.5 h-3.5 text-amber-400" />
-                    <span>+ Other (Custom USP)</span>
-                  </button>
-                </div>
+                  />
+                </button>
 
-                {/* Custom USP Tag Input */}
-                {showCustomUspField && (
-                  <div className="p-3 rounded-xl bg-[#131B2A] border border-[#2C384E] space-y-2">
-                    <div className="flex items-center gap-2">
+                {/* Dropdown Menu Popover */}
+                {isUspDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 z-40 p-3 rounded-2xl bg-[#0B0F17] border border-[#2C384E] shadow-2xl space-y-2.5 animate-in fade-in zoom-in-95 duration-150">
+                    {/* Search inside USP dropdown */}
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
                         type="text"
-                        value={customUspInput}
-                        onChange={(e) => setCustomUspInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddCustomUsp();
-                          }
-                        }}
-                        placeholder="Type custom USP and press Enter..."
-                        className="flex-1 px-3 py-1.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-400"
+                        value={uspSearch}
+                        onChange={(e) => setUspSearch(e.target.value)}
+                        placeholder="Filter USPs & key features..."
+                        className="w-full bg-[#131B2A] border border-[#2C384E] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+                        onClick={(e) => e.stopPropagation()}
                       />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddCustomUsp}
-                        className="text-xs shrink-0 py-1.5"
-                      >
-                        Add Custom
-                      </Button>
                     </div>
 
-                    {customUsps.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {customUsps.map((usp) => (
-                          <span
-                            key={usp}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-medium"
-                          >
-                            <span>{usp}</span>
+                    {/* Preset USPs List */}
+                    <div className="max-h-56 overflow-y-auto custom-scrollbar space-y-1 pr-1">
+                      {filteredPresetUsps.length === 0 ? (
+                        <p className="p-3 text-center text-xs text-slate-500">
+                          No matching USPs found.
+                        </p>
+                      ) : (
+                        filteredPresetUsps.map((usp) => {
+                          const isSelected = activePresetUsps.includes(usp);
+                          return (
                             <button
+                              key={usp}
                               type="button"
-                              onClick={() => handleRemoveCustomUsp(usp)}
-                              className="text-amber-400 hover:text-white cursor-pointer"
+                              onClick={() => handleTogglePresetUsp(usp)}
+                              className={`w-full p-2.5 rounded-xl text-xs font-medium text-left transition flex items-center justify-between gap-2 cursor-pointer ${
+                                isSelected
+                                  ? "bg-amber-500/15 border border-amber-500/60 text-amber-300 font-bold"
+                                  : "text-slate-300 hover:text-white hover:bg-[#131B2A] border border-transparent"
+                              }`}
                             >
-                              <X className="w-3 h-3" />
+                              <div className="flex items-center gap-2 truncate">
+                                <div
+                                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                                    isSelected
+                                      ? "bg-amber-500 border-amber-500 text-slate-950"
+                                      : "border-slate-600 bg-[#131B2A]"
+                                  }`}
+                                >
+                                  {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                </div>
+                                <span className="truncate">{usp}</span>
+                              </div>
+                              {isSelected && (
+                                <span className="text-[10px] text-amber-400 uppercase font-mono shrink-0">Selected</span>
+                              )}
                             </button>
-                          </span>
-                        ))}
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Add Custom USP Tag Input */}
+                    <div className="pt-2 border-t border-[#2C384E] space-y-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={customUspInput}
+                          onChange={(e) => setCustomUspInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddCustomUsp();
+                            }
+                          }}
+                          placeholder="+ Type custom USP..."
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddCustomUsp}
+                          className="text-xs shrink-0 py-1.5"
+                        >
+                          Add
+                        </Button>
                       </div>
-                    )}
+                    </div>
+
+                    {/* Popover Footer */}
+                    <div className="flex items-center justify-between pt-1 border-t border-[#2C384E]">
+                      <span className="text-[11px] text-slate-400">
+                        {parsedUsps.length} selected
+                      </span>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setIsUspDropdownOpen(false)}
+                        className="text-xs py-1 px-3"
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected USPs Chips Display */}
+                {parsedUsps.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {parsedUsps.map((usp) => (
+                      <span
+                        key={usp}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-medium"
+                      >
+                        <span>{usp}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (activePresetUsps.includes(usp)) {
+                              handleTogglePresetUsp(usp);
+                            } else {
+                              handleRemoveCustomUsp(usp);
+                            }
+                          }}
+                          className="text-amber-400/80 hover:text-white cursor-pointer ml-0.5"
+                          title={`Remove ${usp}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
                   </div>
                 )}
 
@@ -834,7 +1128,7 @@ export const BrandKitView = ({
 
           {/* TAB 3: CONTACT & LOCATION */}
           {(activeTab === "contact" || activeTab === "all") && (
-            <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6 rounded-2xl shadow-xl">
+            <Card className="border-[#2C384E] bg-[#131B2A] p-4 sm:p-6 space-y-4 sm:space-y-6 rounded-2xl shadow-xl">
               <div className="border-b border-[#2C384E] pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
@@ -929,7 +1223,7 @@ export const BrandKitView = ({
 
           {/* TAB 4: SOCIAL MEDIA */}
           {(activeTab === "social" || activeTab === "all") && (
-            <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6 rounded-2xl shadow-xl">
+            <Card className="border-[#2C384E] bg-[#131B2A] p-4 sm:p-6 space-y-4 sm:space-y-6 rounded-2xl shadow-xl">
               <div className="border-b border-[#2C384E] pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
@@ -989,7 +1283,7 @@ export const BrandKitView = ({
 
           {/* TAB 5: VISUAL ASSETS & QR (100% Symmetrical Cards + UPI VPA below) */}
           {(activeTab === "assets" || activeTab === "all") && (
-            <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-6 rounded-2xl shadow-xl">
+            <Card className="border-[#2C384E] bg-[#131B2A] p-4 sm:p-6 space-y-4 sm:space-y-6 rounded-2xl shadow-xl">
               <div className="border-b border-[#2C384E] pb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
@@ -1010,16 +1304,16 @@ export const BrandKitView = ({
               </div>
 
               {/* 3 Perfectly Symmetrical Upload Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 {/* 1. Primary Transparent Logo */}
-                <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col items-center justify-between text-center space-y-4 h-full">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col items-center justify-between text-center space-y-3 sm:space-y-4 h-full">
                   <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
                     Primary Transparent Logo (Optional)
                   </label>
 
                   <div className="w-full flex-1 flex items-center justify-center">
                     {logoPreview ? (
-                      <div className="relative w-40 h-40 max-w-[160px] aspect-square mx-auto rounded-xl overflow-hidden bg-slate-900 border border-[#2C384E] flex items-center justify-center p-2">
+                      <div className="relative w-40 h-40 max-w-[160px] aspect-square mx-auto rounded-xl overflow-hidden bg-slate-900 border-2 border-amber-500/80 shadow-lg flex items-center justify-center p-2">
                         <img
                           src={logoPreview}
                           alt="Logo Preview"
@@ -1046,7 +1340,7 @@ export const BrandKitView = ({
                     )}
                   </div>
 
-                  <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#1C2638] hover:bg-[#253249] text-white text-xs font-semibold cursor-pointer border border-[#2C384E] transition w-full max-w-[160px]">
+                  <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#1C2638] hover:bg-[#253249] text-white text-xs font-semibold cursor-pointer border border-[#2C384E] transition w-full max-w-[160px] min-h-[38px] active:scale-95">
                     <Upload className="w-3.5 h-3.5 text-amber-400" />
                     <span>{logoPreview ? "Change Logo" : "Upload Logo"}</span>
                     <input
@@ -1059,14 +1353,14 @@ export const BrandKitView = ({
                 </div>
 
                 {/* 2. Owner Portrait / Secondary Avatar */}
-                <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col items-center justify-between text-center space-y-4 h-full">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col items-center justify-between text-center space-y-3 sm:space-y-4 h-full">
                   <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
                     Owner Photo / Avatar (Optional)
                   </label>
 
                   <div className="w-full flex-1 flex items-center justify-center">
                     {avatarPreview ? (
-                      <div className="relative w-40 h-40 max-w-[160px] aspect-square mx-auto rounded-xl overflow-hidden bg-slate-900 border border-[#2C384E] flex items-center justify-center p-2">
+                      <div className="relative w-40 h-40 max-w-[160px] aspect-square mx-auto rounded-xl overflow-hidden bg-slate-900 border-2 border-amber-500/80 shadow-lg flex items-center justify-center p-2">
                         <img
                           src={avatarPreview}
                           alt="Avatar Preview"
@@ -1093,7 +1387,7 @@ export const BrandKitView = ({
                     )}
                   </div>
 
-                  <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#1C2638] hover:bg-[#253249] text-white text-xs font-semibold cursor-pointer border border-[#2C384E] transition w-full max-w-[160px]">
+                  <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#1C2638] hover:bg-[#253249] text-white text-xs font-semibold cursor-pointer border border-[#2C384E] transition w-full max-w-[160px] min-h-[38px] active:scale-95">
                     <Upload className="w-3.5 h-3.5 text-amber-400" />
                     <span>{avatarPreview ? "Change Photo" : "Upload Avatar"}</span>
                     <input
@@ -1106,14 +1400,14 @@ export const BrandKitView = ({
                 </div>
 
                 {/* 3. Payment UPI QR Code */}
-                <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col items-center justify-between text-center space-y-4 h-full">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col items-center justify-between text-center space-y-3 sm:space-y-4 h-full">
                   <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
                     Payment UPI QR Code (Optional)
                   </label>
 
                   <div className="w-full flex-1 flex items-center justify-center">
                     {upiQrPreview ? (
-                      <div className="relative w-40 h-40 max-w-[160px] aspect-square mx-auto rounded-xl overflow-hidden bg-slate-900 border border-[#2C384E] flex items-center justify-center p-2">
+                      <div className="relative w-40 h-40 max-w-[160px] aspect-square mx-auto rounded-xl overflow-hidden bg-slate-900 border-2 border-amber-500/80 shadow-lg flex items-center justify-center p-2">
                         <img
                           src={upiQrPreview}
                           alt="UPI QR Preview"
@@ -1140,7 +1434,7 @@ export const BrandKitView = ({
                     )}
                   </div>
 
-                  <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#1C2638] hover:bg-[#253249] text-white text-xs font-semibold cursor-pointer border border-[#2C384E] transition w-full max-w-[160px]">
+                  <label className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#1C2638] hover:bg-[#253249] text-white text-xs font-semibold cursor-pointer border border-[#2C384E] transition w-full max-w-[160px] min-h-[38px] active:scale-95">
                     <Upload className="w-3.5 h-3.5 text-amber-400" />
                     <span>{upiQrPreview ? "Change QR" : "Upload QR"}</span>
                     <input
@@ -1173,7 +1467,7 @@ export const BrandKitView = ({
           {/* 5. TAB STEPPER / WIZARD FOOTER NAVIGATION                */}
           {/* ========================================================= */}
           {activeTab !== "all" && (
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-[#131B2A] border border-[#2C384E]">
+            <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#131B2A] border border-[#2C384E] gap-2">
               <div>
                 {prevTabKey ? (
                   <Button
@@ -1181,10 +1475,10 @@ export const BrandKitView = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setActiveTab(prevTabKey)}
-                    className="text-xs gap-1.5"
+                    className="text-xs gap-1.5 min-h-[38px] px-3.5"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    Previous Step
+                    <span>Previous Step</span>
                   </Button>
                 ) : (
                   <div />
@@ -1198,9 +1492,9 @@ export const BrandKitView = ({
                     variant="primary"
                     size="sm"
                     onClick={() => setActiveTab(nextTabKey)}
-                    className="text-xs gap-1.5"
+                    className="text-xs gap-1.5 min-h-[38px] px-3.5"
                   >
-                    Next Step
+                    <span>Next Step</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Button>
                 ) : (
@@ -1215,10 +1509,10 @@ export const BrandKitView = ({
           {/* ========================================================= */}
           {/* 6. STICKY SUBMIT FOOTER                                   */}
           {/* ========================================================= */}
-          <div className="sticky bottom-4 z-20 p-4 rounded-2xl bg-[#0B0F17]/95 border border-[#2C384E] backdrop-blur-md flex items-center justify-between shadow-2xl">
+          <div className="sticky bottom-3 sm:bottom-4 z-20 p-3.5 sm:p-4 rounded-2xl bg-[#0B0F17]/95 border border-[#2C384E] backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xl">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-slate-300 font-medium hidden sm:inline">
+              <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="text-xs text-slate-300 font-medium text-center sm:text-left">
                 All changes synchronize across Post Studio, Canvas overlays & AI generator.
               </span>
             </div>
@@ -1227,7 +1521,7 @@ export const BrandKitView = ({
               variant="primary"
               size="md"
               loading={isSaving}
-              className="px-6 shadow-glow"
+              className="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-sm font-bold shadow-glow justify-center shrink-0 min-h-[42px]"
             >
               {isSaving ? "Saving BrandKit Profile..." : "Save BrandKit"}
             </Button>
@@ -1339,8 +1633,8 @@ export const BrandKitView = ({
           )}
 
           {/* Modal Pagination Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-[#2C384E] text-xs">
-            <span className="text-slate-400 text-[11px]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-[#2C384E] text-xs">
+            <span className="text-slate-400 text-[11px] text-center sm:text-left">
               Page <span className="font-bold text-white">{categoryPage}</span> of{" "}
               <span className="font-bold text-white">{totalCategoryPages}</span>
               {(categoryMeta?.totalItems || categoryMeta?.totalCount) && (
@@ -1357,7 +1651,7 @@ export const BrandKitView = ({
                 size="sm"
                 disabled={categoryPage <= 1 || isLoadingCategories}
                 onClick={() => setCategoryPage((p) => Math.max(1, p - 1))}
-                className="text-xs py-1 px-3"
+                className="text-xs py-1.5 px-3 min-h-[36px]"
               >
                 <ChevronLeft className="w-3.5 h-3.5 mr-1" />
                 Previous
@@ -1368,7 +1662,7 @@ export const BrandKitView = ({
                 size="sm"
                 disabled={categoryPage >= totalCategoryPages || isLoadingCategories}
                 onClick={() => setCategoryPage((p) => Math.min(totalCategoryPages, p + 1))}
-                className="text-xs py-1 px-3"
+                className="text-xs py-1.5 px-3 min-h-[36px]"
               >
                 Next
                 <ChevronRight className="w-3.5 h-3.5 ml-1" />

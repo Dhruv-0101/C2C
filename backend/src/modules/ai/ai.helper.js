@@ -288,3 +288,111 @@ export function synthesizeSmartCaption({
     hashtags,
   };
 }
+
+/**
+ * 🎨 BUILD NANO BANANA 2.1 IMAGE GENERATION PROMPT
+ * Translates user business intent into an ultra-high quality, commercial-grade visual prompt.
+ * Enforces negative space guidelines so brand logo/details can be overlaid cleanly.
+ *
+ * @param {Object} params
+ * @param {string} params.prompt - User raw prompt or festive title
+ * @param {string} [params.style] - Aesthetic style preset
+ * @param {string} [params.categoryName] - Business category
+ * @param {string} [params.businessName] - Business brand name
+ * @param {string} [params.occasionName] - Festival or campaign name
+ * @returns {string} Fully engineered prompt string for gemini-nano-banana-2.1
+ */
+export function buildNanoBananaPrompt({
+  prompt,
+  style = 'Photorealistic',
+  categoryName = '',
+  businessName = '',
+  occasionName = '',
+}) {
+  const styleDirectives = {
+    Photorealistic: 'Hyperrealistic commercial advertising photography, 85mm lens, f/1.8 aperture, studio lighting, highly detailed texture, cinematic depth of field, 8k UHD.',
+    'Festive Luxury': 'Opulent festive celebration aesthetic, warm golden lighting, traditional ornate diya lamps, rich silk backdrop, bokeh lights, sparkling luxury details, royal Indian heritage atmosphere.',
+    'Modern Minimalist': 'Clean architectural minimalism, soft studio shadows, pastel tones, elegant negative space, Bauhaus-inspired balanced composition, high-end editorial look.',
+    'Studio Product': 'Professional commercial product showcase podium, dramatic rim lighting, soft diffuse reflections, clean pristine studio backdrop, crystal clear focus.',
+    'Vibrant 3D Render': 'Pixar-style vibrant 3D stylized render, smooth volumetric lighting, glossy reflective surfaces, energetic cheerful palette, playful octane render.',
+    'Warm Indian Heritage': 'Authentic traditional Indian aesthetic, vibrant marigold flowers, hand-painted motifs, warm sunset glow, festive cultural celebration atmosphere.',
+  };
+
+  const styleClause = styleDirectives[style] || styleDirectives['Photorealistic'];
+
+  const contextHints = [
+    occasionName ? `Occasion: ${occasionName}.` : '',
+    categoryName ? `Industry: ${categoryName}.` : '',
+    businessName ? `Brand context: ${businessName}.` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return `Create a high-impact social media marketing background graphic.
+Subject & Concept: ${prompt}.
+${contextHints}
+Visual Style: ${styleClause}
+Composition Requirements: Beautifully composed square 1:1 image, clean center-weighted or balanced layout, ample negative space around borders for brand overlays.
+Cultural & Multi-Lingual Interpretation: If the concept is provided in Hindi, Hinglish, Gujarati, Marathi, or any regional Indian language, translate and interpret the core commercial products, festival, food items, ornaments, or promotional themes into a stunning visual reality.
+Negative Constraints: Absolutely NO words, NO text, NO typography, NO letters, NO watermarks, NO blurry elements, NO low-resolution artifacts.`;
+}
+
+/**
+ * 🌟 CURATED AESTHETIC VISUAL FALLBACK
+ * Provides instant, ultra-high-resolution royalty-free commercial backdrops
+ * when Google Cloud Billing is still syncing, preventing any workflow disruptions.
+ *
+ * @param {Object} params
+ * @returns {string} High-res CDN image URL
+ */
+export function getCuratedAestheticFallback({ prompt = '', style = '', categoryName = '' }) {
+  const lower = `${prompt} ${style} ${categoryName}`.toLowerCase();
+
+  const curatedCollection = [
+    {
+      keywords: ['diwali', 'deepavali', 'diya', 'light', 'festive', 'luxury', 'gold', 'puja', 'dussehra', 'navratri', 'eid', 'rakhi', 'tyohar'],
+      url: 'https://images.unsplash.com/photo-1605647540924-852290f6b0d5?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['holi', 'color', 'festival', 'gulal', 'vibrant', 'rang'],
+      url: 'https://images.unsplash.com/photo-1576487247239-0158a1352e00?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['sale', 'discount', 'offer', 'shopping', 'retail', 'promo', 'deal', 'chhoot', 'dhamaka', 'bachat', 'percent', '%', 'off'],
+      url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['food', 'restaurant', 'cafe', 'coffee', 'burger', 'dining', 'bakery', 'sweet', 'mithai', 'laddu', 'kaju', 'khana', 'nashta', 'chai', 'rasgulla', 'samosa'],
+      url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['jewellery', 'jewelry', 'gold', 'diamond', 'ring', 'necklace', 'luxury', 'gahne', 'sonar', 'chandi', 'kundankari'],
+      url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['fashion', 'clothes', 'saree', 'apparel', 'boutique', 'style', 'kapda', 'kurta', 'lehenga', 'suit'],
+      url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['fitness', 'gym', 'health', 'yoga', 'workout', 'wellness', 'exercise'],
+      url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['real estate', 'property', 'home', 'house', 'interior', 'flat', 'makan', 'plot', 'zameen', 'ghar'],
+      url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['tech', 'software', 'digital', 'ai', 'modern', 'laptop', 'agency', 'mobile'],
+      url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    },
+  ];
+
+  for (const item of curatedCollection) {
+    if (item.keywords.some((k) => lower.includes(k))) {
+      return item.url;
+    }
+  }
+
+  // Universal premium commercial backdrop
+  return 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
+}

@@ -81,7 +81,7 @@ export const TemplateCreateModal = ({
   return createPortal(
     <div
       id="template-create-modal-overlay"
-      className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+      className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-4 md:p-6 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose && !isUploading) {
           onClose();
@@ -90,24 +90,24 @@ export const TemplateCreateModal = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#131B2A] border border-[#2C384E] rounded-3xl shadow-2xl overflow-hidden text-slate-100 my-auto"
+        className="relative w-full max-w-5xl max-h-[94vh] flex flex-col bg-[#131B2A] border border-[#2C384E] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden text-slate-100 my-auto"
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#2C384E] bg-[#0B0F17]/70 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
-              <Upload className="w-5 h-5" />
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-5 border-b border-[#2C384E] bg-[#0B0F17]/70 shrink-0 gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shrink-0">
+              <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-heading font-extrabold text-lg sm:text-xl text-white">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-heading font-extrabold text-base sm:text-xl text-white truncate">
                   Upload Base Graphic Template
                 </h2>
-                <span className="text-[10px] font-black uppercase bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-black uppercase bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full shrink-0">
                   1080×1080 HD
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
                 Create master graphic backgrounds used by tenant businesses to composite brand frames.
               </p>
             </div>
@@ -118,7 +118,7 @@ export const TemplateCreateModal = ({
               type="button"
               onClick={onClose}
               disabled={isUploading}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition border border-transparent hover:border-[#2C384E] disabled:opacity-40"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition border border-transparent hover:border-[#2C384E] disabled:opacity-40 shrink-0 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
               title="Close Modal"
             >
               <X className="w-5 h-5" />
@@ -127,15 +127,15 @@ export const TemplateCreateModal = ({
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
+        <div className="p-3.5 sm:p-6 overflow-y-auto custom-scrollbar space-y-4 sm:space-y-6">
           {errorMsg && <Alert variant="error" message={errorMsg} />}
 
-          <form onSubmit={handleFormSubmit} id="templateCreateForm" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <form onSubmit={handleFormSubmit} id="templateCreateForm" className="space-y-5 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
               {/* Left Column: Form Controls (7 cols) */}
-              <div className="lg:col-span-7 space-y-5">
+              <div className="lg:col-span-7 space-y-4 sm:space-y-5">
                 {/* Step 1: Basic Metadata */}
-                <Card className="p-5 space-y-4 bg-[#0B0F17]/60 border-[#2C384E] rounded-2xl">
+                <Card className="p-3.5 sm:p-5 space-y-3.5 sm:space-y-4 bg-[#0B0F17]/60 border-[#2C384E] rounded-2xl">
                   <div className="flex items-center gap-2 border-b border-[#2C384E] pb-2.5">
                     <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold">
                       1
@@ -215,20 +215,20 @@ export const TemplateCreateModal = ({
                     </div>
                   )}
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                  <div className="flex flex-col min-[440px]:flex-row min-[440px]:items-center justify-between gap-2 pt-1">
                     <div className="flex items-center gap-2">
-                      <FolderTree className="w-3.5 h-3.5 text-amber-400" />
+                      <FolderTree className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                       <span className="text-xs font-bold text-white uppercase tracking-wider">
                         Categories (8 / page)
                       </span>
-                      <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700">
+                      <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 shrink-0">
                         {catPage} / {catTotalPages}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <div className="relative">
-                        <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" />
+                    <div className="flex items-center gap-1.5 w-full min-[440px]:w-auto justify-between min-[440px]:justify-end">
+                      <div className="relative flex-1 min-[440px]:flex-initial">
+                        <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
                         <input
                           type="text"
                           placeholder="Search categories..."
@@ -237,16 +237,16 @@ export const TemplateCreateModal = ({
                             if (setCatSearch) setCatSearch(e.target.value);
                             if (setCatPage) setCatPage(1);
                           }}
-                          className="pl-7 pr-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-36"
+                          className="pl-7 pr-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-full min-[440px]:w-36"
                         />
                       </div>
 
-                      <div className="flex items-center gap-0.5">
+                      <div className="flex items-center gap-0.5 shrink-0">
                         <button
                           type="button"
                           disabled={catPage <= 1}
                           onClick={() => setCatPage && setCatPage((p) => Math.max(1, p - 1))}
-                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30"
+                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 min-h-[28px] min-w-[28px] flex items-center justify-center cursor-pointer"
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
@@ -254,7 +254,7 @@ export const TemplateCreateModal = ({
                           type="button"
                           disabled={catPage >= catTotalPages}
                           onClick={() => setCatPage && setCatPage((p) => Math.min(catTotalPages, p + 1))}
-                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30"
+                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 min-h-[28px] min-w-[28px] flex items-center justify-center cursor-pointer"
                         >
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>
@@ -263,7 +263,7 @@ export const TemplateCreateModal = ({
                   </div>
 
                   {/* Category Pills */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-2 custom-scrollbar">
+                  <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-2 custom-scrollbar -mx-1 px-1">
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, category: 'NEW', templateCategoryId: '', selectedCategoryObj: null })}
@@ -356,20 +356,20 @@ export const TemplateCreateModal = ({
                     </div>
                   )}
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                  <div className="flex flex-col min-[440px]:flex-row min-[440px]:items-center justify-between gap-2 pt-1">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                      <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       <span className="text-xs font-bold text-white uppercase tracking-wider">
                         Festivals (8 / page)
                       </span>
-                      <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700">
+                      <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 shrink-0">
                         {festPage} / {festTotalPages}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <div className="relative">
-                        <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2" />
+                    <div className="flex items-center gap-1.5 w-full min-[440px]:w-auto justify-between min-[440px]:justify-end">
+                      <div className="relative flex-1 min-[440px]:flex-initial">
+                        <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
                         <input
                           type="text"
                           placeholder="Search festivals..."
@@ -378,16 +378,16 @@ export const TemplateCreateModal = ({
                             if (setFestSearch) setFestSearch(e.target.value);
                             if (setFestPage) setFestPage(1);
                           }}
-                          className="pl-7 pr-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-36"
+                          className="pl-7 pr-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-white text-[11px] placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-full min-[440px]:w-36"
                         />
                       </div>
 
-                      <div className="flex items-center gap-0.5">
+                      <div className="flex items-center gap-0.5 shrink-0">
                         <button
                           type="button"
                           disabled={festPage <= 1}
                           onClick={() => setFestPage && setFestPage((p) => Math.max(1, p - 1))}
-                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30"
+                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 min-h-[28px] min-w-[28px] flex items-center justify-center cursor-pointer"
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
@@ -395,7 +395,7 @@ export const TemplateCreateModal = ({
                           type="button"
                           disabled={festPage >= festTotalPages}
                           onClick={() => setFestPage && setFestPage((p) => Math.min(festTotalPages, p + 1))}
-                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30"
+                          className="p-1 rounded-md bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-30 min-h-[28px] min-w-[28px] flex items-center justify-center cursor-pointer"
                         >
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>
@@ -404,7 +404,7 @@ export const TemplateCreateModal = ({
                   </div>
 
                   {/* Festival Pills */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-2 custom-scrollbar">
+                  <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-2 custom-scrollbar -mx-1 px-1">
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, festivalId: '', selectedFestivalObj: null })}
@@ -536,13 +536,13 @@ export const TemplateCreateModal = ({
                     </span>
                   </div>
 
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden border border-[#2C384E] bg-[#131B2A] flex items-center justify-center shadow-inner">
+                  <div className={`relative aspect-square w-full max-w-[320px] sm:max-w-none mx-auto rounded-xl overflow-hidden flex items-center justify-center shadow-2xl ${formData.baseImageUrl ? 'border-2 border-amber-500/80 bg-slate-950' : 'border border-[#2C384E] bg-[#131B2A]'}`}>
                     {formData.baseImageUrl ? (
                       <>
                         <img
                           src={formData.baseImageUrl}
                           alt="Graphic Preview"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                         <span className="absolute bottom-2.5 right-2.5 text-[10px] font-extrabold bg-black/80 text-white px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/10">
                           1080×1080 HD
@@ -577,12 +577,12 @@ export const TemplateCreateModal = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
+        <div className="flex flex-col-reverse min-[420px]:flex-row items-stretch min-[420px]:items-center justify-end gap-2.5 sm:gap-3 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={isUploading}
-            className="px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
+            className="w-full min-[420px]:w-auto px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none min-h-[40px] flex items-center justify-center transition"
           >
             Cancel
           </button>
@@ -592,7 +592,7 @@ export const TemplateCreateModal = ({
             form="templateCreateForm"
             isLoading={isUploading}
             icon={Sparkles}
-            className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-xs"
+            className="w-full min-[420px]:w-auto px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-xs min-h-[40px] justify-center"
           >
             Publish Template
           </Button>

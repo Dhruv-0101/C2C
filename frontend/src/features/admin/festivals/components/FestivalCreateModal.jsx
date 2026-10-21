@@ -25,30 +25,31 @@ export const FestivalCreateModal = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in">
       {/* Navigation Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-5">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-[#2C384E] pb-4 sm:pb-5">
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap min-w-0">
           <button
             type="button"
             onClick={onBack}
-            className="p-2.5 rounded-2xl bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-400 transition flex items-center gap-2 font-semibold text-xs shadow-md"
+            className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-400 transition flex items-center gap-2 font-semibold text-xs shadow-md shrink-0 cursor-pointer min-h-[38px]"
           >
             <ArrowLeft className="w-4 h-4 text-amber-400" />
             <span>Back to Festival List</span>
           </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-heading font-extrabold text-2xl text-white">
-                {editingFestival ? "Edit Festival Event" : "Add New Festival Event"}
-              </h2>
-              {/* <span className="text-[10px] font-black uppercase bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full">
-                Full-Screen Creator
-              </span> */}
-            </div>
+          <div className="min-w-0">
+            <h2 className="font-heading font-extrabold text-lg sm:text-2xl text-white truncate">
+              {editingFestival ? "Edit Festival Event" : "Add New Festival Event"}
+            </h2>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" type="button" onClick={onBack} disabled={isSubmitting}>
+        <div className="flex flex-col-reverse min-[380px]:flex-row items-stretch min-[380px]:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={onBack}
+            disabled={isSubmitting}
+            className="w-full min-[380px]:w-auto min-h-[40px] justify-center text-xs"
+          >
             Cancel
           </Button>
           <Button
@@ -57,7 +58,7 @@ export const FestivalCreateModal = ({
             onClick={handleSaveSubmit}
             isLoading={isSubmitting}
             icon={Sparkles}
-            className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow"
+            className="w-full min-[380px]:w-auto min-h-[40px] justify-center px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-xs"
           >
             {editingFestival ? "Update Festival" : "Create Festival"}
           </Button>
@@ -70,7 +71,7 @@ export const FestivalCreateModal = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Form Controls */}
         <form onSubmit={handleSaveSubmit} className="lg:col-span-7 space-y-6">
-          <Card className="p-6 sm:p-8 space-y-6 bg-[#131B2A]/90 border-[#2C384E] rounded-3xl shadow-xl">
+          <Card className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6 bg-[#131B2A]/90 border-[#2C384E] rounded-2xl sm:rounded-3xl shadow-xl">
             {/* Step 1: Basic Festival Information */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 border-b border-[#2C384E] pb-3">
@@ -157,26 +158,26 @@ export const FestivalCreateModal = ({
                   />
                 </label>
               ) : (
-                <div className="p-4 rounded-2xl bg-[#0B0F17] border border-emerald-500/30 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0B0F17] border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                       <Check className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
                         <span>Banner Image Selected</span>
-                        <span className="text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        <span className="text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 shrink-0">
                           Ready
                         </span>
                       </h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
-                        Image loaded and displaying in the side preview panel.
+                      <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                        Image loaded and displaying in the preview panel.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <label className="px-3 py-1.5 rounded-xl bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-400 text-xs font-semibold cursor-pointer transition">
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                    <label className="px-3 py-1.5 rounded-xl bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-400 text-xs font-semibold cursor-pointer transition min-h-[34px] flex items-center justify-center">
                       <span>Change Image</span>
                       <input
                         type="file"
@@ -192,7 +193,7 @@ export const FestivalCreateModal = ({
                         setBannerPreview("");
                         setFormData({ ...formData, clearBanner: true });
                       }}
-                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs transition"
+                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs transition min-w-[34px] min-h-[34px] flex items-center justify-center cursor-pointer"
                       title="Remove Banner"
                     >
                       <X className="w-4 h-4" />
@@ -213,8 +214,8 @@ export const FestivalCreateModal = ({
                 </h3>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
-                <div>
+              <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] gap-3">
+                <div className="min-w-0 pr-2">
                   <h4 className="text-sm font-bold text-white">Visible in Content Calendar & Studio</h4>
                   <p className="text-xs text-slate-400 mt-0.5">
                     When enabled, businesses can view templates and schedule posts for this festival.
@@ -224,14 +225,20 @@ export const FestivalCreateModal = ({
                   type="checkbox"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="w-5 h-5 accent-amber-500 cursor-pointer rounded"
+                  className="w-5 h-5 accent-amber-500 cursor-pointer rounded shrink-0"
                 />
               </div>
             </div>
 
             {/* Form Footer */}
-            <div className="pt-4 border-t border-[#2C384E] flex items-center justify-end gap-3">
-              <Button variant="ghost" type="button" onClick={onBack} disabled={isSubmitting}>
+            <div className="pt-4 border-t border-[#2C384E] flex flex-col-reverse min-[380px]:flex-row items-stretch min-[380px]:items-center justify-end gap-2.5 sm:gap-3">
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={onBack}
+                disabled={isSubmitting}
+                className="w-full min-[380px]:w-auto min-h-[40px] justify-center text-xs"
+              >
                 Cancel
               </Button>
               <Button
@@ -239,7 +246,7 @@ export const FestivalCreateModal = ({
                 type="submit"
                 isLoading={isSubmitting}
                 icon={Sparkles}
-                className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-sm"
+                className="w-full min-[380px]:w-auto min-h-[40px] justify-center px-8 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-glow text-xs"
               >
                 {editingFestival ? "Update Festival" : "Create Festival"}
               </Button>
@@ -249,7 +256,7 @@ export const FestivalCreateModal = ({
 
         {/* Right Column: Clean Festival Banner Image Preview Card */}
         <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-6">
-          <Card className="p-6 space-y-4 bg-[#131B2A]/90 border-[#2C384E] rounded-3xl shadow-xl">
+          <Card className="p-4 sm:p-6 space-y-4 bg-[#131B2A]/90 border-[#2C384E] rounded-2xl sm:rounded-3xl shadow-xl">
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
               <h3 className="font-heading font-extrabold text-sm text-white flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-amber-400" />

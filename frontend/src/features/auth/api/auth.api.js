@@ -86,6 +86,17 @@ export const authApi = {
   disable2FA: () => api.post(API_ENDPOINTS.AUTH.DISABLE_2FA),
 
   /**
+   * POST /api/v1/auth/send-registration-otp
+   * Requests a 4-digit verification code to the given email before registration.
+   *
+   * @param {Object} payload
+   * @param {string} payload.email - User email address
+   * @param {string} [payload.fullName] - User full name
+   * @returns {Promise<Object>} Success message and cooldown/expiry details
+   */
+  sendRegistrationOtp: (payload) => api.post(API_ENDPOINTS.AUTH.SEND_REGISTRATION_OTP, payload),
+
+  /**
    * POST /api/v1/auth/signup
    * Registers a new user account in PostgreSQL database and initializes default AI BrandKit.
    *
@@ -93,6 +104,7 @@ export const authApi = {
    * @param {string} userData.fullName - Full name of the user/business owner
    * @param {string} userData.email - Account email address
    * @param {string} userData.password - Account password
+   * @param {string} userData.otp - 4-digit verification code sent to email
    * @returns {Promise<Object>} Created user payload and JWT session tokens
    */
   signup: (userData) => api.post(API_ENDPOINTS.AUTH.SIGNUP, userData),

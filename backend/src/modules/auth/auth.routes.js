@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireSuperAdmin, requireAdmin } from '../../common/middleware/role.middleware.js';
+import { requireSuperAdmin } from '../../common/middleware/role.middleware.js';
 import { authLimiter } from '../../common/middleware/rate-limiter.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import * as authController from './auth.controller.js';
 import {
   loginSchema,
   signupSchema,
+  sendRegistrationOtpSchema,
   googleAuthSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -15,6 +16,7 @@ import {
   updateSubAdminSchema,
   verifyLogin2FASchema,
   enable2FASchema,
+  disable2FASchema,
   getSubAdminsQuerySchema,
   getSubAdminActivityQuerySchema,
   getUsersQuerySchema,
@@ -25,6 +27,7 @@ import {
 const router = Router();
 
 // Public Authentication Endpoints
+router.post('/send-registration-otp', authLimiter, validate(sendRegistrationOtpSchema), authController.sendRegistrationOtp);
 router.post('/signup', authLimiter, validate(signupSchema), authController.signup);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/google', authLimiter, validate(googleAuthSchema), authController.googleLogin);
@@ -38,7 +41,7 @@ router.post('/logout', authController.logout);
 router.get('/me', authenticate, authController.getProfile);
 router.post('/2fa/setup', authenticate, authController.setup2FA);
 router.post('/2fa/enable', authenticate, validate(enable2FASchema), authController.enable2FA);
-router.post('/2fa/disable', authenticate, authController.disable2FA);
+router.post('/2fa/disable', authenticate, validate(disable2FASchema), authController.disable2FA);
 
 // Admin Directory Endpoints
 router.post('/subadmin', authenticate, requireSuperAdmin, validate(createSubAdminSchema), authController.createSubAdmin);
@@ -46,7 +49,7 @@ router.get('/subadmins', authenticate, requireSuperAdmin, validate(getSubAdminsQ
 router.get('/subadmins/activity', authenticate, requireSuperAdmin, validate(getSubAdminActivityQuerySchema), authController.getSubAdminActivity);
 router.put('/subadmin/:id', authenticate, requireSuperAdmin, validate(updateSubAdminSchema), authController.updateSubAdmin);
 router.delete('/subadmin/:id', authenticate, requireSuperAdmin, validate(deleteSubAdminSchema), authController.deleteSubAdmin);
-router.get('/users', authenticate, requireAdmin, validate(getUsersQuerySchema), authController.getUsers);
-router.patch('/users/:userId/status', authenticate, requireAdmin, validate(toggleUserStatusSchema), authController.toggleUserStatus);
+router.get('/users', authenticate, requireSuperAdmin, validate(getUsersQuerySchema), authController.getUsers);
+router.patch('/users/:userId/status', authenticate, requireSuperAdmin, validate(toggleUserStatusSchema), authController.toggleUserStatus);
 
 export default router;

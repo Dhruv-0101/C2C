@@ -261,7 +261,7 @@ export const FilterSearchablePicker = ({
           {selectedId && (
             <span
               onClick={handleClear}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
               title={`Clear ${label} filter`}
             >
               <X className="w-3.5 h-3.5" />
@@ -279,7 +279,7 @@ export const FilterSearchablePicker = ({
 
       {/* Floating Popover Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 sm:min-w-[300px] mt-1.5 z-50 rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] shadow-2xl p-2.5 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute top-full left-0 right-0 sm:right-auto sm:min-w-[280px] sm:max-w-xs max-w-[calc(100vw-2rem)] mt-1.5 z-50 rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] shadow-2xl p-2.5 space-y-2 animate-in fade-in zoom-in-95 duration-150">
           {/* Search Input */}
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />

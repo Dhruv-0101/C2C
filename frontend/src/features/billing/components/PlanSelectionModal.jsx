@@ -180,15 +180,15 @@ export const PlanSelectionModal = ({
   };
 
   return createPortal(
-    <div className="modal-backdrop-overlay fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-4xl bg-[#131B2A] border border-[#2C384E] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 my-auto">
+    <div className="modal-backdrop-overlay fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-5 md:p-6 animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-4xl max-h-[92dvh] bg-[#131B2A] border border-[#2C384E] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl space-y-4 sm:space-y-6 my-auto flex flex-col overflow-hidden">
         {/* Header Section */}
-        <div className="flex items-start justify-between border-b border-[#2C384E] pb-4">
+        <div className="flex items-start justify-between border-b border-[#2C384E] pb-4 shrink-0">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 text-xs font-bold uppercase tracking-wider mb-2">
               <Lock className="w-3.5 h-3.5" /> Plan Required To Create & Schedule Posts
             </div>
-            <h2 className="text-2xl font-heading font-extrabold text-white flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-heading font-extrabold text-white flex items-center gap-2">
               <span>Choose Subscription Plan</span>
             </h2>
             <p className="text-xs text-slate-400 mt-1">
@@ -198,57 +198,58 @@ export const PlanSelectionModal = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer"
+            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {errorMsg && (
-          <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-semibold text-center">
-            ⚠️ {errorMsg}
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-0.5 sm:pr-1 space-y-4 sm:space-y-6">
+          {errorMsg && (
+            <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-semibold text-center">
+              ⚠️ {errorMsg}
+            </div>
+          )}
+
+          {/* Currency Switcher Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
+            <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <CreditCard className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Select Payment Currency:</span>
+            </span>
+            <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setCurrency('INR')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 min-h-[36px] ${
+                  currency === 'INR'
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+                    : 'bg-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                <IndianRupee className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">INR (₹ Razorpay)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCurrency('USD')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 min-h-[36px] ${
+                  currency === 'USD'
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+                    : 'bg-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                <DollarSign className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">USD ($ Stripe)</span>
+              </button>
+            </div>
           </div>
-        )}
 
-        {/* Currency Switcher Bar */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-[#0B0F17] border border-[#2C384E]">
-          <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-            <CreditCard className="w-4 h-4 text-amber-400" />
-            Select Payment Currency:
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setCurrency('INR')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
-                currency === 'INR'
-                  ? 'bg-amber-500 text-slate-950 shadow-md'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
-              }`}
-            >
-              <IndianRupee className="w-3.5 h-3.5" />
-              <span>INR (₹ - Razorpay)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrency('USD')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
-                currency === 'USD'
-                  ? 'bg-amber-500 text-slate-950 shadow-md'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
-              }`}
-            >
-              <DollarSign className="w-3.5 h-3.5" />
-              <span>USD ($ - Stripe)</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Plan Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* CARD 1: FREE PLAN */}
-          <div className="relative p-6 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col justify-between space-y-5">
+          {/* Plan Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* CARD 1: FREE PLAN */}
+            <div className="relative p-4 sm:p-6 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col justify-between space-y-4 sm:space-y-5">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold uppercase">
@@ -293,9 +294,9 @@ export const PlanSelectionModal = ({
           </div>
 
           {/* CARD 2: PAID PRO PLAN WITH INTERACTIVE SLIDER */}
-          <div className="relative p-6 rounded-2xl bg-gradient-to-b from-[#1E293B] to-[#0B0F17] border-2 border-amber-500/60 shadow-xl space-y-5 flex flex-col justify-between">
+          <div className="relative p-4 sm:p-6 rounded-2xl bg-gradient-to-b from-[#1E293B] to-[#0B0F17] border-2 border-amber-500/60 shadow-xl space-y-4 sm:space-y-5 flex flex-col justify-between">
             {/* Top Recommended Pill */}
-            <div className="absolute -top-3.5 right-6 px-3 py-0.5 rounded-full bg-amber-500 text-slate-950 font-extrabold text-[10px] uppercase tracking-wider shadow-md">
+            <div className="absolute -top-3.5 right-4 sm:right-6 px-3 py-0.5 rounded-full bg-amber-500 text-slate-950 font-extrabold text-[10px] uppercase tracking-wider shadow-md">
               ⚡ MOST POPULAR & DISCOUNTED
             </div>
 
@@ -329,7 +330,7 @@ export const PlanSelectionModal = ({
               </div>
 
               {/* Interactive Post Count Slider */}
-              <div className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2.5 sm:space-y-3">
                 <div className="flex justify-between items-center text-xs font-bold">
                   <span className="text-slate-300 flex items-center gap-1">
                     <Sliders className="w-3.5 h-3.5 text-amber-400" /> Select Post Quota:
@@ -349,10 +350,10 @@ export const PlanSelectionModal = ({
                   className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
 
-                <div className="flex justify-between text-[10px] font-semibold text-slate-500">
-                  <span>10 Posts (10% OFF)</span>
-                  <span>50 Posts (20% OFF)</span>
-                  <span>100 Posts (30% OFF)</span>
+                <div className="flex justify-between text-[9px] min-[380px]:text-[10px] font-semibold text-slate-500">
+                  <span>10 (10% OFF)</span>
+                  <span>50 (20% OFF)</span>
+                  <span>100 (30% OFF)</span>
                 </div>
               </div>
 
@@ -398,6 +399,7 @@ export const PlanSelectionModal = ({
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Official Stripe Card Checkout Modal */}

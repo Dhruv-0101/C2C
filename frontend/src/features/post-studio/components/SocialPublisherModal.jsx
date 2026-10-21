@@ -197,7 +197,7 @@ export const SocialPublisherModal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -313,7 +313,7 @@ export const SocialPublisherModal = ({
               <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
                 1. Target Social Platforms
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-2">
                 {SOCIAL_PLATFORMS.map((platform) => {
                   const isSelected = selectedPlatforms.includes(platform.id);
                   const isConnected = platformConnectionMap[platform.id];
@@ -397,7 +397,7 @@ export const SocialPublisherModal = ({
               <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
                 3. Execution Mode
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 min-[340px]:grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setPublishMode("NOW")}
@@ -509,8 +509,8 @@ export const SocialPublisherModal = ({
             )}
 
             {/* Action Submit Button */}
-            <div className="pt-2.5 border-t border-[#2C384E] flex items-center justify-end gap-2">
-              <Button variant="ghost" type="button" onClick={onClose} disabled={isSubmitting} className="py-1.5 px-3 text-xs">
+            <div className="pt-2.5 border-t border-[#2C384E] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
+              <Button variant="ghost" type="button" onClick={onClose} disabled={isSubmitting} className="py-2 px-3 text-xs justify-center min-h-[38px]">
                 Cancel
               </Button>
               <Button
@@ -518,7 +518,7 @@ export const SocialPublisherModal = ({
                 type="submit"
                 isLoading={isSubmitting}
                 icon={publishMode === "NOW" ? Send : Calendar}
-                className="py-1.5 px-4 text-xs font-bold"
+                className="py-2 px-4 text-xs font-bold justify-center min-h-[38px]"
               >
                 {publishMode === "NOW" ? "Publish Immediately" : "Schedule Post"}
               </Button>

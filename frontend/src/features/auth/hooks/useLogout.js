@@ -13,9 +13,16 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => authApi.logout(),
+    mutationFn: async () => {
+      try {
+        await authApi.logout();
+      } catch (err) {
+        // Server session may already be dead or expired - proceeding with local cleanup
+        console.warn('Backend logout failed, proceeding with local purge:', err);
+      }
+    },
     onSettled: () => {
-      // Always purge state even if server logout request fails
+      // Always purge state and clean up storage/queries
       dispatch(logoutState());
       queryClient.clear();
       navigate('/login', { replace: true });

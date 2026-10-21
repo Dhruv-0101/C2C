@@ -141,9 +141,12 @@ export async function publishNow(userId, payload) {
  * @returns {Promise<{ post: Object, scheduledPost: Object }>}
  */
 export async function schedulePost(userId, payload) {
-  const post = await createPost(userId, { ...payload, status: POST_STATUS.SCHEDULED });
-
   const scheduledDate = new Date(payload.scheduledAt);
+  if (Number.isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now()) {
+    throw new BadRequestError('Scheduled date/time must be a valid timestamp in the future.');
+  }
+
+  const post = await createPost(userId, { ...payload, status: POST_STATUS.SCHEDULED });
 
   const scheduledPost = await postRepository.createScheduledPost({
     postId: post.id,
@@ -206,13 +209,9 @@ export async function createPost(userId, payload, fileBuffer) {
     }
   }
 
-  // 1. Enforce post quota: user must have available post credits (validity is based on remaining posts)
-  const sub = await billingRepository.findByUserId(userId);
-  const planRemaining = Math.max(0, (sub?.totalPostsAllowed || 0) - (sub?.postsUsed || 0));
-  const bonusRemaining = Math.max(0, (sub?.bonusPostsAllowed || 0) - (sub?.bonusPostsUsed || 0));
-  const postsRemaining = planRemaining + bonusRemaining;
-
-  if (!sub || postsRemaining <= 0) {
+  // 1. Enforce post quota: Atomically deduct 1 post credit with ACID transaction safety (Prevents TOCTOU race conditions)
+  const deductionResult = await billingRepository.deductPostCreditAtomic(userId);
+  if (!deductionResult.success) {
     throw new ForbiddenError(
       'Your post quota has been exhausted. Please purchase a plan or post credits to continue creating or scheduling posts.'
     );
@@ -242,18 +241,20 @@ export async function createPost(userId, payload, fileBuffer) {
     ? payload.hashtags
     : (payload.caption ? extractHashtags(payload.caption) : []);
 
-  const createdPost = await postRepository.createWithVault(postData, {
-    occasionName: payload.occasionName,
-    categoryName: payload.categoryName,
-    targetPlatforms: payload.targetPlatforms,
-    caption: payload.caption || null,
-    hashtags: resolvedHashtags,
-  });
-
-  // 2. Consume 1 post credit immediately upon post creation
-  await billingRepository.incrementPostsUsed(userId).catch((err) => {
-    logger.warn(`Failed to increment post quota for user ${userId}: ${err.message}`);
-  });
+  let createdPost;
+  try {
+    createdPost = await postRepository.createWithVault(postData, {
+      occasionName: payload.occasionName,
+      categoryName: payload.categoryName,
+      targetPlatforms: payload.targetPlatforms,
+      caption: payload.caption || null,
+      hashtags: resolvedHashtags,
+    });
+  } catch (postErr) {
+    // Compensating transaction: refund post credit if database insertion fails
+    await billingRepository.refundPostCreditAtomic(userId);
+    throw postErr;
+  }
 
   // Purge user's cached billing status to reflect newly decremented quota in real time
   deleteCachePattern(CACHE_KEYS.BILLING_PATTERN(userId)).catch(() => {});
@@ -320,14 +321,18 @@ export async function getAdminPostAnalytics() {
 export async function deletePost(id, userOrUserId) {
   const userId = typeof userOrUserId === 'object' ? userOrUserId?.id : userOrUserId;
   const role = typeof userOrUserId === 'object' ? userOrUserId?.role : null;
+  const isSuperAdmin = typeof userOrUserId === 'object' ? Boolean(userOrUserId?.isSuperAdmin) : false;
+  const isSubAdmin = typeof userOrUserId === 'object' ? Boolean(userOrUserId?.isSubAdmin) : false;
+  const allowedTabs = typeof userOrUserId === 'object' && Array.isArray(userOrUserId?.allowedTabs) ? userOrUserId.allowedTabs : [];
 
   const post = await postRepository.findById(id);
   if (!post) {
     throw new NotFoundError('Post not found');
   }
 
-  // Authorization: Creator or Enterprise Admin
-  if (role !== 'ADMIN' && post.userId !== userId) {
+  // 🛡️ Authorization: Creator or Enterprise Admin with Posts clearance
+  const canAdminDelete = isSuperAdmin || role === 'ADMIN' || (isSubAdmin && allowedTabs.includes('posts'));
+  if (!canAdminDelete && post.userId !== userId) {
     throw new ForbiddenError('You do not have permission to delete this post');
   }
 
@@ -337,7 +342,7 @@ export async function deletePost(id, userOrUserId) {
     );
   }
 
-  return postRepository.deletePostById(id, role === 'ADMIN' ? null : userId);
+  return postRepository.deletePostById(id, canAdminDelete ? null : userId);
 }
 
 /**

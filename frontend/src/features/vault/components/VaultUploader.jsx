@@ -76,13 +76,13 @@ export const VaultUploader = ({ onUploadSuccess, className = '' }) => {
   };
 
   return (
-    <div className={`p-6 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-4 ${className}`}>
+    <div className={`p-4 sm:p-6 rounded-2xl bg-[#0B0F17] border border-[#2C384E] space-y-4 ${className}`}>
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+        className={`border-2 border-dashed rounded-xl p-5 sm:p-8 text-center cursor-pointer transition-all ${
           isDragging
             ? 'border-amber-400 bg-amber-500/5'
             : 'border-slate-700 hover:border-slate-500 bg-slate-900/30'
@@ -103,12 +103,12 @@ export const VaultUploader = ({ onUploadSuccess, className = '' }) => {
               alt="Preview"
               className="max-h-48 mx-auto rounded-xl object-contain shadow-lg border border-slate-700"
             />
-            <p className="text-xs text-slate-300 font-semibold">{selectedFile?.name}</p>
+            <p className="text-xs text-slate-300 font-semibold truncate max-w-xs mx-auto">{selectedFile?.name}</p>
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
-              <UploadCloud className="w-6 h-6" />
+            <div className="w-11 h-11 sm:w-12 sm:h-12 mx-auto rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+              <UploadCloud className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-200">
@@ -128,8 +128,8 @@ export const VaultUploader = ({ onUploadSuccess, className = '' }) => {
       )}
 
       {selectedFile && (
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <Button variant="outline" size="sm" onClick={handleClear} disabled={isUploading}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-2">
+          <Button variant="outline" size="sm" onClick={handleClear} disabled={isUploading} className="w-full sm:w-auto justify-center min-h-[38px]">
             <X className="w-4 h-4 mr-1" />
             Cancel
           </Button>
@@ -138,7 +138,7 @@ export const VaultUploader = ({ onUploadSuccess, className = '' }) => {
             size="sm"
             onClick={handleUpload}
             isLoading={isUploading}
-            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold"
+            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold w-full sm:w-auto justify-center min-h-[38px]"
           >
             Upload to Vault
           </Button>

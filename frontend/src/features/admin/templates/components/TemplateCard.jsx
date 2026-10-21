@@ -39,10 +39,10 @@ export const TemplateCard = ({
             e.stopPropagation();
             onViewPosts && onViewPosts(template);
           }}
-          className="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-950/75 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-400/50 backdrop-blur-md text-slate-200 hover:text-amber-300 transition-all shadow-md cursor-pointer text-[10px] font-semibold group/btn"
+          className="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 min-h-[28px] rounded-xl bg-slate-950/75 hover:bg-slate-900 border border-slate-700/60 hover:border-amber-400/50 backdrop-blur-md text-slate-200 hover:text-amber-300 transition-all shadow-md cursor-pointer text-[10px] font-semibold group/btn"
           title={`View ${postCount} posts created with this template`}
         >
-          <Sparkles className="w-3 h-3 text-amber-400 group-hover/btn:scale-110 transition-transform" />
+          <Sparkles className="w-3 h-3 text-amber-400 group-hover/btn:scale-110 transition-transform shrink-0" />
           <span>{postCount}</span>
           <span className="text-[9px] text-slate-400 group-hover/btn:text-amber-300/80 font-normal">
             {postCount === 1 ? 'post' : 'posts'}
@@ -58,7 +58,7 @@ export const TemplateCard = ({
               e.stopPropagation();
               onDelete(template);
             }}
-            className="absolute top-2 right-2 z-10 p-2 rounded-xl bg-slate-950/70 hover:bg-rose-600 text-rose-400 hover:text-white border border-slate-700/60 hover:border-rose-500 backdrop-blur-md transition-all shadow-md cursor-pointer disabled:opacity-50"
+            className="absolute top-2 right-2 z-10 min-w-[36px] min-h-[36px] p-2 rounded-xl bg-slate-950/70 hover:bg-rose-600 text-rose-400 hover:text-white border border-slate-700/60 hover:border-rose-500 backdrop-blur-md transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center"
             title="Delete Template"
           >
             {isDeleting ? (
@@ -81,12 +81,12 @@ export const TemplateCard = ({
       </div>
 
       {/* Card Info */}
-      <div className="p-3 space-y-1.5">
+      <div className="p-2.5 sm:p-3 space-y-1 sm:space-y-1.5 min-w-0">
         <h4 className="text-xs font-bold text-white truncate" title={title}>
           {title}
         </h4>
-        <div className="flex items-center justify-between gap-2 pt-0.5 text-[10px]">
-          <span className="text-slate-400 truncate">
+        <div className="flex items-center justify-between gap-1.5 pt-0.5 text-[10px]">
+          <span className="text-slate-400 truncate flex-1 min-w-0">
             {template.templateCategory?.name || template.category || 'General'}
           </span>
           <button

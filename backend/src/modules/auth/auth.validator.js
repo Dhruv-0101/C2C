@@ -28,11 +28,19 @@ export const getUsersQuerySchema = z.object({
   query: paginationQuerySchema,
 });
 
+export const sendRegistrationOtpSchema = z.object({
+  body: z.object({
+    email: z.string().email('Please enter a valid email address'),
+    fullName: z.string().max(100).optional(),
+  }),
+});
+
 export const signupSchema = z.object({
   body: z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100),
     email: z.string().email('Please enter a valid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters').max(100),
+    otp: z.string().length(4, 'Verification code must be exactly 4 digits'),
   }),
 });
 
@@ -55,6 +63,17 @@ export const enable2FASchema = z.object({
   body: z.object({
     code: z.string().min(6, '6-digit code from your authenticator app is required'),
   }),
+});
+
+export const disable2FASchema = z.object({
+  body: z
+    .object({
+      password: z.string().optional(),
+      code: z.string().optional(),
+    })
+    .refine((data) => data.password || data.code, {
+      message: 'Either your current account password or 6-digit authenticator code is required to disable 2FA.',
+    }),
 });
 
 export const refreshTokenSchema = z.object({

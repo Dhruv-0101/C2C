@@ -6,5 +6,6 @@ export * from './TopProgressBar';
 export * from './SkeletonLoader';
 export * from './EmptyState';
 export * from './FeedbackModal';
+export * from './CreativeStudioLoader';
 
 

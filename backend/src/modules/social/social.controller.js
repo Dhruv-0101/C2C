@@ -13,7 +13,7 @@ import {
   getSocialOnboardingStatus as getSocialOnboardingStatusLogic,
   adminUpdateOnboardingStatus as adminUpdateOnboardingStatusLogic,
 } from './social.logic.js';
-import { resolveClientUrl } from './social.helper.js';
+import { resolveClientUrl, verifySignedOAuthState } from './social.helper.js';
 
 /**
  * GET /api/v1/social/auth-url/instagram
@@ -67,12 +67,15 @@ export const handleLinkedinCallback = async (req, res, next) => {
 
     let userId = req.user?.id;
 
-    if (!userId && state) {
-      try {
-        const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+    if (state) {
+      const decoded = verifySignedOAuthState(state);
+      if (!decoded) {
+        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent('Security verification failed: Invalid or expired OAuth state.')}`);
+      }
+      if (!userId) {
         userId = decoded.userId;
-      } catch {
-        // ignore parse error
+      } else if (userId !== decoded.userId) {
+        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent('Security verification failed: User account mismatch.')}`);
       }
     }
 
@@ -105,12 +108,15 @@ export const handleMetaCallback = async (req, res, next) => {
 
     let userId = req.user?.id;
 
-    if (!userId && state) {
-      try {
-        const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+    if (state) {
+      const decoded = verifySignedOAuthState(state);
+      if (!decoded) {
+        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent('Security verification failed: Invalid or expired OAuth state.')}`);
+      }
+      if (!userId) {
         userId = decoded.userId;
-      } catch {
-        // ignore parse error
+      } else if (userId !== decoded.userId) {
+        return res.redirect(`${clientUrl}/brand-kit?error=${encodeURIComponent('Security verification failed: User account mismatch.')}`);
       }
     }
 

@@ -217,11 +217,11 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
 
   return createPortal(
     <>
-      <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+      <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-2.5 sm:p-4 md:p-6 overflow-y-auto animate-in fade-in duration-200">
         <div className="bg-[#131B2A] border border-[#2C384E] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto max-h-[92vh]">
           {/* Left Column: Live Canvas Preview */}
-          <div className="md:w-1/2 bg-[#0B0F17] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">
-            <div className="relative aspect-square w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-950 flex items-center justify-center">
+          <div className="md:w-1/2 bg-[#0B0F17] p-4 sm:p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-[#2C384E] overflow-y-auto">
+            <div className="relative aspect-square w-full max-w-[280px] min-[420px]:max-w-sm rounded-2xl overflow-hidden border-2 border-amber-500/80 shadow-2xl bg-slate-950 flex items-center justify-center">
               {isRendering && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 text-amber-400 text-xs font-semibold space-y-2">
                   <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full" />
@@ -249,7 +249,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
           </div>
 
           {/* Right Column: Customization Controls */}
-          <div className="md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto space-y-5">
+          <div className="md:w-1/2 p-4 sm:p-6 flex flex-col justify-between overflow-y-auto space-y-5">
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
               <div>
                 <h3 className="font-heading font-extrabold text-lg text-white">Create Custom Graphic Post</h3>
@@ -257,7 +257,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -682,32 +682,32 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Bottom Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-[#2C384E]">
-            <Button
-              variant="outline"
-              size="lg"
-              icon={BookmarkCheck}
-              onClick={handleSaveToDb}
-              isLoading={isSaving}
-              disabled={!dataUrl || isRendering}
-              className="w-full sm:w-auto text-xs"
-            >
-              Save Post to DB
-            </Button>
+            {/* Bottom Action Bar */}
+            <div className="sticky bottom-0 bg-[#131B2A]/95 backdrop-blur-md pt-3 pb-1 border-t border-[#2C384E] flex flex-col sm:flex-row items-center gap-2.5 mt-auto z-10">
+              <Button
+                variant="outline"
+                size="lg"
+                icon={BookmarkCheck}
+                onClick={handleSaveToDb}
+                isLoading={isSaving}
+                disabled={!dataUrl || isRendering}
+                className="w-full sm:w-auto text-xs min-h-[38px] justify-center"
+              >
+                Save Post to DB
+              </Button>
 
-            <Button
-              variant="primary"
-              size="lg"
-              icon={Download}
-              onClick={handleDownloadHD}
-              disabled={!dataUrl || isRendering}
-              className="w-full sm:flex-1 text-xs"
-            >
-              Download HD Post (PNG)
-            </Button>
+              <Button
+                variant="primary"
+                size="lg"
+                icon={Download}
+                onClick={handleDownloadHD}
+                disabled={!dataUrl || isRendering}
+                className="w-full sm:flex-1 text-xs min-h-[38px] justify-center"
+              >
+                Download HD Post (PNG)
+              </Button>
+            </div>
           </div>
         </div>
       </div>

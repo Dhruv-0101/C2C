@@ -116,41 +116,41 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* 1. Modal Header: User Info & Subscription Badge */}
-        <div className="p-5 sm:p-6 border-b border-[#2C384E] flex items-center justify-between gap-4 shrink-0 bg-[#0B0F17]">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0 shadow-sm">
-              <Receipt className="w-6 h-6" />
+        <div className="p-3.5 sm:p-5 md:p-6 border-b border-[#2C384E] flex items-start sm:items-center justify-between gap-3 shrink-0 bg-[#0B0F17]">
+          <div className="flex items-start sm:items-center gap-3 min-w-0">
+            <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0 shadow-sm mt-0.5 sm:mt-0">
+              <Receipt className="w-5 sm:w-6 h-5 sm:h-6" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-heading font-extrabold text-lg text-white truncate">
+                <h3 className="font-heading font-extrabold text-base sm:text-lg text-white truncate max-w-[180px] sm:max-w-none">
                   {user.fullName}
                 </h3>
                 {user.brandKit?.businessName && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/30">
-                    <Building2 className="w-3 h-3 text-amber-400" />
-                    <span>{user.brandKit.businessName}</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/30 truncate max-w-[150px]">
+                    <Building2 className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span className="truncate">{user.brandKit.businessName}</span>
                   </span>
                 )}
                 {isPro ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[10px] font-bold uppercase">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[10px] font-bold uppercase shrink-0">
                     <Zap className="w-3 h-3 fill-indigo-400" /> Pro Plan ({currencySym}{sub.pricePaid})
                   </span>
                 ) : isFree ? (
-                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold uppercase">
+                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold uppercase shrink-0">
                     Free Plan
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px] uppercase">
+                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px] uppercase shrink-0">
                     No Plan
                   </span>
                 )}
                 <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-mono font-bold shrink-0">
-                  {totalTransactionsCount} {totalTransactionsCount === 1 ? "Transaction" : "Transactions"}
+                  {totalTransactionsCount} {totalTransactionsCount === 1 ? "Record" : "Records"}
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-mono mt-0.5 truncate">
-                {user.email} • ID: {user.id}
+                {user.email} • ID: {user.id?.slice(0, 12)}...
               </p>
             </div>
           </div>
@@ -158,7 +158,7 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
             title="Close Modal"
           >
             <X className="w-5 h-5" />
@@ -166,7 +166,7 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
         </div>
 
         {/* 2. Top Summary Pulse Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-[#0E1522] border-b border-[#2C384E] shrink-0 text-xs">
+        <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 p-3.5 sm:p-4 bg-[#0E1522] border-b border-[#2C384E] shrink-0 text-xs">
           <div className="p-3 rounded-xl bg-[#131B2A] border border-[#2C384E]/70 space-y-1">
             <span className="text-[10px] text-slate-400 uppercase font-bold block">Active Post Quota</span>
             <div className="flex items-baseline justify-between">
@@ -201,13 +201,13 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
             <span className="text-[10px] text-slate-400 uppercase font-bold block">Total Invoices</span>
             <div className="flex items-baseline justify-between">
               <span className="text-base font-bold text-indigo-300 font-mono">{totalTransactionsCount}</span>
-              <span className="text-[10px] text-slate-400 font-mono">ledger records</span>
+              <span className="text-[10px] text-slate-400 font-mono">records</span>
             </div>
           </div>
         </div>
 
         {/* 3. Filter & Search Strip */}
-        <div className="px-5 py-3 border-b border-[#2C384E] bg-[#0B0F17] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+        <div className="px-3.5 sm:px-5 py-3 border-b border-[#2C384E] bg-[#0B0F17] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
           <div className="relative flex-1 max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
             <input
@@ -229,8 +229,8 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
           </div>
 
           {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto text-[11px]">
-            <span className="text-slate-400 font-bold px-1 flex items-center gap-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] max-w-full custom-scrollbar pb-1 sm:pb-0">
+            <span className="text-slate-400 font-bold px-1 flex items-center gap-1 shrink-0">
               <Filter className="w-3 h-3" /> Status:
             </span>
             {["ALL", "COMPLETED", "PENDING", "FAILED"].map((st) => (
@@ -238,7 +238,7 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
                 key={st}
                 type="button"
                 onClick={() => setStatusFilter(st)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer shrink-0 min-h-[30px] ${
                   statusFilter === st
                     ? "bg-indigo-600 text-white shadow-xs"
                     : "text-slate-400 hover:text-white hover:bg-slate-800"
@@ -251,7 +251,7 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
         </div>
 
         {/* 4. Scrollable Ledger Transactions Table */}
-        <div className="p-5 sm:p-6 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="p-3.5 sm:p-5 md:p-6 overflow-y-auto flex-1 custom-scrollbar">
           {isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -280,70 +280,88 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-[#2C384E] rounded-2xl">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-[#0B0F17] text-slate-400 uppercase text-[10px] font-bold border-b border-[#2C384E]">
-                  <tr>
-                    <th className="py-3 px-4">Date & Time</th>
-                    <th className="py-3 px-4">Transaction / Reference</th>
-                    <th className="py-3 px-4">Type & Plan</th>
-                    <th className="py-3 px-4">Credits Added</th>
-                    <th className="py-3 px-4">Amount</th>
-                    <th className="py-3 px-4">Gateway</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Invoice</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#2C384E]/70 bg-[#131B2A]">
-                  {transactions.map((tx) => {
-                    const txId = tx.id || tx.paymentId;
-                    const dateFormatted = tx.createdAt ? formatDate(tx.createdAt) : "—";
-                    const isCompleted = tx.status === "COMPLETED";
-                    const isPending = tx.status === "PENDING";
-                    const isFailed = tx.status === "FAILED";
+            <div className="space-y-4">
+              {/* Mobile Card Stack View (< 768px) */}
+              <div className="block md:hidden space-y-3">
+                {transactions.map((tx) => {
+                  const txId = tx.id || tx.paymentId;
+                  const dateFormatted = tx.createdAt ? formatDate(tx.createdAt) : "—";
+                  const isCompleted = tx.status === "COMPLETED";
+                  const isPending = tx.status === "PENDING";
+                  const isFailed = tx.status === "FAILED";
 
-                    return (
-                      <tr key={tx.id} className="hover:bg-slate-800/40 transition-colors">
-                        {/* 1. Date */}
-                        <td className="py-3 px-4 font-mono text-[11px] text-slate-300 whitespace-nowrap">
+                  return (
+                    <div
+                      key={tx.id}
+                      className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-3 text-xs"
+                    >
+                      {/* Top Row: Date & Status */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[11px] text-slate-400">
                           {dateFormatted}
-                        </td>
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                            isCompleted
+                              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                              : isFailed
+                              ? "bg-red-500/15 text-red-400 border-red-500/30"
+                              : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              isCompleted ? "bg-emerald-400" : isFailed ? "bg-red-400" : "bg-amber-400"
+                            }`}
+                          />
+                          <span>{tx.status}</span>
+                        </span>
+                      </div>
 
-                        {/* 2. Transaction / Payment ID */}
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <div className="space-y-0.5">
-                            {tx.paymentId ? (
-                              <button
-                                type="button"
-                                onClick={() => handleCopy(tx.paymentId)}
-                                className="inline-flex items-center gap-1 font-mono text-xs text-white hover:text-indigo-300 transition cursor-pointer"
-                                title="Click to copy Payment ID"
-                              >
-                                <span className="font-bold">{tx.paymentId}</span>
-                                {copiedId === tx.paymentId ? (
-                                  <Check className="w-3 h-3 text-emerald-400 shrink-0" />
-                                ) : (
-                                  <Copy className="w-3 h-3 text-slate-500 shrink-0" />
-                                )}
-                              </button>
+                      {/* Payment ID / Reference */}
+                      <div className="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-[#131B2A] border border-[#2C384E]/60">
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold">Ref ID:</span>
+                        {tx.paymentId ? (
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(tx.paymentId)}
+                            className="inline-flex items-center gap-1 font-mono text-xs text-white hover:text-indigo-300 transition cursor-pointer truncate max-w-[200px]"
+                            title="Click to copy Payment ID"
+                          >
+                            <span className="font-bold truncate">{tx.paymentId}</span>
+                            {copiedId === tx.paymentId ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                             ) : (
-                              <span className="font-mono text-slate-400 text-xs">
-                                {tx.orderId || tx.id?.slice(0, 12)}
-                              </span>
+                              <Copy className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                             )}
-                            {tx.orderId && tx.paymentId && (
-                              <div className="text-[10px] text-slate-500 font-mono">
-                                Order: {tx.orderId}
-                              </div>
-                            )}
-                          </div>
-                        </td>
+                          </button>
+                        ) : (
+                          <span className="font-mono text-slate-400 text-xs truncate max-w-[200px]">
+                            {tx.orderId || tx.id?.slice(0, 16)}
+                          </span>
+                        )}
+                      </div>
 
-                        {/* 3. Transaction Type & Plan */}
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <div className="space-y-0.5">
+                      {/* Amount & Plan Details */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase font-semibold block">Amount</span>
+                          <span className="font-mono font-bold text-white text-sm">
+                            {tx.pricePaid > 0 ? (
+                              <span>
+                                {tx.currency === "USD" ? "$" : "₹"} {tx.pricePaid} {tx.currency || "INR"}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-normal">Free ($0)</span>
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-400 uppercase font-semibold block">Type / Plan</span>
+                          <div className="flex items-center gap-1 justify-end">
                             <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
                                 tx.transactionType === "PLAN_PURCHASE"
                                   ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
                                   : tx.transactionType === "ADMIN_BONUS"
@@ -352,83 +370,201 @@ export const UserBillingLedgerModal = ({ isOpen, onClose, user }) => {
                               }`}
                             >
                               {tx.transactionType === "PLAN_PURCHASE"
-                                ? "Plan Purchase"
+                                ? "Plan"
                                 : tx.transactionType === "ADMIN_BONUS"
-                                ? "Admin Top-Up"
-                                : "Activation"}
+                                ? "Bonus"
+                                : "Active"}
                             </span>
-                            <div className="text-[10px] text-slate-400 font-medium">
-                              Plan: <span className="text-white font-bold">{tx.plan || "PRO"}</span>
-                            </div>
+                            <span className="text-white font-bold">{tx.plan || "PRO"}</span>
                           </div>
-                        </td>
+                        </div>
+                      </div>
 
-                        {/* 4. Post Credits Added */}
-                        <td className="py-3 px-4 font-mono font-bold text-amber-300 whitespace-nowrap">
-                          {tx.postCount > 0 ? `+${tx.postCount} Posts` : "—"}
-                        </td>
-
-                        {/* 5. Amount Paid */}
-                        <td className="py-3 px-4 font-mono font-bold text-white text-sm whitespace-nowrap">
-                          {tx.pricePaid > 0 ? (
-                            <span>
-                              {tx.currency === "USD" ? "$" : "₹"} {tx.pricePaid} {tx.currency || "INR"}
-                            </span>
-                          ) : (
-                            <span className="text-slate-400 font-normal">Free ($0)</span>
-                          )}
-                        </td>
-
-                        {/* 6. Payment Gateway */}
-                        <td className="py-3 px-4 font-mono text-xs uppercase text-slate-300 whitespace-nowrap">
-                          {tx.paymentGateway || "DIRECT"}
-                        </td>
-
-                        {/* 7. Status Badge */}
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                              isCompleted
-                                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                                : isFailed
-                                ? "bg-red-500/15 text-red-400 border-red-500/30"
-                                : "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                            }`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                isCompleted ? "bg-emerald-400" : isFailed ? "bg-red-400" : "bg-amber-400"
-                              }`}
-                            />
-                            <span>{tx.status}</span>
+                      {/* Gateway & Credits Row */}
+                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#2C384E]/40 text-[11px]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400">Gateway:</span>
+                          <span className="font-mono uppercase font-bold text-slate-200">
+                            {tx.paymentGateway || "DIRECT"}
                           </span>
-                        </td>
+                        </div>
 
-                        {/* 8. Download Invoice Action */}
-                        <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadInvoice(tx.id)}
-                            disabled={downloadingId === tx.id}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:text-white transition cursor-pointer text-xs font-semibold disabled:opacity-50"
-                            title="Download PDF Tax Invoice"
-                          >
-                            <Download className="w-3 h-3 text-indigo-400" />
-                            <span>{downloadingId === tx.id ? "Downloading..." : "Invoice"}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        {tx.postCount > 0 && (
+                          <div className="font-mono font-bold text-amber-300">
+                            +{tx.postCount} Posts
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Invoice Download Button */}
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadInvoice(tx.id)}
+                          disabled={downloadingId === tx.id}
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:text-white transition cursor-pointer text-xs font-semibold disabled:opacity-50 min-h-[36px]"
+                          title="Download PDF Tax Invoice"
+                        >
+                          <Download className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>{downloadingId === tx.id ? "Downloading..." : "Download PDF Invoice"}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View (>= 768px) */}
+              <div className="hidden md:block overflow-x-auto border border-[#2C384E] rounded-2xl custom-scrollbar">
+                <table className="w-full text-left text-xs text-slate-300 min-w-[700px]">
+                  <thead className="bg-[#0B0F17] text-slate-400 uppercase text-[10px] font-bold border-b border-[#2C384E]">
+                    <tr>
+                      <th className="py-3 px-4">Date & Time</th>
+                      <th className="py-3 px-4">Transaction / Reference</th>
+                      <th className="py-3 px-4">Type & Plan</th>
+                      <th className="py-3 px-4">Credits Added</th>
+                      <th className="py-3 px-4">Amount</th>
+                      <th className="py-3 px-4">Gateway</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Invoice</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2C384E]/70 bg-[#131B2A]">
+                    {transactions.map((tx) => {
+                      const txId = tx.id || tx.paymentId;
+                      const dateFormatted = tx.createdAt ? formatDate(tx.createdAt) : "—";
+                      const isCompleted = tx.status === "COMPLETED";
+                      const isPending = tx.status === "PENDING";
+                      const isFailed = tx.status === "FAILED";
+
+                      return (
+                        <tr key={tx.id} className="hover:bg-slate-800/40 transition-colors">
+                          {/* 1. Date */}
+                          <td className="py-3 px-4 font-mono text-[11px] text-slate-300 whitespace-nowrap">
+                            {dateFormatted}
+                          </td>
+
+                          {/* 2. Transaction / Payment ID */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <div className="space-y-0.5">
+                              {tx.paymentId ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(tx.paymentId)}
+                                  className="inline-flex items-center gap-1 font-mono text-xs text-white hover:text-indigo-300 transition cursor-pointer"
+                                  title="Click to copy Payment ID"
+                                >
+                                  <span className="font-bold">{tx.paymentId}</span>
+                                  {copiedId === tx.paymentId ? (
+                                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-slate-500 shrink-0" />
+                                  )}
+                                </button>
+                              ) : (
+                                <span className="font-mono text-slate-400 text-xs">
+                                  {tx.orderId || tx.id?.slice(0, 12)}
+                                </span>
+                              )}
+                              {tx.orderId && tx.paymentId && (
+                                <div className="text-[10px] text-slate-500 font-mono">
+                                  Order: {tx.orderId}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* 3. Transaction Type & Plan */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <div className="space-y-0.5">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                  tx.transactionType === "PLAN_PURCHASE"
+                                    ? "bg-purple-500/15 text-purple-300 border border-purple-500/30"
+                                    : tx.transactionType === "ADMIN_BONUS"
+                                    ? "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                    : "bg-slate-800 text-slate-300 border border-slate-700"
+                                }`}
+                              >
+                                {tx.transactionType === "PLAN_PURCHASE"
+                                  ? "Plan Purchase"
+                                  : tx.transactionType === "ADMIN_BONUS"
+                                  ? "Admin Top-Up"
+                                  : "Activation"}
+                              </span>
+                              <div className="text-[10px] text-slate-400 font-medium">
+                                Plan: <span className="text-white font-bold">{tx.plan || "PRO"}</span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* 4. Post Credits Added */}
+                          <td className="py-3 px-4 font-mono font-bold text-amber-300 whitespace-nowrap">
+                            {tx.postCount > 0 ? `+${tx.postCount} Posts` : "—"}
+                          </td>
+
+                          {/* 5. Amount Paid */}
+                          <td className="py-3 px-4 font-mono font-bold text-white text-sm whitespace-nowrap">
+                            {tx.pricePaid > 0 ? (
+                              <span>
+                                {tx.currency === "USD" ? "$" : "₹"} {tx.pricePaid} {tx.currency || "INR"}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-normal">Free ($0)</span>
+                            )}
+                          </td>
+
+                          {/* 6. Payment Gateway */}
+                          <td className="py-3 px-4 font-mono text-xs uppercase text-slate-300 whitespace-nowrap">
+                            {tx.paymentGateway || "DIRECT"}
+                          </td>
+
+                          {/* 7. Status Badge */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                isCompleted
+                                  ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                  : isFailed
+                                  ? "bg-red-500/15 text-red-400 border-red-500/30"
+                                  : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  isCompleted ? "bg-emerald-400" : isFailed ? "bg-red-400" : "bg-amber-400"
+                                }`}
+                              />
+                              <span>{tx.status}</span>
+                            </span>
+                          </td>
+
+                          {/* 8. Download Invoice Action */}
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadInvoice(tx.id)}
+                              disabled={downloadingId === tx.id}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:text-white transition cursor-pointer text-xs font-semibold disabled:opacity-50"
+                              title="Download PDF Tax Invoice"
+                            >
+                              <Download className="w-3 h-3 text-indigo-400" />
+                              <span>{downloadingId === tx.id ? "Downloading..." : "Invoice"}</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
 
         {/* 5. Modal Footer with Pagination */}
         {transactions.length > 0 && (
-          <div className="p-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
+          <div className="p-3 sm:p-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
             <Pagination
               meta={meta}
               currentPage={page}

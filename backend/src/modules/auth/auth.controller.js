@@ -4,8 +4,25 @@ import { COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_NAME, getCookieOptions } from './a
 import * as authLogic from './auth.logic.js';
 
 /**
+ * Request a 4-digit verification code sent to user email prior to registration
+ * High-concurrency Redis backed endpoint with 120s cooldown
+ */
+export async function sendRegistrationOtp(req, res, next) {
+  try {
+    const result = await authLogic.sendRegistrationOtp(req.body);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.OK,
+      message: result.message,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Register a new regular user (by default END_USER, non-admin)
- * Issues JWT Access Token & sets HTTP-Only Refresh Cookie
+ * Verifies 4-digit OTP, issues JWT Access Token & sets HTTP-Only Refresh Cookie
  */
 export async function signup(req, res, next) {
   try {
@@ -160,7 +177,7 @@ export async function enable2FA(req, res, next) {
  */
 export async function disable2FA(req, res, next) {
   try {
-    const data = await authLogic.disable2FA(req.user.id);
+    const data = await authLogic.disable2FA(req.user.id, req.body || {});
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,
@@ -250,7 +267,7 @@ export async function toggleUserStatus(req, res, next) {
   try {
     const { userId } = req.params;
     const { isActive } = req.body;
-    const user = await authLogic.toggleUserActiveStatus(userId, Boolean(isActive));
+    const user = await authLogic.toggleUserActiveStatus(req.user, userId, Boolean(isActive));
 
     return sendSuccessResponse(res, {
       statusCode: HTTP_STATUS.OK,

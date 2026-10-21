@@ -100,7 +100,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* 1. Festival Selector Box with Search & Pagination */}
-      <div className="p-5 rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-4 shadow-md">
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-4 shadow-md">
         {/* Header: Title, Total Occasions Badge, and Search Filter */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-3.5">
           <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
           </div>
 
           <div className="relative w-full sm:w-72">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search festival occasion..."
@@ -137,7 +137,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
 
         {/* Festival Cards Responsive Grid */}
         {isLoadingFestivals ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 py-1">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5 py-1">
             {Array.from({ length: festLimit }).map((_, i) => (
               <div
                 key={`fest-skel-${i}`}
@@ -160,7 +160,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5">
             {festivals.map((fest) => {
               const isSelected = fest.id === activeFestival?.id;
               const count =
@@ -219,16 +219,16 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
 
       {/* 2. Active Festival Showcase & Templates Grid */}
       {activeFestival && (
-        <div className="p-6 rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-5 shadow-lg">
+        <div className="p-3.5 sm:p-5 md:p-6 rounded-2xl bg-[#131B2A] border border-[#2C384E] space-y-4 sm:space-y-5 shadow-lg">
           {/* Active Festival Header Banner */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-sm">
-                <CalendarIcon className="w-6 h-6" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4 border-b border-[#2C384E] pb-4">
+            <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-sm">
+                <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-heading font-extrabold text-lg text-white truncate">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <h3 className="font-heading font-extrabold text-base sm:text-lg text-white truncate">
                     {activeFestival.name}
                   </h3>
                   <span className="text-[11px] font-mono text-amber-300 bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-500/30 font-semibold shrink-0">
@@ -236,7 +236,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
                   </span>
                   {activeFestival.targetRegion && (
                     <span className="inline-flex items-center gap-1 text-[10px] text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700 shrink-0">
-                      <Globe className="w-3 h-3 text-amber-400" />
+                      <Globe className="w-2.5 h-2.5 text-amber-400" />
                       <span>{activeFestival.targetRegion}</span>
                     </span>
                   )}
@@ -252,7 +252,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
 
             {/* Template Search Filter within active festival */}
             <div className="relative w-full sm:w-72 shrink-0">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder={`Search ${activeFestival.name} templates...`}
@@ -265,7 +265,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
 
           {/* Templates Grid Content */}
           {isLoadingTemplates ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
               {Array.from({ length: templateLimit }).map((_, i) => (
                 <div
                   key={`skel-fest-page-${i}`}
@@ -293,7 +293,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
               {templates.map((tpl) => (
                 <div
                   key={tpl.id}
@@ -381,7 +381,7 @@ export const TemplatesByFestivalView = ({ festivals: propFestivals, isLoadingFes
                   setTemplatePage(1);
                 }}
                 pageSizeOptions={[8, 12, 16, 24]}
-                className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300"
+                className="flex flex-col min-[480px]:flex-row items-center justify-between gap-3 text-xs text-slate-300"
               />
             </div>
           )}

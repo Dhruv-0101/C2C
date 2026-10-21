@@ -240,14 +240,28 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
     };
   }, [isOpen]);
 
+  // Accessibility: Close on Escape key press
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const isRegister = authType === "register";
   const userName = user?.fullName || user?.email?.split("@")[0] || "Creator";
 
-
   return (
-    <div className="modal-backdrop-overlay fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
+    <div
+      className="modal-backdrop-overlay fixed inset-0 z-50 flex items-center justify-center p-3 min-[380px]:p-4 sm:p-6 overflow-y-auto backdrop-blur-md animate-in fade-in duration-300"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       {/* Canvas Overlay for Confetti Burst */}
       <canvas
         ref={canvasRef}
@@ -255,13 +269,13 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
       />
 
       {/* Ambient Lighting Accents behind the Card */}
-      <div className="absolute -top-16 left-1/4 w-96 h-96 bg-amber-500/15 rounded-full blur-[110px] pointer-events-none animate-pulse" />
-      <div className="absolute -bottom-16 right-1/4 w-80 h-80 bg-orange-600/15 rounded-full blur-[110px] pointer-events-none" />
+      <div className="absolute -top-16 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-amber-500/15 rounded-full blur-[90px] sm:blur-[110px] pointer-events-none animate-pulse" />
+      <div className="absolute -bottom-16 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-orange-600/15 rounded-full blur-[90px] sm:blur-[110px] pointer-events-none" />
 
       {/* Main Glassmorphism Modal Box */}
-      <div className="relative z-20 w-full max-w-3xl bg-white dark:bg-gradient-to-b dark:from-[#131B2A] dark:via-[#101726] dark:to-[#0B0F17] border border-slate-200 dark:border-[#2C384E] rounded-3xl p-6 sm:p-8 shadow-[0_25px_80px_-15px_rgba(0,0,0,0.4),0_0_60px_rgba(245,158,11,0.08)] dark:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.9),0_0_60px_rgba(245,158,11,0.12)] space-y-6 text-left overflow-hidden">
+      <div className="relative z-20 w-full max-w-3xl my-auto max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] flex flex-col bg-white dark:bg-gradient-to-b dark:from-[#131B2A] dark:via-[#101726] dark:to-[#0B0F17] border border-slate-200 dark:border-[#2C384E] rounded-2xl sm:rounded-3xl shadow-[0_25px_80px_-15px_rgba(0,0,0,0.4),0_0_60px_rgba(245,158,11,0.08)] dark:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.9),0_0_60px_rgba(245,158,11,0.12)] text-left overflow-hidden">
         {/* Specular Top Horizon Highlight Line */}
-        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_rgba(245,158,11,0.8)]" />
+        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_rgba(245,158,11,0.8)] z-30" />
 
         {/* Ambient Top Flare */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-44 bg-gradient-to-b from-amber-500/20 to-transparent rounded-full blur-2xl pointer-events-none" />
@@ -269,247 +283,251 @@ export const CelebrationWelcomeModal = ({ isOpen, onClose, authType = "login", u
         {/* Sleek Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs group cursor-pointer"
+          className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 z-30 p-1.5 sm:p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-800/90 border border-slate-200 dark:border-slate-700/50 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs group cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
           title="Close modal"
         >
           <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
         </button>
 
-        {/* Modal Header */}
-        <div className="space-y-2 text-center sm:text-left pr-8 sm:pr-0">
-          <div
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold tracking-wide shadow-xs"
-            style={{
-              backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "#FEF3C7",
-              borderColor: isDark ? "rgba(245, 158, 11, 0.35)" : "#FCD34D",
-              color: isDark ? "#FCD34D" : "#92400E",
-            }}
-          >
-            <Flame
-              className="w-3.5 h-3.5 animate-pulse"
+        {/* Modal Scrollable Content Container */}
+        <div className="p-4 min-[380px]:p-5 sm:p-7 md:p-8 space-y-4 sm:space-y-6 overflow-y-auto custom-scrollbar flex-1">
+          {/* Modal Header */}
+          <div className="space-y-1.5 sm:space-y-2 text-center sm:text-left pr-8 sm:pr-0">
+            <div
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border text-[11px] sm:text-xs font-bold tracking-wide shadow-xs max-w-full"
               style={{
-                color: isDark ? "#FBBF24" : "#D97706",
+                backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "#FEF3C7",
+                borderColor: isDark ? "rgba(245, 158, 11, 0.35)" : "#FCD34D",
+                color: isDark ? "#FCD34D" : "#92400E",
               }}
-            />
-            <span>{isRegister ? "Welcome to BrandFlow! 🎉" : "Upcoming Festivals Ready! 🔥"}</span>
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-ping"
-              style={{
-                backgroundColor: isDark ? "#F59E0B" : "#D97706",
-              }}
-            />
+            >
+              <Flame
+                className="w-3.5 h-3.5 animate-pulse shrink-0"
+                style={{
+                  color: isDark ? "#FBBF24" : "#D97706",
+                }}
+              />
+              <span className="truncate">{isRegister ? "Welcome to BrandFlow! 🎉" : "Upcoming Festivals Ready! 🔥"}</span>
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-ping shrink-0"
+                style={{
+                  backgroundColor: isDark ? "#F59E0B" : "#D97706",
+                }}
+              />
+            </div>
+
+            <h2 className="font-heading font-extrabold text-xl min-[360px]:text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight">
+              {isRegister ? (
+                <>
+                  Hey{" "}
+                  <span className="text-amber-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-amber-200 dark:via-amber-400 dark:to-orange-400">
+                    {userName}
+                  </span>
+                  , Welcome Aboard!
+                </>
+              ) : (
+                <>
+                  Welcome Back,{" "}
+                  <span className="text-amber-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-amber-200 dark:via-amber-400 dark:to-orange-400">
+                    {userName}
+                  </span>
+                  !
+                </>
+              )}
+            </h2>
+
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300/90 leading-relaxed max-w-xl">
+              High-engagement festivals are approaching. Launch ready-to-publish social media graphics with your custom brand frame &amp; AI captions in 1-click:
+            </p>
           </div>
 
-          <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight">
-            {isRegister ? (
-              <>
-                Hey{" "}
-                <span className="text-amber-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-amber-200 dark:via-amber-400 dark:to-orange-400">
-                  {userName}
-                </span>
-                , Welcome Aboard!
-              </>
+          {/* Dynamic Upcoming Admin Festivals Showcase Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-1">
+            {isLoading ? (
+              <div className="col-span-1 sm:col-span-3 py-10 sm:py-12 text-center text-xs text-amber-600 dark:text-amber-300/70 animate-pulse flex items-center justify-center gap-2">
+                <Sparkles className="w-4 h-4 animate-spin text-amber-500 dark:text-amber-400" />
+                Loading upcoming festivals...
+              </div>
             ) : (
-              <>
-                Welcome Back,{" "}
-                <span className="text-amber-600 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-amber-200 dark:via-amber-400 dark:to-orange-400">
-                  {userName}
-                </span>
-                !
-              </>
-            )}
-          </h2>
+              activeShowcase.slice(0, 3).map((item) => {
+                const countdown = getCountdownMeta(item.date);
 
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300/90 leading-relaxed max-w-xl">
-            High-engagement festivals are approaching. Launch ready-to-publish social media graphics with your custom brand frame &amp; AI captions in 1-click:
-          </p>
-        </div>
-
-        {/* Dynamic Upcoming Admin Festivals Showcase Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-          {isLoading ? (
-            <div className="col-span-3 py-12 text-center text-xs text-amber-600 dark:text-amber-300/70 animate-pulse flex items-center justify-center gap-2">
-              <Sparkles className="w-4 h-4 animate-spin text-amber-500 dark:text-amber-400" />
-              Loading upcoming festivals...
-            </div>
-          ) : (
-            activeShowcase.slice(0, 3).map((item) => {
-              const countdown = getCountdownMeta(item.date);
-
-              return (
-                <div
-                  key={item.id}
-                  className="welcome-festival-card group relative rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md"
-                  style={{
-                    backgroundColor: isDark ? "#141C2E" : "#FFFFFF",
-                    borderColor: isDark ? "rgba(51, 65, 85, 0.6)" : "#CBD5E1",
-                  }}
-                >
-                  {/* Specular Top Glow Highlight Accent */}
-                  <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent group-hover:via-amber-400 transition-all duration-500 z-10" />
-
-                  {/* Image Thumbnail Container */}
+                return (
                   <div
-                    className="w-full h-36 relative overflow-hidden rounded-t-2xl"
-                    style={{
-                      backgroundColor: isDark ? "#020617" : "#F1F5F9",
-                    }}
-                  >
-                    <img
-                      src={
-                        item.bannerUrl ||
-                        item.imageUrl ||
-                        item.banner ||
-                        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop"
-                      }
-                      alt={item.name || item.title || "Festival"}
-                      className="w-full h-full object-cover opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
-                    />
-
-                    {/* Translucent Dark Scrim Overlay (Only in dark mode) */}
-                    {isDark && (
-                      <div
-                        className="image-scrim-overlay absolute inset-0 pointer-events-none"
-                        style={{
-                          background:
-                            "linear-gradient(to top, rgba(14, 21, 36, 0.95) 0%, rgba(14, 21, 36, 0.35) 45%, transparent 100%)",
-                        }}
-                      />
-                    )}
-
-                    {/* Top Relative Days Countdown Pill */}
-                    <div
-                      className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full border text-[10px] tracking-wide flex items-center gap-1.5 shadow-md backdrop-blur-md ${countdown.badgeClass}`}
-                      style={
-                        !countdown.highlight
-                          ? {
-                              backgroundColor: isDark ? "rgba(2, 6, 23, 0.85)" : "#FFFFFF",
-                              borderColor: isDark ? "rgba(251, 191, 36, 0.4)" : "#F59E0B",
-                              color: isDark ? "#FCD34D" : "#92400E",
-                            }
-                          : undefined
-                      }
-                    >
-                      <Calendar className="w-3 h-3 shrink-0" />
-                      <span>{countdown.text}</span>
-                    </div>
-
-                    {/* Region / Category Tag Top-Right */}
-                    {(item.category || item.targetRegion) && (
-                      <div
-                        className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full backdrop-blur-md border text-[10px] font-semibold tracking-wide flex items-center gap-1 shadow-md"
-                        style={{
-                          backgroundColor: isDark ? "rgba(2, 6, 23, 0.8)" : "#FFFFFF",
-                          borderColor: isDark ? "rgba(255, 255, 255, 0.15)" : "#CBD5E1",
-                          color: isDark ? "#E2E8F0" : "#0F172A",
-                        }}
-                      >
-                        <Sparkles
-                          className="w-2.5 h-2.5"
-                          style={{
-                            color: isDark ? "#FBBF24" : "#D97706",
-                          }}
-                        />
-                        <span>{(item.category || item.targetRegion || "Festival").replace(/upcoming/i, "").trim() || "India"}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content Details */}
-                  <div
-                    className="welcome-card-body p-3.5 sm:p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between"
+                    key={item.id}
+                    className="welcome-festival-card group relative rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md"
                     style={{
                       backgroundColor: isDark ? "#141C2E" : "#FFFFFF",
+                      borderColor: isDark ? "rgba(51, 65, 85, 0.6)" : "#CBD5E1",
                     }}
                   >
-                    <div className="space-y-1">
-                      <h4
-                        className="font-heading font-extrabold text-sm sm:text-[15px] group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight"
-                        style={{
-                          color: isDark ? "#FFFFFF" : "#0F172A",
-                        }}
-                      >
-                        {item.name || item.title || "Upcoming Festival"}
-                      </h4>
-                      <p
-                        className="text-[11px] line-clamp-2 leading-relaxed"
-                        style={{
-                          color: isDark ? "rgba(203, 213, 225, 0.8)" : "#334155",
-                        }}
-                      >
-                        {item.description || "Festival celebration and special event"}
-                      </p>
-                    </div>
+                    {/* Specular Top Glow Highlight Accent */}
+                    <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent group-hover:via-amber-400 transition-all duration-500 z-10" />
 
-                    {/* Styled Festival Metadata Row */}
+                    {/* Image Thumbnail Container */}
                     <div
-                      className="pt-2.5 flex items-center justify-between border-t text-[11px]"
+                      className="w-full h-32 min-[420px]:h-36 sm:h-32 md:h-36 relative overflow-hidden rounded-t-2xl"
                       style={{
-                        borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#E2E8F0",
+                        backgroundColor: isDark ? "#020617" : "#F1F5F9",
                       }}
                     >
-                      <div
-                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border font-bold text-[10px] tracking-wide"
-                        style={{
-                          backgroundColor: isDark ? "rgba(245, 158, 11, 0.1)" : "#FEF3C7",
-                          borderColor: isDark ? "rgba(251, 191, 36, 0.25)" : "#FCD34D",
-                          color: isDark ? "#FCD34D" : "#92400E",
-                        }}
-                      >
-                        <Calendar
-                          className="w-3 h-3"
+                      <img
+                        src={
+                          item.bannerUrl ||
+                          item.imageUrl ||
+                          item.banner ||
+                          "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop"
+                        }
+                        alt={item.name || item.title || "Festival"}
+                        className="w-full h-full object-cover opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
+                        loading="lazy"
+                      />
+
+                      {/* Translucent Dark Scrim Overlay (Only in dark mode) */}
+                      {isDark && (
+                        <div
+                          className="image-scrim-overlay absolute inset-0 pointer-events-none"
                           style={{
-                            color: isDark ? "#FBBF24" : "#D97706",
+                            background:
+                              "linear-gradient(to top, rgba(14, 21, 36, 0.95) 0%, rgba(14, 21, 36, 0.35) 45%, transparent 100%)",
                           }}
                         />
-                        <span>
-                          {item.date
-                            ? parseCalendarDate(item.date)?.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                              }) || "Upcoming"
-                            : "Upcoming"}
-                        </span>
+                      )}
+
+                      {/* Top Relative Days Countdown Pill */}
+                      <div
+                        className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full border text-[10px] tracking-wide flex items-center gap-1.5 shadow-md backdrop-blur-md max-w-[60%] truncate ${countdown.badgeClass}`}
+                        style={
+                          !countdown.highlight
+                            ? {
+                                backgroundColor: isDark ? "rgba(2, 6, 23, 0.85)" : "#FFFFFF",
+                                borderColor: isDark ? "rgba(251, 191, 36, 0.4)" : "#F59E0B",
+                                color: isDark ? "#FCD34D" : "#92400E",
+                              }
+                            : undefined
+                        }
+                      >
+                        <Calendar className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{countdown.text}</span>
+                      </div>
+
+                      {/* Region / Category Tag Top-Right */}
+                      {(item.category || item.targetRegion) && (
+                        <div
+                          className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full backdrop-blur-md border text-[10px] font-semibold tracking-wide flex items-center gap-1 shadow-md max-w-[38%] truncate"
+                          style={{
+                            backgroundColor: isDark ? "rgba(2, 6, 23, 0.8)" : "#FFFFFF",
+                            borderColor: isDark ? "rgba(255, 255, 255, 0.15)" : "#CBD5E1",
+                            color: isDark ? "#E2E8F0" : "#0F172A",
+                          }}
+                        >
+                          <Sparkles
+                            className="w-2.5 h-2.5 shrink-0"
+                            style={{
+                              color: isDark ? "#FBBF24" : "#D97706",
+                            }}
+                          />
+                          <span className="truncate">{(item.category || item.targetRegion || "Festival").replace(/upcoming/i, "").trim() || "India"}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content Details */}
+                    <div
+                      className="welcome-card-body p-3 min-[380px]:p-3.5 sm:p-4 space-y-2 text-left flex-1 flex flex-col justify-between"
+                      style={{
+                        backgroundColor: isDark ? "#141C2E" : "#FFFFFF",
+                      }}
+                    >
+                      <div className="space-y-1">
+                        <h4
+                          className="font-heading font-extrabold text-sm sm:text-[15px] group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 tracking-tight"
+                          style={{
+                            color: isDark ? "#FFFFFF" : "#0F172A",
+                          }}
+                        >
+                          {item.name || item.title || "Upcoming Festival"}
+                        </h4>
+                        <p
+                          className="text-[11px] line-clamp-2 leading-relaxed"
+                          style={{
+                            color: isDark ? "rgba(203, 213, 225, 0.8)" : "#334155",
+                          }}
+                        >
+                          {item.description || "Festival celebration and special event"}
+                        </p>
+                      </div>
+
+                      {/* Styled Festival Metadata Row */}
+                      <div
+                        className="pt-2 flex items-center justify-between border-t text-[11px]"
+                        style={{
+                          borderColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#E2E8F0",
+                        }}
+                      >
+                        <div
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border font-bold text-[10px] tracking-wide"
+                          style={{
+                            backgroundColor: isDark ? "rgba(245, 158, 11, 0.1)" : "#FEF3C7",
+                            borderColor: isDark ? "rgba(251, 191, 36, 0.25)" : "#FCD34D",
+                            color: isDark ? "#FCD34D" : "#92400E",
+                          }}
+                        >
+                          <Calendar
+                            className="w-3 h-3 shrink-0"
+                            style={{
+                              color: isDark ? "#FBBF24" : "#D97706",
+                            }}
+                          />
+                          <span>
+                            {item.date
+                              ? parseCalendarDate(item.date)?.toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                }) || "Upcoming"
+                              : "Upcoming"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                );
+              })
+            )}
+          </div>
 
-        {/* Modal Bottom Actions */}
-        <div className="pt-3 border-t border-slate-200 dark:border-white/[0.08] space-y-3">
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              navigate("/calendar");
-            }}
-            className="group relative w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:via-amber-200 hover:to-amber-400 text-slate-950 font-extrabold text-sm sm:text-base border border-amber-300/40 shadow-[0_8px_25px_rgba(245,158,11,0.3)] hover:shadow-[0_12px_35px_rgba(245,158,11,0.45)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2.5 overflow-hidden cursor-pointer"
-          >
-            {/* Shimmer Light Reflection Sweep */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-
-            <Calendar className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-            <span>Explore 365-Day Festival Calendar</span>
-            <ArrowRight className="w-4 h-4 text-slate-950 stroke-[2.5] group-hover:translate-x-1 transition-transform duration-200" />
-          </button>
-
-          {/* Micro Footer Row */}
-          <div className="flex items-center justify-between px-1 text-[11px] text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-              100% automated with your brand logo &amp; contact frames
-            </span>
+          {/* Modal Bottom Actions */}
+          <div className="pt-2 sm:pt-3 border-t border-slate-200 dark:border-white/[0.08] space-y-2.5 sm:space-y-3">
             <button
               type="button"
-              onClick={onClose}
-              className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer hover:underline"
+              onClick={() => {
+                onClose();
+                navigate("/calendar");
+              }}
+              className="group relative w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:via-amber-200 hover:to-amber-400 text-slate-950 font-extrabold text-xs min-[360px]:text-sm sm:text-base border border-amber-300/40 shadow-[0_8px_25px_rgba(245,158,11,0.3)] hover:shadow-[0_12px_35px_rgba(245,158,11,0.45)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 sm:gap-2.5 overflow-hidden cursor-pointer"
             >
-              Maybe Later
+              {/* Shimmer Light Reflection Sweep */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+
+              <Calendar className="w-4 h-4 text-slate-950 stroke-[2.5] shrink-0" />
+              <span className="truncate">Explore 365-Day Festival Calendar</span>
+              <ArrowRight className="w-4 h-4 text-slate-950 stroke-[2.5] shrink-0 group-hover:translate-x-1 transition-transform duration-200" />
             </button>
+
+            {/* Micro Footer Row */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 px-1 text-[11px] text-slate-500 dark:text-slate-400 text-center sm:text-left">
+              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 justify-center sm:justify-start">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse shrink-0" />
+                <span>100% automated with your brand logo &amp; contact frames</span>
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer hover:underline py-1.5 px-3 min-h-[36px] flex items-center justify-center"
+              >
+                Maybe Later
+              </button>
+            </div>
           </div>
         </div>
       </div>

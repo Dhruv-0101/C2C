@@ -80,6 +80,7 @@ export const setupInterceptors = (axiosInstance) => {
         originalRequest &&
         !originalRequest._retry &&
         !originalRequest.url?.includes(API_ENDPOINTS.AUTH.LOGIN) &&
+        !originalRequest.url?.includes(API_ENDPOINTS.AUTH.LOGOUT) &&
         !originalRequest.url?.includes(API_ENDPOINTS.AUTH.REFRESH)
       ) {
         if (isRefreshing) {

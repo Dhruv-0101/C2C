@@ -7,10 +7,9 @@ import { Card } from '@/components/ui/Card';
  */
 export const FrameCanvasStudio = ({ frame, width = 400, height = 400 }) => {
   return (
-    <Card className="p-4 bg-[#131B2A] border-[#2C384E] flex items-center justify-center">
+    <Card className="p-3 sm:p-4 bg-[#131B2A] border-[#2C384E] flex items-center justify-center">
       <div
-        className="relative bg-slate-900 border border-dashed border-slate-700 rounded-xl overflow-hidden flex items-center justify-center"
-        style={{ width, height }}
+        className="relative bg-slate-900 border-2 border-amber-500/80 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center aspect-square w-full max-w-[400px]"
       >
         {frame?.previewUrl ? (
           <img src={frame.previewUrl} alt={frame.name || 'Frame Preview'} className="w-full h-full object-contain" />

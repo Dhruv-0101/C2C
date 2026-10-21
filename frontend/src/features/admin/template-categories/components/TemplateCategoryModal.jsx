@@ -81,28 +81,28 @@ export const TemplateCategoryModal = ({
 
   return (
     <div
-      className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto"
+      className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-150"
+        className="w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-in zoom-in-95 duration-150 mx-2"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2C384E] pb-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400">
+        <div className="flex items-start sm:items-center justify-between border-b border-[#2C384E] pb-3.5 gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
               {isEditing ? (
                 <Pencil className="w-4 h-4 text-teal-400" />
               ) : (
                 <FolderTree className="w-4 h-4 text-teal-400" />
               )}
             </div>
-            <div>
-              <h3 className="font-heading font-bold text-base text-white">
+            <div className="min-w-0">
+              <h3 className="font-heading font-bold text-base text-white truncate">
                 {isEditing ? "Edit Template Category" : "Create Template Category"}
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
                 {isEditing
                   ? "Update category details and descriptive theme metadata"
                   : "Define a visual classification theme for graphic poster templates"}
@@ -113,7 +113,7 @@ export const TemplateCategoryModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -164,13 +164,14 @@ export const TemplateCategoryModal = ({
           </div>
 
           {/* Action Footer */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2C384E]">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-[#2C384E]">
             <Button
               type="button"
               variant="outline"
               size="md"
               onClick={onClose}
               disabled={isPending}
+              className="w-full sm:w-auto min-h-[40px] justify-center text-xs"
             >
               Cancel
             </Button>
@@ -179,7 +180,7 @@ export const TemplateCategoryModal = ({
               variant="primary"
               size="md"
               isLoading={isPending}
-              className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold"
+              className="w-full sm:w-auto min-h-[40px] justify-center bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs"
             >
               {isEditing ? (
                 <>

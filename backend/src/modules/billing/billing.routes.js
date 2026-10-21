@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireAdmin } from '../../common/middleware/role.middleware.js';
+import { requireSuperAdmin } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import {
   getStatus,
@@ -65,23 +65,23 @@ router.post(
   verifyStripePayment
 );
 
-// Admin-only Quota Top-Up Route
+// Admin-only Quota Top-Up Route (Strictly SuperAdmin Privilege)
 router.put(
   '/admin/topup/:userId',
-  requireAdmin,
+  requireSuperAdmin,
   validate(adminTopUpSchema),
   adminTopUpQuota
 );
 
-// Admin Finance & Executive Revenue Module Routes
-router.get('/admin/overview', requireAdmin, getOverview);
-router.get('/admin/transactions', requireAdmin, validate(getAdminTransactionsQuerySchema), getTransactions);
+// Admin Finance & Executive Revenue Module Routes (Strictly SuperAdmin Privilege)
+router.get('/admin/overview', requireSuperAdmin, getOverview);
+router.get('/admin/transactions', requireSuperAdmin, validate(getAdminTransactionsQuerySchema), getTransactions);
 router.post(
   '/admin/manual-transaction',
-  requireAdmin,
+  requireSuperAdmin,
   validate(recordManualTransactionSchema),
   recordManualTransaction
 );
-router.get('/admin/export', requireAdmin, validate(getAdminTransactionsQuerySchema), exportTransactionsCsv);
+router.get('/admin/export', requireSuperAdmin, validate(getAdminTransactionsQuerySchema), exportTransactionsCsv);
 
 export default router;

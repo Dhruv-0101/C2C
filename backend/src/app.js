@@ -51,8 +51,28 @@ app.set('trust proxy', 1);
  *      app.options('*') acts as the automatic receptionist instantly replying "200 OK! Yes, come on in!".
  *      Without this line, browser preflights fail with red CORS errors in Developer Tools.
  */
+const allowedOrigins = [
+  env.CLIENT_URL,
+  env.CLIENT_URL_PROD,
+  env.CLIENT_URL_DEV,
+  'https://65-0-208-238.sslip.io',
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
+const uniqueAllowedOrigins = [...new Set(allowedOrigins.map((url) => url.replace(/\/$/, '')))];
+
 const corsOptions = {
-  origin: true,
+  origin: (origin, callback) => {
+    // Allow non-browser requests (e.g. mobile apps, curl, BullMQ workers, server-to-server webhooks)
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/$/, '');
+    if (uniqueAllowedOrigins.includes(cleanOrigin) || env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    logger.warn(`🛑 [Security] Blocked unauthorized CORS request from origin: ${origin}`);
+    return callback(new Error(`Security Alert: CORS blocked origin '${origin}'`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],

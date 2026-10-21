@@ -123,7 +123,7 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
 
         <button
           onClick={onClose}
-          className="p-2.5 rounded-full border transition cursor-pointer shadow-xl"
+          className="p-2.5 rounded-full border transition cursor-pointer shadow-xl min-w-[36px] min-h-[36px] flex items-center justify-center"
           style={{
             backgroundColor: isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.95)",
             borderColor: isDark ? "#334155" : "#CBD5E1",
@@ -138,23 +138,16 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
       {/* Center Image Container - 100% Uncropped & Uncovered View */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex-1 min-h-0 w-full flex items-center justify-center py-2 sm:py-3 cursor-default"
+        className="flex-1 min-h-0 w-full flex items-center justify-center p-3 sm:p-4 cursor-default overflow-hidden"
       >
-        <div
-          className="h-full max-h-full max-w-full aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/50 flex items-center justify-center"
+        <img
+          src={activeUrl}
+          alt={title}
+          className="max-h-full max-w-full aspect-square rounded-2xl shadow-2xl border-2 border-amber-500/80 object-contain block shrink-0 select-none"
           style={{
             backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
           }}
-        >
-          <img
-            src={activeUrl}
-            alt={title}
-            className="w-full h-full object-contain"
-            style={{
-              backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
-            }}
-          />
-        </div>
+        />
       </div>
 
       {/* Lightbox Bottom Details & Action Control Bar */}
@@ -166,7 +159,7 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
           borderColor: isDark ? "#2C384E" : "#CBD5E1",
         }}
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between gap-2.5 sm:gap-3">
           <div className="truncate pr-2">
             <h3
               className="font-heading font-extrabold text-sm sm:text-base truncate"
@@ -186,19 +179,19 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 w-full min-[480px]:w-auto justify-end">
             <Button
               variant="primary"
               icon={Download}
               onClick={handleDownloadClick}
-              className="py-1.5 px-3 sm:px-4 text-xs font-extrabold bg-amber-500 text-slate-950 hover:bg-amber-400 border-0"
+              className="py-1.5 px-3 sm:px-4 text-xs font-extrabold bg-amber-500 text-slate-950 hover:bg-amber-400 border-0 min-h-[36px] flex-1 min-[480px]:flex-initial justify-center"
             >
               Download HD PNG
             </Button>
 
             <button
               onClick={onClose}
-              className="px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer"
+              className="px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer min-h-[36px] flex items-center justify-center shrink-0"
               style={{
                 backgroundColor: isDark ? "#1E293B" : "#F1F5F9",
                 borderColor: isDark ? "#334155" : "#E2E8F0",

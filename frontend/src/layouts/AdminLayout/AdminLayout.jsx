@@ -41,16 +41,16 @@ export const AdminLayout = () => {
       <div
         className={`flex-1 transition-all duration-300 ease-in-out ${
           isCollapsed ? 'lg:ml-20' : 'lg:ml-64'
-        } min-h-screen flex flex-col`}
+        } min-h-screen flex flex-col min-w-0 w-full`}
       >
         <AdminHeader
           user={user}
           isSuperAdmin={isSuperAdmin}
           onOpenMobile={() => setIsMobileOpen(true)}
-          onLogout={logout}
+          onLogout={() => logout()}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full overflow-y-auto">
+        <main className="flex-1 p-3 min-[380px]:p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-y-auto">
           <Suspense fallback={<ContentLoader />}>
             <Outlet />
           </Suspense>

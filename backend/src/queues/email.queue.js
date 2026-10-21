@@ -9,6 +9,7 @@ export const EMAIL_JOB_NAMES = {
   WELCOME_EMAIL: 'SEND_WELCOME_EMAIL',
   PASSWORD_RESET: 'SEND_PASSWORD_RESET',
   INVOICE_EMAIL: 'SEND_INVOICE_EMAIL',
+  REGISTRATION_OTP: 'SEND_REGISTRATION_OTP',
 };
 
 // Initialize Email BullMQ Queue only if Redis is configured
@@ -113,3 +114,33 @@ export async function addInvoiceEmailJob({ userId, transactionId }) {
     });
   }
 }
+
+/**
+ * Producer: Add Registration OTP Email Job to BullMQ Queue
+ * Non-blocking email dispatch ensuring < 5ms API response time
+ * 
+ * @param {{ email: string, otp: string, fullName?: string, expiresInMinutes?: number }} data
+ */
+export async function addRegistrationOtpEmailJob({ email, otp, fullName, expiresInMinutes = 10 }) {
+  try {
+    if (emailQueue) {
+      const job = await emailQueue.add(EMAIL_JOB_NAMES.REGISTRATION_OTP, {
+        email,
+        otp,
+        fullName,
+        expiresInMinutes,
+        createdAt: new Date().toISOString(),
+      });
+      logger.info(`🚀 [BullMQ Producer] Registration OTP Job #${job.id} dispatched for ${email}`);
+      return job;
+    }
+    throw new Error('Redis Queue unavailable');
+  } catch (error) {
+    logger.warn(`⚠️ [BullMQ Fallback] Redis queue unavailable (${error.message}). Executing direct sendOtpEmail for ${email}...`);
+    const { sendOtpEmail } = await import('../common/services/email.service.js');
+    sendOtpEmail({ email, otp, fullName, expiresInMinutes }).catch((e) => {
+      logger.error('Failed direct fallback registration OTP email send:', e.message);
+    });
+  }
+}
+

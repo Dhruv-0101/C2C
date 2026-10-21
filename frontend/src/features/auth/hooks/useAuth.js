@@ -8,6 +8,7 @@ import {
   selectAllowedTabs,
   selectAccessToken,
 } from '@/store/slices/authSlice';
+import { useLogout } from './useLogout';
 
 /**
  * Hook to access authentication state and role flags
@@ -20,6 +21,7 @@ export const useAuth = () => {
   const isSuperAdmin = useSelector(selectIsSuperAdmin);
   const isSubAdmin = useSelector(selectIsSubAdmin);
   const allowedTabs = useSelector(selectAllowedTabs);
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   return {
     user,
@@ -30,6 +32,8 @@ export const useAuth = () => {
     isSubAdmin,
     allowedTabs,
     isEndUser: !isAdmin,
+    logout,
+    isLoggingOut,
   };
 };
 

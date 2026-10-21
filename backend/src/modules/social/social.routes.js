@@ -13,7 +13,7 @@ import {
   adminUpdateOnboardingStatus,
 } from './social.controller.js';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireAdmin } from '../../common/middleware/role.middleware.js';
+import { requireSuperAdmin } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
 import {
   disconnectAccountSchema,
@@ -71,7 +71,7 @@ router.get('/onboarding-status', getSocialOnboardingStatus);
 // POST /api/v1/social/admin/connect-user-token
 router.post(
   '/admin/connect-user-token',
-  requireAdmin,
+  requireSuperAdmin,
   validate(adminConnectUserTokenSchema),
   adminConnectUserToken
 );
@@ -79,7 +79,7 @@ router.post(
 // PATCH /api/v1/social/admin/update-status
 router.patch(
   '/admin/update-status',
-  requireAdmin,
+  requireSuperAdmin,
   validate(updateOnboardingStatusSchema),
   adminUpdateOnboardingStatus
 );
@@ -87,7 +87,7 @@ router.patch(
 // DELETE /api/v1/social/admin/user/:userId/:platform
 router.delete(
   '/admin/user/:userId/:platform',
-  requireAdmin,
+  requireSuperAdmin,
   validate(adminDisconnectUserAccountSchema),
   adminDisconnectUserAccount
 );

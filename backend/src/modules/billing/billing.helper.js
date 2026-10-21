@@ -188,9 +188,15 @@ export const verifyRazorpaySignature = (orderId, paymentId, signature) => {
  * @param {number} params.amountInPaise - Amount in smallest currency unit (paise)
  * @param {string} [params.currency='INR'] - Currency code
  * @param {string} params.receipt - Internal receipt tracking ID
+ * @param {Object} [params.notes] - Optional server-side order metadata
  * @returns {Promise<Object>} Order data
  */
-export const createRazorpayOrderHelper = async ({ amountInPaise, currency = BILLING_CURRENCIES.INR, receipt }) => {
+export const createRazorpayOrderHelper = async ({
+  amountInPaise,
+  currency = BILLING_CURRENCIES.INR,
+  receipt,
+  notes,
+}) => {
   const keyId = env.RAZORPAY_KEY_ID;
   const keySecret = env.RAZORPAY_KEY_SECRET;
 
@@ -201,18 +207,23 @@ export const createRazorpayOrderHelper = async ({ amountInPaise, currency = BILL
 
   try {
     const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+    const orderPayload = {
+      amount: amountInPaise,
+      currency,
+      receipt,
+      payment_capture: 1,
+    };
+    if (notes && typeof notes === 'object') {
+      orderPayload.notes = notes;
+    }
+
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
         Authorization: `Basic ${auth}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        amount: amountInPaise,
-        currency,
-        receipt,
-        payment_capture: 1,
-      }),
+      body: JSON.stringify(orderPayload),
     });
 
     const data = await response.json();
@@ -226,6 +237,35 @@ export const createRazorpayOrderHelper = async ({ amountInPaise, currency = BILL
     logger.error(`❌ [BillingHelper] Razorpay API error: ${err.message}`);
     if (err instanceof BadRequestError) throw err;
     throw new BadRequestError(err.message || 'Razorpay payment gateway is currently unavailable.');
+  }
+};
+
+/**
+ * Fetch Razorpay Order by ID for tamper-proof server-side verification
+ *
+ * @param {string} orderId - Razorpay order ID
+ * @returns {Promise<Object|null>} Order details or null
+ */
+export const fetchRazorpayOrderHelper = async (orderId) => {
+  const keyId = env.RAZORPAY_KEY_ID;
+  const keySecret = env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret || !orderId) return null;
+
+  try {
+    const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+    const response = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${auth}`,
+      },
+    });
+
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (err) {
+    logger.warn(`⚠️ [BillingHelper] Failed to fetch Razorpay order ${orderId}: ${err.message}`);
+    return null;
   }
 };
 

@@ -39,7 +39,7 @@ export const DropdownMenu = ({
 
       {isOpen && (
         <div
-          className={`absolute ${alignStyles[align] || alignStyles.right} mt-2 w-48 rounded-xl bg-[#131B2A] border border-[#2C384E] shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150 ${className}`}
+          className={`absolute ${alignStyles[align] || alignStyles.right} mt-2 w-48 max-w-[calc(100vw-2rem)] rounded-xl bg-[#131B2A] border border-[#2C384E] shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150 ${className}`}
         >
           {typeof children === 'function' ? children({ close: () => setIsOpen(false) }) : children}
         </div>
@@ -52,7 +52,7 @@ export const DropdownMenuItem = ({ children, onClick, className = '', danger = f
   <button
     type="button"
     onClick={onClick}
-    className={`w-full text-left px-3.5 py-2 text-xs transition flex items-center gap-2 ${
+    className={`w-full text-left px-3.5 py-2 min-h-[36px] text-xs transition flex items-center gap-2 cursor-pointer ${
       danger
         ? 'text-rose-400 hover:bg-rose-500/10'
         : 'text-slate-300 hover:text-white hover:bg-slate-800'

@@ -192,35 +192,35 @@ export const StripeElementsModal = ({
   };
 
   return createPortal(
-    <div className="modal-backdrop-overlay fixed inset-0 z-[100000] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-[#131B2A] border border-indigo-500/50 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5">
+    <div className="modal-backdrop-overlay fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[92dvh] bg-[#131B2A] border border-indigo-500/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-7 shadow-2xl space-y-4 sm:space-y-5 my-auto flex flex-col overflow-y-auto custom-scrollbar">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+        <div className="flex items-center justify-between border-b border-[#2C384E] pb-3 sm:pb-4 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Stripe Card Checkout</h3>
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">Stripe Card Checkout</h3>
               <p className="text-xs text-slate-400">Complete your Pro Plan subscription</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
+            className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Order Summary Card */}
-        <div className="p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between gap-2">
           <div>
             <span className="text-xs text-slate-400 font-medium block">Total Subscription Amount</span>
-            <span className="text-2xl font-black text-white font-mono">${pricing?.finalTotal || '0'} USD</span>
+            <span className="text-xl sm:text-2xl font-black text-white font-mono">${pricing?.finalTotal || '0'} USD</span>
           </div>
-          <div className="text-right">
+          <div className="text-left min-[380px]:text-right">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5" /> {postCount} Posts Quota
             </span>

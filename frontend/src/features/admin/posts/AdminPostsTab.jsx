@@ -18,6 +18,7 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { FilterSearchablePicker } from "./components/FilterSearchablePicker";
+import { AdminPostAnalyticsBar } from "./components/AdminPostAnalyticsBar";
 import { categoryApi } from '@/features/admin/categories/api/category.api';
 import { frameApi } from '@/features/admin/frames/api/frame.api';
 import { templateCategoryApi } from '@/features/admin/template-categories/api/templateCategory.api';
@@ -26,13 +27,7 @@ import { festivalApi } from '@/features/admin/festivals/api/festival.api';
 /**
  * AdminPostsTab Component
  * Comprehensive audit & tracking interface for generated posts.
- * Allows Admins & SubAdmins to track posts across:
- * - Business Category (Industry Niche) with real-time search & pagination
- * - Frame Overlay applied with search & pagination
- * - Template & Template Category utilized with search & pagination
- * - Festival targeted with search & pagination
- * - Creator details (User Name, Email, Avatar)
- * - Platform KPI volume stats
+ * Fully responsive across mobile, tablet, laptop, and ultra-wide desktop viewports.
  */
 export const AdminPostsTab = ({
   posts = [],
@@ -115,15 +110,15 @@ export const AdminPostsTab = ({
   const displayFestivalName = selectedLabels.festival || selectedFestivalObj?.name;
 
   return (
-    <div className="animate-in fade-in duration-200 space-y-5">
+    <div className="animate-in fade-in duration-200 space-y-4 sm:space-y-5">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-[#2C384E] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200 dark:border-[#2C384E] pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30">
+          <div className="p-2.5 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30 shrink-0">
             <Layers className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <span>Generated Posts Audit & Tracking</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -133,11 +128,20 @@ export const AdminPostsTab = ({
         </div>
       </div>
 
+      {/* Post Analytics KPI Summary Bar (when available) */}
+      {analytics && (
+        <AdminPostAnalyticsBar
+          totalCount={analytics.totalPosts ?? postMeta?.totalItems ?? 0}
+          publishedCount={analytics.byStatus?.PUBLISHED ?? 0}
+          scheduledCount={analytics.byStatus?.SCHEDULED ?? 0}
+        />
+      )}
+
       {/* Multi-Dimensional Filter Toolbar with Paginated Comboboxes */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] space-y-3.5 shadow-xs">
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] space-y-3.5 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-            <Filter className="w-4 h-4 text-amber-500" />
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex-wrap">
+            <Filter className="w-4 h-4 text-amber-500 shrink-0" />
             <span>Filter Posts Audit Trail:</span>
             {postMeta?.totalItems !== undefined && (
               <span className="ml-1 text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
@@ -146,7 +150,7 @@ export const AdminPostsTab = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2 flex-1 max-w-md justify-end">
+          <div className="flex flex-col min-[480px]:flex-row items-stretch min-[480px]:items-center gap-2 w-full md:w-auto md:max-w-md justify-end">
             <SearchBar
               value={postSearch}
               onChange={(val) => {
@@ -155,18 +159,18 @@ export const AdminPostsTab = ({
                 setPostPage(1);
               }}
               placeholder="Search user name, email, occasion..."
-              className="w-full"
+              className="w-full min-h-[38px]"
             />
 
             {/* Post Status Selector */}
-            <div className="shrink-0">
+            <div className="shrink-0 w-full min-[480px]:w-auto">
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setPostPage(1);
                 }}
-                className="bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-slate-800 dark:text-white text-xs font-bold rounded-xl px-2.5 py-2 focus:outline-none focus:border-amber-500 transition cursor-pointer"
+                className="w-full min-[480px]:w-auto min-h-[38px] bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] text-slate-800 dark:text-white text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:border-amber-500 transition cursor-pointer"
               >
                 <option value="">All Statuses</option>
                 <option value="PUBLISHED">PUBLISHED</option>
@@ -402,7 +406,7 @@ export const AdminPostsTab = ({
             <button
               type="button"
               onClick={handleClearFilters}
-              className="ml-auto text-xs text-rose-600 dark:text-rose-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+              className="w-full sm:w-auto sm:ml-auto text-xs text-rose-600 dark:text-rose-400 hover:underline font-semibold flex items-center justify-center sm:justify-start gap-1 cursor-pointer py-1"
             >
               <X className="w-3.5 h-3.5" />
               <span>Clear all filters</span>
@@ -416,69 +420,91 @@ export const AdminPostsTab = ({
         <Alert variant="error" message={postsFetchError.message || "Failed to load posts audit trail."} />
       )}
 
-      {/* Posts Audit Feed Table (List View) */}
+      {/* Hybrid Posts Display: Mobile Card Stack (< 768px) & Desktop Table (>= 768px) */}
       {isLoadingPosts ? (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] shadow-sm">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-[#2C384E]">
-              <tr>
-                <th className="py-2.5 px-3">Post Artwork</th>
-                <th className="py-2.5 px-3">Creator User</th>
-                <th className="py-2.5 px-3">Business Category</th>
-                <th className="py-2.5 px-3">Frame Overlay</th>
-                <th className="py-2.5 px-3">Template & Theme</th>
-                <th className="py-2.5 px-3">Festival</th>
-                <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3">Created At</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#2C384E]/50">
-              {Array.from({ length: 6 }).map((_, rIdx) => (
-                <tr key={rIdx} className="border-b border-slate-100 dark:border-[#2C384E]/40">
-                  <td className="py-2.5 px-3">
-                    <div className="w-11 h-11 rounded-xl skeleton-shimmer shrink-0" />
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full skeleton-shimmer shrink-0" />
+        <div className="space-y-4">
+          {/* Mobile Loading Skeletons */}
+          <div className="block md:hidden space-y-3">
+            {Array.from({ length: 4 }).map((_, rIdx) => (
+              <div
+                key={rIdx}
+                className="p-4 rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] space-y-3 shadow-xs"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl skeleton-shimmer shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-32 rounded skeleton-shimmer" />
+                    <div className="h-3 w-40 rounded skeleton-shimmer opacity-60" />
+                  </div>
+                </div>
+                <div className="h-5 w-24 rounded-full skeleton-shimmer" />
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Loading Table */}
+          <div className="hidden md:block overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] shadow-sm">
+            <table className="w-full text-left text-xs min-w-[880px]">
+              <thead className="bg-slate-50 dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-[#2C384E]">
+                <tr>
+                  <th className="py-2.5 px-3">Post Artwork</th>
+                  <th className="py-2.5 px-3">Creator User</th>
+                  <th className="py-2.5 px-3">Business Category</th>
+                  <th className="py-2.5 px-3">Frame Overlay</th>
+                  <th className="py-2.5 px-3">Template & Theme</th>
+                  <th className="py-2.5 px-3">Festival</th>
+                  <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 px-3">Created At</th>
+                  <th className="py-2.5 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-[#2C384E]/50">
+                {Array.from({ length: 6 }).map((_, rIdx) => (
+                  <tr key={rIdx} className="border-b border-slate-100 dark:border-[#2C384E]/40">
+                    <td className="py-2.5 px-3">
+                      <div className="w-11 h-11 rounded-xl skeleton-shimmer shrink-0" />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full skeleton-shimmer shrink-0" />
+                        <div className="space-y-1">
+                          <div className="h-3.5 w-24 rounded skeleton-shimmer" />
+                          <div className="h-2.5 w-16 rounded skeleton-shimmer opacity-60" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="h-6 w-24 rounded-full skeleton-shimmer" />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="h-6 w-20 rounded-full skeleton-shimmer" />
+                    </td>
+                    <td className="py-2.5 px-3">
                       <div className="space-y-1">
-                        <div className="h-3.5 w-24 rounded skeleton-shimmer" />
+                        <div className="h-3.5 w-28 rounded skeleton-shimmer" />
                         <div className="h-2.5 w-16 rounded skeleton-shimmer opacity-60" />
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <div className="h-6 w-24 rounded-full skeleton-shimmer" />
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <div className="h-6 w-20 rounded-full skeleton-shimmer" />
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <div className="space-y-1">
-                      <div className="h-3.5 w-28 rounded skeleton-shimmer" />
-                      <div className="h-2.5 w-16 rounded skeleton-shimmer opacity-60" />
-                    </div>
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <div className="h-3.5 w-20 rounded skeleton-shimmer" />
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <div className="h-6 w-16 rounded-full skeleton-shimmer" />
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <div className="h-3.5 w-20 rounded skeleton-shimmer" />
-                  </td>
-                  <td className="py-2.5 px-3 text-right">
-                    <div className="h-7 w-16 rounded-lg skeleton-shimmer ml-auto" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="h-3.5 w-20 rounded skeleton-shimmer" />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="h-6 w-16 rounded-full skeleton-shimmer" />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="h-3.5 w-20 rounded skeleton-shimmer" />
+                    </td>
+                    <td className="py-2.5 px-3 text-right">
+                      <div className="h-7 w-16 rounded-lg skeleton-shimmer ml-auto" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : posts.length === 0 ? (
-        <div className="p-10 text-center border border-dashed border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] rounded-2xl space-y-3">
+        <div className="p-8 sm:p-10 text-center border border-dashed border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] rounded-2xl space-y-3">
           <Layers className="w-9 h-9 text-slate-400 dark:text-slate-600 mx-auto" />
           <p className="text-slate-600 dark:text-slate-300 font-semibold text-sm">
             No generated posts match the selected criteria.
@@ -488,7 +514,7 @@ export const AdminPostsTab = ({
               variant="outline"
               size="sm"
               onClick={handleClearFilters}
-              className="mt-2 text-xs"
+              className="mt-2 text-xs min-h-[36px]"
             >
               Clear all filters
             </Button>
@@ -496,8 +522,138 @@ export const AdminPostsTab = ({
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] shadow-sm">
-            <table className="w-full text-left text-xs">
+          {/* Mobile Card Stack View (< 768px) */}
+          <div className="block md:hidden space-y-3">
+            {posts.map((post) => {
+              const creator = post.user;
+              const categoryName = post.category?.name || "General Business";
+              const frameTitle = post.frame?.title || "No Frame";
+              const templateTitle = post.template?.title || "Custom Graphic";
+              const templateCategoryName = post.template?.templateCategory?.name || "General";
+              const festivalName = post.festival?.name || "-";
+              const graphicUrl = post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl;
+
+              return (
+                <div
+                  key={post.id}
+                  className="p-4 rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] space-y-3.5 shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition"
+                >
+                  {/* Top Row: Thumbnail + Creator Info + Status */}
+                  <div className="flex items-start gap-3">
+                    {/* Clickable Thumbnail */}
+                    <div
+                      onClick={() => setSelectedPostForLightbox(post)}
+                      className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] relative group cursor-pointer shrink-0 shadow-sm"
+                      title="Tap to preview high-res graphic"
+                    >
+                      {graphicUrl ? (
+                        <img
+                          src={graphicUrl}
+                          alt={post.occasionName || "Post preview"}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600">
+                          <Image className="w-5 h-5" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <Eye className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+
+                    {/* Creator User & Status */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                        <span className="font-semibold text-slate-900 dark:text-white text-sm truncate" title={creator?.fullName || "User"}>
+                          {creator?.fullName || "Anonymous User"}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border shrink-0 ${
+                            post.status === "PUBLISHED"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30"
+                              : post.status === "SCHEDULED"
+                              ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-400 dark:border-blue-500/30"
+                              : "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30"
+                          }`}
+                        >
+                          {post.status === "PUBLISHED" ? (
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                          ) : post.status === "SCHEDULED" ? (
+                            <Clock className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                          ) : (
+                            <AlertCircle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                          )}
+                          <span>{post.status}</span>
+                        </span>
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate mt-0.5">
+                        {creator?.email}
+                      </div>
+
+                      <div className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate mt-1">
+                        {templateTitle}
+                        <span className="text-[11px] text-amber-700 dark:text-amber-400 ml-1.5 font-normal">
+                          ({templateCategoryName})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Badges Flow: Category, Frame, Festival */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20 text-[11px] font-medium">
+                      <FolderKanban className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
+                      <span className="truncate max-w-[140px]">{categoryName}</span>
+                    </span>
+
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+                        post.frameId
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20"
+                          : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700/40"
+                      }`}
+                    >
+                      <Maximize2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      <span className="truncate max-w-[130px]">{frameTitle}</span>
+                    </span>
+
+                    {post.festivalId && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20 text-[11px] font-medium">
+                        <Calendar className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                        <span className="truncate max-w-[130px]">{festivalName}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Footer: Date & Preview Action */}
+                  <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-[#2C384E]/60 text-xs">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                      {post.createdAt ? new Date(post.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      }) : "-"}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPostForLightbox(post)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:hover:text-white transition font-semibold text-xs min-h-[36px] cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Preview Post</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Posts Table (>= 768px) */}
+          <div className="hidden md:block overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] shadow-sm">
+            <table className="w-full text-left text-xs min-w-[880px]">
               <thead className="bg-slate-50 dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-200 dark:border-[#2C384E]">
                 <tr>
                   <th className="py-2.5 px-3">Post Artwork</th>
@@ -567,7 +723,7 @@ export const AdminPostsTab = ({
                         </div>
                       </td>
 
-                      {/* Business Category (Task 14 Fix: crisp light theme contrast) */}
+                      {/* Business Category */}
                       <td className="py-2.5 px-3">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20 text-[11px] font-medium whitespace-nowrap">
                           <FolderKanban className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
@@ -649,7 +805,7 @@ export const AdminPostsTab = ({
                         <button
                           type="button"
                           onClick={() => setSelectedPostForLightbox(post)}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white transition cursor-pointer shadow-2xs"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white transition cursor-pointer shadow-2xs min-h-[36px] min-w-[36px] inline-flex items-center justify-center"
                           title="View High-Res Graphic"
                         >
                           <Eye className="w-4 h-4" />

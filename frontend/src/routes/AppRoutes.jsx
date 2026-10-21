@@ -9,6 +9,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { PageLoader } from '@/components/feedback/PageLoader';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { getRoleRedirectPath } from '@/shared/utils/auth.util';
+import { ADMIN_TABS } from '@/shared/constants';
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import {
@@ -77,9 +78,54 @@ const AdminDashboardPage = lazy(() =>
     default: m.AdminDashboardPage || m.default,
   }))
 );
-const SubAdminDashboardPage = lazy(() =>
-  import("../features/admin/pages/SubAdminDashboardPage").then((m) => ({
-    default: m.SubAdminDashboardPage || m.default,
+const AdminTemplatesPage = lazy(() =>
+  import("../features/admin/pages/AdminTemplatesPage").then((m) => ({
+    default: m.AdminTemplatesPage || m.default,
+  }))
+);
+const AdminTemplateCategoriesPage = lazy(() =>
+  import("../features/admin/pages/AdminTemplateCategoriesPage").then((m) => ({
+    default: m.AdminTemplateCategoriesPage || m.default,
+  }))
+);
+const AdminFestivalsPage = lazy(() =>
+  import("../features/admin/pages/AdminFestivalsPage").then((m) => ({
+    default: m.AdminFestivalsPage || m.default,
+  }))
+);
+const AdminFramesPage = lazy(() =>
+  import("../features/admin/pages/AdminFramesPage").then((m) => ({
+    default: m.AdminFramesPage || m.default,
+  }))
+);
+const AdminCategoriesPage = lazy(() =>
+  import("../features/admin/pages/AdminCategoriesPage").then((m) => ({
+    default: m.AdminCategoriesPage || m.default,
+  }))
+);
+const AdminUsersPage = lazy(() =>
+  import("../features/admin/pages/AdminUsersPage").then((m) => ({
+    default: m.AdminUsersPage || m.default,
+  }))
+);
+const AdminSubAdminsPage = lazy(() =>
+  import("../features/admin/pages/AdminSubAdminsPage").then((m) => ({
+    default: m.AdminSubAdminsPage || m.default,
+  }))
+);
+const AdminSubAdminActivityPage = lazy(() =>
+  import("../features/admin/pages/AdminSubAdminActivityPage").then((m) => ({
+    default: m.AdminSubAdminActivityPage || m.default,
+  }))
+);
+const AdminFinancePage = lazy(() =>
+  import("../features/admin/pages/AdminFinancePage").then((m) => ({
+    default: m.AdminFinancePage || m.default,
+  }))
+);
+const AdminPostsPage = lazy(() =>
+  import("../features/admin/pages/AdminPostsPage").then((m) => ({
+    default: m.AdminPostsPage || m.default,
   }))
 );
 const BrandKitPage = lazy(() =>
@@ -117,6 +163,12 @@ const TermsOfServicePage = lazy(() =>
     default: m.TermsOfServicePage || m.default,
   }))
 );
+const YourPlanPage = lazy(() =>
+  import("../features/billing/pages/YourPlanPage").then((m) => ({
+    default: m.YourPlanPage || m.default,
+  }))
+);
+
 
 const GenericPage = ({ title, icon: Icon, description }) => (
   <Card className="p-8 text-center space-y-4 border-[#2C384E] bg-[#131B2A]">
@@ -157,6 +209,7 @@ export const AppRoutes = () => {
         </Route>
 
         {/* Public Informational & Legal Routes */}
+        <Route path="/loader-preview" element={<PageLoader />} />
         <Route element={<PublicLayout />}>
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />
@@ -180,6 +233,9 @@ export const AppRoutes = () => {
             <Route path="/social" element={<Navigate to="/connections" replace />} />
             <Route path="/vault" element={<VaultPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/plan" element={<YourPlanPage />} />
+            <Route path="/billing" element={<Navigate to="/plan" replace />} />
+            <Route path="/subscription" element={<Navigate to="/plan" replace />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route
               path="/settings"
@@ -199,7 +255,34 @@ export const AppRoutes = () => {
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-            <Route path="/subadmin/dashboard" element={<AdminDashboardPage />} />
+
+            {/* SubAdmin Granular Permitted Tabs (SuperAdmin bypasses automatically) */}
+            <Route element={<ProtectedRoute requireTab={ADMIN_TABS.TEMPLATES} />}>
+              <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+            </Route>
+            <Route element={<ProtectedRoute requireTab={ADMIN_TABS.TEMPLATE_CATEGORIES} />}>
+              <Route path="/admin/template-categories" element={<AdminTemplateCategoriesPage />} />
+            </Route>
+            <Route element={<ProtectedRoute requireTab={ADMIN_TABS.FESTIVALS} />}>
+              <Route path="/admin/festivals" element={<AdminFestivalsPage />} />
+            </Route>
+            <Route element={<ProtectedRoute requireTab={ADMIN_TABS.FRAMES} />}>
+              <Route path="/admin/frames" element={<AdminFramesPage />} />
+            </Route>
+            <Route element={<ProtectedRoute requireTab={ADMIN_TABS.POSTS} />}>
+              <Route path="/admin/posts" element={<AdminPostsPage />} />
+            </Route>
+
+            {/* SuperAdmin Exclusive Privileged Routes */}
+            <Route element={<ProtectedRoute requireSuperAdmin />}>
+              <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/subadmins" element={<AdminSubAdminsPage />} />
+              <Route path="/admin/subadmin-activity" element={<AdminSubAdminActivityPage />} />
+              <Route path="/admin/finance" element={<AdminFinancePage />} />
+            </Route>
+
+            <Route path="/subadmin/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
         </Route>
 

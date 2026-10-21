@@ -17,7 +17,7 @@ export const getRoleRedirectPath = (user) => {
   );
 
   if (isSuperAdmin) {
-    return "/admin?tab=dashboard";
+    return "/admin/dashboard";
   }
 
   if (isSubAdmin) {
@@ -25,7 +25,7 @@ export const getRoleRedirectPath = (user) => {
       Array.isArray(user.allowedTabs) && user.allowedTabs.length > 0
         ? user.allowedTabs[0]
         : "dashboard";
-    return `/admin?tab=${firstAllowed}`;
+    return `/admin/${firstAllowed}`;
   }
 
   return "/dashboard";

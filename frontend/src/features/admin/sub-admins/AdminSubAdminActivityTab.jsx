@@ -159,27 +159,27 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
   };
 
   return (
-    <div className="animate-in fade-in duration-200 space-y-6">
+    <div className="animate-in fade-in duration-200 space-y-5 sm:space-y-6">
       {/* 1. Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2C384E] pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-4 border-b border-[#2C384E] pb-4 sm:pb-5">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shadow-glow">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shadow-glow shrink-0">
               <Activity className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-heading font-extrabold text-xl text-white tracking-wide flex items-center gap-2">
+              <h2 className="font-heading font-extrabold text-lg sm:text-xl text-white tracking-wide flex items-center gap-2">
                 SubAdmin Creations & Activity Audit
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
                 Real-time tracking of all graphic templates, brand frames, festivals, and template categories created by SubAdmins.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] text-slate-400 font-mono hidden sm:inline-block">
+        <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 w-full md:w-auto">
+          <span className="text-[11px] text-slate-400 font-mono hidden min-[420px]:inline-block">
             Updated {formatRelativeTime(lastRefreshedAt) || "just now"}
           </span>
 
@@ -187,7 +187,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
             type="button"
             onClick={handleRefreshFeed}
             disabled={isFetching}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border flex items-center gap-2 cursor-pointer shadow-sm select-none ${
+            className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border flex items-center justify-center gap-2 cursor-pointer shadow-sm select-none min-h-[38px] ${
               isRefreshedRecently
                 ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
                 : "bg-[#131B2A] border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-500/50 hover:bg-[#1A2538]"
@@ -215,15 +215,15 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
 
 
       {/* 2. Top Summary Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 min-[340px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
         {/* Total Creations */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-[#131B2A] to-[#0B0F17] border border-amber-500/30 shadow-lg relative overflow-hidden group">
+        <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#131B2A] to-[#0B0F17] border border-amber-500/30 shadow-lg relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">Total Created</span>
-            <Sparkles className="w-4 h-4 text-amber-400" />
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-heading">
+            <span className="text-xl sm:text-2xl font-black text-white font-heading">
               {summary?.totalCreations ?? 0}
             </span>
             <span className="text-[10px] text-amber-400 font-medium">All Works</span>
@@ -233,7 +233,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         {/* Graphic Templates */}
         <div
           onClick={() => handleTypeSelect(selectedType === "template" ? "all" : "template")}
-          className={`p-4 rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-purple-500/60 ${
+          className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-purple-500/60 ${
             selectedType === "template"
               ? "border-purple-500 bg-purple-500/10 shadow-lg"
               : "border-[#2C384E]"
@@ -241,10 +241,10 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-purple-300">Templates</span>
-            <FileCode2 className="w-4 h-4 text-purple-400" />
+            <FileCode2 className="w-4 h-4 text-purple-400 shrink-0" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-heading">
+            <span className="text-xl sm:text-2xl font-black text-white font-heading">
               {typeCounts.templates}
             </span>
             <span className="text-[10px] text-purple-400 font-medium">Posters</span>
@@ -254,7 +254,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         {/* Brand Frames */}
         <div
           onClick={() => handleTypeSelect(selectedType === "frame" ? "all" : "frame")}
-          className={`p-4 rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-sky-500/60 ${
+          className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-sky-500/60 ${
             selectedType === "frame"
               ? "border-sky-500 bg-sky-500/10 shadow-lg"
               : "border-[#2C384E]"
@@ -262,10 +262,10 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-sky-300">Brand Frames</span>
-            <Layers className="w-4 h-4 text-sky-400" />
+            <Layers className="w-4 h-4 text-sky-400 shrink-0" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-heading">
+            <span className="text-xl sm:text-2xl font-black text-white font-heading">
               {typeCounts.frames}
             </span>
             <span className="text-[10px] text-sky-400 font-medium">Overlays</span>
@@ -275,7 +275,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         {/* Festival Events */}
         <div
           onClick={() => handleTypeSelect(selectedType === "festival" ? "all" : "festival")}
-          className={`p-4 rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-emerald-500/60 ${
+          className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-emerald-500/60 ${
             selectedType === "festival"
               ? "border-emerald-500 bg-emerald-500/10 shadow-lg"
               : "border-[#2C384E]"
@@ -283,10 +283,10 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-emerald-300">Festivals</span>
-            <Calendar className="w-4 h-4 text-emerald-400" />
+            <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-heading">
+            <span className="text-xl sm:text-2xl font-black text-white font-heading">
               {typeCounts.festivals}
             </span>
             <span className="text-[10px] text-emerald-400 font-medium">Events</span>
@@ -296,18 +296,18 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         {/* Template Categories */}
         <div
           onClick={() => handleTypeSelect(selectedType === "templateCategory" ? "all" : "templateCategory")}
-          className={`p-4 rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-teal-500/60 ${
+          className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#131B2A] border cursor-pointer transition-all hover:border-teal-500/60 ${
             selectedType === "templateCategory"
               ? "border-teal-500 bg-teal-500/10 shadow-lg"
               : "border-[#2C384E]"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-teal-300">Tpl Categories</span>
-            <FolderTree className="w-4 h-4 text-teal-400" />
+            <span className="text-xs font-semibold text-teal-300 truncate pr-1">Tpl Categories</span>
+            <FolderTree className="w-4 h-4 text-teal-400 shrink-0" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-heading">
+            <span className="text-xl sm:text-2xl font-black text-white font-heading">
               {typeCounts.templateCategories || 0}
             </span>
             <span className="text-[10px] text-teal-400 font-medium">Themes</span>
@@ -316,10 +316,10 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
       </div>
 
       {/* 3. SubAdmin Contributor Quick Filter Carousel / Strip */}
-      <div className="p-4 rounded-2xl bg-[#131B2A]/80 border border-[#2C384E] space-y-3">
-        <div className="flex items-center justify-between">
+      <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#131B2A]/80 border border-[#2C384E] space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-amber-400" />
+            <User className="w-4 h-4 text-amber-400 shrink-0" />
             <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
               Filter by SubAdmin Author
             </span>
@@ -327,7 +327,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
           {selectedSubAdminId && (
             <button
               onClick={() => handleSubAdminSelect("")}
-              className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
+              className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
               Reset Author Filter
@@ -335,10 +335,10 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
           <button
             onClick={() => handleSubAdminSelect("")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 ${
+            className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 min-h-[38px] cursor-pointer ${
               selectedSubAdminId === ""
                 ? "bg-amber-500 text-slate-950 shadow-glow font-extrabold"
                 : "bg-[#0B0F17] text-slate-400 hover:text-white border border-[#2C384E]"
@@ -364,14 +364,14 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
               <button
                 key={subAdmin.id}
                 onClick={() => handleSubAdminSelect(isSelected ? "" : subAdmin.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2.5 ${
+                className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2.5 min-h-[38px] cursor-pointer ${
                   isSelected
                     ? "bg-amber-500 text-slate-950 shadow-glow font-bold"
                     : "bg-[#0B0F17] text-slate-300 hover:text-white border border-[#2C384E] hover:border-amber-500/40"
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold shrink-0 ${
                     isSelected
                       ? "bg-slate-950 text-amber-400"
                       : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
@@ -380,12 +380,12 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                   {subAdmin.fullName?.charAt(0)?.toUpperCase() || "S"}
                 </div>
                 <div className="text-left">
-                  <span className="block truncate max-w-[140px] text-xs">
+                  <span className="block truncate max-w-[130px] sm:max-w-[150px] text-xs">
                     {subAdmin.fullName}
                   </span>
                 </div>
                 <span
-                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
                     isSelected
                       ? "bg-slate-950/20 text-slate-950"
                       : "bg-amber-500/10 text-amber-300 border border-amber-500/20"
@@ -400,9 +400,9 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
       </div>
 
       {/* 4. Controls Toolbar (Type Filter, Search, Sort) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#0B0F17] p-3 rounded-2xl border border-[#2C384E]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#0B0F17] p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-[#2C384E]">
         {/* Type Filter Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 md:pb-0 custom-scrollbar">
           {[
             { id: "all", label: "All Items" },
             { id: "template", label: "Templates", count: typeCounts.templates },
@@ -415,10 +415,10 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
               <button
                 key={tab.id}
                 onClick={() => handleTypeSelect(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shrink-0 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shrink-0 min-h-[34px] cursor-pointer ${
                   isActive
                     ? "bg-slate-800 text-amber-400 border border-amber-500/40 font-bold"
-                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
                 }`}
               >
                 <span>{tab.label}</span>
@@ -433,8 +433,8 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         </div>
 
         {/* Search Bar & View Mode Toggle */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto shrink-0">
-          <div className="w-full sm:w-64">
+        <div className="flex flex-col min-[480px]:flex-row items-stretch min-[480px]:items-center gap-2 sm:gap-2.5 w-full md:w-auto shrink-0">
+          <div className="w-full min-[480px]:w-60 lg:w-64">
             <SearchBar
               value={searchTerm}
               onChange={(val) => {
@@ -447,11 +447,11 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-[#131B2A] p-1 rounded-xl border border-[#2C384E] shrink-0 self-end sm:self-auto">
+          <div className="flex items-center gap-1 bg-[#131B2A] p-1 rounded-xl border border-[#2C384E] shrink-0 self-stretch min-[480px]:self-auto">
             <button
               type="button"
               onClick={() => setViewMode("cards")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+              className={`flex-1 min-[480px]:flex-initial text-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold transition min-h-[34px] cursor-pointer ${
                 viewMode === "cards"
                   ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
                   : "text-slate-400 hover:text-white"
@@ -462,7 +462,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
             <button
               type="button"
               onClick={() => setViewMode("auditLog")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+              className={`flex-1 min-[480px]:flex-initial text-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold transition min-h-[34px] cursor-pointer ${
                 viewMode === "auditLog"
                   ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
                   : "text-slate-400 hover:text-white"
@@ -523,7 +523,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
             {items.map((item) => {
               const cfg = TYPE_CONFIG[item.itemType] || TYPE_CONFIG.template;
               const Icon = cfg.icon;
@@ -534,7 +534,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                   className="rounded-2xl bg-[#131B2A] border border-[#2C384E] hover:border-amber-500/40 transition-all duration-200 overflow-hidden flex flex-col group hover:shadow-xl"
                 >
                   {/* Card Header Badge & Time */}
-                  <div className="p-3.5 border-b border-[#2C384E]/70 flex items-center justify-between bg-[#0B0F17]/40">
+                  <div className="p-3 sm:p-3.5 border-b border-[#2C384E]/70 flex items-center justify-between bg-[#0B0F17]/40">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border ${cfg.badgeColor}`}
                     >
@@ -552,11 +552,14 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                   </div>
 
                   {/* Card Media Preview Container */}
-                  <div className="relative h-44 bg-[#0B0F17] flex items-center justify-center overflow-hidden border-b border-[#2C384E]/50 group-hover:bg-[#070A0F] transition">
+                  <div
+                    onClick={() => setInspectItem(item)}
+                    className="relative h-40 sm:h-44 bg-[#0B0F17] flex items-center justify-center overflow-hidden border-b border-[#2C384E]/50 group-hover:bg-[#070A0F] transition cursor-pointer"
+                  >
                     {item.itemType === "templateCategory" ? (
-                      <div className="text-center p-6 space-y-2">
-                        <div className="w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center mx-auto">
-                          <FolderTree className="w-7 h-7" />
+                      <div className="text-center p-4 sm:p-6 space-y-2">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center mx-auto">
+                          <FolderTree className="w-6 h-6 sm:w-7 sm:h-7" />
                         </div>
                         <span className="text-xs font-bold text-teal-300 block font-mono">
                           /{item.subtitle?.replace("Slug: /", "")}
@@ -577,10 +580,14 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                     )}
 
                     {/* Quick Overlay Action */}
-                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-4">
+                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3 sm:p-4">
                       <button
-                        onClick={() => setInspectItem(item)}
-                        className="px-3 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg hover:bg-amber-400 transition"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setInspectItem(item);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-white text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg hover:bg-amber-400 transition cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Inspect</span>
@@ -588,8 +595,12 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
 
                       {onNavigateTab && (
                         <button
-                          onClick={() => onNavigateTab(cfg.targetTab)}
-                          className="px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-700 hover:bg-slate-700 transition"
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onNavigateTab(cfg.targetTab);
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
                           title={`Open ${cfg.label} in ${cfg.targetTab} tab`}
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -600,7 +611,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                   </div>
 
                   {/* Card Content & Details */}
-                  <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between space-y-3">
                     <div>
                       <h4
                         className="font-bold text-sm text-white truncate group-hover:text-amber-300 transition"
@@ -621,12 +632,12 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                     </div>
 
                     {/* SubAdmin Creator Attribution Bar */}
-                    <div className="pt-2.5 border-t border-[#2C384E]/70 flex items-center justify-between">
-                      <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="pt-2.5 border-t border-[#2C384E]/70 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 overflow-hidden min-w-0">
                         <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-extrabold flex items-center justify-center shrink-0">
                           {item.creator?.fullName?.charAt(0)?.toUpperCase() || "S"}
                         </div>
-                        <div className="overflow-hidden">
+                        <div className="overflow-hidden min-w-0">
                           <span
                             className="text-xs font-bold text-slate-200 block truncate"
                             title={item.creator?.fullName}
@@ -668,94 +679,103 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
 
       {/* 8. Inspect Item Modal */}
       {inspectItem && (
-        <div className="modal-backdrop-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-[#131B2A] border border-[#2C384E] rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 overflow-hidden">
+        <div className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150 overflow-y-auto">
+          <div className="bg-[#131B2A] border border-[#2C384E] rounded-2xl sm:rounded-3xl max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
-              <div className="flex items-center gap-2">
+            <div className="p-4 sm:p-5 border-b border-[#2C384E] shrink-0 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold border ${
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold border shrink-0 ${
                     TYPE_CONFIG[inspectItem.itemType]?.badgeColor
                   }`}
                 >
                   {TYPE_CONFIG[inspectItem.itemType]?.label}
                 </span>
-                <span className="text-xs text-slate-400">Creation Audit Detail</span>
+                <span className="text-xs text-slate-400 truncate">Creation Audit Detail</span>
               </div>
               <button
+                type="button"
                 onClick={() => setInspectItem(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="p-1.5 min-w-[36px] min-h-[36px] rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center justify-center shrink-0"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Modal Media Preview */}
-            <div className="h-64 bg-[#0B0F17] rounded-2xl border border-[#2C384E] flex items-center justify-center overflow-hidden relative">
-              {inspectItem.itemType === "templateCategory" ? (
-                <div className="text-center space-y-2 p-4">
-                  <div className="w-16 h-16 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center mx-auto">
-                    <FolderTree className="w-8 h-8" />
+            {/* Modal Scrollable Body */}
+            <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+              {/* Modal Media Preview */}
+              <div className="h-44 sm:h-64 bg-[#0B0F17] rounded-xl sm:rounded-2xl border border-[#2C384E] flex items-center justify-center overflow-hidden relative">
+                {inspectItem.itemType === "templateCategory" ? (
+                  <div className="text-center space-y-2 p-4">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center mx-auto">
+                      <FolderTree className="w-7 h-7 sm:w-8 sm:h-8" />
+                    </div>
+                    <h3 className="font-heading font-extrabold text-white text-base sm:text-lg">
+                      {inspectItem.title}
+                    </h3>
+                    <p className="text-xs text-teal-300 font-mono">
+                      Slug: /{inspectItem.subtitle?.replace("Slug: /", "")}
+                    </p>
                   </div>
-                  <h3 className="font-heading font-extrabold text-white text-lg">
-                    {inspectItem.title}
-                  </h3>
-                  <p className="text-xs text-teal-300 font-mono">
-                    Slug: /{inspectItem.subtitle?.replace("Slug: /", "")}
-                  </p>
-                </div>
-              ) : inspectItem.previewUrl ? (
-                <img
-                  src={inspectItem.previewUrl}
-                  alt={inspectItem.title}
-                  className="max-h-full max-w-full object-contain p-2"
-                />
-              ) : (
-                <div className="text-slate-500 text-xs">No media preview available</div>
-              )}
-            </div>
-
-            {/* Modal Metadata Grid */}
-            <div className="space-y-3">
-              <div>
-                <h3 className="font-heading font-extrabold text-white text-lg">
-                  {inspectItem.title}
-                </h3>
-                {inspectItem.description && (
-                  <p className="text-xs text-slate-400 mt-1">{inspectItem.description}</p>
+                ) : inspectItem.previewUrl ? (
+                  <img
+                    src={inspectItem.previewUrl}
+                    alt={inspectItem.title}
+                    className="max-h-full max-w-full object-contain p-2"
+                  />
+                ) : (
+                  <div className="text-slate-500 text-xs">No media preview available</div>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
+              {/* Modal Metadata */}
+              <div className="space-y-3">
                 <div>
-                  <span className="text-slate-500 text-[10px] block uppercase font-bold">
-                    Created By
-                  </span>
-                  <span className="text-white font-bold block mt-0.5">
-                    {inspectItem.creator?.fullName || "SubAdmin"}
-                  </span>
-                  <span className="text-slate-400 text-[10px] block">
-                    {inspectItem.creator?.email}
-                  </span>
+                  <h3 className="font-heading font-extrabold text-white text-base sm:text-lg">
+                    {inspectItem.title}
+                  </h3>
+                  {inspectItem.description && (
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">{inspectItem.description}</p>
+                  )}
                 </div>
 
-                <div>
-                  <span className="text-slate-500 text-[10px] block uppercase font-bold">
-                    Timestamp
-                  </span>
-                  <span className="text-white font-bold block mt-0.5">
-                    {formatDate(inspectItem.createdAt)}
-                  </span>
-                  <span className="text-amber-400 text-[10px] block">
-                    ({formatRelativeTime(inspectItem.createdAt)})
-                  </span>
+                <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2.5 sm:gap-3 p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs">
+                  <div>
+                    <span className="text-slate-500 text-[10px] block uppercase font-bold">
+                      Created By
+                    </span>
+                    <span className="text-white font-bold block mt-0.5 truncate">
+                      {inspectItem.creator?.fullName || "SubAdmin"}
+                    </span>
+                    <span className="text-slate-400 text-[10px] block truncate">
+                      {inspectItem.creator?.email}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-500 text-[10px] block uppercase font-bold">
+                      Timestamp
+                    </span>
+                    <span className="text-white font-bold block mt-0.5">
+                      {formatDate(inspectItem.createdAt)}
+                    </span>
+                    <span className="text-amber-400 text-[10px] block">
+                      ({formatRelativeTime(inspectItem.createdAt)})
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setInspectItem(null)}>
+            <div className="p-4 sm:p-5 border-t border-[#2C384E] shrink-0 bg-[#0B0F17]/50 flex flex-col-reverse min-[380px]:flex-row items-stretch min-[380px]:items-center justify-end gap-2.5 sm:gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setInspectItem(null)}
+                className="w-full min-[380px]:w-auto min-h-[40px] justify-center"
+              >
                 Close
               </Button>
               {onNavigateTab && (
@@ -767,6 +787,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
                     setInspectItem(null);
                     if (target) onNavigateTab(target);
                   }}
+                  className="w-full min-[380px]:w-auto min-h-[40px] justify-center"
                 >
                   Manage in {TYPE_CONFIG[inspectItem.itemType]?.label} Tab
                 </Button>

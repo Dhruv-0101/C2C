@@ -1,4 +1,5 @@
 @import './theme.css';
+@import './creative-loader.css';
 
 @tailwind base;
 @tailwind components;

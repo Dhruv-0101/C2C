@@ -31,6 +31,9 @@ import {
   Loader2,
   CalendarClock,
   Send,
+  Gift,
+  AlertCircle,
+  ArrowUpRight,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -39,6 +42,8 @@ import { Alert } from "../../../components/ui/Alert";
 import Pagination from '@/components/ui/Pagination';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { CanvasPreview } from './CanvasPreview';
+import { NanoBananaAiGenerator } from './NanoBananaAiGenerator';
+import { AiCaptionGeneratorModal } from './AiCaptionGeneratorModal';
 import { useTheme } from '@/shared/hooks';
 
 /**
@@ -110,6 +115,7 @@ export const PostStudioEditorView = ({
   isExpired = false,
   planName = "FREE",
   openPlanModal,
+  activateFreeMutation,
 }) => {
   const { isDark } = useTheme();
   const customFileInputRef = useRef(null);
@@ -137,6 +143,15 @@ export const PostStudioEditorView = ({
   // Custom Upload Lightbox Preview & Drag-and-drop State
   const [previewLightboxUrl, setPreviewLightboxUrl] = useState(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  // Mobile Studio View Switcher State ('editor' | 'preview')
+  const [mobileStudioTab, setMobileStudioTab] = useState('editor');
+
+  // Step 1 Creative Workflow Mode ('AI' | 'TEMPLATES' | 'UPLOAD')
+  const [step1Mode, setStep1Mode] = useState('AI');
+
+  // AI Caption Modal State
+  const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
 
   const handleFileUpload = (file) => {
     if (!file) return;
@@ -183,19 +198,19 @@ export const PostStudioEditorView = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header & Wizard Stepper */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-4 sm:p-5 rounded-2xl shadow-xl">
-        <div>
-          <h1 className="font-heading font-extrabold text-xl text-white flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            <span>Post Studio</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-3.5 sm:p-5 rounded-2xl shadow-xl">
+        <div className="min-w-0">
+          <h1 className="font-heading font-extrabold text-lg sm:text-xl text-white flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-amber-400 shrink-0" />
+            <span className="truncate">Post Studio</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5 truncate sm:text-clip">
             Create branded posts with custom frames & BrandKit.
           </p>
         </div>
 
         {/* Wizard Stepper Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 custom-scrollbar">
           {steps.map((step) => {
             const isActive = currentStep === step.num;
             const isCompleted = currentStep > step.num;
@@ -203,17 +218,17 @@ export const PostStudioEditorView = ({
               <button
                 key={step.num}
                 onClick={() => setCurrentStep(step.num)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${isActive
+                className={`px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 cursor-pointer min-h-[38px] ${isActive
                   ? "bg-amber-500 text-slate-950 shadow-glow"
                   : isCompleted
                     ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                     : "bg-[#0B0F17] text-slate-400 border border-[#2C384E]"
                   }`}
               >
-                <span className="w-5 h-5 rounded-full bg-black/20 flex items-center justify-center text-[10px] font-extrabold">
+                <span className="w-5 h-5 rounded-full bg-black/20 flex items-center justify-center text-[10px] font-extrabold shrink-0">
                   {isCompleted ? "✓" : step.num}
                 </span>
-                <span>{step.title}</span>
+                <span className="whitespace-nowrap">{step.title}</span>
               </button>
             );
           })}
@@ -223,18 +238,46 @@ export const PostStudioEditorView = ({
       {saveSuccess && <Alert variant="success" message={saveSuccess} />}
       {saveError && <Alert variant="danger" message={saveError} />}
 
+      {/* Mobile-only View Switcher */}
+      <div className="lg:hidden flex items-center p-1 bg-[#131B2A] border border-[#2C384E] rounded-xl text-xs font-bold shadow-md">
+        <button
+          type="button"
+          onClick={() => setMobileStudioTab("editor")}
+          className={`flex-1 py-2.5 px-2 rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer min-h-[40px] ${
+            mobileStudioTab === "editor"
+              ? "bg-amber-500 text-slate-950 font-extrabold shadow-glow"
+              : "text-slate-400 hover:text-white"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Step {currentStep} Editor</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileStudioTab("preview")}
+          className={`flex-1 py-2.5 px-2 rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer relative min-h-[40px] ${
+            mobileStudioTab === "preview"
+              ? "bg-amber-500 text-slate-950 font-extrabold shadow-glow"
+              : "text-slate-400 hover:text-white"
+          }`}
+        >
+          <Eye className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Live Preview</span>
+        </button>
+      </div>
+
       {/* Main Studio Viewport (Left Controls, Right Live Canvas) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN (6 Cols): Wizard Controls */}
-        <div className="lg:col-span-6 flex flex-col min-h-[570px]">
+        <div className={`lg:col-span-6 flex flex-col min-h-[500px] lg:min-h-[570px] ${mobileStudioTab === "preview" ? "hidden lg:flex" : "flex"}`}>
           {/* STEP 1: SELECT BASE GRAPHIC */}
           {currentStep === 1 && (
-            <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[570px] gap-3.5">
+            <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[500px] lg:min-h-[570px] gap-3.5">
               {/* TOP CONTROLS SECTION */}
               <div className="space-y-2.5 shrink-0">
                 {/* Step Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#2C384E] pb-2.5">
+                  <div className="min-w-0">
                     <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2 truncate">
                       <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
                       <span className="truncate">Step 1: Graphic</span>
@@ -244,143 +287,275 @@ export const PostStudioEditorView = ({
                     </p>
                   </div>
                   <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                    <Button variant="primary" size="sm" onClick={() => setCurrentStep(2)} className="shadow-lg font-bold">
+                    <Button variant="primary" size="sm" onClick={() => setCurrentStep(2)} className="shadow-lg font-bold min-h-[36px]">
                       <span>Next: Brand Frame</span>
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </div>
                 </div>
 
-                {/* Custom Base Image File Upload / Active Preview Section */}
-                {!customBaseImage ? (
-                  <div
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setIsDraggingOver(true);
-                    }}
-                    onDragLeave={() => setIsDraggingOver(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDraggingOver(false);
-                      const file = e.dataTransfer.files?.[0];
-                      handleFileUpload(file);
-                    }}
-                    onClick={() => customFileInputRef.current?.click()}
-                    className={`p-3.5 sm:p-4 rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer ${isDraggingOver
-                        ? "border-amber-400 bg-amber-500/15 scale-[1.01]"
-                        : "border-[#2C384E] hover:border-amber-500/50 bg-[#0B0F17]/80 hover:bg-[#0B0F17]"
-                      }`}
-                  >
-                    <input
-                      ref={customFileInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/jpg"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        handleFileUpload(file);
-                      }}
-                      className="hidden"
-                    />
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                          <Upload className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-white truncate">Upload Custom Image</span>
-                            <span className="text-[9px] font-semibold text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded-full border border-amber-500/20 shrink-0">
-                              1080×1080
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            Drag & drop image or click to browse file
-                          </p>
-                        </div>
+                {/* Smart Plan Quota Alert Banner for Step 1 */}
+                {(!subscription?.hasPlan || postsRemaining <= 0) ? (
+                  <div className={`p-3 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 transition-all ${
+                    !subscription?.hasPlan
+                      ? "bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/5 border-amber-500/40 text-amber-200"
+                      : "bg-gradient-to-r from-rose-500/15 via-amber-500/10 to-rose-500/5 border-rose-500/40 text-rose-200"
+                  }`}>
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                        !subscription?.hasPlan ? "bg-amber-500/20 text-amber-300" : "bg-rose-500/20 text-rose-300"
+                      }`}>
+                        {!subscription?.hasPlan ? <Gift className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                       </div>
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-white leading-tight">
+                          {!subscription?.hasPlan
+                            ? "No Active Plan - Claim Your 5 Free Posts!"
+                            : "Post Quota Exhausted (0 Posts Left)"}
+                        </h4>
+                        <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+                          {!subscription?.hasPlan
+                            ? "Activate your free starter tier to create AI visuals, custom graphics, and publish campaigns."
+                            : "You have 0 posts remaining on your current plan. Upgrade to unlock more AI post creation."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
+                      {!subscription?.hasPlan && activateFreeMutation && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="primary"
+                          onClick={() => activateFreeMutation.mutate()}
+                          disabled={activateFreeMutation.isPending}
+                          className="text-xs font-extrabold shadow-glow shrink-0 whitespace-nowrap min-h-[32px]"
+                        >
+                          {activateFreeMutation.isPending ? "Activating..." : "🚀 Claim 5 Free Posts"}
+                        </Button>
+                      )}
                       <Button
                         type="button"
-                        variant="secondary"
                         size="sm"
-                        className="text-xs font-bold shrink-0 border-[#2C384E] text-slate-300 pointer-events-none"
+                        variant="outline"
+                        onClick={openPlanModal}
+                        className="text-xs border-[#2C384E] text-slate-200 hover:text-white shrink-0 whitespace-nowrap min-h-[32px]"
                       >
-                        Browse
+                        <span>{!subscription?.hasPlan ? "View Plans" : "Upgrade Plan"}</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3.5 rounded-2xl border border-amber-500/50 bg-gradient-to-r from-amber-500/10 via-[#131B2A] to-[#0B0F17] shadow-xl">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div
-                          onClick={() => setPreviewLightboxUrl(customBaseImage)}
-                          className="relative group w-12 h-12 rounded-xl overflow-hidden border border-amber-500/50 bg-[#0B0F17] shrink-0 cursor-pointer shadow-md"
-                          title="Click to preview fullscreen"
-                        >
-                          <img
-                            src={customBaseImage}
-                            alt="Custom Uploaded"
-                            className="w-full h-full object-cover group-hover:scale-110 transition duration-200"
-                          />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                            <Eye className="w-4 h-4 drop-shadow" />
-                          </div>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                            <h4 className="text-xs font-extrabold text-white truncate">Custom Upload Active</h4>
-                          </div>
-                          <p className="text-[11px] text-slate-400 truncate">
-                            Applied as master background
-                          </p>
-                        </div>
-                      </div>
+                  <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#0B0F17]/80 border border-[#2C384E]/70 text-[11px]">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      <span className="text-slate-400">Active Plan:</span>
+                      <span className="font-bold text-amber-400 uppercase">{planName}</span>
+                      <span className="text-slate-400">({postsRemaining} posts left)</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={openPlanModal}
+                      className="text-amber-400 hover:text-amber-300 font-bold hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <span>Upgrade / Top-up</span>
+                      <ArrowUpRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
 
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                {/* Step 1 Workflow Mode Tabs */}
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-xs font-bold overflow-x-auto pb-1 custom-scrollbar -mx-0.5 px-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setStep1Mode("AI")}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer whitespace-nowrap min-h-[34px] ${
+                      step1Mode === "AI"
+                        ? "bg-amber-500 text-slate-950 font-extrabold shadow-sm"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>🍌 Nano Banana 2.1 AI</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep1Mode("TEMPLATES")}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer whitespace-nowrap min-h-[34px] ${
+                      step1Mode === "TEMPLATES"
+                        ? "bg-amber-500 text-slate-950 font-extrabold shadow-sm"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>🎨 Festival & Templates</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep1Mode("UPLOAD")}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer whitespace-nowrap min-h-[34px] ${
+                      step1Mode === "UPLOAD"
+                        ? "bg-amber-500 text-slate-950 font-extrabold shadow-sm"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>📤 Custom Upload</span>
+                  </button>
+                </div>
+
+                {/* 1. NANO BANANA AI CREATOR MODE */}
+                {step1Mode === "AI" && (
+                  <NanoBananaAiGenerator
+                    onSelectImage={(url) => setCustomBaseImage(url)}
+                    activeImage={customBaseImage}
+                    onClearImage={handleRemoveCustomImage}
+                    brandKit={brandKit}
+                    onOpenCaptionGenerator={() => setIsCaptionModalOpen(true)}
+                    openPlanModal={openPlanModal}
+                    subscription={subscription}
+                    postsRemaining={postsRemaining}
+                    isExpired={isExpired}
+                    planName={planName}
+                    activateFreeMutation={activateFreeMutation}
+                  />
+                )}
+
+                {/* 2. CUSTOM UPLOAD MODE */}
+                {step1Mode === "UPLOAD" && (
+                  !customBaseImage ? (
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDraggingOver(true);
+                      }}
+                      onDragLeave={() => setIsDraggingOver(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDraggingOver(false);
+                        const file = e.dataTransfer.files?.[0];
+                        handleFileUpload(file);
+                      }}
+                      onClick={() => customFileInputRef.current?.click()}
+                      className={`p-3.5 sm:p-4 rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer ${isDraggingOver
+                          ? "border-amber-400 bg-amber-500/15 scale-[1.01]"
+                          : "border-[#2C384E] hover:border-amber-500/50 bg-[#0B0F17]/80 hover:bg-[#0B0F17]"
+                        }`}
+                    >
+                      <input
+                        ref={customFileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          handleFileUpload(file);
+                        }}
+                        className="hidden"
+                      />
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                            <Upload className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-white truncate">Upload Custom Image</span>
+                              <span className="text-[9px] font-semibold text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded-full border border-amber-500/20 shrink-0">
+                                1080×1080
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                              Drag & drop image or click to browse file
+                            </p>
+                          </div>
+                        </div>
                         <Button
                           type="button"
                           variant="secondary"
                           size="sm"
-                          icon={Eye}
-                          onClick={() => setPreviewLightboxUrl(customBaseImage)}
-                          className="text-xs font-bold border-amber-500/30 text-amber-300 hover:text-white px-2.5 py-1"
+                          className="text-xs font-bold shrink-0 border-[#2C384E] text-slate-300 pointer-events-none"
                         >
-                          Preview
+                          Browse
                         </Button>
-                        <input
-                          ref={customFileInputRef}
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/jpg"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            handleFileUpload(file);
-                          }}
-                          className="hidden"
-                        />
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          icon={Upload}
-                          onClick={() => customFileInputRef.current?.click()}
-                          className="text-xs font-bold border-slate-700 text-slate-300 hover:text-white px-2.5 py-1"
-                        >
-                          Replace
-                        </Button>
-                        <button
-                          type="button"
-                          onClick={handleRemoveCustomImage}
-                          className="px-2.5 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 hover:text-rose-300 text-xs font-bold flex items-center gap-1 transition cursor-pointer"
-                          title="Remove custom upload"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Remove</span>
-                        </button>
                       </div>
                     </div>
-                  </div>
-                )}              {/* 1. Template Category Navigation Dropdown */}
+                  ) : (
+                    <div className="p-3.5 rounded-2xl border border-amber-500/50 bg-gradient-to-r from-amber-500/10 via-[#131B2A] to-[#0B0F17] shadow-xl">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div
+                            onClick={() => setPreviewLightboxUrl(customBaseImage)}
+                            className="relative group w-12 h-12 rounded-xl overflow-hidden border border-amber-500/50 bg-[#0B0F17] shrink-0 cursor-pointer shadow-md"
+                            title="Click to preview fullscreen"
+                          >
+                            <img
+                              src={customBaseImage}
+                              alt="Custom Uploaded"
+                              className="w-full h-full object-cover group-hover:scale-110 transition duration-200"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                              <Eye className="w-4 h-4 drop-shadow" />
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                              <h4 className="text-xs font-extrabold text-white truncate">Custom Upload Active</h4>
+                            </div>
+                            <p className="text-[11px] text-slate-400 truncate">
+                              Applied as master background
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0 self-stretch sm:self-auto justify-end">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            icon={Eye}
+                            onClick={() => setPreviewLightboxUrl(customBaseImage)}
+                            className="text-xs font-bold border-amber-500/30 text-amber-300 hover:text-white px-2.5 py-1 min-h-[32px]"
+                          >
+                            Preview
+                          </Button>
+                          <input
+                            ref={customFileInputRef}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/jpg"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              handleFileUpload(file);
+                            }}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            icon={Upload}
+                            onClick={() => customFileInputRef.current?.click()}
+                            className="text-xs font-bold border-slate-700 text-slate-300 hover:text-white px-2.5 py-1 min-h-[32px]"
+                          >
+                            Replace
+                          </Button>
+                          <button
+                            type="button"
+                            onClick={handleRemoveCustomImage}
+                            className="px-2.5 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 hover:text-rose-300 text-xs font-bold flex items-center gap-1 transition cursor-pointer min-h-[32px]"
+                            title="Remove custom upload"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Remove</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                )}
+
+                {/* 3. TEMPLATES MODE (Categories & Festivals) */}
+                {step1Mode === "TEMPLATES" && (
+                  <div className="space-y-2.5">
+                {/* 1. Template Category Navigation Dropdown */}
                 <div className="rounded-2xl bg-[#0B0F17] border border-[#2C384E] overflow-hidden transition-all duration-200">
                   <button
                     type="button"
@@ -753,9 +928,12 @@ export const PostStudioEditorView = ({
                   )}
                 </div>
               </div>
+            )}
+          </div>
 
-              {/* Graphic Background Templates Grid (Flex Fill Viewport Height - 100% Locked Card Height) */}
-              <div className="w-full flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar my-1">
+          {/* Graphic Background Templates Grid (Flex Fill Viewport Height - 100% Locked Card Height) */}
+          {step1Mode === "TEMPLATES" && (
+            <div className="w-full flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar my-1">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {/* Pinned Active Custom Upload Card */}
                   {customBaseImage && (
@@ -847,32 +1025,33 @@ export const PostStudioEditorView = ({
                   )}
                 </div>
               </div>
+            )}
 
-              {/* Pagination */}
-              {templatesMeta && (
-                <div className="mt-auto pt-2 border-t border-[#2C384E] shrink-0">
-                  <Pagination
-                    meta={templatesMeta}
-                    currentPage={templatePage}
-                    totalPages={templatesMeta?.totalPages || 1}
-                    onPageChange={(p) => setTemplatePage(p)}
-                    onLimitChange={(l) => {
-                      setTemplateLimit(l);
-                      setTemplatePage(1);
-                    }}
-                    pageSizeOptions={[6, 8, 12, 24]}
-                    className="flex flex-col sm:flex-row items-center justify-between gap-2 py-2 px-3 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-slate-300 shadow-sm mt-1"
-                  />
-                </div>
-              )}
-            </Card>
-          )}
+            {/* Pagination */}
+            {step1Mode === "TEMPLATES" && templatesMeta && (
+              <div className="mt-auto pt-2 border-t border-[#2C384E] shrink-0">
+                <Pagination
+                  meta={templatesMeta}
+                  currentPage={templatePage}
+                  totalPages={templatesMeta?.totalPages || 1}
+                  onPageChange={(p) => setTemplatePage(p)}
+                  onLimitChange={(l) => {
+                    setTemplateLimit(l);
+                    setTemplatePage(1);
+                  }}
+                  pageSizeOptions={[6, 8, 12, 24]}
+                  className="flex flex-col sm:flex-row items-center justify-between gap-2 py-2 px-3 bg-[#0B0F17] border border-[#2C384E] rounded-xl text-xs text-slate-300 shadow-sm mt-1"
+                />
+              </div>
+            )}
+          </Card>
+        )}
 
           {/* STEP 2: CHOOSE BRAND FRAME */}
           {currentStep === 2 && (
-            <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[570px] gap-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
-                <div>
+            <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[500px] lg:min-h-[570px] gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
+                <div className="min-w-0">
                   <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2 truncate">
                     <Layers className="w-4 h-4 text-amber-400 shrink-0" />
                     <span className="truncate">Step 2: Frame</span>
@@ -882,14 +1061,14 @@ export const PostStudioEditorView = ({
                   </p>
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentStep(1)}>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentStep(1)} className="min-h-[36px]">
                     <ChevronLeft className="w-4 h-4 mr-1" /> Back
                   </Button>
                   <Button
                     variant="primary"
                     size="sm"
                     onClick={() => setCurrentStep(selectedFrame ? 3 : 4)}
-                    className="shadow-lg font-bold"
+                    className="shadow-lg font-bold min-h-[36px]"
                   >
                     <span>{selectedFrame ? "Next: Details" : "Next: Export"}</span>
                     <ChevronRight className="w-4 h-4 ml-1" />
@@ -898,7 +1077,7 @@ export const PostStudioEditorView = ({
               </div>
 
               {/* No Frame Quick Toggle Option (Saves grid space) */}
-              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] shrink-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] shrink-0">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className={`p-1 rounded-full shrink-0 ${selectedFrame === null ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-400"}`}>
                     {selectedFrame === null ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Layers className="w-3.5 h-3.5" />}
@@ -916,7 +1095,7 @@ export const PostStudioEditorView = ({
                 <button
                   type="button"
                   onClick={() => setSelectedFrame(selectedFrame === null ? (frames[0] || null) : null)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer ${selectedFrame === null
+                  className={`w-full sm:w-auto px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer min-h-[34px] ${selectedFrame === null
                       ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-sm"
                       : "bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30"
                     }`}
@@ -1208,9 +1387,9 @@ export const PostStudioEditorView = ({
 
             if (!selectedFrame) {
               return (
-                <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between h-[570px] min-h-[570px] max-h-[570px] overflow-hidden shrink-0 gap-2.5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
-                    <div>
+                <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[500px] lg:h-[570px] lg:min-h-[570px] lg:max-h-[570px] overflow-hidden shrink-0 gap-2.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
+                    <div className="min-w-0">
                       <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2 truncate">
                         <FileText className="w-4 h-4 text-amber-400 shrink-0" />
                         <span className="truncate">Step 3: Details</span>
@@ -1220,10 +1399,10 @@ export const PostStudioEditorView = ({
                       </p>
                     </div>
                     <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)}>
+                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)} className="min-h-[34px]">
                         <ChevronLeft className="w-4 h-4 mr-1" /> Back
                       </Button>
-                      <Button variant="primary" size="sm" onClick={() => setCurrentStep(4)} className="shadow-lg font-bold">
+                      <Button variant="primary" size="sm" onClick={() => setCurrentStep(4)} className="shadow-lg font-bold min-h-[34px]">
                         <span>Next: Export</span>
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
@@ -1239,11 +1418,11 @@ export const PostStudioEditorView = ({
                       You are creating a post with the base graphic template only. Frame details (such as logo, phone, or location overlays) are not needed when no frame is selected.
                     </p>
                     <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)}>
+                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)} className="min-h-[36px]">
                         <Layers className="w-3.5 h-3.5 mr-1 text-amber-400" />
                         Choose a Brand Frame
                       </Button>
-                      <Button variant="primary" size="sm" onClick={() => setCurrentStep(4)}>
+                      <Button variant="primary" size="sm" onClick={() => setCurrentStep(4)} className="min-h-[36px]">
                         <span>Proceed to Publish & Export</span>
                         <ChevronRight className="w-3.5 h-3.5 ml-1" />
                       </Button>
@@ -1256,9 +1435,9 @@ export const PostStudioEditorView = ({
             const { textFields, imageToggles, customImageSlots } = getDynamicFrameFields(selectedFrame);
 
             return (
-              <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between h-[570px] min-h-[570px] max-h-[570px] overflow-hidden shrink-0 gap-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
-                  <div>
+              <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[500px] lg:h-[570px] lg:min-h-[570px] lg:max-h-[570px] overflow-hidden shrink-0 gap-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
+                  <div className="min-w-0">
                     <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2 truncate">
                       <FileText className="w-4 h-4 text-amber-400 shrink-0" />
                       <span className="truncate">Step 3: Details</span>
@@ -1267,7 +1446,7 @@ export const PostStudioEditorView = ({
                       Edit text fields & image toggles.
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                  <div className="flex flex-wrap items-center gap-1.5 self-stretch sm:self-auto justify-end shrink-0">
                     <button
                       type="button"
                       onClick={() => {
@@ -1301,16 +1480,16 @@ export const PostStudioEditorView = ({
                         }
                         setCustomDetails(updated);
                       }}
-                      className="px-2 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition flex items-center gap-1 shrink-0 cursor-pointer"
+                      className="px-2 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition flex items-center gap-1 shrink-0 cursor-pointer min-h-[34px]"
                       title="Auto fill fields from your active BrandKit"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>BrandKit</span>
                     </button>
-                    <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)}>
+                    <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)} className="min-h-[34px]">
                       <ChevronLeft className="w-4 h-4 mr-1" /> Back
                     </Button>
-                    <Button variant="primary" size="sm" onClick={() => setCurrentStep(4)} className="shadow-lg font-bold">
+                    <Button variant="primary" size="sm" onClick={() => setCurrentStep(4)} className="shadow-lg font-bold min-h-[34px]">
                       <span>Next: Export</span>
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
@@ -1449,9 +1628,9 @@ export const PostStudioEditorView = ({
 
           {/* STEP 4: EXPORT & PUBLISH */}
           {currentStep === 4 && (
-            <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between h-[570px] min-h-[570px] max-h-[570px] overflow-hidden shrink-0 gap-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
-                <div>
+            <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[500px] lg:h-[570px] lg:min-h-[570px] lg:max-h-[570px] overflow-hidden shrink-0 gap-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
+                <div className="min-w-0">
                   <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2 truncate">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span className="truncate">Step 4: Export & Publish</span>
@@ -1461,7 +1640,7 @@ export const PostStudioEditorView = ({
                   </p>
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentStep(selectedFrame ? 3 : 2)}>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentStep(selectedFrame ? 3 : 2)} className="min-h-[34px]">
                     <ChevronLeft className="w-4 h-4 mr-1" /> Back
                   </Button>
                 </div>
@@ -1472,7 +1651,7 @@ export const PostStudioEditorView = ({
                 <button
                   type="button"
                   onClick={() => setExportTab("schedule")}
-                  className={`py-2 px-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`py-2 px-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
                     exportTab === "schedule"
                       ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
                       : "text-slate-400 hover:text-white"
@@ -1484,7 +1663,7 @@ export const PostStudioEditorView = ({
                 <button
                   type="button"
                   onClick={() => setExportTab("download")}
-                  className={`py-2 px-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`py-2 px-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
                     exportTab === "download"
                       ? "bg-amber-500 text-slate-950 shadow-md font-extrabold"
                       : "text-slate-400 hover:text-white"
@@ -1561,7 +1740,7 @@ export const PostStudioEditorView = ({
                       icon={isExpired ? Lock : (isRendering ? Loader2 : CalendarClock)}
                       disabled={isRendering || isExpired}
                       onClick={() => onOpenPublisherModal && onOpenPublisherModal("SCHEDULE")}
-                      className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg ${
+                      className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg min-h-[44px] ${
                         isExpired
                           ? "bg-slate-800 text-slate-400 cursor-not-allowed"
                           : "bg-gradient-to-r from-teal-500 to-amber-500 text-slate-950"
@@ -1615,7 +1794,7 @@ export const PostStudioEditorView = ({
                             setTimeout(() => setIsDownloading(false), 800);
                           }
                         }}
-                        className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg cursor-pointer ${
+                        className={`w-full justify-center text-xs sm:text-sm font-extrabold py-3.5 border-0 shadow-lg cursor-pointer min-h-[44px] ${
                           isExpired && !isEditingScheduled
                             ? "bg-slate-800 text-slate-400 cursor-not-allowed"
                             : "bg-gradient-to-r from-amber-500 to-teal-500 hover:from-amber-400 hover:to-teal-400 text-slate-950"
@@ -1637,7 +1816,7 @@ export const PostStudioEditorView = ({
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-[#2C384E] shrink-0 mt-auto">
-                <Button variant="outline" size="sm" onClick={() => setCurrentStep(selectedFrame ? 3 : 2)}>
+                <Button variant="outline" size="sm" onClick={() => setCurrentStep(selectedFrame ? 3 : 2)} className="min-h-[34px]">
                   <ChevronLeft className="w-4 h-4 mr-1" /> Back to Details
                 </Button>
               </div>
@@ -1646,11 +1825,11 @@ export const PostStudioEditorView = ({
         </div>
 
         {/* RIGHT COLUMN (6 Cols): Persistent Live Real-Time Preview Stage */}
-        <div className="lg:col-span-6 flex flex-col h-[570px] lg:sticky lg:top-6">
-          <Card className="p-4 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between h-[570px] min-h-[570px] max-h-[570px] overflow-hidden shrink-0 gap-2.5 shadow-2xl">
+        <div className={`lg:col-span-6 flex flex-col min-h-[420px] lg:h-[570px] lg:sticky lg:top-6 ${mobileStudioTab === "editor" ? "hidden lg:flex" : "flex"}`}>
+          <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[420px] lg:h-[570px] lg:min-h-[570px] lg:max-h-[570px] overflow-hidden shrink-0 gap-2.5 shadow-2xl">
             {/* Header matching Left Wizard Steps */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
+              <div className="min-w-0">
                 <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2 truncate">
                   <Zap className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
                   <span className="truncate">Live Preview</span>
@@ -1707,7 +1886,7 @@ export const PostStudioEditorView = ({
 
               <button
                 onClick={() => setZoomedFrame(null)}
-                className="p-2.5 rounded-full border transition cursor-pointer shadow-xl"
+                className="p-2.5 rounded-full border transition cursor-pointer shadow-xl min-w-[36px] min-h-[36px] flex items-center justify-center"
                 style={{
                   backgroundColor: isDark ? "rgba(15, 23, 42, 0.9)" : "rgba(255, 255, 255, 0.95)",
                   borderColor: isDark ? "#334155" : "#CBD5E1",
@@ -1722,23 +1901,16 @@ export const PostStudioEditorView = ({
             {/* Center Image Container - 100% Edge-to-Edge with Gold Amber Border (Exact Match to Admin Lightbox) */}
             <div
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 min-h-0 w-full flex items-center justify-center py-2 sm:py-3 cursor-default"
+              className="flex-1 min-h-0 w-full flex items-center justify-center p-3 sm:p-4 cursor-default overflow-hidden"
             >
-              <div
-                className="h-full max-h-full max-w-full aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/50 flex items-center justify-center"
+              <img
+                src={zoomedFrame.previewUrl || zoomedFrame.overlayPngUrl}
+                alt={zoomedFrame.title}
+                className="max-h-full max-w-full aspect-square rounded-2xl shadow-2xl border-2 border-amber-500/80 object-contain block shrink-0 select-none"
                 style={{
                   backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
                 }}
-              >
-                <img
-                  src={zoomedFrame.previewUrl || zoomedFrame.overlayPngUrl}
-                  alt={zoomedFrame.title}
-                  className="w-full h-full object-contain"
-                  style={{
-                    backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
-                  }}
-                />
-              </div>
+              />
             </div>
 
             {/* Lightbox Complete Frame Details & Actions Bar */}
@@ -1888,6 +2060,38 @@ export const PostStudioEditorView = ({
         imageUrl={previewLightboxUrl}
         item={{ title: "Your Custom Uploaded Graphic", occasionName: "Master Background Image" }}
         onClose={() => setPreviewLightboxUrl(null)}
+      />
+
+      {/* Mobile Floating Action Toggle Pill */}
+      <div className="lg:hidden fixed bottom-6 right-6 z-40">
+        <button
+          type="button"
+          onClick={() => setMobileStudioTab((prev) => (prev === "editor" ? "preview" : "editor"))}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-extrabold text-xs shadow-xl shadow-amber-500/30 border border-amber-300/50 active:scale-95 transition cursor-pointer"
+        >
+          {mobileStudioTab === "editor" ? (
+            <>
+              <Eye className="w-4 h-4" />
+              <span>View Canvas</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              <span>Back to Editor</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* AI Caption Generator Modal */}
+      <AiCaptionGeneratorModal
+        isOpen={isCaptionModalOpen}
+        onClose={() => setIsCaptionModalOpen(false)}
+        initialTopic={currentTemplate?.name || brandKit?.businessName || "Special Social Media Campaign"}
+        openPlanModal={openPlanModal}
+        onSelectCaption={() => {
+          setIsCaptionModalOpen(false);
+        }}
       />
     </div>
   );

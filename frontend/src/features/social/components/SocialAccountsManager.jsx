@@ -67,27 +67,27 @@ export const SocialAccountsManager = () => {
   };
 
   return (
-    <div className="bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-6 shadow-xl text-slate-100 font-sans">
+    <div className="bg-[#131B2A] border border-[#2C384E] rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-xl text-slate-100 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-[#2C384E] pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 via-teal-500/20 to-indigo-600/20 border border-amber-500/30 text-amber-400">
-            <Share2 className="w-6 h-6" />
+          <div className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-amber-500/20 via-teal-500/20 to-indigo-600/20 border border-amber-500/30 text-amber-400 shrink-0">
+            <Share2 className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h3 className="font-heading font-extrabold text-lg text-white">
+            <h3 className="font-heading font-extrabold text-base sm:text-lg text-white">
               Social Media Integrations
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 line-clamp-1 sm:line-clamp-none">
               Connect your Instagram, Facebook, and LinkedIn accounts for live automated publishing.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-end flex-wrap">
           <button
             onClick={() => setShowClientHelpModal(true)}
-            className="p-2 px-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 hover:text-white transition flex items-center gap-1.5 text-xs font-bold"
+            className="flex-1 sm:flex-initial p-2 px-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 hover:text-white transition flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer min-h-[38px]"
             title="Step-by-step setup guide for business owners"
           >
             <HelpCircle className="w-3.5 h-3.5" />
@@ -97,7 +97,7 @@ export const SocialAccountsManager = () => {
           <button
             onClick={() => refetch()}
             disabled={isLoadingAccounts}
-            className="p-2 px-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-600 transition flex items-center gap-1.5 text-xs font-semibold"
+            className="p-2 px-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-slate-600 transition flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer min-h-[38px]"
             title="Refresh account statuses"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoadingAccounts ? 'animate-spin text-amber-400' : ''}`} />
@@ -128,14 +128,14 @@ export const SocialAccountsManager = () => {
         <>
           {/* Friendly Client Setup Guide Banner (If not fully connected) */}
           {(!facebookAccount?.isConnected || !instagramAccount?.isConnected) && (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-3">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
                   <Sparkles className="w-4 h-4" />
                 </div>
-                <div>
-                  <p className="font-bold text-white text-xs">New to Social Connections?</p>
-                  <p className="text-slate-400 text-[11px] mt-0.5">
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-xs truncate">New to Social Connections?</p>
+                  <p className="text-slate-400 text-[11px] mt-0.5 line-clamp-2 sm:line-clamp-none">
                     Link your Facebook Page & Instagram in 3 simple steps without technical confusion.
                   </p>
                 </div>
@@ -143,7 +143,7 @@ export const SocialAccountsManager = () => {
               <button
                 type="button"
                 onClick={() => setShowClientHelpModal(true)}
-                className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shadow-sm shrink-0 cursor-pointer"
+                className="self-stretch sm:self-auto px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shadow-sm shrink-0 cursor-pointer min-h-[38px] flex items-center justify-center"
               >
                 View 3-Step Guide
               </button>
@@ -197,7 +197,7 @@ export const SocialAccountsManager = () => {
                   size="sm"
                   disabled={isSubmittingPageLink || !pageInput.trim()}
                   isLoading={isSubmittingPageLink}
-                  className="px-5 font-bold text-xs shrink-0"
+                  className="w-full sm:w-auto px-5 py-2.5 font-bold text-xs shrink-0 justify-center min-h-[38px]"
                 >
                   {onboardingData?.facebookPageUrl ? 'Update Page Link' : 'Submit Page'}
                 </Button>
@@ -223,89 +223,88 @@ export const SocialAccountsManager = () => {
           )}
 
           {/* Main Instagram Status Card */}
-          <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div className="flex items-start gap-4">
-              <div className="p-3.5 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-glow">
-                <Instagram className="w-7 h-7" />
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-5">
+            <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+              <div className="p-2.5 sm:p-3.5 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-glow shrink-0">
+                <Instagram className="w-5 h-5 sm:w-7 sm:h-7" />
               </div>
 
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-bold text-sm sm:text-base text-white">Instagram Business & Creator</h4>
+                  {instagramAccount?.isConnected ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>Connected</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>Not Connected</span>
+                    </span>
+                  )}
+                </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h4 className="font-bold text-base text-white">Instagram Business & Creator</h4>
-              {instagramAccount?.isConnected ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Connected</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-xs font-semibold">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Not Connected</span>
-                </span>
-              )}
+                {instagramAccount?.isConnected ? (
+                  <div className="space-y-0.5 text-xs text-slate-300">
+                    <a
+                      href={`https://instagram.com/${instagramAccount.accountName.replace(/^@/, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-mono font-bold text-amber-400 text-sm hover:text-amber-300 hover:underline transition group max-w-full"
+                      title="View profile on Instagram"
+                    >
+                      <span className="truncate max-w-[180px] sm:max-w-none">{instagramAccount.accountName}</span>
+                      <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition shrink-0" />
+                    </a>
+                    <p className="text-[11px] text-slate-400">
+                      Linked via Meta Graph API • Auto-Publish Ready
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400">
+                    Publish branded graphics directly to your Instagram Business feed.
+                  </p>
+                )}
+              </div>
             </div>
 
-            {instagramAccount?.isConnected ? (
-              <div className="space-y-0.5 text-xs text-slate-300">
-                <a
-                  href={`https://instagram.com/${instagramAccount.accountName.replace(/^@/, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono font-bold text-amber-400 text-sm hover:text-amber-300 hover:underline transition group"
-                  title="View profile on Instagram"
+            {/* Action Buttons: full-width on mobile */}
+            <div className="flex flex-col sm:flex-row md:flex-col items-stretch md:items-end gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#2C384E]/50 shrink-0">
+              {instagramAccount?.isConnected ? (
+                <Button
+                  variant="outline"
+                  className="w-full md:w-auto border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center min-h-[38px] px-4"
+                  isLoading={isDisconnecting}
+                  onClick={() => disconnect('INSTAGRAM')}
+                  icon={Unlink}
                 >
-                  <span>{instagramAccount.accountName}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
-                </a>
-                <p className="text-[11px] text-slate-400">
-                  Linked via Meta Graph API • Auto-Publish Ready
-                </p>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400">
-                Publish branded graphics directly to your Instagram Business feed.
-              </p>
-            )}
+                  Disconnect Instagram
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  className="w-full md:w-auto bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs justify-center shadow-lg min-h-[38px] px-4"
+                  isLoading={isLoadingAuthUrl}
+                  onClick={handleConnectMeta}
+                  icon={Link2}
+                >
+                  Connect via Meta OAuth
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col items-end gap-2">
-          {instagramAccount?.isConnected ? (
-            <Button
-              variant="outline"
-              className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
-              isLoading={isDisconnecting}
-              onClick={() => disconnect('INSTAGRAM')}
-              icon={Unlink}
-            >
-              Disconnect Instagram
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs justify-center shadow-lg"
-              isLoading={isLoadingAuthUrl}
-              onClick={handleConnectMeta}
-              icon={Link2}
-            >
-              Connect via Meta OAuth
-            </Button>
-          )}
-        </div>
-      </div>
 
       {/* Facebook Page Integration Card */}
-      <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <div className="p-3.5 rounded-2xl bg-blue-600 text-white shadow-glow">
-            <Facebook className="w-7 h-7" />
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-5">
+        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="p-2.5 sm:p-3.5 rounded-2xl bg-blue-600 text-white shadow-glow shrink-0">
+            <Facebook className="w-5 h-5 sm:w-7 sm:h-7" />
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h4 className="font-bold text-base text-white">Facebook Page Publishing</h4>
+          <div className="space-y-1 min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-bold text-sm sm:text-base text-white">Facebook Page Publishing</h4>
               {facebookAccount?.isConnected ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
                   <CheckCircle className="w-3.5 h-3.5" />
@@ -320,7 +319,7 @@ export const SocialAccountsManager = () => {
             </div>
 
             {facebookAccount?.isConnected ? (
-              <div className="space-y-0.5 text-xs text-[#2C384E]">
+              <div className="space-y-0.5 text-xs text-slate-300">
                 <a
                   href={(() => {
                     const id = facebookAccount.platformUserId;
@@ -332,11 +331,11 @@ export const SocialAccountsManager = () => {
                   })()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group"
+                  className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group max-w-full"
                   title="View Page on Facebook"
                 >
-                  <span>{facebookAccount.accountName}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
+                  <span className="truncate max-w-[180px] sm:max-w-none">{facebookAccount.accountName}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition shrink-0" />
                 </a>
                 <p className="text-[11px] text-slate-400">
                   Linked via Meta Graph API • Auto-Publish Ready
@@ -350,12 +349,12 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col items-end gap-2">
+        {/* Action Buttons: full-width on mobile */}
+        <div className="flex flex-col sm:flex-row md:flex-col items-stretch md:items-end gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#2C384E]/50 shrink-0">
           {facebookAccount?.isConnected ? (
             <Button
               variant="outline"
-              className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
+              className="w-full md:w-auto border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center min-h-[38px] px-4"
               isLoading={isDisconnecting}
               onClick={() => disconnect('FACEBOOK')}
               icon={Unlink}
@@ -365,7 +364,7 @@ export const SocialAccountsManager = () => {
           ) : (
             <Button
               variant="primary"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
+              className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg min-h-[38px] px-4"
               isLoading={isLoadingAuthUrl}
               onClick={handleConnectMeta}
               icon={Link2}
@@ -377,15 +376,15 @@ export const SocialAccountsManager = () => {
       </div>
 
       {/* LinkedIn Integration Card */}
-      <div className="p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <div className="p-3.5 rounded-2xl bg-[#0A66C2] text-white shadow-glow">
-            <Linkedin className="w-7 h-7" />
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-5">
+        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="p-2.5 sm:p-3.5 rounded-2xl bg-[#0A66C2] text-white shadow-glow shrink-0">
+            <Linkedin className="w-5 h-5 sm:w-7 sm:h-7" />
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h4 className="font-bold text-base text-white">LinkedIn Profile & Page Publishing</h4>
+          <div className="space-y-1 min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-bold text-sm sm:text-base text-white">LinkedIn Profile & Page Publishing</h4>
               {linkedinAccount?.isConnected ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
                   <CheckCircle className="w-3.5 h-3.5" />
@@ -414,11 +413,11 @@ export const SocialAccountsManager = () => {
                   })()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group"
+                  className="inline-flex items-center gap-1.5 font-mono font-bold text-blue-400 text-sm hover:text-blue-300 hover:underline transition group max-w-full"
                   title="View Profile on LinkedIn"
                 >
-                  <span>{linkedinAccount.accountName}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition" />
+                  <span className="truncate max-w-[180px] sm:max-w-none">{linkedinAccount.accountName}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition shrink-0" />
                 </a>
                 <p className="text-[11px] text-slate-400">
                   Linked via LinkedIn UGC Posts API • Auto-Publish Ready
@@ -432,12 +431,12 @@ export const SocialAccountsManager = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col items-end gap-2">
+        {/* Action Buttons: full-width on mobile */}
+        <div className="flex flex-col sm:flex-row md:flex-col items-stretch md:items-end gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#2C384E]/50 shrink-0">
           {linkedinAccount?.isConnected ? (
             <Button
               variant="outline"
-              className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center"
+              className="w-full md:w-auto border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs justify-center min-h-[38px] px-4"
               isLoading={isDisconnecting}
               onClick={() => disconnect('LINKEDIN')}
               icon={Unlink}
@@ -447,7 +446,7 @@ export const SocialAccountsManager = () => {
           ) : (
             <Button
               variant="primary"
-              className="bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg"
+              className="w-full md:w-auto bg-[#0A66C2] hover:bg-blue-700 text-white font-bold text-xs justify-center shadow-lg min-h-[38px] px-4"
               isLoading={isLoadingLiAuthUrl}
               onClick={async () => {
                 try {
@@ -526,18 +525,18 @@ export const SocialAccountsManager = () => {
       )}
 
       {/* Features Badge Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-2">
-        <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-2.5 text-slate-300">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-          <span>AES-256 Encrypted Token Storage</span>
+      <div className="grid grid-cols-1 min-[520px]:grid-cols-3 gap-2.5 sm:gap-3 text-xs pt-2">
+        <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-2.5 text-slate-300 min-w-0">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="truncate">AES-256 Encrypted Token Storage</span>
         </div>
-        <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-2.5 text-slate-300">
-          <RefreshCw className="w-4 h-4 text-teal-400 flex-shrink-0" />
-          <span>60-Day Long-Lived Token Refresh</span>
+        <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-2.5 text-slate-300 min-w-0">
+          <RefreshCw className="w-4 h-4 text-teal-400 shrink-0" />
+          <span className="truncate">60-Day Long-Lived Token Refresh</span>
         </div>
-        <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-2.5 text-slate-300">
-          <Instagram className="w-4 h-4 text-pink-400 flex-shrink-0" />
-          <span>2-Step Media Container Publish</span>
+        <div className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-2.5 text-slate-300 min-w-0">
+          <Instagram className="w-4 h-4 text-pink-400 shrink-0" />
+          <span className="truncate">2-Step Media Container Publish</span>
         </div>
       </div>
 

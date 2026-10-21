@@ -69,14 +69,14 @@ export const MetricsExplanationModal = ({ isOpen, onClose }) => {
       description="100% transparent, official metrics fetched directly from Meta Graph API (Instagram & Facebook)."
       maxWidth="max-w-2xl"
     >
-      <div className="space-y-5 text-xs text-slate-300 max-h-[75vh] overflow-y-auto pr-1">
+      <div className="space-y-4 sm:space-y-5 text-xs text-slate-300 max-h-[82vh] overflow-y-auto custom-scrollbar pr-0.5 sm:pr-1">
         {/* Formula Spotlight Banner */}
-        <div className="p-4 rounded-2xl bg-amber-50/80 dark:bg-gradient-to-br dark:from-amber-500/10 dark:via-indigo-500/10 dark:to-[#0B0F17] border border-amber-300 dark:border-amber-500/30 space-y-2">
-          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-bold text-sm">
-            <Calculator className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-50/80 dark:bg-gradient-to-br dark:from-amber-500/10 dark:via-indigo-500/10 dark:to-[#0B0F17] border border-amber-300 dark:border-amber-500/30 space-y-2">
+          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-bold text-xs sm:text-sm">
+            <Calculator className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
             <span>Official Engagement Rate Formula</span>
           </div>
-          <div className="p-3 rounded-xl bg-white dark:bg-[#0B0F17]/90 border border-slate-200 dark:border-[#2C384E] font-mono text-center text-sm text-slate-800 dark:text-white shadow-xs">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-white dark:bg-[#0B0F17]/90 border border-slate-200 dark:border-[#2C384E] font-mono text-center text-xs sm:text-sm text-slate-800 dark:text-white shadow-xs break-words leading-relaxed">
             <span className="text-amber-700 dark:text-amber-400 font-bold">Engagement Rate (%)</span> ={' '}
             <span className="text-slate-500 dark:text-slate-400">(</span>
             <span className="text-rose-600 dark:text-rose-400 font-semibold">Likes</span> +{' '}
@@ -86,13 +86,13 @@ export const MetricsExplanationModal = ({ isOpen, onClose }) => {
             <span className="text-amber-700 dark:text-amber-400 font-bold">Audience Reach</span> ×{' '}
             <span className="text-slate-900 dark:text-white font-bold">100</span>
           </div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+          <p className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
             This represents the true percentage of your audience who actively took action after viewing your post. Standard organic social engagement benchmarks typically range from <strong>1.5% to 5.0%</strong>.
           </p>
         </div>
 
         {/* Metrics Grid Breakdown */}
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           <h4 className="font-bold text-white text-xs uppercase tracking-wider text-slate-400">
             Metrics Glossary
           </h4>
@@ -100,29 +100,29 @@ export const MetricsExplanationModal = ({ isOpen, onClose }) => {
             {metricsGuide.map((item) => (
               <div
                 key={item.title}
-                className="p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-1.5 hover:border-slate-600 transition"
+                className="p-3 sm:p-3.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-1.5 hover:border-slate-600 transition"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div className="p-1.5 rounded-lg bg-slate-800/80 border border-slate-700/80 shrink-0">
                       {item.icon}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="font-bold text-white text-xs">{item.title}</span>
-                      <span className="text-[10px] text-slate-400 ml-2 font-mono">
+                      <span className="text-[10px] text-slate-400 block min-[420px]:inline min-[420px]:ml-2 font-mono">
                         ({item.subtitle})
                       </span>
                     </div>
                   </div>
-                  <span className="text-[9px] px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-slate-300">
+                  <span className="text-[9px] px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-slate-300 shrink-0 self-start min-[420px]:self-center">
                     Live Verified
                   </span>
                 </div>
-                <p className="text-slate-300 text-[11px] leading-relaxed pl-8">
+                <p className="text-slate-300 text-[11px] leading-relaxed pl-0 sm:pl-8">
                   {item.description}
                 </p>
-                <div className="pl-8 text-[10px] text-slate-400 font-mono flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <div className="pl-0 sm:pl-8 text-[10px] text-slate-400 font-mono flex items-center gap-1 flex-wrap">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />
                   <span>Meta Source: {item.source}</span>
                 </div>
               </div>
@@ -131,7 +131,7 @@ export const MetricsExplanationModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Bottom Assurance Note */}
-        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] flex items-start gap-2">
+        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] sm:text-[11px] flex items-start gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
           <p>
             <strong>Zero Artificial Data:</strong> BrandFlow strictly communicates with Meta Graph API servers and does not invent synthetic metrics. If your post has 2 likes and 1 comment, BrandFlow accurately mirrors exactly 2 likes and 1 comment.
@@ -140,7 +140,7 @@ export const MetricsExplanationModal = ({ isOpen, onClose }) => {
 
         {/* Actions */}
         <div className="pt-2 flex justify-end">
-          <Button variant="outline" size="sm" onClick={onClose} className="px-5 font-bold">
+          <Button variant="outline" size="sm" onClick={onClose} className="w-full sm:w-auto px-5 font-bold min-h-[38px] active:scale-95">
             Got It
           </Button>
         </div>

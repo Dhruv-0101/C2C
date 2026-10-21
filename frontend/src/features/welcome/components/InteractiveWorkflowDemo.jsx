@@ -108,27 +108,27 @@ export const InteractiveWorkflowDemo = () => {
   };
 
   return (
-    <div className="w-full glass-panel p-4 sm:p-5 rounded-3xl border border-[#2C384E] bg-gradient-to-b from-[#131B2A] via-[#101726] to-[#0B0F17] shadow-2xl relative overflow-hidden text-left">
+    <div className="w-full glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-[#2C384E] bg-gradient-to-b from-[#131B2A] via-[#101726] to-[#0B0F17] shadow-2xl relative overflow-hidden text-left">
       {/* Background Glows */}
       <div className="absolute -top-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Compact Top Navigation Bar - Single Line Layout */}
+      {/* Compact Top Navigation Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#2C384E] pb-2.5 mb-3.5">
         <div className="space-y-0.5 min-w-0 shrink">
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30 uppercase tracking-wider">
             <Sparkles className="w-3 h-3" /> Live Simulator
           </div>
-          <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white truncate">
+          <h3 className="font-heading font-extrabold text-base sm:text-lg lg:text-xl text-white truncate">
             {isPlaying ? 'Auto-Simulating Post Creation' : 'Manual Control Active'}
           </h3>
         </div>
 
-        {/* Play/Pause Control & Presets - Always Single Line */}
-        <div className="flex items-center gap-2 shrink-0 overflow-x-auto custom-scrollbar max-w-full">
+        {/* Play/Pause Control & Presets - Responsive Horizontal Scroll on Mobile */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 overflow-x-auto custom-scrollbar max-w-full w-full sm:w-auto pb-1 sm:pb-0 touch-pan-x">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap shrink-0 ${
               isPlaying
                 ? 'bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-amber-500/20'
                 : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20'
@@ -152,7 +152,7 @@ export const InteractiveWorkflowDemo = () => {
               <button
                 key={preset.name}
                 onClick={() => applyPreset(preset)}
-                className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-500/50 transition-all whitespace-nowrap shrink-0"
+                className="px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-[#0B0F17] border border-[#2C384E] text-slate-300 hover:text-white hover:border-amber-500/50 transition-all whitespace-nowrap shrink-0"
               >
                 {preset.name}
               </button>
@@ -162,11 +162,11 @@ export const InteractiveWorkflowDemo = () => {
       </div>
 
       {/* Main Grid Shell */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
         {/* Left Column: Compact Form Controls (Fits without scroll) */}
         <div className="lg:col-span-6 space-y-3">
           {/* Row 1: Business Name & Phone Inputs side-by-side */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1 uppercase tracking-wider">
                 <Building2 className="w-3 h-3 text-amber-400" /> Business Name
@@ -222,7 +222,7 @@ export const InteractiveWorkflowDemo = () => {
             <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1 uppercase tracking-wider">
               <Layers className="w-3 h-3 text-amber-400" /> Select Canva Frame Style
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-1.5 sm:gap-2">
               {FRAME_OPTIONS.map((frame) => (
                 <button
                   key={frame.id}
@@ -230,7 +230,7 @@ export const InteractiveWorkflowDemo = () => {
                     pauseOnInteraction();
                     setFrameStyle(frame.id);
                   }}
-                  className={`py-2 px-2 rounded-xl border text-[11px] font-bold text-center transition-all ${
+                  className={`py-1.5 sm:py-2 px-2 rounded-xl border text-[10px] min-[420px]:text-[11px] font-bold text-center transition-all leading-tight ${
                     frameStyle === frame.id
                       ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-sm'
                       : 'bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:text-white'
@@ -242,15 +242,15 @@ export const InteractiveWorkflowDemo = () => {
             </div>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-[11px] text-amber-300 font-semibold">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-[10px] sm:text-[11px] text-amber-300 font-semibold">
             <Wand2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span>0ms Real-Time Preview — Simple, clean & 100% achievable designs.</span>
+            <span>0ms Real-Time Preview — Clean, branded & 100% achievable designs.</span>
           </div>
         </div>
 
         {/* Right Column: Simulated Social Post Canvas Container */}
-        <div className="lg:col-span-6 flex justify-center post-canvas-preview">
-          <div className="w-full max-w-xs rounded-2xl bg-[#0B0F17] border border-[#2C384E] p-3 shadow-2xl space-y-2.5 post-device-shell">
+        <div className="lg:col-span-6 flex justify-center post-canvas-preview w-full">
+          <div className="w-full max-w-[310px] min-[380px]:max-w-xs sm:max-w-sm rounded-2xl bg-[#0B0F17] border border-[#2C384E] p-2.5 sm:p-3 shadow-2xl space-y-2 sm:space-y-2.5 post-device-shell mx-auto">
             {/* Social Header */}
             <div className="flex items-center justify-between border-b border-[#2C384E] pb-2 text-xs">
               <div className="flex items-center gap-2">
@@ -291,20 +291,20 @@ export const InteractiveWorkflowDemo = () => {
                 </div>
 
                 <div className="relative z-10 text-center space-y-1 my-auto px-2">
-                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
+                  <h4 className="font-heading font-extrabold text-base min-[360px]:text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
                     {headline || 'Headline Here'}
                   </h4>
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="relative z-10 p-2.5 rounded-lg bg-slate-900/90 border border-amber-400/80 flex items-center justify-between shadow-lg">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-8 h-8 rounded-full border border-amber-400 bg-slate-800 overflow-hidden shrink-0">
+                <div className="relative z-10 p-2 sm:p-2.5 rounded-lg bg-slate-900/90 border border-amber-400/80 flex items-center justify-between shadow-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2 overflow-hidden min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-amber-400 bg-slate-800 overflow-hidden shrink-0">
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
-                    <div className="text-left text-[11px] overflow-hidden">
-                      <p className="font-bold text-white preserve-white-text truncate max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</p>
-                      <p className="text-[9px] text-amber-300 preserve-amber-text font-mono font-bold" style={{ color: '#FCD34D' }}>📞 {phone}</p>
+                    <div className="text-left text-[11px] overflow-hidden min-w-0">
+                      <p className="font-bold text-white preserve-white-text truncate max-w-[90px] min-[360px]:max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</p>
+                      <p className="text-[9px] text-amber-300 preserve-amber-text font-mono font-bold truncate" style={{ color: '#FCD34D' }}>📞 {phone}</p>
                     </div>
                   </div>
                 </div>
@@ -323,27 +323,27 @@ export const InteractiveWorkflowDemo = () => {
 
                 {/* Top Banner */}
                 <div className="relative z-10 p-2 bg-slate-950/90 border-b border-teal-400/80 text-center">
-                  <span className="text-[10px] font-extrabold text-teal-300 preserve-teal-text uppercase tracking-wider" style={{ color: '#5EEAD4' }}>
+                  <span className="text-[10px] font-extrabold text-teal-300 preserve-teal-text uppercase tracking-wider truncate block" style={{ color: '#5EEAD4' }}>
                     ⚡ {businessName || 'Business Name'}
                   </span>
                 </div>
 
                 {/* Center Headline */}
                 <div className="relative z-10 text-center space-y-1 my-auto px-3">
-                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
+                  <h4 className="font-heading font-extrabold text-base min-[360px]:text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
                     {headline || 'Headline Here'}
                   </h4>
                 </div>
 
                 {/* Bottom Strip */}
-                <div className="relative z-10 p-2 bg-slate-950/90 border-t border-teal-400/80 flex items-center justify-between text-[11px]">
-                  <div className="flex items-center gap-2">
+                <div className="relative z-10 p-2 bg-slate-950/90 border-t border-teal-400/80 flex items-center justify-between text-[11px] gap-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <div className="w-7 h-7 rounded-full border border-teal-400 overflow-hidden shrink-0">
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
-                    <span className="font-bold text-white preserve-white-text truncate max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</span>
+                    <span className="font-bold text-white preserve-white-text truncate max-w-[90px] min-[360px]:max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</span>
                   </div>
-                  <span className="font-mono text-[9px] font-bold text-teal-300 preserve-teal-text bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/30" style={{ color: '#5EEAD4' }}>
+                  <span className="font-mono text-[9px] font-bold text-teal-300 preserve-teal-text bg-teal-500/10 px-1.5 sm:px-2 py-0.5 rounded border border-teal-500/30 shrink-0" style={{ color: '#5EEAD4' }}>
                     📞 {phone}
                   </span>
                 </div>
@@ -369,20 +369,20 @@ export const InteractiveWorkflowDemo = () => {
 
                 {/* Middle Headline */}
                 <div className="relative z-10 text-center space-y-1 my-auto px-2">
-                  <h4 className="font-heading font-extrabold text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
+                  <h4 className="font-heading font-extrabold text-base min-[360px]:text-lg sm:text-xl text-white preserve-white-text drop-shadow-md leading-snug" style={{ color: '#FFFFFF' }}>
                     {headline || 'Headline Here'}
                   </h4>
                 </div>
 
                 {/* Frosted Glass Footer */}
-                <div className="relative z-10 p-2.5 rounded-xl backdrop-blur-md bg-indigo-950/80 border border-indigo-300/60 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg border border-indigo-300 overflow-hidden shrink-0">
+                <div className="relative z-10 p-2 sm:p-2.5 rounded-xl backdrop-blur-md bg-indigo-950/80 border border-indigo-300/60 flex items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-indigo-300 overflow-hidden shrink-0">
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
-                    <div className="text-left text-[11px]">
-                      <p className="font-bold text-white preserve-white-text truncate max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</p>
-                      <p className="text-[9px] font-mono font-bold text-indigo-300 preserve-indigo-text" style={{ color: '#A5B4FC' }}>📞 {phone}</p>
+                    <div className="text-left text-[11px] min-w-0">
+                      <p className="font-bold text-white preserve-white-text truncate max-w-[90px] min-[360px]:max-w-[120px]" style={{ color: '#FFFFFF' }}>{businessName}</p>
+                      <p className="text-[9px] font-mono font-bold text-indigo-300 preserve-indigo-text truncate" style={{ color: '#A5B4FC' }}>📞 {phone}</p>
                     </div>
                   </div>
                 </div>

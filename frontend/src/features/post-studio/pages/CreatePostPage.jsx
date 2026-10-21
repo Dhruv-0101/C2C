@@ -39,6 +39,7 @@ export const CreatePostPage = () => {
     closePlanModal,
     successData,
     setSuccessData,
+    activateFreeMutation,
   } = useSubscription();
 
   const passedTemplate = location.state?.template;
@@ -556,6 +557,7 @@ export const CreatePostPage = () => {
         isExpired={isExpired}
         planName={planName}
         openPlanModal={openPlanModal}
+        activateFreeMutation={activateFreeMutation}
       />
 
       <SocialPublisherModal

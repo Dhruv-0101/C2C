@@ -88,31 +88,31 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
   return (
     <>
       <div
-        className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-50 flex items-center justify-center p-3 sm:p-5 animate-in fade-in bg-slate-950/80 backdrop-blur-sm overflow-hidden"
+        className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-50 flex items-center justify-center p-2.5 sm:p-4 md:p-5 animate-in fade-in bg-slate-950/80 backdrop-blur-sm overflow-hidden"
         onClick={onClose}
       >
         <div
-          className="w-full max-w-5xl max-h-[92vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+          className="w-full max-w-5xl max-h-[94vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 1. Modal Header: Template Thumbnail & Title */}
-          <div className="p-5 sm:p-6 border-b border-[#2C384E] flex items-center justify-between gap-4 shrink-0 bg-[#0B0F17]">
-            <div className="flex items-center gap-3.5 min-w-0">
+          <div className="p-3.5 sm:p-5 md:p-6 border-b border-[#2C384E] flex items-start sm:items-center justify-between gap-3 shrink-0 bg-[#0B0F17]">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
               {templateImage ? (
                 <img
                   src={templateImage}
                   alt={template.title}
-                  className="w-12 h-12 rounded-xl object-cover border border-[#2C384E] shrink-0"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-[#2C384E] shrink-0"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                  <FileCode2 className="w-6 h-6" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <FileCode2 className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               )}
 
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-heading font-extrabold text-lg text-white truncate">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <h3 className="font-heading font-extrabold text-base sm:text-lg text-white truncate">
                     {template.title}
                   </h3>
                   {template.templateCategory?.name && (
@@ -138,7 +138,7 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
               title="Close Modal"
             >
               <X className="w-5 h-5" />
@@ -146,10 +146,10 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
           </div>
 
           {/* 2. Filter & Search Strip */}
-          <div className="px-5 py-3.5 border-b border-[#2C384E] bg-[#0E1522] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+          <div className="px-3.5 sm:px-5 py-3 border-b border-[#2C384E] bg-[#0E1522] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
             {/* Search Input */}
             <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search business name, owner, or occasion..."
@@ -161,7 +161,7 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
                 <button
                   type="button"
                   onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white text-xs"
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white text-xs cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -169,8 +169,8 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
             </div>
 
             {/* Lifecycle Status Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto text-[11px]">
-              <span className="text-slate-400 font-bold px-1 flex items-center gap-1">
+            <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] pb-1 sm:pb-0 custom-scrollbar -mx-1 px-1">
+              <span className="text-slate-400 font-bold px-1 flex items-center gap-1 shrink-0">
                 <Filter className="w-3 h-3" /> Status:
               </span>
               {[
@@ -183,7 +183,7 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
                   key={tab.id}
                   type="button"
                   onClick={() => setStatusFilter(tab.id)}
-                  className={`px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer shrink-0 ${
+                  className={`px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer shrink-0 min-h-[30px] flex items-center ${
                     statusFilter === tab.id
                       ? 'bg-amber-500 text-slate-950 shadow-xs font-bold'
                       : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -196,9 +196,9 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
           </div>
 
           {/* 3. Modal Scrollable Posts Grid */}
-          <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+          <div className="p-3.5 sm:p-5 md:p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {Array.from({ length: limit }).map((_, i) => (
                   <div
                     key={`skel-tpl-post-${i}`}
@@ -211,11 +211,11 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
                 ))}
               </div>
             ) : error ? (
-              <div className="p-8 text-center text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs">
+              <div className="p-6 sm:p-8 text-center text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs">
                 Failed to load posts created from this template. Please try again.
               </div>
             ) : posts.length === 0 ? (
-              <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl text-slate-400 text-xs space-y-2 bg-[#0B0F17]/40">
+              <div className="p-8 sm:p-12 text-center border border-dashed border-[#2C384E] rounded-2xl text-slate-400 text-xs space-y-2 bg-[#0B0F17]/40">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
                   <Sparkles className="w-6 h-6 text-amber-400" />
                 </div>
@@ -231,7 +231,7 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {posts.map((post) => {
                   const finalImage = post.finalGraphicUrl || post.customImageUrl || templateImage;
                   const user = post.user || {};
@@ -347,7 +347,7 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
 
           {/* 4. Modal Footer with Pagination */}
           {posts.length > 0 && (
-            <div className="p-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
+            <div className="p-3 sm:p-4 border-t border-[#2C384E] bg-[#0B0F17] shrink-0">
               <Pagination
                 meta={meta}
                 currentPage={page}
@@ -358,7 +358,7 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
                   setPage(1);
                 }}
                 pageSizeOptions={[8, 12, 16, 24]}
-                className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300"
+                className="flex flex-col min-[480px]:flex-row items-center justify-between gap-3 text-xs text-slate-300"
               />
             </div>
           )}

@@ -22,11 +22,11 @@ export const LoginForm = ({
   successMessage,
 }) => {
   return (
-    <Card className="w-full max-w-md mx-auto p-6 sm:p-7 border-[#2C384E] bg-[#131B2A]/90 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <Card className="w-full max-w-md mx-auto p-4 min-[380px]:p-6 sm:p-7 border-[#2C384E] bg-[#131B2A]/90 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-2xl sm:rounded-3xl">
       <div className="space-y-4">
         {/* Form Header */}
         <div className="space-y-1 text-center sm:text-left">
-          <h2 className="font-heading text-2xl font-extrabold tracking-tight text-white flex items-center justify-center sm:justify-start gap-2">
+          <h2 className="font-heading text-xl min-[360px]:text-2xl font-extrabold tracking-tight text-white flex items-center justify-center sm:justify-start gap-2">
             <span>Welcome Back</span>
             <span className="inline-block animate-bounce">👋</span>
           </h2>
@@ -37,9 +37,9 @@ export const LoginForm = ({
 
         {/* Success Alert */}
         {successMessage && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in duration-300">
+          <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in duration-300">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-            <span>{successMessage}</span>
+            <span className="break-words">{successMessage}</span>
           </div>
         )}
 
@@ -78,12 +78,12 @@ export const LoginForm = ({
             {...register("password")}
           />
 
-          <div className="flex items-center justify-between text-xs pt-0.5">
-            <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-0.5">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-300 select-none">
               <input
                 type="checkbox"
                 disabled={isAuthenticating || !!successMessage}
-                className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500/50"
+                className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500/50 cursor-pointer"
                 {...register("rememberMe")}
               />
               <span>Remember me</span>
@@ -100,7 +100,7 @@ export const LoginForm = ({
             isLoading={isAuthenticating}
             disabled={isAuthenticating || !!successMessage}
             icon={LogIn}
-            className="w-full shadow-lg shadow-amber-500/20 mt-1"
+            className="w-full shadow-lg shadow-amber-500/20 mt-1 py-3 sm:py-3.5 text-sm sm:text-base"
           >
             {isAuthenticating
               ? "Authenticating..."
@@ -119,7 +119,7 @@ export const LoginForm = ({
         </div>
 
         {/* Google OAuth Button */}
-        <div className="flex justify-center w-full pt-1" style={{ colorScheme: "light" }}>
+        <div className="flex justify-center w-full pt-1 [&>div]:!w-full [&_iframe]:!w-full max-w-full overflow-hidden" style={{ colorScheme: "light" }}>
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={() => console.error("Google Sign-In Failed")}

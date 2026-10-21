@@ -90,18 +90,18 @@ export const AdminTemplateCategoriesTab = ({
   return (
     <div className="animate-in fade-in duration-200 space-y-4">
       {/* Category Section Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
-        <div>
-          <h3 className="font-heading font-extrabold text-xl text-white flex items-center gap-2">
-            <FolderTree className="w-5 h-5 text-teal-400" />
-            <span>Master Template Categories</span>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 border-b border-[#2C384E] pb-4">
+        <div className="min-w-0">
+          <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white flex items-center gap-2">
+            <FolderTree className="w-5 h-5 text-teal-400 shrink-0" />
+            <span className="truncate">Master Template Categories</span>
           </h3>
           <p className="text-xs text-slate-400 mt-1">
             Manage visual themes and artwork classifications (e.g., Festival, Hiring, Mega Sale, Motivation).
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full lg:w-auto">
           <SearchBar
             value={templateCategorySearch}
             onChange={(val) => {
@@ -110,14 +110,14 @@ export const AdminTemplateCategoriesTab = ({
               setTemplateCategoryPage(1);
             }}
             placeholder="Search template categories..."
-            className="w-full sm:w-64"
+            className="w-full sm:w-64 min-w-0"
           />
 
           <Button
             type="button"
             variant="primary"
             onClick={handleOpenCreateModal}
-            className="flex items-center justify-center gap-2 shadow-sm font-semibold shrink-0 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold"
+            className="w-full sm:w-auto min-h-[40px] flex items-center justify-center gap-2 shadow-sm font-semibold shrink-0 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Add Template Category</span>

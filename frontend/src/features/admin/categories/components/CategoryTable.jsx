@@ -103,62 +103,64 @@ export const CategoryTable = ({
             </div>
 
             {/* Right: Metadata Badges & Actions */}
-            <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-              {/* Connected Business Tenants Badge Button */}
-              {(() => {
-                const tenantCount = cat._count?.brandKits ?? 0;
-                return (
-                  <button
-                    type="button"
-                    onClick={() => onViewTenants && onViewTenants(cat)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-500/10 border border-amber-500/25 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/40 transition cursor-pointer group/tbtn"
-                    title={`View ${tenantCount} business tenants connected to ${cat.name}`}
+            <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3 shrink-0 w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-[#2C384E]/50">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* Connected Business Tenants Badge Button */}
+                {(() => {
+                  const tenantCount = cat._count?.brandKits ?? 0;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => onViewTenants && onViewTenants(cat)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-500/10 border border-amber-500/25 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/40 transition cursor-pointer group/tbtn min-h-[32px]"
+                      title={`View ${tenantCount} business tenants connected to ${cat.name}`}
+                    >
+                      <Building2 className="w-3.5 h-3.5 text-amber-400 group-hover/tbtn:scale-110 transition-transform" />
+                      <span>{tenantCount}</span>
+                      <span className="text-[10px] text-amber-400/80 font-normal">
+                        {tenantCount === 1 ? 'tenant' : 'tenants'}
+                      </span>
+                    </button>
+                  );
+                })()}
+
+                {/* Creator Badge */}
+                {cat.creator ? (
+                  <span
+                    className={`inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border min-h-[32px] ${
+                      cat.creator.role === 'SUB_ADMIN'
+                        ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                        : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                    }`}
+                    title={`Author: ${cat.creator.fullName} (${cat.creator.email})`}
                   >
-                    <Building2 className="w-3.5 h-3.5 text-amber-400 group-hover/tbtn:scale-110 transition-transform" />
-                    <span>{tenantCount}</span>
-                    <span className="text-[10px] text-amber-400/80 font-normal">
-                      {tenantCount === 1 ? 'tenant' : 'tenants'}
+                    <User className="w-3 h-3 shrink-0" />
+                    <span className="truncate max-w-[90px] min-[380px]:max-w-[130px]">
+                      {cat.creator.role === 'SUB_ADMIN' ? 'SubAdmin: ' : 'Admin: '}
+                      {cat.creator.fullName}
                     </span>
-                  </button>
-                );
-              })()}
-
-              {/* Creator Badge */}
-              {cat.creator ? (
-                <span
-                  className={`inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border ${
-                    cat.creator.role === 'SUB_ADMIN'
-                      ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
-                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                  }`}
-                  title={`Author: ${cat.creator.fullName} (${cat.creator.email})`}
-                >
-                  <User className="w-3 h-3" />
-                  <span className="truncate max-w-[130px]">
-                    {cat.creator.role === 'SUB_ADMIN' ? 'SubAdmin: ' : 'Admin: '}
-                    {cat.creator.fullName}
                   </span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-700/60">
-                  <User className="w-3 h-3 text-slate-500" />
-                  <span>System</span>
-                </span>
-              )}
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-700/60 min-h-[32px]">
+                    <User className="w-3 h-3 text-slate-500 shrink-0" />
+                    <span>System</span>
+                  </span>
+                )}
 
-              {/* Date Created */}
-              {createdDate && (
-                <span className="text-[11px] text-slate-400 font-mono hidden md:inline-block">
-                  {createdDate}
-                </span>
-              )}
+                {/* Date Created */}
+                {createdDate && (
+                  <span className="text-[11px] text-slate-400 font-mono hidden md:inline-block">
+                    {createdDate}
+                  </span>
+                )}
+              </div>
 
               {/* Action Buttons: View Tenants, Edit & Delete */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0 ml-auto sm:ml-0">
                 <button
                   type="button"
                   onClick={() => onViewTenants && onViewTenants(cat)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition cursor-pointer"
+                  className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition cursor-pointer"
                   title="View Connected Business Tenants"
                 >
                   <Eye className="w-4 h-4" />
@@ -167,7 +169,7 @@ export const CategoryTable = ({
                 <button
                   type="button"
                   onClick={() => onOpenEdit(cat)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition cursor-pointer"
+                  className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition cursor-pointer"
                   title="Edit Category"
                 >
                   <Pencil className="w-4 h-4" />
@@ -176,7 +178,7 @@ export const CategoryTable = ({
                 <button
                   type="button"
                   onClick={() => onOpenDelete(cat)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30 transition cursor-pointer"
+                  className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30 transition cursor-pointer"
                   title="Delete Category"
                 >
                   <Trash2 className="w-4 h-4" />

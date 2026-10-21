@@ -26,10 +26,10 @@ export const FinanceKpiCards = ({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 min-[440px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       {/* 1. INR Revenue Card */}
       <div
-        className={`p-4 sm:p-5 rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
+        className={`p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
           currency === 'INR'
             ? 'border-amber-500/50 bg-[#152033] shadow-lg shadow-black/40 ring-1 ring-amber-500/30'
             : 'border-[#2C384E] hover:border-slate-600 hover:bg-[#152033]/60'
@@ -38,7 +38,7 @@ export const FinanceKpiCards = ({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider truncate">
               INR Revenue
             </span>
           </div>
@@ -46,11 +46,11 @@ export const FinanceKpiCards = ({
             Razorpay
           </span>
         </div>
-        <div>
-          <h3 className="text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono">
+        <div className="min-w-0">
+          <h3 className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono truncate" title={formatCurrency(getCurrencyRevenue('INR'), 'INR')}>
             {isLoadingOverview ? '...' : formatCurrency(getCurrencyRevenue('INR'), 'INR')}
           </h3>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50 gap-2">
             <span className="truncate text-slate-400">Domestic Volume</span>
             <span className="text-[10px] font-semibold text-slate-400 shrink-0">
               {scopeInfo?.daysText}
@@ -61,7 +61,7 @@ export const FinanceKpiCards = ({
 
       {/* 2. INR MRR Card */}
       <div
-        className={`p-4 sm:p-5 rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
+        className={`p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
           currency === 'INR'
             ? 'border-amber-500/50 bg-[#152033] shadow-lg shadow-black/40 ring-1 ring-amber-500/30'
             : 'border-[#2C384E] hover:border-slate-600 hover:bg-[#152033]/60'
@@ -70,7 +70,7 @@ export const FinanceKpiCards = ({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider truncate">
               INR MRR
             </span>
           </div>
@@ -78,11 +78,11 @@ export const FinanceKpiCards = ({
             <TrendingUp className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div>
-          <h3 className="text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono">
+        <div className="min-w-0">
+          <h3 className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono truncate" title={formatCurrency(overview?.mrrINR, 'INR')}>
             {isLoadingOverview ? '...' : formatCurrency(overview?.mrrINR, 'INR')}
           </h3>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50 gap-2">
             <span className="truncate text-slate-400">Monthly Run Rate</span>
             <span className="text-[10px] text-emerald-400/90 font-semibold shrink-0">
               30-Day Rate
@@ -93,7 +93,7 @@ export const FinanceKpiCards = ({
 
       {/* 3. USD Revenue Card */}
       <div
-        className={`p-4 sm:p-5 rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
+        className={`p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
           currency === 'USD'
             ? 'border-sky-500/50 bg-[#152033] shadow-lg shadow-black/40 ring-1 ring-sky-500/30'
             : 'border-[#2C384E] hover:border-slate-600 hover:bg-[#152033]/60'
@@ -102,7 +102,7 @@ export const FinanceKpiCards = ({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider truncate">
               USD Revenue
             </span>
           </div>
@@ -110,11 +110,11 @@ export const FinanceKpiCards = ({
             Stripe
           </span>
         </div>
-        <div>
-          <h3 className="text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono">
+        <div className="min-w-0">
+          <h3 className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono truncate" title={formatCurrency(getCurrencyRevenue('USD'), 'USD')}>
             {isLoadingOverview ? '...' : formatCurrency(getCurrencyRevenue('USD'), 'USD')}
           </h3>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50 gap-2">
             <span className="truncate text-slate-400">Int'l Volume</span>
             <span className="text-[10px] font-semibold text-slate-400 shrink-0">
               {scopeInfo?.daysText}
@@ -125,7 +125,7 @@ export const FinanceKpiCards = ({
 
       {/* 4. USD MRR Card */}
       <div
-        className={`p-4 sm:p-5 rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
+        className={`p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group ${
           currency === 'USD'
             ? 'border-sky-500/50 bg-[#152033] shadow-lg shadow-black/40 ring-1 ring-sky-500/30'
             : 'border-[#2C384E] hover:border-slate-600 hover:bg-[#152033]/60'
@@ -134,7 +134,7 @@ export const FinanceKpiCards = ({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider truncate">
               USD MRR
             </span>
           </div>
@@ -142,11 +142,11 @@ export const FinanceKpiCards = ({
             <TrendingUp className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div>
-          <h3 className="text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono">
+        <div className="min-w-0">
+          <h3 className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono truncate" title={formatCurrency(overview?.mrrUSD, 'USD')}>
             {isLoadingOverview ? '...' : formatCurrency(overview?.mrrUSD, 'USD')}
           </h3>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50 gap-2">
             <span className="truncate text-slate-400">Monthly Run Rate</span>
             <span className="text-[10px] text-emerald-400/90 font-semibold shrink-0">
               30-Day Rate
@@ -156,11 +156,11 @@ export const FinanceKpiCards = ({
       </div>
 
       {/* 5. Active Accounts Card */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#131B2A] border border-[#2C384E] hover:border-slate-600 hover:bg-[#152033]/60 transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group">
+      <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border border-[#2C384E] hover:border-slate-600 hover:bg-[#152033]/60 transition-all duration-200 flex flex-col justify-between space-y-3 relative overflow-hidden group">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider truncate">
               Active Accounts
             </span>
           </div>
@@ -168,14 +168,14 @@ export const FinanceKpiCards = ({
             <CheckCircle2 className="w-3.5 h-3.5" />
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
           <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono">
+            <h3 className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-white tracking-tight font-mono">
               {isLoadingOverview ? '...' : (overview?.activeSubsCount || 0)}
             </h3>
             <span className="text-xs font-semibold text-emerald-400">Active</span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#2C384E]/50 gap-2">
             <span className="flex items-center gap-1 truncate text-slate-400">
               <span className="truncate">
                 {overview?.paidUsersCount || 0} Paid | {overview?.expiredSubsCount || 0} Expired

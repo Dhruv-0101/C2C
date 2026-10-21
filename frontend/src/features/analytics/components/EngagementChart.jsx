@@ -41,13 +41,13 @@ const CustomTooltip = ({ active, payload, label }) => {
  */
 export const EngagementChart = ({ trends = [] }) => {
   return (
-    <Card className="p-6 bg-[#131B2A] border-[#2C384E] space-y-4">
-      <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
+    <Card className="p-3.5 sm:p-6 bg-[#131B2A] border-[#2C384E] space-y-4 rounded-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2C384E] pb-3">
         <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-indigo-400" />
           <span>Performance Trend Over Time</span>
         </h3>
-        <div className="flex items-center gap-4 text-xs font-mono">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono flex-wrap">
           <span className="flex items-center gap-1.5 text-indigo-400 font-bold">
             <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Impressions
           </span>
@@ -57,7 +57,7 @@ export const EngagementChart = ({ trends = [] }) => {
         </div>
       </div>
 
-      <div className="h-72 w-full pt-2">
+      <div className="h-60 sm:h-72 w-full min-w-0 pt-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>

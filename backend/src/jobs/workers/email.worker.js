@@ -1,14 +1,14 @@
 import { Worker } from 'bullmq';
 import { redisConnection, isRedisConfigured } from '../../config/redis.js';
 import { EMAIL_QUEUE_NAME, EMAIL_JOB_NAMES } from '../../queues/email.queue.js';
-import { sendWelcomeEmail, sendPasswordResetEmail, sendInvoiceEmail } from '../../common/services/email.service.js';
+import { sendWelcomeEmail, sendPasswordResetEmail, sendInvoiceEmail, sendOtpEmail } from '../../common/services/email.service.js';
 import { logger } from '../../config/logger.js';
 
 /**
  * 🛠️ BULLMQ EMAIL WORKER (ASYNC BACKGROUND CONSUMER)
  * 
  * Real World Analogy: Dedicated Postal Mail Service Counter.
- * Consumes email jobs (welcome email, password reset email, invoice email) off the Redis Queue asynchronously
+ * Consumes email jobs (welcome email, password reset email, invoice email, registration OTP) off the Redis Queue asynchronously
  * so HTTP API requests return instantly to users without waiting for SMTP network calls.
  */
 let emailWorker = null;
@@ -40,6 +40,15 @@ if (isRedisConfigured) {
             await sendInvoiceEmail({
               userId: job.data.userId,
               transactionId: job.data.transactionId,
+            });
+            break;
+
+          case EMAIL_JOB_NAMES.REGISTRATION_OTP:
+            await sendOtpEmail({
+              email: job.data.email,
+              otp: job.data.otp,
+              fullName: job.data.fullName,
+              expiresInMinutes: job.data.expiresInMinutes,
             });
             break;
 

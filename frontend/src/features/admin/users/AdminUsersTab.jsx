@@ -82,13 +82,13 @@ export const AdminUsersTab = ({
   return (
     <div className="animate-in fade-in duration-200 space-y-5">
       {/* 1. Header & Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30">
+          <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30 shrink-0">
             <CreditCard className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <span>Business Users & Payment Subscriptions</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -105,13 +105,13 @@ export const AdminUsersTab = ({
             setUserPage(1);
           }}
           placeholder="Search by name, email, or business..."
-          className="max-w-xs"
+          className="w-full sm:max-w-xs"
         />
       </div>
 
       {/* 2. KPI Summary Pulse Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-3 shadow-xs">
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="p-3 sm:p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-2.5 sm:gap-3 shadow-xs">
           <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400 flex items-center justify-center shrink-0">
             <Users className="w-4 h-4" />
           </div>
@@ -125,7 +125,7 @@ export const AdminUsersTab = ({
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-3 shadow-xs">
+        <div className="p-3 sm:p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-2.5 sm:gap-3 shadow-xs">
           <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400 flex items-center justify-center shrink-0">
             <Zap className="w-4 h-4" />
           </div>
@@ -139,7 +139,7 @@ export const AdminUsersTab = ({
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-3 shadow-xs">
+        <div className="p-3 sm:p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-2.5 sm:gap-3 shadow-xs">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-4 h-4" />
           </div>
@@ -153,7 +153,7 @@ export const AdminUsersTab = ({
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-3 shadow-xs">
+        <div className="p-3 sm:p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C384E] bg-white dark:bg-[#131B2A] flex items-center gap-2.5 sm:gap-3 shadow-xs">
           <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 flex items-center justify-center shrink-0">
             <Share2 className="w-4 h-4" />
           </div>
@@ -169,10 +169,10 @@ export const AdminUsersTab = ({
       </div>
 
       {/* 3. Filter Pills Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-[#0B0F17] p-2 rounded-xl border border-slate-200 dark:border-[#2C384E]/70 text-xs">
+      <div className="flex flex-col min-[580px]:flex-row min-[580px]:items-center justify-between gap-2.5 bg-slate-50 dark:bg-[#0B0F17] p-2.5 rounded-xl border border-slate-200 dark:border-[#2C384E]/70 text-xs">
         {/* Plan Filter Group */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-slate-500 dark:text-slate-400 font-bold px-1.5 flex items-center gap-1 text-[11px]">
+          <span className="text-slate-500 dark:text-slate-400 font-bold px-1 flex items-center gap-1 text-[11px] shrink-0">
             <Filter className="w-3 h-3" /> Plan:
           </span>
           {[
@@ -185,7 +185,7 @@ export const AdminUsersTab = ({
               key={tab.id}
               type="button"
               onClick={() => setPlanFilter(tab.id)}
-              className={`px-2.5 py-1 rounded-lg font-semibold text-[11px] transition cursor-pointer ${
+              className={`px-2 sm:px-2.5 py-1 min-h-[30px] rounded-lg font-semibold text-[11px] transition cursor-pointer ${
                 planFilter === tab.id
                   ? 'bg-indigo-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
@@ -197,8 +197,8 @@ export const AdminUsersTab = ({
         </div>
 
         {/* Status Filter Group */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-slate-500 dark:text-slate-400 font-bold px-1.5 text-[11px]">
+        <div className="flex items-center gap-1.5 flex-wrap pt-1 min-[580px]:pt-0 border-t min-[580px]:border-t-0 border-slate-200 dark:border-[#2C384E]/50">
+          <span className="text-slate-500 dark:text-slate-400 font-bold px-1 text-[11px] shrink-0">
             Status:
           </span>
           {[
@@ -210,7 +210,7 @@ export const AdminUsersTab = ({
               key={tab.id}
               type="button"
               onClick={() => setStatusFilter(tab.id)}
-              className={`px-2.5 py-1 rounded-lg font-semibold text-[11px] transition cursor-pointer ${
+              className={`px-2 sm:px-2.5 py-1 min-h-[30px] rounded-lg font-semibold text-[11px] transition cursor-pointer ${
                 statusFilter === tab.id
                   ? 'bg-amber-500 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'

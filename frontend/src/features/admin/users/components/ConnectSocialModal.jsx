@@ -202,8 +202,15 @@ export const ConnectSocialModal = ({
         )}
 
         {/* Modal Actions */}
-        <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#2C384E]">
-          <Button variant="ghost" type="button" size="sm" onClick={handleClose} disabled={isPending}>
+        <div className="pt-3 flex flex-col-reverse min-[380px]:flex-row items-stretch min-[380px]:items-center justify-end gap-2.5 sm:gap-3 border-t border-[#2C384E]">
+          <Button
+            variant="ghost"
+            type="button"
+            size="sm"
+            onClick={handleClose}
+            disabled={isPending}
+            className="w-full min-[380px]:w-auto min-h-[38px] justify-center"
+          >
             Cancel
           </Button>
           <Button
@@ -211,7 +218,7 @@ export const ConnectSocialModal = ({
             type="submit"
             size="sm"
             isLoading={isPending}
-            className="bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold"
+            className="w-full min-[380px]:w-auto min-h-[38px] justify-center bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold"
           >
             {isPending ? 'Verifying & Linking...' : 'Verify & Link Accounts'}
           </Button>

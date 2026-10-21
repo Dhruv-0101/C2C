@@ -10,8 +10,8 @@ export const PaymentSuccessModal = ({ isOpen, onClose, data }) => {
   const subscription = data.subscription || {};
 
   return createPortal(
-    <div className="modal-backdrop-overlay fixed inset-0 z-[99999] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-[#131B2A] border border-emerald-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-emerald-500/20 text-center space-y-6 overflow-hidden">
+    <div className="modal-backdrop-overlay fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-md max-h-[92dvh] bg-[#131B2A] border border-emerald-500/40 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl shadow-emerald-500/20 text-center space-y-5 sm:space-y-6 overflow-y-auto custom-scrollbar my-auto">
         {/* Top Glow Accent */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 

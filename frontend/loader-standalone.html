@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrandFlow - Next-Gen Responsive AI Studio Loader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: #F59E0B;
+            --primary-light: #FDE047;
+            --bg-dark: #080C14;
+            --card-bg: #0E1626;
+            --card-border: #1F2E45;
+            --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 70px rgba(245, 158, 11, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            --brick-bg: #0B111E;
+            --brick-mortar: #1E293B;
+            --brick-line: rgba(30, 41, 59, 0.25);
+            --navbar-bg: rgba(15, 23, 42, 0.7);
+            --navbar-border: rgba(30, 41, 59, 0.8);
+            --sidebar-bg: rgba(15, 23, 42, 0.35);
+            --sidebar-border: rgba(30, 41, 59, 0.6);
+            --post-bg: linear-gradient(145deg, #182438, #0D1626);
+            --post-border: rgba(245, 158, 11, 0.4);
+            --post-text: #FFFFFF;
+            --post-subtext: #94A3B8;
+            --title-color: #FFFFFF;
+            --subtitle-color: #94A3B8;
+            --badge-bg: rgba(245, 158, 11, 0.14);
+            --badge-border: rgba(245, 158, 11, 0.4);
+            --badge-color: #FBBF24;
+            --track-bg: #162032;
+            --track-border: rgba(255, 255, 255, 0.08);
+            --hint-color: #64748B;
+            --wire-color: rgba(71, 85, 105, 0.5);
+            --search-bg: rgba(30, 41, 59, 0.4);
+            --search-border: rgba(51, 65, 85, 0.4);
+            --skeleton-start: rgba(30, 41, 59, 0.4);
+            --skeleton-mid: rgba(51, 65, 85, 0.6);
+            --toggle-bg: rgba(30, 41, 59, 0.6);
+            --toggle-border: rgba(51, 65, 85, 0.6);
+            --toggle-color: #F8FAFC;
+        }
+
+        /* ==========================================================================
+           LIGHT MODE PALETTE: SOHO ART LOFT STUDIO
+           ========================================================================== */
+        body.light-mode {
+            --bg-dark: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --card-border: #E2E8F0;
+            --card-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.08), 0 0 50px rgba(245, 158, 11, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            --brick-bg: #F8FAFC;
+            --brick-mortar: #CBD5E1;
+            --brick-line: rgba(203, 213, 225, 0.45);
+            --navbar-bg: rgba(255, 255, 255, 0.88);
+            --navbar-border: rgba(226, 232, 240, 0.9);
+            --sidebar-bg: rgba(255, 255, 255, 0.65);
+            --sidebar-border: rgba(226, 232, 240, 0.85);
+            --post-bg: linear-gradient(145deg, #FFFFFF, #F8FAFC);
+            --post-border: rgba(245, 158, 11, 0.45);
+            --post-text: #0F172A;
+            --post-subtext: #64748B;
+            --title-color: #0F172A;
+            --subtitle-color: #475569;
+            --badge-bg: rgba(245, 158, 11, 0.12);
+            --badge-border: rgba(245, 158, 11, 0.4);
+            --badge-color: #B45309;
+            --track-bg: #E2E8F0;
+            --track-border: #CBD5E1;
+            --hint-color: #64748B;
+            --wire-color: rgba(148, 163, 184, 0.7);
+            --search-bg: rgba(241, 245, 249, 0.9);
+            --search-border: rgba(203, 213, 225, 0.8);
+            --skeleton-start: rgba(226, 232, 240, 0.7);
+            --skeleton-mid: rgba(255, 255, 255, 0.9);
+            --toggle-bg: #FFFFFF;
+            --toggle-border: #CBD5E1;
+            --toggle-color: #0F172A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--title-color);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .theme-mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            background: var(--toggle-bg);
+            border: 1px solid var(--toggle-border);
+            color: var(--toggle-color);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            white-space: nowrap;
+        }
+
+        .theme-mode-toggle:hover {
+            transform: translateY(-1px);
+            border-color: var(--primary-glow);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+        }
+
+        /* Sparkle Particle Canvas */
+        #interactiveCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        /* Ambient Glow Orbs */
+        .studio-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            opacity: 0.16;
+            transition: background 1s ease;
+        }
+
+        .orb-top-right {
+            top: -15%;
+            right: 5%;
+            width: clamp(220px, 45vw, 420px);
+            height: clamp(220px, 45vw, 420px);
+            background: var(--primary-glow);
+        }
+
+        .orb-bottom-left {
+            bottom: -15%;
+            left: 5%;
+            width: clamp(200px, 40vw, 380px);
+            height: clamp(200px, 40vw, 380px);
+            background: #3B82F6;
+        }
+
+        /* Top Navbar (Responsive) */
+        .resp-navbar {
+            height: clamp(52px, 8vw, 64px);
+            border-bottom: 1px solid var(--navbar-border);
+            background: var(--navbar-bg);
+            backdrop-filter: blur(16px);
+            padding: 0 clamp(14px, 4vw, 28px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            position: relative;
+            flex-shrink: 0;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .resp-logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(17px, 3.2vw, 22px);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--title-color);
+            transition: color 0.4s ease;
+        }
+
+        .resp-logo-accent {
+            color: var(--primary-glow);
+            transition: color 0.8s ease;
+        }
+
+        .resp-nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .resp-ghost-search {
+            width: clamp(120px, 20vw, 200px);
+            height: 32px;
+            border-radius: 8px;
+            background: var(--search-bg);
+            border: 1px solid var(--search-border);
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        @media (max-width: 580px) {
+            .resp-ghost-search {
+                display: none;
+            }
+        }
+
+        .resp-ghost-avatar {
+            width: clamp(28px, 5vw, 34px);
+            height: clamp(28px, 5vw, 34px);
+            border-radius: 9px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(59, 130, 246, 0.4));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* Main App Body */
+        .resp-app-body {
+            flex: 1;
+            display: flex;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Ghost Sidebar (Hides on screens < 900px) */
+        .resp-sidebar {
+            width: clamp(200px, 22vw, 250px);
+            border-right: 1px solid var(--sidebar-border);
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0.75;
+            flex-shrink: 0;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        @media (max-width: 880px) {
+            .resp-sidebar {
+                display: none !important;
+            }
+            .resp-ghost-search {
+                display: none !important;
+            }
+            .resp-app-body {
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                width: 100% !important;
+            }
+            .resp-stage-area {
+                padding: 14px 10px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .studio-wall-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 20px 12px 18px 12px !important;
+                border-radius: 20px !important;
+            }
+            .status-title {
+                font-size: 17px !important;
+                margin-bottom: 3px !important;
+            }
+            .status-subtitle {
+                font-size: 11.5px !important;
+                max-width: 320px !important;
+                min-height: 28px !important;
+            }
+            .progress-track {
+                max-width: 240px !important;
+                width: 85% !important;
+                height: 5px !important;
+                margin-top: 12px !important;
+            }
+        }
+
+        .ghost-skeleton-line {
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--skeleton-start) 0%, var(--skeleton-mid) 50%, var(--skeleton-start) 100%);
+            background-size: 200% 100%;
+            animation: shimmer-sweep-bar 2.4s infinite ease-in-out;
+        }
+
+        @keyframes shimmer-sweep-bar {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* Central Responsive Stage Container */
+        .resp-stage-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(14px, 4vw, 28px);
+            position: relative;
+        }
+
+        /* The Studio Wall Card */
+        .studio-wall-card {
+            position: relative;
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: clamp(20px, 4vw, 32px);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(22px, 4vw, 38px) clamp(16px, 3.5vw, 30px) clamp(18px, 3.5vw, 30px);
+            transition: all 0.5s ease;
+        }
+
+        /* Dark / Light Responsive Loft Brick Pattern */
+        .brick-wall-bg {
+            position: absolute;
+            inset: 0;
+            background-color: var(--brick-bg);
+            background-image:
+                radial-gradient(var(--brick-mortar) 1px, transparent 1px),
+                linear-gradient(to right, var(--brick-line) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--brick-line) 1px, transparent 1px);
+            background-size: 32px 32px, 48px 24px, 48px 24px;
+            opacity: 0.35;
+            pointer-events: none;
+            transition: background-color 0.4s ease;
+        }
+
+        /* Fairy Bulbs */
+        .fairy-lights-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: clamp(24px, 5cqw, 38px);
+            pointer-events: none;
+            z-index: 4;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 clamp(16px, 5vw, 40px);
+        }
+
+        .string-wire {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: clamp(10px, 2.5vw, 18px);
+            border-bottom: 2px solid var(--wire-color);
+            border-radius: 50%;
+            transition: border-color 0.4s ease;
+        }
+
+        .fairy-bulb {
+            width: clamp(6px, 1.8vw, 9px);
+            height: clamp(10px, 2.6vw, 14px);
+            background: #FDE047;
+            border-radius: 50% 50% 35% 35%;
+            position: relative;
+            top: clamp(8px, 2.4vw, 14px);
+            box-shadow: 0 0 14px #F59E0B, 0 0 24px rgba(245, 158, 11, 0.6);
+            animation: bulb-flicker 3s infinite ease-in-out alternate;
+        }
+
+        .fairy-bulb:nth-child(2) {
+            animation-delay: 0.4s;
+            background: #67E8F9;
+            box-shadow: 0 0 14px #06B6D4;
+        }
+
+        .fairy-bulb:nth-child(3) {
+            animation-delay: 0.9s;
+            background: #F472B6;
+            box-shadow: 0 0 14px #EC4899;
+        }
+
+        .fairy-bulb:nth-child(4) {
+            animation-delay: 1.4s;
+            background: #FDE047;
+            box-shadow: 0 0 14px #F59E0B;
+        }
+
+        .fairy-bulb:nth-child(5) {
+            animation-delay: 0.7s;
+            background: #A78BFA;
+            box-shadow: 0 0 14px #8B5CF6;
+        }
+
+        @keyframes bulb-flicker {
+
+            0%,
+            100% {
+                opacity: 0.9;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.55;
+                transform: scale(0.9);
+            }
+        }
+
+        /* Ambient Spotlight */
+        .spotlight-glow {
+            position: absolute;
+            top: 5px;
+            right: 25px;
+            width: clamp(180px, 40vw, 280px);
+            height: clamp(160px, 35vw, 240px);
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            opacity: 0.22;
+            filter: blur(35px);
+            pointer-events: none;
+            transition: background 1s ease;
+        }
+
+        /* Scene Viewport with Container Queries (Native Aspect Ratio 540 / 250) */
+        .scene-viewport {
+            position: relative;
+            width: 100%;
+            max-width: 540px;
+            aspect-ratio: 540 / 250;
+            container-type: inline-size;
+            container-name: scene;
+            margin-bottom: clamp(10px, 2.5vw, 20px);
+        }
+
+        /* Wipe & Reveal Social Card */
+        .wall-post-card {
+            position: absolute;
+            right: 3.7cqw;
+            top: 10%;
+            width: 48.15cqw;
+            height: 74%;
+            border-radius: clamp(8px, 3.3cqw, 18px);
+            background: var(--post-bg);
+            border: 1.5px solid var(--post-border);
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.15);
+            padding: clamp(6px, 2.2cqw, 12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            z-index: 2;
+            clip-path: polygon(0 0, 0% 0, 0% 100%, 0 100%);
+            animation: wall-reveal 2.6s infinite ease-in-out;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        body.light-mode .wall-post-card {
+            box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.1), 0 0 20px rgba(245, 158, 11, 0.12);
+        }
+
+        @keyframes wall-reveal {
+            0% {
+                clip-path: polygon(0 0, 0% 0, 0% 100%, 0 100%);
+                opacity: 0.3;
+            }
+
+            45%,
+            85% {
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                opacity: 1;
+            }
+
+            100% {
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                opacity: 0.8;
+            }
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: clamp(4px, 1.5cqw, 8px);
+        }
+
+        .post-avatar {
+            width: clamp(14px, 4cqw, 22px);
+            height: clamp(14px, 4cqw, 22px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F59E0B, #EC4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(8px, 2cqw, 11px);
+            flex-shrink: 0;
+        }
+
+        .post-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .post-biz-name {
+            font-size: clamp(7.5px, 1.85cqw, 10px);
+            font-weight: 800;
+            color: var(--post-text);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.4s ease;
+        }
+
+        .post-subtext {
+            font-size: clamp(6px, 1.48cqw, 8px);
+            color: var(--post-subtext);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.4s ease;
+        }
+
+        .post-body-visual {
+            height: 43%;
+            border-radius: clamp(6px, 2cqw, 12px);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(236, 72, 153, 0.25), rgba(59, 130, 246, 0.3));
+            border: 1px dashed rgba(245, 158, 11, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: clamp(2px, 1cqw, 6px);
+            position: relative;
+            overflow: hidden;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .post-visual-shimmer {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            animation: shimmer-sweep 2s infinite linear;
+        }
+
+        @keyframes shimmer-sweep {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .post-headline {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(7.5px, 2cqw, 11px);
+            font-weight: 800;
+            color: #FFF;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            line-height: 1.1;
+        }
+
+        .post-tag {
+            font-size: clamp(6px, 1.48cqw, 8px);
+            font-weight: 700;
+            color: #FDE047;
+            background: rgba(0, 0, 0, 0.4);
+            padding: clamp(1px, 0.4cqw, 2px) clamp(3px, 1cqw, 6px);
+            border-radius: clamp(2px, 0.74cqw, 4px);
+            margin-top: 3px;
+        }
+
+        body.light-mode .post-headline {
+            color: #0F172A;
+            text-shadow: none;
+        }
+
+        body.light-mode .post-tag {
+            color: #92400E;
+            background: #FEF3C7;
+        }
+
+        body.light-mode .post-body-visual {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(236, 72, 153, 0.14), rgba(59, 130, 246, 0.15));
+            border: 1px dashed rgba(245, 158, 11, 0.45);
+        }
+
+        body.light-mode .post-footer-metrics {
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            color: #64748B;
+        }
+
+        .post-footer-metrics {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: clamp(2px, 0.74cqw, 4px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: clamp(6.5px, 1.65cqw, 9px);
+            color: #94A3B8;
+            font-weight: 600;
+        }
+
+        .post-metric-item {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* SVG Cartoon Scene Layer */
+        .mascot-svg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+        }
+
+        /* Roller Arm Painting Motion */
+        .arm-group {
+            transform-origin: 185px 145px;
+            animation: paint-roll 2.6s infinite ease-in-out;
+        }
+
+        @keyframes paint-roll {
+
+            0%,
+            100% {
+                transform: rotate(-18deg) translate(0, 0);
+            }
+
+            38% {
+                transform: rotate(26deg) translate(28px, -35px);
+            }
+
+            72% {
+                transform: rotate(-6deg) translate(5px, -6px);
+            }
+        }
+
+        /* Tail Wagging */
+        .fox-tail {
+            transform-origin: 130px 175px;
+            animation: tail-wag 2.2s infinite ease-in-out;
+        }
+
+        @keyframes tail-wag {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(18deg) translateY(-2px);
+            }
+        }
+
+        /* Head Bobbing */
+        .fox-head {
+            transform-origin: 165px 120px;
+            animation: head-bob 2.6s infinite ease-in-out;
+        }
+
+        @keyframes head-bob {
+
+            0%,
+            100% {
+                transform: rotate(0deg) translateY(0);
+            }
+
+            38% {
+                transform: rotate(5deg) translateY(-4px);
+            }
+
+            70% {
+                transform: rotate(-2deg) translateY(2px);
+            }
+        }
+
+        /* Eyes Blinking */
+        .eye-lid {
+            animation: eye-blink 3.5s infinite;
+            transform-origin: center;
+        }
+
+        @keyframes eye-blink {
+
+            0%,
+            96%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            98% {
+                transform: scaleY(0.1);
+            }
+        }
+
+        /* Wall Paint Stroke */
+        .dynamic-paint-stroke {
+            stroke-dasharray: 450;
+            stroke-dashoffset: 450;
+            animation: stroke-paint 2.6s infinite ease-in-out;
+            filter: drop-shadow(0 0 12px var(--primary-glow));
+            transition: stroke 0.8s ease;
+        }
+
+        @keyframes stroke-paint {
+            0% {
+                stroke-dashoffset: 450;
+                opacity: 0.2;
+            }
+
+            40% {
+                stroke-dashoffset: 60;
+                opacity: 1;
+            }
+
+            80%,
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 0.95;
+            }
+        }
+
+        /* Paint Drips */
+        .paint-drip-drop {
+            animation: drip-gravity 2.6s infinite ease-in;
+        }
+
+        @keyframes drip-gravity {
+
+            0%,
+            35% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(34px);
+                opacity: 0;
+            }
+        }
+
+        /* Floating Sparks */
+        .floating-spark {
+            animation: float-rise 2.6s infinite ease-out;
+        }
+
+        .spark-delay-1 {
+            animation-delay: 0.3s;
+        }
+
+        .spark-delay-2 {
+            animation-delay: 0.8s;
+        }
+
+        .spark-delay-3 {
+            animation-delay: 1.3s;
+        }
+
+        @keyframes float-rise {
+            0% {
+                transform: translateY(0) scale(0.4) rotate(0deg);
+                opacity: 0;
+            }
+
+            35% {
+                opacity: 1;
+            }
+
+            85% {
+                transform: translateY(-26px) scale(1.1) rotate(25deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-38px) scale(0.6) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        /* Dynamic Status Typography */
+        .stage-status-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 5;
+            width: 100%;
+        }
+
+        .badge-capsule {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: clamp(4px, 1.2cqw, 6px) clamp(10px, 3cqw, 16px);
+            border-radius: 9999px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            color: var(--badge-color);
+            font-size: clamp(9.5px, 2.2cqw, 11px);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: clamp(6px, 2cqw, 12px);
+            transition: all 0.6s ease;
+        }
+
+        .status-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(16px, 3.8cqw, 22px);
+            color: var(--title-color);
+            margin-bottom: clamp(3px, 1cqw, 6px);
+            letter-spacing: -0.3px;
+            line-height: 1.25;
+            transition: color 0.4s ease;
+        }
+
+        .status-subtitle {
+            font-size: clamp(11.5px, 2.4cqw, 13.5px);
+            color: var(--subtitle-color);
+            min-height: 20px;
+            transition: opacity 0.3s ease, transform 0.3s ease, color 0.4s ease;
+            font-weight: 500;
+            max-width: 480px;
+        }
+
+        .progress-track {
+            width: 90%;
+            max-width: 360px;
+            height: clamp(5px, 1.2cqw, 7px);
+            background: var(--track-bg);
+            border-radius: 999px;
+            margin-top: clamp(14px, 3.2cqw, 22px);
+            overflow: hidden;
+            border: 1px solid var(--track-border);
+            position: relative;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .progress-slider {
+            height: 100%;
+            width: 40%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--primary-glow), var(--primary-light), var(--primary-glow));
+            background-size: 200% 100%;
+            animation: progress-loop 2s infinite linear;
+            box-shadow: 0 0 16px var(--primary-glow);
+            transition: background 0.8s ease;
+        }
+
+        @keyframes progress-loop {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(360%);
+            }
+        }
+
+        .interactive-hint {
+            margin-top: clamp(8px, 2cqw, 14px);
+            font-size: clamp(9px, 2cqw, 11px);
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .interactive-hint span {
+            display: inline-block;
+            animation: wiggle 1.5s infinite ease-in-out;
+        }
+
+        @keyframes wiggle {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-14deg);
+            }
+
+            75% {
+                transform: rotate(14deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="interactiveCanvas"></canvas>
+
+    <div class="studio-orb orb-top-right" id="orb1"></div>
+    <div class="studio-orb orb-bottom-left"></div>
+
+    <!-- Top Mock Navbar -->
+    <div class="resp-navbar">
+        <div class="resp-logo">
+            <span>Brand<span class="resp-logo-accent" id="logoAccent">Flow</span></span>
+        </div>
+        <div class="resp-nav-controls">
+            <button class="theme-mode-toggle" id="themeModeToggle" title="Toggle Light / Dark Mode (Hotkey: T)">
+                <span id="themeToggleIcon">☀️</span>
+                <span id="themeToggleText">Light</span>
+            </button>
+            <div class="resp-ghost-search"></div>
+            <div class="resp-ghost-avatar"></div>
+        </div>
+    </div>
+
+    <div class="resp-app-body">
+        <!-- Ghost Sidebar Skeleton (Visible on Desktop >= 900px, hidden on Tablet/Mobile) -->
+        <div class="resp-sidebar">
+            <div class="ghost-skeleton-line" style="width: 55%; height: 20px; margin-bottom: 6px;"></div>
+            <div class="ghost-skeleton-line"></div>
+            <div class="ghost-skeleton-line"></div>
+            <div class="ghost-skeleton-line"></div>
+            <div class="ghost-skeleton-line"></div>
+            <div class="ghost-skeleton-line" style="margin-top: auto; opacity: 0.5;"></div>
+        </div>
+
+        <!-- Center Stage -->
+        <div class="resp-stage-area">
+            <div class="studio-wall-card" id="wallCard">
+                <div class="brick-wall-bg"></div>
+                <div class="spotlight-glow" id="spotlightGlow"></div>
+
+                <!-- Hanging Fairy Lights -->
+                <div class="fairy-lights-container">
+                    <div class="string-wire"></div>
+                    <div class="fairy-bulb"></div>
+                    <div class="fairy-bulb"></div>
+                    <div class="fairy-bulb"></div>
+                    <div class="fairy-bulb"></div>
+                    <div class="fairy-bulb"></div>
+                </div>
+
+                <!-- Scene Viewport (Aspect Ratio 540x250) -->
+                <div class="scene-viewport">
+                    <!-- Wipe & Reveal Social Card on Wall -->
+                    <div class="wall-post-card">
+                        <div class="post-header">
+                            <div class="post-avatar">🦊</div>
+                            <div class="post-meta">
+                                <div class="post-biz-name" id="postBizName">Chai & Co. Cafe</div>
+                                <div class="post-subtext">Sponsored · BrandFlow AI</div>
+                            </div>
+                        </div>
+
+                        <div class="post-body-visual">
+                            <div class="post-visual-shimmer"></div>
+                            <div class="post-headline" id="postHeadline">🪔 Happy Diwali Flash Sale!</div>
+                            <div class="post-tag" id="postTag">FLAT 50% OFF TODAY</div>
+                        </div>
+
+                        <div class="post-footer-metrics">
+                            <span class="post-metric-item">❤️ 1.4k</span>
+                            <span class="post-metric-item">💬 98</span>
+                            <span class="post-metric-item">🚀 320</span>
+                            <span class="post-metric-item">⭐ 4.9</span>
+                        </div>
+                    </div>
+
+                    <!-- Vector Mascot & Studio Painter SVG -->
+                    <svg class="mascot-svg-layer" viewBox="0 0 540 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="rollerGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="5" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+
+                            <linearGradient id="paintStreamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#F59E0B" id="gradStop1" />
+                                <stop offset="50%" stop-color="#FDE047" id="gradStop2" />
+                                <stop offset="100%" stop-color="#F59E0B" id="gradStop3" />
+                            </linearGradient>
+
+                            <linearGradient id="woodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#B45309" />
+                                <stop offset="100%" stop-color="#78350F" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Stool & Paint Cans -->
+                        <g id="studioFurniture">
+                            <ellipse cx="155" cy="242" rx="48" ry="7" fill="rgba(0,0,0,0.4)" />
+                            <line x1="130" y1="190" x2="118" y2="240" stroke="#78350F" stroke-width="6"
+                                stroke-linecap="round" />
+                            <line x1="178" y1="190" x2="190" y2="240" stroke="#78350F" stroke-width="6"
+                                stroke-linecap="round" />
+                            <line x1="125" y1="216" x2="183" y2="216" stroke="#92400E" stroke-width="4"
+                                stroke-linecap="round" />
+                            <rect x="115" y="184" width="78" height="11" rx="4" fill="url(#woodGrad)" stroke="#D97706"
+                                stroke-width="1.5" />
+                            <ellipse cx="132" cy="187" rx="7" ry="2.5" fill="#F59E0B" id="stoolSplatter1" />
+                            <circle cx="174" cy="188" r="3" fill="#EC4899" />
+                            <circle cx="155" cy="186" r="2" fill="#06B6D4" />
+                            <rect x="74" y="218" width="24" height="22" rx="3" fill="#334155" stroke="#475569"
+                                stroke-width="1.5" />
+                            <ellipse cx="86" cy="218" rx="12" ry="3.5" fill="#F59E0B" id="canPaintColor" />
+                            <text x="86" y="233" font-size="7" font-weight="900" fill="#FFF" text-anchor="middle"
+                                font-family="'Plus Jakarta Sans'">AI</text>
+                            <path d="M 76 220 Q 76 229, 78 229 Q 80 229, 80 220" fill="#F59E0B" />
+                            <rect x="202" y="222" width="20" height="18" rx="3" fill="#1E293B" stroke="#334155"
+                                stroke-width="1" />
+                            <ellipse cx="212" cy="222" rx="10" ry="2.5" fill="#EC4899" />
+                            <text x="212" y="234" font-size="6" font-weight="900" fill="#FFF"
+                                text-anchor="middle">GLOW</text>
+                        </g>
+
+                        <!-- Paint Stroke -->
+                        <path class="dynamic-paint-stroke" id="dynamicStroke" d="M 235 155 Q 310 80, 420 100 T 470 160"
+                            stroke="url(#paintStreamGrad)" stroke-width="20" stroke-linecap="round" fill="none" />
+                        <path class="dynamic-paint-stroke" d="M 235 155 Q 310 80, 420 100 T 470 160" stroke="#FFFBEB"
+                            stroke-width="7" stroke-linecap="round" fill="none" opacity="0.8" />
+
+                        <!-- Paint Drips -->
+                        <circle class="paint-drip-drop" cx="340" cy="105" r="3.5" fill="#FDE047" id="drip1" />
+                        <circle class="paint-drip-drop" cx="430" cy="125" r="3" fill="#F59E0B" id="drip2" />
+                        <circle class="paint-drip-drop" cx="290" cy="120" r="2.5" fill="#F59E0B" />
+
+                        <!-- Floating Social Icons -->
+                        <g class="floating-spark spark-delay-1" transform="translate(390, 65)">
+                            <path d="M 0 4 A 4 4 0 0 1 8 4 A 4 4 0 0 1 16 4 Q 16 10, 8 16 Q 0 10, 0 4 Z" fill="#F43F5E"
+                                filter="url(#rollerGlow)" />
+                        </g>
+                        <g class="floating-spark spark-delay-2" transform="translate(450, 115)">
+                            <rect x="0" y="2" width="16" height="12" rx="3" fill="#F59E0B" filter="url(#rollerGlow)" />
+                            <circle cx="8" cy="8" r="3" fill="#0B111E" />
+                            <circle cx="8" cy="8" r="1.5" fill="#FFF" />
+                            <rect x="3" y="0" width="4" height="2" rx="0.5" fill="#F59E0B" />
+                        </g>
+                        <g class="floating-spark spark-delay-3" transform="translate(320, 75)">
+                            <polygon points="8,0 10,6 16,8 10,10 8,16 6,10 0,8 6,6" fill="#FDE047"
+                                filter="url(#rollerGlow)" />
+                        </g>
+
+                        <!-- Fox Mascot -->
+                        <g id="foxMascot">
+                            <g class="fox-tail">
+                                <path d="M 125 168 C 90 160, 65 185, 75 145 C 82 120, 118 135, 138 152 Z" fill="#EA580C"
+                                    stroke="#C2410C" stroke-width="1.8" />
+                                <path d="M 75 145 C 78 135, 88 130, 98 138 C 90 148, 80 155, 75 145 Z" fill="#FFFBEB" />
+                            </g>
+                            <rect x="135" y="160" width="11" height="28" rx="5" fill="#EA580C" />
+                            <rect x="165" y="160" width="11" height="28" rx="5" fill="#EA580C" />
+                            <path d="M 132 186 L 149 186 C 151 186, 151 190, 149 190 L 132 190 Z" fill="#FFF" />
+                            <ellipse cx="140" cy="186" rx="8" ry="4" fill="#3B82F6" />
+                            <path d="M 162 186 L 179 186 C 181 186, 181 190, 179 190 L 162 190 Z" fill="#FFF" />
+                            <ellipse cx="170" cy="186" rx="8" ry="4" fill="#3B82F6" />
+                            <ellipse cx="155" cy="145" rx="23" ry="26" fill="#EA580C" />
+                            <path d="M 138 134 L 172 134 L 169 168 L 141 168 Z" fill="#1D4ED8" stroke="#1E40AF"
+                                stroke-width="1.5" />
+                            <line x1="144" y1="126" x2="144" y2="136" stroke="#1E3A8A" stroke-width="3" />
+                            <circle cx="144" cy="136" r="2" fill="#CBD5E1" />
+                            <line x1="166" y1="126" x2="166" y2="136" stroke="#1E3A8A" stroke-width="3" />
+                            <circle cx="166" cy="136" r="2" fill="#CBD5E1" />
+                            <rect x="148" y="144" width="14" height="12" rx="3" fill="#2563EB" stroke="#1D4ED8"
+                                stroke-width="1" />
+                            <line x1="151" y1="140" x2="149" y2="146" stroke="#B45309" stroke-width="2"
+                                stroke-linecap="round" />
+                            <line x1="157" y1="138" x2="157" y2="146" stroke="#94A3B8" stroke-width="2"
+                                stroke-linecap="round" />
+                            <circle cx="152" cy="150" r="2" fill="#F59E0B" />
+                            <circle cx="159" cy="152" r="1.5" fill="#10B981" />
+                            <circle cx="142" cy="160" r="1.8" fill="#EC4899" />
+
+                            <g class="fox-head" id="foxHeadGroup">
+                                <polygon points="140,88 131,58 158,72" fill="#EA580C" stroke="#C2410C"
+                                    stroke-width="1.5" />
+                                <polygon points="143,84 137,67 154,75" fill="#FEE2E2" />
+                                <polygon points="174,80 198,62 186,88" fill="#EA580C" stroke="#C2410C"
+                                    stroke-width="1.5" />
+                                <polygon points="177,80 191,68 183,86" fill="#FEE2E2" />
+                                <ellipse cx="156" cy="74" rx="26" ry="10" fill="#2563EB" stroke="#1D4ED8"
+                                    stroke-width="1.5" />
+                                <circle cx="156" cy="65" r="3.5" fill="#1E40AF" />
+                                <circle cx="160" cy="95" r="21" fill="#EA580C" />
+                                <path d="M 152 90 C 152 110, 180 110, 180 90 Z" fill="#FFFBEB" />
+                                <ellipse cx="174" cy="94" rx="3" ry="2.2" fill="#0F172A" />
+
+                                <g class="eye-lid">
+                                    <path d="M 148 90 Q 153 84, 158 90" stroke="#0F172A" stroke-width="2.6"
+                                        stroke-linecap="round" fill="none" />
+                                    <path d="M 163 88 Q 168 82, 173 88" stroke="#0F172A" stroke-width="2.6"
+                                        stroke-linecap="round" fill="none" />
+                                </g>
+
+                                <path d="M 161 100 Q 168 108, 175 100" stroke="#0F172A" stroke-width="2.2"
+                                    stroke-linecap="round" fill="#DC2626" />
+                                <circle cx="147" cy="97" r="4" fill="#FDA4AF" opacity="0.8" />
+                            </g>
+
+                            <g class="arm-group">
+                                <path d="M 168 132 Q 200 118, 230 104" stroke="#EA580C" stroke-width="9"
+                                    stroke-linecap="round" />
+                                <circle cx="230" cy="104" r="5.5" fill="#C2410C" />
+                                <polyline points="230,104 242,98 238,76 254,72" stroke="#CBD5E1" stroke-width="3.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <rect x="246" y="58" width="18" height="34" rx="6" fill="#F59E0B" stroke="#FDE047"
+                                    stroke-width="2.5" filter="url(#rollerGlow)" id="rollerHead" />
+                                <line x1="250" y1="63" x2="250" y2="87" stroke="#FFFBEB" stroke-width="2.5"
+                                    stroke-linecap="round" opacity="0.85" />
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Dynamic Status Typography -->
+                <div class="stage-status-box">
+                    <div class="badge-capsule" id="statusBadge">
+                        <span id="badgeIcon">🎨</span> <span id="badgeText">BrandFlow Creative Studio</span>
+                    </div>
+
+                    <h2 class="status-title" id="stageTitle">Crafting Your Social Studio</h2>
+                    <p class="status-subtitle" id="stageSubtitle">Mixing your brand color palette & typography...</p>
+
+                    <div class="progress-track">
+                        <div class="progress-slider" id="progressSlider"></div>
+                    </div>
+
+                    <div class="interactive-hint">
+                        <span>✨</span> Move your mouse or touch anywhere to paint magic sparkles!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const colorThemes = [
+            {
+                name: "Brand Amber",
+                primary: "#F59E0B",
+                light: "#FDE047",
+                title: "Crafting Your Social Studio",
+                subtitle: "Mixing your brand color palette & typography...",
+                badgeText: "Brand Palette Active",
+                badgeIcon: "🎨",
+                postHeadline: "🪔 Happy Diwali Flash Sale!",
+                postTag: "FLAT 50% OFF TODAY"
+            },
+            {
+                name: "Instagram Neon Rose",
+                primary: "#EC4899",
+                light: "#F472B6",
+                title: "Styling Social Viral Aesthetics",
+                subtitle: "Rendering 4K aspect-ratios for Instagram & Facebook...",
+                badgeText: "Viral Engine Active",
+                badgeIcon: "🔥",
+                postHeadline: "☕ Weekend Special Brunch Vibe",
+                postTag: "NEW SEASON MENU"
+            },
+            {
+                name: "Gemini Cyber Cyan",
+                primary: "#06B6D4",
+                light: "#67E8F9",
+                title: "Tuning Gemini Nano Banana AI",
+                subtitle: "Synthesizing custom creative visuals without rigid templates...",
+                badgeText: "Nano Banana 2.1 Online",
+                badgeIcon: "🍌",
+                postHeadline: "🚀 Product Launch 2026",
+                postTag: "EARLY ACCESS LIVE"
+            },
+            {
+                name: "Royal Purple",
+                primary: "#8B5CF6",
+                light: "#C084FC",
+                title: "Synchronizing Multi-Platform Queue",
+                subtitle: "Preparing smart calendar scheduling & analytics telemetry...",
+                badgeText: "Auto-Scheduler Ready",
+                badgeIcon: "📅",
+                postHeadline: "✨ Modern Luxury Collection",
+                postTag: "LIMITED EDITION"
+            }
+        ];
+
+        let currentThemeIndex = 0;
+
+        function applyTheme(theme) {
+            document.documentElement.style.setProperty('--primary-glow', theme.primary);
+            document.documentElement.style.setProperty('--primary-light', theme.light);
+
+            const logoAccent = document.getElementById('logoAccent');
+            const orb1 = document.getElementById('orb1');
+            const spotlightGlow = document.getElementById('spotlightGlow');
+            const rollerHead = document.getElementById('rollerHead');
+            const canPaintColor = document.getElementById('canPaintColor');
+            const gradStop1 = document.getElementById('gradStop1');
+            const gradStop2 = document.getElementById('gradStop2');
+            const gradStop3 = document.getElementById('gradStop3');
+            const drip1 = document.getElementById('drip1');
+            const drip2 = document.getElementById('drip2');
+
+            if (logoAccent) logoAccent.style.color = theme.primary;
+            if (orb1) orb1.style.background = theme.primary;
+            if (spotlightGlow) spotlightGlow.style.background = `radial-gradient(circle, ${theme.primary} 0%, transparent 70%)`;
+            if (rollerHead) rollerHead.setAttribute('fill', theme.primary);
+            if (canPaintColor) canPaintColor.setAttribute('fill', theme.primary);
+            if (gradStop1) gradStop1.setAttribute('stop-color', theme.primary);
+            if (gradStop2) gradStop2.setAttribute('stop-color', theme.light);
+            if (gradStop3) gradStop3.setAttribute('stop-color', theme.primary);
+            if (drip1) drip1.setAttribute('fill', theme.light);
+            if (drip2) drip2.setAttribute('fill', theme.primary);
+
+            const subtitleEl = document.getElementById('stageSubtitle');
+            const titleEl = document.getElementById('stageTitle');
+            const badgeTextEl = document.getElementById('badgeText');
+            const badgeIconEl = document.getElementById('badgeIcon');
+            const postHeadlineEl = document.getElementById('postHeadline');
+            const postTagEl = document.getElementById('postTag');
+
+            if (subtitleEl && titleEl && badgeTextEl && badgeIconEl) {
+                subtitleEl.style.opacity = '0';
+                subtitleEl.style.transform = 'translateY(4px)';
+
+                setTimeout(() => {
+                    titleEl.innerText = theme.title;
+                    subtitleEl.innerText = theme.subtitle;
+                    badgeTextEl.innerText = theme.badgeText;
+                    badgeIconEl.innerText = theme.badgeIcon;
+                    if (postHeadlineEl) postHeadlineEl.innerText = theme.postHeadline;
+                    if (postTagEl) postTagEl.innerText = theme.postTag;
+
+                    subtitleEl.style.opacity = '1';
+                    subtitleEl.style.transform = 'translateY(0)';
+                }, 280);
+            }
+        }
+
+        setInterval(() => {
+            currentThemeIndex = (currentThemeIndex + 1) % colorThemes.length;
+            applyTheme(colorThemes[currentThemeIndex]);
+        }, 2800);
+
+        // Canvas Sparkles
+        const canvas = document.getElementById('interactiveCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = Math.random() * 4 + 2;
+                this.speedX = (Math.random() - 0.5) * 4;
+                this.speedY = (Math.random() - 0.5) * 4 - 1;
+                this.life = 1;
+                this.decay = Math.random() * 0.03 + 0.02;
+                this.shape = Math.random() > 0.5 ? 'star' : 'circle';
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+                this.size *= 0.95;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+
+                if (this.shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    const r = this.size * 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y - r);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x + r, this.y);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x, this.y + r);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x - r, this.y);
+                    ctx.quadraticCurveTo(this.x, this.y, this.x, this.y - r);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function addSparkles(x, y, count = 3) {
+            const activeColor = colorThemes[currentThemeIndex].primary;
+            const lightColor = colorThemes[currentThemeIndex].light;
+            for (let i = 0; i < count; i++) {
+                const col = Math.random() > 0.4 ? activeColor : lightColor;
+                particles.push(new Particle(x, y, col));
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            addSparkles(e.clientX, e.clientY, 2);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches[0]) {
+                addSparkles(e.touches[0].clientX, e.touches[0].clientY, 3);
+            }
+        }, { passive: true });
+
+        document.getElementById('wallCard').addEventListener('click', (e) => {
+            for (let i = 0; i < 20; i++) {
+                addSparkles(e.clientX, e.clientY, 1);
+            }
+        });
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0 || particles[i].size <= 0.5) {
+                    particles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // -------------------------------------------------------------
+        // Light / Dark Mode Toggle Logic
+        // -------------------------------------------------------------
+        let isLightMode = localStorage.getItem('brandflow_loader_theme') === 'light';
+        const themeBtn = document.getElementById('themeModeToggle');
+        const themeIcon = document.getElementById('themeToggleIcon');
+        const themeText = document.getElementById('themeToggleText');
+
+        function applyTheme(light) {
+            isLightMode = light;
+            if (light) {
+                document.body.classList.add('light-mode');
+                if (themeIcon) themeIcon.textContent = '🌙';
+                if (themeText) themeText.textContent = 'Dark';
+                localStorage.setItem('brandflow_loader_theme', 'light');
+            } else {
+                document.body.classList.remove('light-mode');
+                if (themeIcon) themeIcon.textContent = '☀️';
+                if (themeText) themeText.textContent = 'Light';
+                localStorage.setItem('brandflow_loader_theme', 'dark');
+            }
+        }
+
+        if (isLightMode) {
+            applyTheme(true);
+        }
+
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                applyTheme(!isLightMode);
+            });
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.key === 't' || e.key === 'T') && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+                applyTheme(!isLightMode);
+            }
+        });
+    </script>
+</body>
+
+</html>

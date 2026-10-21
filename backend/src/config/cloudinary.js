@@ -38,6 +38,7 @@ export const CLOUDINARY_FOLDERS = Object.freeze({
   FRAMES_OVERLAYS: 'brandflow/frames/overlays',
   FRAMES_PREVIEWS: 'brandflow/frames/previews',
   POSTS: 'brandflow/posts',
+  AI_GENERATED: 'brandflow/ai-creatives',
 });
 
 /**

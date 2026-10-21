@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { authenticate } from '../../common/middleware/auth.middleware.js';
-import { requireSuperAdmin } from '../../common/middleware/role.middleware.js';
+import { requireSuperAdmin, requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
+import { ADMIN_TABS } from '../auth/auth.constants.js';
 import {
   getCategoriesQuerySchema,
   getCategoryByIdSchema,
@@ -17,8 +18,14 @@ const router = Router();
 // Public / Authenticated route to get business categories with pagination, search, and sorting
 router.get('/', validate(getCategoriesQuerySchema), categoryController.getCategories);
 
-// Public / Authenticated route to fetch business tenants belonging to a category
-router.get('/:id/tenants', validate(getCategoryTenantsSchema), categoryController.getCategoryTenants);
+// Protected: Only authenticated staff with Category tab permissions can inspect business tenants
+router.get(
+  '/:id/tenants',
+  authenticate,
+  requireTabPermission(ADMIN_TABS.CATEGORIES),
+  validate(getCategoryTenantsSchema),
+  categoryController.getCategoryTenants
+);
 
 // Public / Authenticated route to fetch a single business category by ID
 router.get('/:id', validate(getCategoryByIdSchema), categoryController.getCategoryById);

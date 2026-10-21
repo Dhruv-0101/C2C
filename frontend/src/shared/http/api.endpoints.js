@@ -5,11 +5,26 @@
 const getApiBaseUrl = () => {
   // 1. Dynamic Browser Runtime Resolution (Always matches current origin in production)
   if (typeof window !== 'undefined' && window.location) {
-    const { hostname, origin } = window.location;
+    const { hostname, origin, protocol } = window.location;
 
-    // Local development
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:5000/api/v1';
+    // If loaded over HTTPS (production domain or local HTTPS dev with SSL)
+    // Use same-origin /api/v1 proxy to avoid Mixed Content (HTTPS -> HTTP) blocks
+    if (protocol === 'https:') {
+      if (hostname.includes('vercel.app')) {
+        return 'https://c2c-negk.onrender.com/api/v1';
+      }
+      return `${origin}/api/v1`;
+    }
+
+    // Local development & local network mobile testing over plain HTTP (e.g. 192.168.x.x, 10.x.x.x, 172.x.x.x)
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      /^192\.168\./.test(hostname) ||
+      /^10\./.test(hostname) ||
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
+    ) {
+      return `http://${hostname}:5000/api/v1`;
     }
 
     // Vercel deployment talking to Render backend
@@ -59,6 +74,7 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth/login',
     SIGNUP: '/auth/signup',
+    SEND_REGISTRATION_OTP: '/auth/send-registration-otp',
     REFRESH: '/auth/refresh',
     LOGOUT: '/auth/logout',
     ME: '/auth/me',
@@ -113,6 +129,8 @@ export const API_ENDPOINTS = {
   },
   AI: {
     GENERATE_CAPTION: '/ai/generate-caption',
+    GENERATE_IMAGE: '/ai/generate-image',
+    JOB_STATUS: (jobId) => `/ai/jobs/${jobId}/status`,
   },
   CATEGORIES: {
     BASE: '/categories',

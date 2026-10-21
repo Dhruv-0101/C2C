@@ -87,19 +87,19 @@ export const BaseTemplateManagerView = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-4 rounded-2xl">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-[#131B2A] border border-[#2C384E] p-3.5 sm:p-4 rounded-2xl">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
             <FileCode2 className="w-5 h-5" />
           </div>
-          <div>
-            <h2 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
+          <div className="min-w-0">
+            <h2 className="font-heading font-extrabold text-base sm:text-lg text-white flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span>Graphic Templates Manager</span>
-              <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full shrink-0">
                 {templateMeta?.totalItems ?? templates.length} Templates
               </span>
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 mt-0.5">
               Upload clean 1080x1080 graphic backgrounds that end-users composite with custom transparent brand frames.
             </p>
           </div>
@@ -110,40 +110,41 @@ export const BaseTemplateManagerView = ({
           icon={Plus}
           size="sm"
           onClick={() => (onOpenCreate ? onOpenCreate() : setIsModalOpen(true))}
+          className="w-full sm:w-auto min-h-[40px] justify-center text-xs font-semibold shrink-0"
         >
           Upload New Base Graphic
         </Button>
       </div>
 
       {/* Filter and Template Grid Card */}
-      <Card className="border-[#2C384E] bg-[#131B2A] p-5 sm:p-6 space-y-5">
+      <Card className="border-[#2C384E] bg-[#131B2A] p-3.5 sm:p-5 md:p-6 space-y-4 sm:space-y-5">
         {/* 1. Template Category Section (Collapsible Dropdown Filter) */}
         <div className="rounded-2xl bg-[#0B0F17] border border-[#2C384E] overflow-hidden transition-all duration-200">
           <button
             type="button"
             onClick={() => setIsCatDropdownOpen((prev) => !prev)}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-900/60 transition cursor-pointer"
+            className="w-full p-3 sm:p-4 flex items-center justify-between text-left hover:bg-slate-900/60 transition cursor-pointer gap-2"
           >
-            <div className="flex items-center gap-2 flex-wrap">
-              <FolderTree className="w-4 h-4 text-amber-400" />
-              <h4 className="font-heading font-extrabold text-sm text-white">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <FolderTree className="w-4 h-4 text-amber-400 shrink-0" />
+              <h4 className="font-heading font-extrabold text-xs sm:text-sm text-white">
                 Template Categories Navigation
               </h4>
-              <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full shrink-0">
                 {categoryMeta?.totalItems ?? categoriesList.length} Categories
               </span>
               {selectedCategory ? (
-                <span className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0">
                   <span className="text-slate-400">Active:</span> {selectedCategory}
                 </span>
               ) : (
-                <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700">
+                <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700 shrink-0">
                   All Selected
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-slate-300 text-xs font-semibold">
+            <div className="flex items-center gap-2 text-slate-300 text-xs font-semibold shrink-0">
               <span className="hidden sm:inline text-slate-400">
                 {isCatDropdownOpen ? "Hide Filter" : "Filter by Category"}
               </span>
@@ -158,38 +159,38 @@ export const BaseTemplateManagerView = ({
           </button>
 
           {isCatDropdownOpen && (
-            <div className="p-4 pt-1 space-y-3 border-t border-[#2C384E]/70 animate-in fade-in duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                <div className="flex items-center gap-2">
+            <div className="p-3 sm:p-4 pt-1 space-y-3 border-t border-[#2C384E]/70 animate-in fade-in duration-200">
+              <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between gap-2.5 pt-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-slate-400 font-medium">Filter by category:</span>
                   <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                     Page {catPage} of {catTotalPages}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full min-[480px]:w-auto justify-between min-[480px]:justify-end flex-wrap min-[360px]:flex-nowrap">
                   {/* Template Category Search */}
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                  <div className="relative flex-1 min-[360px]:flex-initial">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
                     <input
                       type="text"
-                      placeholder="Search template categories..."
+                      placeholder="Search categories..."
                       value={catSearch}
                       onChange={(e) => {
                         setCatSearch(e.target.value);
                         setCatPage(1);
                       }}
-                      className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-48"
+                      className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-full min-[360px]:w-36 sm:w-48"
                     />
                   </div>
 
                   {/* Template Category Pagination Controls */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       disabled={catPage <= 1}
                       onClick={() => setCatPage((p) => Math.max(1, p - 1))}
-                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer min-h-[30px]"
                       title="Previous Template Categories"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
@@ -199,7 +200,7 @@ export const BaseTemplateManagerView = ({
                       type="button"
                       disabled={catPage >= catTotalPages}
                       onClick={() => setCatPage((p) => Math.min(catTotalPages, p + 1))}
-                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer min-h-[30px]"
                       title="Next Template Categories"
                     >
                       <span className="hidden sm:inline">Next</span>
@@ -210,7 +211,7 @@ export const BaseTemplateManagerView = ({
               </div>
 
               {/* Template Category Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-2 custom-scrollbar">
+              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-2 custom-scrollbar -mx-1 px-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -269,28 +270,28 @@ export const BaseTemplateManagerView = ({
           <button
             type="button"
             onClick={() => setIsFestDropdownOpen((prev) => !prev)}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-900/60 transition cursor-pointer"
+            className="w-full p-3 sm:p-4 flex items-center justify-between text-left hover:bg-slate-900/60 transition cursor-pointer gap-2"
           >
-            <div className="flex items-center gap-2 flex-wrap">
-              <Calendar className="w-4 h-4 text-emerald-400" />
-              <h4 className="font-heading font-extrabold text-sm text-white">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
+              <h4 className="font-heading font-extrabold text-xs sm:text-sm text-white">
                 Festivals Navigation
               </h4>
-              <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full shrink-0">
                 {festivalMeta?.totalItems ?? festivals.length} Festivals
               </span>
               {selectedFestival ? (
-                <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0">
                   <span className="text-slate-400">Active:</span> {activeFestivalObj?.name || "Selected Festival"}
                 </span>
               ) : (
-                <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700">
+                <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700 shrink-0">
                   All Selected
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-slate-300 text-xs font-semibold">
+            <div className="flex items-center gap-2 text-slate-300 text-xs font-semibold shrink-0">
               <span className="hidden sm:inline text-slate-400">
                 {isFestDropdownOpen ? "Hide Filter" : "Filter by Festival"}
               </span>
@@ -305,19 +306,19 @@ export const BaseTemplateManagerView = ({
           </button>
 
           {isFestDropdownOpen && (
-            <div className="p-4 pt-1 space-y-3 border-t border-[#2C384E]/70 animate-in fade-in duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                <div className="flex items-center gap-2">
+            <div className="p-3 sm:p-4 pt-1 space-y-3 border-t border-[#2C384E]/70 animate-in fade-in duration-200">
+              <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between gap-2.5 pt-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs text-slate-400 font-medium">Filter by festival:</span>
                   <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
                     Page {festPage} of {festTotalPages}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full min-[480px]:w-auto justify-between min-[480px]:justify-end flex-wrap min-[360px]:flex-nowrap">
                   {/* Festival Search */}
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                  <div className="relative flex-1 min-[360px]:flex-initial">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
                     <input
                       type="text"
                       placeholder="Search festivals..."
@@ -326,17 +327,17 @@ export const BaseTemplateManagerView = ({
                         setFestSearch(e.target.value);
                         setFestPage(1);
                       }}
-                      className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-500 w-40"
+                      className="pl-8 pr-3 py-1 rounded-xl bg-[#131B2A] border border-[#2C384E] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-full min-[360px]:w-36 sm:w-40"
                     />
                   </div>
 
                   {/* Festival Pagination Controls */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       disabled={festPage <= 1}
                       onClick={() => setFestPage((p) => Math.max(1, p - 1))}
-                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer min-h-[30px]"
                       title="Previous Festivals"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
@@ -346,7 +347,7 @@ export const BaseTemplateManagerView = ({
                       type="button"
                       disabled={festPage >= festTotalPages}
                       onClick={() => setFestPage((p) => Math.min(festTotalPages, p + 1))}
-                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-white disabled:opacity-40 disabled:hover:text-slate-300 transition text-xs flex items-center gap-1 cursor-pointer min-h-[30px]"
                       title="Next Festivals"
                     >
                       <span className="hidden sm:inline">Next</span>
@@ -357,7 +358,7 @@ export const BaseTemplateManagerView = ({
               </div>
 
               {/* Festival Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-2 custom-scrollbar">
+              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-2 custom-scrollbar -mx-1 px-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -412,7 +413,7 @@ export const BaseTemplateManagerView = ({
         </div>
 
         {/* 3. Search Base Templates Bar & Right-aligned Counter */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-b border-[#2C384E] pb-4">
           <div className="w-full sm:max-w-md">
             <SearchBar
               placeholder="Search base graphic templates by title..."
@@ -425,30 +426,30 @@ export const BaseTemplateManagerView = ({
             />
           </div>
 
-          <div className="flex items-center gap-4 flex-wrap justify-between sm:justify-end ml-auto">
+          <div className="flex items-center gap-3 flex-wrap justify-between sm:justify-end w-full sm:w-auto">
             {(selectedCategory || selectedFestival) && (
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="text-xs text-slate-400 font-medium">Active Filters:</span>
                 {selectedCategory && (
-                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1">
-                    <span>Category:</span>
-                    <span className="font-bold">{selectedCategory}</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold flex items-center gap-1 max-w-[200px] truncate">
+                    <span className="text-slate-400">Category:</span>
+                    <span className="font-bold truncate">{selectedCategory}</span>
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedCategory("");
                         setPage(1);
                       }}
-                      className="hover:text-white ml-1 font-bold cursor-pointer"
+                      className="hover:text-white ml-1 font-bold cursor-pointer shrink-0"
                     >
                       ×
                     </button>
                   </span>
                 )}
                 {selectedFestival && (
-                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1">
-                    <span>Festival:</span>
-                    <span className="font-bold">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1 max-w-[200px] truncate">
+                    <span className="text-slate-400">Festival:</span>
+                    <span className="font-bold truncate">
                       {festivals.find((f) => f.id === selectedFestival)?.name || selectedFestival}
                     </span>
                     <button
@@ -457,7 +458,7 @@ export const BaseTemplateManagerView = ({
                         setSelectedFestival("");
                         setPage(1);
                       }}
-                      className="hover:text-white ml-1 font-bold cursor-pointer"
+                      className="hover:text-white ml-1 font-bold cursor-pointer shrink-0"
                     >
                       ×
                     </button>
@@ -470,14 +471,14 @@ export const BaseTemplateManagerView = ({
                     setSelectedFestival("");
                     setPage(1);
                   }}
-                  className="text-xs text-amber-400 hover:underline font-semibold ml-2 cursor-pointer"
+                  className="text-xs text-amber-400 hover:underline font-semibold ml-1 cursor-pointer shrink-0"
                 >
                   Clear All
                 </button>
               </div>
             )}
 
-            <div className="text-xs text-slate-400 font-mono text-right whitespace-nowrap">
+            <div className="text-xs text-slate-400 font-mono text-left sm:text-right shrink-0">
               Showing <span className="text-slate-200 font-semibold">{templates.length}</span> of{" "}
               <span className="text-slate-200 font-semibold">{templateMeta?.totalItems ?? templates.length}</span> templates
             </div>
@@ -485,10 +486,9 @@ export const BaseTemplateManagerView = ({
         </div>
 
         {isLoadingTemplates ? (
-          <SkeletonGrid variant="template" count={8} columns="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" />
+          <SkeletonGrid variant="template" count={8} columns="grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" />
         ) : templates.length === 0 ? (
-
-          <div className="p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3">
+          <div className="p-8 sm:p-12 text-center border border-dashed border-[#2C384E] rounded-2xl space-y-3">
             <ImageIcon className="w-10 h-10 text-slate-600 mx-auto" />
             <p className="text-slate-300 font-semibold text-sm">No base graphic templates found.</p>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -497,7 +497,7 @@ export const BaseTemplateManagerView = ({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {templates.map((tpl) => (
                 <TemplateCard
                   key={tpl.id}
@@ -537,17 +537,17 @@ export const BaseTemplateManagerView = ({
       {/* Delete Confirmation Modal */}
       {templateToDelete &&
         createPortal(
-          <div className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="modal-backdrop-overlay fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-6 shadow-2xl space-y-4 text-center"
+              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#131B2A] border border-slate-200 dark:border-[#2C384E] p-4 sm:p-6 shadow-2xl space-y-4 text-center mx-2"
             >
               <div className="mx-auto w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center">
                 <AlertCircle className="w-6 h-6" />
               </div>
 
               <div>
-                <h3 className="font-heading font-extrabold text-lg text-white">
+                <h3 className="font-heading font-extrabold text-base sm:text-lg text-white">
                   Delete Graphic Template?
                 </h3>
                 <p className="text-xs text-slate-400 mt-1">
@@ -555,11 +555,11 @@ export const BaseTemplateManagerView = ({
                 </p>
               </div>
 
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <div className="flex flex-col-reverse min-[360px]:flex-row items-stretch min-[360px]:items-center justify-center gap-2 sm:gap-3 pt-2">
                 <Button
                   variant="ghost"
                   onClick={() => setTemplateToDelete(null)}
-                  className="text-xs"
+                  className="text-xs min-h-[38px] justify-center"
                 >
                   Cancel
                 </Button>
@@ -569,7 +569,7 @@ export const BaseTemplateManagerView = ({
                     deleteTemplateMutation.mutate(templateToDelete.id);
                     setTemplateToDelete(null);
                   }}
-                  className="text-xs"
+                  className="text-xs min-h-[38px] justify-center"
                 >
                   Yes, Delete
                 </Button>

@@ -39,7 +39,7 @@ export const Alert = ({ variant = 'error', message, title, className = '' }) => 
       role="alert"
     >
       {currentVariant.icon}
-      <div className="text-sm leading-relaxed">
+      <div className="text-xs sm:text-sm leading-relaxed min-w-0 break-words flex-1">
         {title && <p className="font-semibold mb-0.5">{title}</p>}
         <p>{message}</p>
       </div>

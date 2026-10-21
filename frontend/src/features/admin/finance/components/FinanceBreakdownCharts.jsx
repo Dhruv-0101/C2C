@@ -46,12 +46,12 @@ const CustomChartTooltip = ({ active, payload, label }) => {
  */
 export const FinanceBreakdownCharts = ({ gatewayChartData, planChartData, currency }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
       {/* Payment Gateways Distribution Donut / Pie Chart */}
-      <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-4 flex flex-col justify-between">
+      <Card className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border-[#2C384E] space-y-4 flex flex-col justify-between">
         <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
           <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2">
-            <PieChartIcon className="w-4 h-4 text-blue-400" />
+            <PieChartIcon className="w-4 h-4 text-blue-400 shrink-0" />
             <span>Payment Gateway Breakdown Chart</span>
           </h3>
           <span className="text-xs text-slate-400 font-mono">Gateway Share</span>
@@ -63,7 +63,7 @@ export const FinanceBreakdownCharts = ({ gatewayChartData, planChartData, curren
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center py-2">
-            <div className="h-52 w-full relative">
+            <div className="h-52 w-full min-w-0 relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -99,8 +99,8 @@ export const FinanceBreakdownCharts = ({ gatewayChartData, planChartData, curren
                 >
                   <div className="flex items-center gap-2 truncate">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                    <span className="font-bold text-white uppercase font-mono">{item.name}</span>
-                    <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 text-[10px] font-mono">
+                    <span className="font-bold text-white uppercase font-mono truncate">{item.name}</span>
+                    <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 text-[10px] font-mono shrink-0">
                       {item.currency}
                     </span>
                   </div>
@@ -115,10 +115,10 @@ export const FinanceBreakdownCharts = ({ gatewayChartData, planChartData, curren
       </Card>
 
       {/* Subscription Plan Distribution Visual Bar Chart */}
-      <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-4 flex flex-col justify-between">
+      <Card className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#131B2A] border-[#2C384E] space-y-4 flex flex-col justify-between">
         <div className="flex items-center justify-between border-b border-[#2C384E] pb-3">
           <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-indigo-400" />
+            <BarChart3 className="w-4 h-4 text-indigo-400 shrink-0" />
             <span>Subscription Plan Distribution Chart</span>
           </h3>
           <span className="text-xs text-slate-400 font-mono">Tier Breakdown</span>
@@ -130,7 +130,7 @@ export const FinanceBreakdownCharts = ({ gatewayChartData, planChartData, curren
           </div>
         ) : (
           <div className="space-y-4 py-1">
-            <div className="h-44 w-full">
+            <div className="h-44 w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={planChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2C384E" opacity={0.5} />
@@ -148,14 +148,14 @@ export const FinanceBreakdownCharts = ({ gatewayChartData, planChartData, curren
             </div>
 
             {/* Sub-Legend with Account Counts */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 min-[340px]:grid-cols-2 gap-2 text-xs">
               {planChartData.map((p) => (
                 <div
                   key={p.plan}
-                  className="p-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between"
+                  className="p-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between gap-1"
                 >
-                  <span className="font-mono font-bold text-amber-400 uppercase text-[11px]">{p.plan} Tier</span>
-                  <span className="text-slate-300 font-bold font-mono text-[11px]">
+                  <span className="font-mono font-bold text-amber-400 uppercase text-[11px] truncate">{p.plan} Tier</span>
+                  <span className="text-slate-300 font-bold font-mono text-[11px] shrink-0">
                     {p.accounts} Account{p.accounts !== 1 ? 's' : ''}
                   </span>
                 </div>

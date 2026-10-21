@@ -163,7 +163,7 @@ export const downloadInvoice = async (req, res, next) => {
     const data = await generateInvoicePdfLogic(
       req.user.id,
       transactionId,
-      req.user?.role
+      req.user
     );
 
     res.setHeader('Content-Type', 'application/pdf');

@@ -78,18 +78,18 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-5xl max-h-[90vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-5xl max-h-[92vh] sm:max-h-[90vh] bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-5 sm:p-6 border-b border-[#2C384E] flex items-center justify-between gap-4 shrink-0 bg-[#0B0F17]">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+        <div className="p-3.5 sm:p-5 md:p-6 border-b border-[#2C384E] flex items-start sm:items-center justify-between gap-3 shrink-0 bg-[#0B0F17]">
+          <div className="flex items-start sm:items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 sm:mt-0">
               <FolderKanban className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-heading font-extrabold text-lg text-white truncate">
+                <h3 className="font-heading font-extrabold text-base sm:text-lg text-white truncate max-w-[200px] sm:max-w-none">
                   {category.name}
                 </h3>
                 <span className="text-[10px] font-mono text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700 font-semibold shrink-0">
@@ -108,7 +108,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
             title="Close Modal"
           >
             <X className="w-5 h-5" />
@@ -116,7 +116,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
         </div>
 
         {/* Search & Stats Strip */}
-        <div className="px-5 py-3.5 border-b border-[#2C384E] bg-[#0E1522] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+        <div className="px-3.5 sm:px-5 py-3 border-b border-[#2C384E] bg-[#0E1522] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
             <input
@@ -147,7 +147,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
         </div>
 
         {/* Modal Scrollable Content Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+        <div className="p-3.5 sm:p-5 md:p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Array.from({ length: limit }).map((_, i) => (
@@ -187,7 +187,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
               {tenants.map((b) => {
                 const user = b.user || {};
                 const sub = user.subscription || {};
@@ -198,7 +198,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
                 return (
                   <div
                     key={b.id}
-                    className="p-4 rounded-2xl border border-[#2C384E] bg-[#0B0F17] hover:border-amber-500/40 transition-all flex flex-col justify-between space-y-3.5 group shadow-sm"
+                    className="p-3.5 sm:p-4 rounded-2xl border border-[#2C384E] bg-[#0B0F17] hover:border-amber-500/40 transition-all flex flex-col justify-between space-y-3.5 group shadow-sm"
                   >
                     {/* Header: Logo, Business Name, Owner & Status */}
                     <div className="flex items-start justify-between gap-3">
@@ -222,7 +222,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
                           <h4 className="font-heading font-bold text-sm text-white truncate group-hover:text-amber-400 transition-colors">
                             {b.businessName}
                           </h4>
-                          <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                          <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <span className="text-slate-300 font-medium">{user.fullName || "User"}</span>
                             <span>•</span>
                             <span className="font-mono text-slate-400 truncate max-w-[150px]">{user.email}</span>
@@ -270,7 +270,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
                     )}
 
                     {/* Details Grid: Phone, Location, Joined Date */}
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#2C384E]/60 text-slate-400">
+                    <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#2C384E]/60 text-slate-400">
                       <div className="flex items-center gap-1.5 truncate">
                         <Phone className="w-3 h-3 text-amber-400 shrink-0" />
                         <span className="font-mono text-slate-300 truncate">
@@ -283,7 +283,7 @@ export const CategoryTenantsModal = ({ isOpen, onClose, category }) => {
                         <span className="truncate">{location || "India"}</span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 col-span-2 text-[10px] font-mono text-slate-500 pt-0.5">
+                      <div className="flex items-center gap-1.5 col-span-1 min-[360px]:col-span-2 text-[10px] font-mono text-slate-500 pt-0.5">
                         <Calendar className="w-3 h-3 text-slate-500 shrink-0" />
                         <span>Connected: {formatDate(b.createdAt)}</span>
                       </div>

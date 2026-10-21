@@ -6,6 +6,7 @@ import {
   processPostJob,
 } from './workers/post.worker.js';
 import { analyticsWorkerInstance, processAnalyticsJob } from './workers/analytics.worker.js';
+import { aiImageWorkerInstance, aiCaptionWorkerInstance } from './workers/ai.worker.js';
 import { initCronDispatcher, stopCronDispatcher, triggerScheduledPostsNow } from './cron/postCron.job.js';
 import { initAnalyticsCron, stopAnalyticsCron, syncAnalyticsMetrics } from './cron/analyticsCron.job.js';
 import { logger } from '../config/logger.js';
@@ -40,6 +41,8 @@ export async function closeWorkers() {
   if (scheduledWorkerInstance) await scheduledWorkerInstance.close().catch(() => {});
   if (workerInstance && workerInstance !== scheduledWorkerInstance) await workerInstance.close().catch(() => {});
   if (analyticsWorkerInstance) await analyticsWorkerInstance.close().catch(() => {});
+  if (aiImageWorkerInstance) await aiImageWorkerInstance.close().catch(() => {});
+  if (aiCaptionWorkerInstance) await aiCaptionWorkerInstance.close().catch(() => {});
 }
 
 // Re-export job & worker functions for backward compatibility across domain modules
@@ -53,6 +56,8 @@ export {
   instantWorkerInstance,
   scheduledWorkerInstance,
   analyticsWorkerInstance,
+  aiImageWorkerInstance,
+  aiCaptionWorkerInstance,
   initCronDispatcher,
   stopCronDispatcher,
   initAnalyticsCron,

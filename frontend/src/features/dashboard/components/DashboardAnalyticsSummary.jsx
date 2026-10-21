@@ -94,8 +94,8 @@ export const DashboardAnalyticsSummary = ({
           </h2>
         </div>
 
-        <Card className="p-6 bg-[#131B2A] border-[#2C384E] text-center space-y-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
+        <Card className="p-4 min-[380px]:p-6 bg-[#131B2A] border-[#2C384E] text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20 shrink-0">
             <BarChart3 className="w-5 h-5" />
           </div>
           <div className="space-y-1">
@@ -109,10 +109,10 @@ export const DashboardAnalyticsSummary = ({
               variant="primary"
               size="sm"
               onClick={() => navigate('/create-post')}
-              className="text-xs font-bold py-1.5 px-4"
+              className="w-full sm:w-auto text-xs font-bold py-2 sm:py-1.5 px-4 justify-center"
             >
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-              Create & Publish First Post
+              <Sparkles className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+              <span>Create & Publish First Post</span>
             </Button>
           </div>
         </Card>
@@ -124,18 +124,18 @@ export const DashboardAnalyticsSummary = ({
     <div className="space-y-3 pt-1">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2C384E] pb-2.5">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
+        <div className="space-y-0.5 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <h2 className="font-heading font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-amber-400" />
+              <BarChart3 className="w-4 h-4 text-amber-400 shrink-0" />
               <span>Mixed Social Performance & Audience Reach</span>
             </h2>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider hidden sm:inline-flex items-center gap-1 font-mono">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider hidden min-[480px]:inline-flex items-center gap-1 font-mono shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Meta Verified
             </span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-400 leading-relaxed">
             Real aggregated reach, impressions and engagement measured across your published posts.
           </p>
         </div>
@@ -143,7 +143,7 @@ export const DashboardAnalyticsSummary = ({
         <button
           type="button"
           onClick={() => navigate('/analytics')}
-          className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition self-start sm:self-auto cursor-pointer"
+          className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition self-start sm:self-auto cursor-pointer shrink-0 pt-0.5 sm:pt-0"
         >
           <span>View Deep Analytics</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -151,83 +151,83 @@ export const DashboardAnalyticsSummary = ({
       </div>
 
       {/* 4 Master KPI Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         {/* Card 1: Total Reach */}
-        <Card className="p-3 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-amber-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase">
-            <span>Total Reach</span>
-            <div className="p-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+        <Card className="p-2.5 min-[380px]:p-3 sm:p-3.5 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-amber-500/40 transition min-w-0 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+            <span className="truncate">Total Reach</span>
+            <div className="p-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
               <Users className="w-3 h-3" />
             </div>
           </div>
-          <div className="text-xl font-extrabold text-white font-mono">
+          <div className="text-base min-[380px]:text-lg sm:text-xl font-extrabold text-white font-mono truncate">
             {formatNumber(kpi.totalReach || 0)}
           </div>
-          <div className="text-[10px] text-amber-400/90 font-mono">
-            Unique accounts reached
+          <div className="text-[9.5px] min-[380px]:text-[10px] text-amber-400/90 font-mono truncate">
+            Unique accounts
           </div>
         </Card>
 
         {/* Card 2: Total Impressions */}
-        <Card className="p-3 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-indigo-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase">
-            <span>Impressions</span>
-            <div className="p-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+        <Card className="p-2.5 min-[380px]:p-3 sm:p-3.5 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-indigo-500/40 transition min-w-0 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+            <span className="truncate">Impressions</span>
+            <div className="p-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
               <Eye className="w-3 h-3" />
             </div>
           </div>
-          <div className="text-xl font-extrabold text-white font-mono">
+          <div className="text-base min-[380px]:text-lg sm:text-xl font-extrabold text-white font-mono truncate">
             {formatNumber(kpi.totalImpressions || 0)}
           </div>
-          <div className="text-[10px] text-indigo-400/90 font-mono">
+          <div className="text-[9.5px] min-[380px]:text-[10px] text-indigo-400/90 font-mono truncate">
             Total content views
           </div>
         </Card>
 
         {/* Card 3: Avg Engagement Rate */}
-        <Card className="p-3 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-emerald-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase">
-            <span>Engagement Rate</span>
-            <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <Card className="p-2.5 min-[380px]:p-3 sm:p-3.5 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-emerald-500/40 transition min-w-0 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+            <span className="truncate">Engagement</span>
+            <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
               <TrendingUp className="w-3 h-3" />
             </div>
           </div>
-          <div className="text-xl font-extrabold text-emerald-400 font-mono">
+          <div className="text-base min-[380px]:text-lg sm:text-xl font-extrabold text-emerald-400 font-mono truncate">
             {kpi.avgEngagementRate || 0}%
           </div>
-          <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold font-mono">
-            (Interactions ÷ Reach) × 100
+          <div className="text-[9.5px] min-[380px]:text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold font-mono truncate">
+            Rate percentage
           </div>
         </Card>
 
         {/* Card 4: Total Engagements */}
-        <Card className="p-3 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-rose-500/40 transition">
-          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase">
-            <span>Interactions</span>
-            <div className="p-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+        <Card className="p-2.5 min-[380px]:p-3 sm:p-3.5 bg-[#131B2A] border-[#2C384E] space-y-1 relative overflow-hidden group hover:border-rose-500/40 transition min-w-0 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+            <span className="truncate">Interactions</span>
+            <div className="p-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 shrink-0">
               <Heart className="w-3 h-3" />
             </div>
           </div>
-          <div className="text-xl font-extrabold text-rose-400 font-mono">
+          <div className="text-base min-[380px]:text-lg sm:text-xl font-extrabold text-rose-400 font-mono truncate">
             {formatNumber(totalInteractions)}
           </div>
-          <div className="text-[10px] text-slate-400 font-mono truncate">
-            {formatNumber(kpi.totalLikes || 0)} Likes • {formatNumber(kpi.totalComments || 0)} Comments • {formatNumber(kpi.totalShares || 0)} Shares
+          <div className="text-[9.5px] min-[380px]:text-[10px] text-slate-400 font-mono truncate">
+            Likes & Comments
           </div>
         </Card>
       </div>
 
       {/* 2-Column Analytics Module: Donut Distribution & Recent Live Posts Showcase */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 min-w-0">
         {/* Left: Social Channel Distribution (Donut Chart) */}
-        <Card className="p-4 bg-[#131B2A] border-[#2C384E] lg:col-span-4 flex flex-col justify-between space-y-3">
-          <div className="flex items-center justify-between border-b border-[#2C384E] pb-2">
+        <Card className="p-3.5 sm:p-4 bg-[#131B2A] border-[#2C384E] lg:col-span-4 flex flex-col justify-between space-y-3 min-w-0 rounded-2xl">
+          <div className="flex items-center justify-between border-b border-[#2C384E] pb-2 flex-wrap gap-1">
             <h3 className="font-heading font-bold text-xs text-white flex items-center gap-1.5">
               <Share2 className="w-3.5 h-3.5 text-amber-400" />
               <span>Channel Distribution</span>
             </h3>
             <span className="text-[10px] font-mono text-slate-400">
-              Total Reach: <strong className="text-white">{formatNumber(kpi.totalReach || 0)}</strong>
+              Reach: <strong className="text-white">{formatNumber(kpi.totalReach || 0)}</strong>
             </span>
           </div>
 
@@ -236,8 +236,8 @@ export const DashboardAnalyticsSummary = ({
               No platform breakdown available yet.
             </div>
           ) : (
-            <div className="space-y-3">
-              <div className="h-36 w-full">
+            <div className="space-y-3 min-w-0">
+              <div className="h-36 w-full min-w-0 overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -287,10 +287,10 @@ export const DashboardAnalyticsSummary = ({
         </Card>
 
         {/* Right: Live Published Graphics Performance Showcase */}
-        <Card className="p-4 bg-[#131B2A] border-[#2C384E] lg:col-span-8 space-y-3">
-          <div className="flex items-center justify-between border-b border-[#2C384E] pb-2">
+        <Card className="p-3.5 sm:p-4 bg-[#131B2A] border-[#2C384E] lg:col-span-8 space-y-3 min-w-0 rounded-2xl">
+          <div className="flex flex-wrap items-center justify-between border-b border-[#2C384E] pb-2 gap-1">
             <h3 className="font-heading font-bold text-xs text-white flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              <Layers className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span>Published Graphics Live Performance</span>
             </h3>
             <span className="text-[10px] font-mono text-slate-400">
@@ -298,7 +298,7 @@ export const DashboardAnalyticsSummary = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             {posts.slice(0, 2).map((post) => {
               const { title, graphicUrl, publishedAt, createdAt, metrics = {}, platformBreakdown = [] } = post;
               const formattedDate = new Date(publishedAt || createdAt).toLocaleDateString('en-US', {
@@ -310,11 +310,11 @@ export const DashboardAnalyticsSummary = ({
               return (
                 <div
                   key={post.id}
-                  className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/40 transition flex flex-col justify-between space-y-2 group"
+                  className="p-2.5 min-[380px]:p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-amber-500/40 transition flex flex-col justify-between space-y-2 group min-w-0"
                 >
-                  <div className="flex items-start gap-2.5">
+                  <div className="flex items-start gap-2.5 min-w-0">
                     {/* Thumbnail */}
-                    <div className="w-12 h-12 rounded-lg bg-black/40 border border-[#2C384E] overflow-hidden shrink-0">
+                    <div className="w-11 h-11 min-[380px]:w-12 min-[380px]:h-12 rounded-lg bg-black/40 border border-[#2C384E] overflow-hidden shrink-0">
                       {graphicUrl ? (
                         <img
                           src={graphicUrl}
@@ -331,47 +331,47 @@ export const DashboardAnalyticsSummary = ({
 
                     {/* Title & Date */}
                     <div className="space-y-0.5 min-w-0 flex-1">
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-2.5 h-2.5" /> {formattedDate}
+                      <div className="flex items-center justify-between text-[9.5px] min-[380px]:text-[10px] text-slate-400 font-mono gap-1">
+                        <span className="flex items-center gap-1 truncate">
+                          <Calendar className="w-2.5 h-2.5 shrink-0" /> <span className="truncate">{formattedDate}</span>
                         </span>
-                        <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 font-bold">
+                        <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 font-bold shrink-0">
                           {metrics.engagementRate || 0}% Rate
                         </span>
                       </div>
-                      <h4 className="font-bold text-xs text-white truncate group-hover:text-amber-400 transition">
+                      <h4 className="font-bold text-xs text-white truncate group-hover:text-amber-400 transition" title={title}>
                         {title}
                       </h4>
                     </div>
                   </div>
 
                   {/* Micro Metrics Strip */}
-                  <div className="grid grid-cols-3 gap-1 p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-center font-mono text-[10px]">
-                    <div>
-                      <span className="text-slate-400 block text-[9px]">REACH</span>
-                      <strong className="text-white block">{formatNumber(metrics.reach || 0)}</strong>
+                  <div className="grid grid-cols-3 gap-0.5 sm:gap-1 p-1 min-[380px]:p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-center font-mono text-[9px] min-[380px]:text-[10px]">
+                    <div className="min-w-0 px-0.5">
+                      <span className="text-slate-400 block text-[8px] min-[380px]:text-[9px]">REACH</span>
+                      <strong className="text-white block truncate">{formatNumber(metrics.reach || 0)}</strong>
                       {platformBreakdown.length > 1 && (
-                        <span className="text-[8px] text-amber-400/90 block truncate">
+                        <span className="text-[7.5px] min-[380px]:text-[8px] text-amber-400/90 block truncate">
                           {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : 'FB'}: ${p.reach}`).join(' • ')}
                         </span>
                       )}
                     </div>
 
-                    <div className="border-x border-[#2C384E]">
-                      <span className="text-slate-400 block text-[9px]">IMPR</span>
-                      <strong className="text-white block">{formatNumber(metrics.impressions || 0)}</strong>
+                    <div className="border-x border-[#2C384E] min-w-0 px-0.5">
+                      <span className="text-slate-400 block text-[8px] min-[380px]:text-[9px]">IMPR</span>
+                      <strong className="text-white block truncate">{formatNumber(metrics.impressions || 0)}</strong>
                       {platformBreakdown.length > 1 && (
-                        <span className="text-[8px] text-slate-400 block truncate">
+                        <span className="text-[7.5px] min-[380px]:text-[8px] text-slate-400 block truncate">
                           {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : 'FB'}: ${p.impressions}`).join(' • ')}
                         </span>
                       )}
                     </div>
 
-                    <div>
-                      <span className="text-slate-400 block text-[9px]">LIKES</span>
-                      <strong className="text-rose-400 block">{formatNumber(metrics.likes || 0)}</strong>
+                    <div className="min-w-0 px-0.5">
+                      <span className="text-slate-400 block text-[8px] min-[380px]:text-[9px]">LIKES</span>
+                      <strong className="text-rose-400 block truncate">{formatNumber(metrics.likes || 0)}</strong>
                       {platformBreakdown.length > 1 && (
-                        <span className="text-[8px] text-slate-400 block truncate">
+                        <span className="text-[7.5px] min-[380px]:text-[8px] text-slate-400 block truncate">
                           {platformBreakdown.map((p) => `${p.platform === 'INSTAGRAM' ? 'IG' : 'FB'}: ${p.likes}`).join(' • ')}
                         </span>
                       )}
@@ -383,10 +383,10 @@ export const DashboardAnalyticsSummary = ({
                     variant="outline"
                     size="sm"
                     onClick={() => navigate('/analytics')}
-                    className="w-full text-[10px] font-bold py-1 border-[#2C384E] hover:border-amber-500/40 hover:bg-amber-500/10 flex items-center justify-center gap-1"
+                    className="w-full text-[10px] min-[380px]:text-[11px] font-bold py-1.5 border-[#2C384E] hover:border-amber-500/40 hover:bg-amber-500/10 flex items-center justify-center gap-1 min-h-[32px]"
                   >
-                    <BarChart3 className="w-3 h-3 text-amber-400" />
-                    <span>View Post Deep Insights</span>
+                    <BarChart3 className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span className="truncate">View Post Deep Insights</span>
                   </Button>
                 </div>
               );

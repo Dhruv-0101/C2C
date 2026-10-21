@@ -93,9 +93,9 @@ export const AdminCategoriesTab = ({
   return (
     <div className="animate-in fade-in duration-200 space-y-4">
       {/* Category Section Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 border-b border-[#2C384E] pb-4">
         <div>
-          <h3 className="font-heading font-extrabold text-xl text-white flex items-center gap-2">
+          <h3 className="font-heading font-extrabold text-lg sm:text-xl text-white flex items-center gap-2">
             <FolderKanban className="w-5 h-5 text-amber-400" />
             <span>Master Business Categories</span>
           </h3>
@@ -104,7 +104,7 @@ export const AdminCategoriesTab = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col min-[480px]:flex-row items-stretch min-[480px]:items-center gap-2.5 w-full sm:w-auto">
           {/* Live Search Bar */}
           <SearchBar
             value={categorySearch}
@@ -114,7 +114,7 @@ export const AdminCategoriesTab = ({
               setCategoryPage(1);
             }}
             placeholder="Search categories..."
-            className="w-full sm:w-72"
+            className="w-full sm:w-64 md:w-72"
           />
 
           {/* Add Category Modal Trigger Button */}
@@ -124,7 +124,7 @@ export const AdminCategoriesTab = ({
             size="md"
             icon={Plus}
             onClick={handleOpenCreateModal}
-            className="shrink-0"
+            className="w-full min-[480px]:w-auto min-h-[40px] justify-center shrink-0"
           >
             Add Category
           </Button>

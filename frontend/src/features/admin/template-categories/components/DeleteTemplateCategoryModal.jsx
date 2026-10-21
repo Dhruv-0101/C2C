@@ -26,20 +26,20 @@ export const DeleteTemplateCategoryModal = ({
 
   return (
     <div
-      className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto"
+      className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-[#131B2A] border border-rose-500/30 rounded-2xl p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-150"
+        className="w-full max-w-md bg-[#131B2A] border border-rose-500/30 rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-in zoom-in-95 duration-150 mx-2"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between border-b border-[#2C384E] pb-3.5">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start sm:items-center justify-between border-b border-[#2C384E] pb-3.5 gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
               <AlertTriangle className="w-5 h-5 text-rose-400" />
             </div>
-            <div>
-              <h3 className="font-heading font-bold text-base text-white">
+            <div className="min-w-0">
+              <h3 className="font-heading font-bold text-base text-white truncate">
                 Delete Template Category?
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -51,14 +51,14 @@ export const DeleteTemplateCategoryModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2">
-          <div className="flex items-center gap-2">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="font-heading font-bold text-sm text-white">
               {category.name}
             </span>
@@ -73,7 +73,7 @@ export const DeleteTemplateCategoryModal = ({
             </p>
           )}
 
-          <div className="flex items-center gap-3 pt-1 text-[11px] text-slate-400">
+          <div className="flex items-center gap-2 sm:gap-3 pt-1 text-[11px] text-slate-400 flex-wrap">
             <span>Linked templates:</span>
             <span className="text-teal-300 font-semibold">
               {linkedTemplatesCount} Graphic {linkedTemplatesCount === 1 ? "Template" : "Templates"}
@@ -85,13 +85,14 @@ export const DeleteTemplateCategoryModal = ({
           Deleting this template category will remove it from the master theme list. Any existing templates linked to this category will have their category field unlinked safely without deleting the artwork.
         </p>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2C384E]">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-[#2C384E]">
           <Button
             type="button"
             variant="outline"
             size="md"
             onClick={onClose}
             disabled={isPending}
+            className="w-full sm:w-auto min-h-[40px] justify-center text-xs"
           >
             Cancel
           </Button>
@@ -101,7 +102,7 @@ export const DeleteTemplateCategoryModal = ({
             size="md"
             onClick={() => onConfirm(category.id)}
             isLoading={isPending}
-            className="bg-rose-600 hover:bg-rose-500 text-white font-bold"
+            className="w-full sm:w-auto min-h-[40px] justify-center bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs"
           >
             <Trash2 className="w-4 h-4 mr-1.5" />
             <span>Delete Category</span>

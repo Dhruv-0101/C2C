@@ -24,6 +24,8 @@ import { Input } from "../../../components/ui/Input";
 import { Alert } from "../../../components/ui/Alert";
 import { useAiCaption } from '@/features/post-studio/hooks/useAiCaption';
 import { useBrandKit } from '@/features/brandkit/hooks/useBrandKit';
+import { useAiJobTracker } from '@/features/post-studio/hooks/useAiJobTracker';
+import { AiQueueTrackerCard } from './AiQueueTrackerCard';
 
 const TONES = [
   { id: "PROMOTIONAL", label: "Promotional", icon: "🚀", desc: "High conversion & sales pitch" },
@@ -62,6 +64,7 @@ export const AiCaptionGeneratorModal = ({
   initialTopic = "",
   initialOffer = "",
   onSelectCaption,
+  openPlanModal,
 }) => {
   const { brandKit } = useBrandKit();
   const [topic, setTopic] = useState(initialTopic || "");
@@ -80,6 +83,19 @@ export const AiCaptionGeneratorModal = ({
 
   const { generateCaption, isGenerating, captionError } = useAiCaption();
 
+  // ⏱️ BullMQ Asynchronous Caption Queue Tracker
+  const captionJobTracker = useAiJobTracker({
+    type: 'caption',
+    onCompleted: (completedResult) => {
+      setAiSource(completedResult?.source || "AI");
+      setEditableCaption(completedResult?.captionText || "");
+      setHashtagsList(completedResult?.hashtags || []);
+    },
+    onError: (err) => {
+      console.error("AI Caption queue worker failed:", err);
+    },
+  });
+
   // Initialize Default AI Caption Language from BrandKit preferences
   useEffect(() => {
     if (brandKit?.captionLanguage) {
@@ -97,7 +113,7 @@ export const AiCaptionGeneratorModal = ({
   const handleGenerate = async (e) => {
     e?.preventDefault();
     try {
-      const resData = await generateCaption({
+      const res = await generateCaption({
         topic: topic || "Business Special Offer",
         offerText,
         customText,
@@ -108,14 +124,31 @@ export const AiCaptionGeneratorModal = ({
         businessUsps: brandKit?.businessUsps || undefined,
       });
 
-      // API Response Envelope: resData = { success: true, message: "...", data: { source, captionText, hashtags } }
-      const data = resData?.data || resData;
+      // API Response Envelope: res = { success: true, message: "...", data: { isQueued, ... } }
+      const resData = res?.data || res;
 
-      setAiSource(data?.source || "AI");
-      setEditableCaption(data?.captionText || "");
-      setHashtagsList(data?.hashtags || []);
+      if (resData?.isQueued) {
+        // Enqueued in BullMQ Queue
+        captionJobTracker.startTracking(resData);
+      } else {
+        // Instant synchronous execution
+        const data = resData?.result || resData;
+        setAiSource(data?.source || "AI");
+        setEditableCaption(data?.captionText || "");
+        setHashtagsList(data?.hashtags || []);
+      }
     } catch (err) {
       console.error("Failed to generate AI caption:", err);
+      const isPlanError =
+        err?.response?.status === 403 ||
+        err?.response?.data?.code === "PLAN_REQUIRED" ||
+        err?.response?.data?.code === "PLAN_EXPIRED" ||
+        err?.response?.data?.message?.toLowerCase().includes("plan");
+
+      if (isPlanError && openPlanModal) {
+        onClose();
+        openPlanModal();
+      }
     }
   };
 
@@ -157,26 +190,26 @@ export const AiCaptionGeneratorModal = ({
   };
 
   return createPortal(
-    <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[10000] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto font-sans">
-      <div className="w-full max-w-3xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl my-auto text-slate-100 max-h-[92vh] flex flex-col justify-between">
+    <div className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[10000] flex items-center justify-center p-3 sm:p-4 animate-in fade-in overflow-y-auto font-sans">
+      <div className="w-full max-w-3xl bg-[#131B2A] border border-[#2C384E] rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl my-auto text-slate-100 max-h-[92vh] flex flex-col justify-between overflow-y-auto custom-scrollbar">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2C384E] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-lg">
+        <div className="flex items-center justify-between border-b border-[#2C384E] pb-3 sm:pb-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-lg shrink-0">
               <Sparkles className="w-5 h-5 animate-pulse" />
             </div>
-            <div>
-              <h3 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
+            <div className="min-w-0">
+              <h3 className="font-heading font-extrabold text-base sm:text-lg text-white flex items-center gap-2 truncate">
                 <span>AI Caption & Hashtag Studio</span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-400 truncate sm:text-clip">
                 Craft high-converting social media captions fueled by your BrandKit identity, audience & USPs.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -268,7 +301,7 @@ export const AiCaptionGeneratorModal = ({
             </div>
 
             {/* Language & Platform (Includes all 11 Indian & Regional Languages) */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">Language</label>
                 <select
@@ -300,16 +333,38 @@ export const AiCaptionGeneratorModal = ({
               </div>
             </div>
 
+            {/* Live BullMQ Queue & Dynamic Countdown Tracker */}
+            {captionJobTracker.isTracking && (
+              <AiQueueTrackerCard
+                status={captionJobTracker.status}
+                queuePosition={captionJobTracker.queuePosition}
+                countdownSeconds={captionJobTracker.countdownSeconds}
+                progress={captionJobTracker.progress}
+                step={captionJobTracker.step}
+                title="AI Copywriting Engine"
+                onMinimize={() => captionJobTracker.stopTracking()}
+              />
+            )}
+
             <Button
               type="button"
-              disabled={isGenerating}
+              disabled={isGenerating || captionJobTracker.isTracking}
               onClick={handleGenerate}
-              className="w-full py-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer transition"
+              className="w-full py-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isGenerating ? (
+              {captionJobTracker.isTracking ? (
                 <>
                   <Wand2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Generating AI Copy with BrandKit...</span>
+                  <span>
+                    {captionJobTracker.status === 'WAITING'
+                      ? `Position #${captionJobTracker.queuePosition} in Queue (~${captionJobTracker.countdownSeconds}s)`
+                      : `Writing Copy (${captionJobTracker.progress}%) · ~${captionJobTracker.countdownSeconds}s`}
+                  </span>
+                </>
+              ) : isGenerating ? (
+                <>
+                  <Wand2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Connecting to AI Engine...</span>
                 </>
               ) : (
                 <>
@@ -401,13 +456,13 @@ export const AiCaptionGeneratorModal = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-800">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-3 border-t border-slate-800">
               <Button
                 type="button"
                 variant="outline"
                 disabled={!fullCombinedText}
                 onClick={handleCopy}
-                className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800 text-xs py-2"
+                className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800 text-xs py-2.5 min-h-[38px] justify-center"
               >
                 {copied ? (
                   <>
@@ -426,7 +481,7 @@ export const AiCaptionGeneratorModal = ({
                 type="button"
                 disabled={!fullCombinedText}
                 onClick={handleApply}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs py-2 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs py-2.5 min-h-[38px] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Use This Caption</span>

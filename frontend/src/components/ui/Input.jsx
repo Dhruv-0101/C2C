@@ -49,7 +49,7 @@ export const Input = forwardRef(
             type={inputType}
             placeholder={placeholder}
             className={clsx(
-              'w-full bg-[#0F172A] border text-white font-medium placeholder-slate-400 text-sm rounded-xl py-3 px-4 outline-none transition-all duration-200',
+              'w-full bg-[#0F172A] border text-white font-medium placeholder-slate-400 text-base sm:text-sm rounded-xl py-2.5 sm:py-3 px-3.5 sm:px-4 outline-none transition-all duration-200',
               Icon ? 'pl-10' : 'pl-4',
               isPassword ? 'pr-11' : 'pr-4',
               error

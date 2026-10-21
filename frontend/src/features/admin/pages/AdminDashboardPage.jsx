@@ -1,57 +1,63 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { useDebounce } from '@/shared/hooks/useDebounce';
-import { useCategories } from '@/features/admin/categories/hooks/useCategories';
-import { useSubAdmins } from '@/features/admin/sub-admins/hooks/useSubAdmins';
-import { useUsers } from '@/features/admin/users/hooks/useUsers';
-import { useAdminPosts, useAdminPostAnalytics } from '@/features/admin/posts/hooks/useAdminPosts';
-import { useFrames } from '@/features/admin/frames/hooks/useFrames';
-import { useTemplateCategories } from '@/features/admin/template-categories/hooks/useTemplateCategories';
-import { useFestivals } from '@/features/calendar/hooks/useFestivals';
-import { authApi } from '@/features/auth/api/auth.api';
-import { categoryApi } from '@/features/admin/categories/api/category.api';
-import { templateCategoryApi } from '@/features/admin/template-categories/api/templateCategory.api';
-import { billingApi } from '@/features/billing/api/billing.api';
-import { usersApi } from '@/features/admin/users/api/users.api';
-import { subAdminSchema } from '@/features/auth/validations/auth.validation';
-import { useFeedbackModal } from '@/components/feedback/FeedbackModal';
-import { QUERY_KEYS } from '@/shared/constants';
-import { ADMIN_TABS, SUBADMIN_PERMITTED_TABS } from '@/shared/constants';
-import { AdminDashboardView } from "../components/AdminDashboardView";
-import { CelebrationWelcomeModal } from '@/features/welcome/components/CelebrationWelcomeModal';
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Sparkles,
+  ArrowRight,
+  FileCode2,
+  Calendar,
+  Layers,
+  FolderKanban,
+  FolderTree,
+  Users,
+  Shield,
+  CreditCard,
+  Activity,
+} from "lucide-react";
+import { Card } from "@/components/ui/Card";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useUsers } from "@/features/admin/users/hooks/useUsers";
+import { useSubAdmins } from "@/features/admin/sub-admins/hooks/useSubAdmins";
+import { useCategories } from "@/features/admin/categories/hooks/useCategories";
+import { ADMIN_TABS } from "@/shared/constants";
+import { AdminStatsHeader } from "../components/AdminStatsHeader";
+import { CelebrationWelcomeModal } from "@/features/welcome/components/CelebrationWelcomeModal";
 
 /**
- * AdminDashboardContainer
- * Container component handling queries, mutations, state management, RBAC allowedTabs permissions,
- * and form validation logic for SuperAdmin & SubAdmin users.
+ * AdminDashboardPage Component
+ * Dedicated Executive Overview page (/admin and /admin/dashboard).
+ * Provides system metrics, summary counts, quick-launch navigation modules,
+ * and automatic redirect for SubAdmins or legacy query-param links.
  */
 export const AdminDashboardPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const isSuperAdmin = user?.isSuperAdmin || user?.role === "ADMIN";
-  const userAllowedTabs = user?.allowedTabs || [];
 
-  const queryClient = useQueryClient();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const isSuperAdmin = Boolean(
+    user?.isSuperAdmin || user?.role === "ADMIN" || user?.role === "SUPER_ADMIN"
+  );
+  const userAllowedTabs = Array.isArray(user?.allowedTabs) ? user.allowedTabs : [];
 
-  // Enforce SubAdmin RBAC tab access: if requested tab is unpermitted, auto-select first allowed tab
-  const requestedTab = searchParams.get("tab") || ADMIN_TABS.DASHBOARD;
-  const activeTab =
-    isSuperAdmin
-      ? requestedTab
-      : userAllowedTabs.length > 0 && userAllowedTabs.includes(requestedTab)
-        ? requestedTab
-        : userAllowedTabs[0] || ADMIN_TABS.DASHBOARD;
+  // 1. Backwards Compatibility: Auto-redirect legacy "?tab=..." query params to clean sub-routes
+  const legacyTab = searchParams.get("tab");
+  useEffect(() => {
+    if (legacyTab && legacyTab !== ADMIN_TABS.DASHBOARD) {
+      navigate(`/admin/${legacyTab}`, { replace: true });
+    }
+  }, [legacyTab, navigate]);
 
-  const handleTabChange = (tabId) => {
-    setSearchParams({ tab: tabId });
-  };
+  // 2. SubAdmin Guard: If a SubAdmin has no dashboard permission, redirect to first allowed tab
+  useEffect(() => {
+    if (
+      !isSuperAdmin &&
+      userAllowedTabs.length > 0 &&
+      !userAllowedTabs.includes(ADMIN_TABS.DASHBOARD)
+    ) {
+      navigate(`/admin/${userAllowedTabs[0]}`, { replace: true });
+    }
+  }, [isSuperAdmin, userAllowedTabs, navigate]);
 
-  const { modalProps, showSuccess, showError } = useFeedbackModal();
-
+  // Welcome modal on first authentication
   const [welcomeAuthType, setWelcomeAuthType] = useState(null);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
@@ -64,531 +70,198 @@ export const AdminDashboardPage = () => {
     }
   }, []);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSubAdmin, setEditingSubAdmin] = useState(null);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isMetricsOpen, setIsMetricsOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
-  const [categoryError, setCategoryError] = useState("");
-
-  // 1. SubAdmins Directory Query (SuperAdmin Only)
-  const [subAdminPage, setSubAdminPage] = useState(1);
-  const [subAdminLimit, setSubAdminLimit] = useState(5);
-  const [subAdminSearch, setSubAdminSearch] = useState("");
-  const debouncedSubAdminSearch = useDebounce(subAdminSearch, 300);
-
-  useEffect(() => {
-    setSubAdminPage(1);
-  }, [debouncedSubAdminSearch]);
-
-  const {
-    subAdmins,
-    meta: subAdminMeta,
-    isLoading: isLoadingSubAdmins,
-    error: subAdminFetchError,
-  } = useSubAdmins(
-    { page: subAdminPage, limit: subAdminLimit, search: debouncedSubAdminSearch },
-    { enabled: isSuperAdmin },
+  // Lightweight summary queries (limit: 1 for ultra-fast load time)
+  const { meta: userMeta, isLoading: isLoadingUsers } = useUsers(
+    { page: 1, limit: 1 },
+    { enabled: true }
   );
 
-  // 2. Registered Users Directory Query
-  const [userPage, setUserPage] = useState(1);
-  const [userLimit, setUserLimit] = useState(10);
-  const [userSearch, setUserSearch] = useState("");
-  const debouncedUserSearch = useDebounce(userSearch, 300);
-
-  useEffect(() => {
-    setUserPage(1);
-  }, [debouncedUserSearch]);
-
-  const {
-    users,
-    meta: userMeta,
-    isLoading: isLoadingUsers,
-    error: usersFetchError,
-  } = useUsers(
-    { page: userPage, limit: userLimit, search: debouncedUserSearch },
-    { enabled: true },
+  const { meta: subAdminMeta, isLoading: isLoadingSubAdmins } = useSubAdmins(
+    { page: 1, limit: 1 },
+    { enabled: isSuperAdmin }
   );
 
-  // 3. Master Business Categories Query
-  const [categoryPage, setCategoryPage] = useState(1);
-  const [categoryLimit, setCategoryLimit] = useState(10);
-  const [categorySearch, setCategorySearch] = useState("");
-  const debouncedCategorySearch = useDebounce(categorySearch, 300);
+  const { meta: categoryMeta, isLoading: isLoadingCategories } = useCategories(
+    { page: 1, limit: 1 },
+    { enabled: isSuperAdmin }
+  );
 
-  useEffect(() => {
-    setCategoryPage(1);
-  }, [debouncedCategorySearch]);
-
-  const {
-    categories,
-    meta: categoryMeta,
-    isLoading: isLoadingCategories,
-    error: categoriesFetchError,
-  } = useCategories({
-    page: categoryPage,
-    limit: categoryLimit,
-    search: debouncedCategorySearch,
-  });
-
-  // 3b. Master Template Categories Query
-  const [templateCategoryPage, setTemplateCategoryPage] = useState(1);
-  const [templateCategoryLimit, setTemplateCategoryLimit] = useState(10);
-  const [templateCategorySearch, setTemplateCategorySearch] = useState("");
-  const [templateCategoryError, setTemplateCategoryError] = useState("");
-  const debouncedTemplateCategorySearch = useDebounce(templateCategorySearch, 300);
-
-  useEffect(() => {
-    setTemplateCategoryPage(1);
-  }, [debouncedTemplateCategorySearch]);
-
-  const {
-    templateCategories,
-    meta: templateCategoryMeta,
-    isLoading: isLoadingTemplateCategories,
-    error: templateCategoriesFetchError,
-  } = useTemplateCategories({
-    page: templateCategoryPage,
-    limit: templateCategoryLimit,
-    search: debouncedTemplateCategorySearch,
-  });
-
-  // 4. Generated Posts Audit Query (with Multi-Filters)
-  const [postPage, setPostPage] = useState(1);
-  const [postLimit, setPostLimit] = useState(10);
-  const [postSearch, setPostSearch] = useState("");
-  const debouncedPostSearch = useDebounce(postSearch, 300);
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [frameFilter, setFrameFilter] = useState("");
-  const [templateCategoryFilter, setTemplateCategoryFilter] = useState("");
-  const [festivalFilter, setFestivalFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-
-  useEffect(() => {
-    setPostPage(1);
-  }, [debouncedPostSearch, categoryFilter, frameFilter, templateCategoryFilter, festivalFilter, statusFilter]);
-
-  const {
-    posts,
-    meta: postMeta,
-    isLoading: isLoadingPosts,
-    error: postsFetchError,
-  } = useAdminPosts({
-    page: postPage,
-    limit: postLimit,
-    search: debouncedPostSearch,
-    categoryId: categoryFilter,
-    frameId: frameFilter,
-    templateCategoryId: templateCategoryFilter,
-    festivalId: festivalFilter,
-    status: statusFilter,
-  });
-
-  const {
-    analytics: postAnalytics,
-    isLoading: isLoadingPostAnalytics,
-  } = useAdminPostAnalytics();
-
-  // Auxiliary lookup collections for filter fallbacks (comboboxes handle their own on-demand pagination)
-  const { categories: allBusinessCategories } = useCategories({ limit: 20 });
-  const { categories: allTemplateCategories } = useTemplateCategories({ limit: 20 });
-  const { frames: allFrames } = useFrames({ limit: 20 });
-  const { festivals: allFestivals } = useFestivals({ limit: 20 });
-
-  // Create Category Mutation
-  const createCategoryMutation = useMutation({
-    mutationFn: (data) =>
-      typeof data === "string"
-        ? categoryApi.createCategory({ name: data })
-        : categoryApi.createCategory(data),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
-      setCategoryPage(1);
-      setNewCategory("");
-      setCategoryError("");
-      const catName = typeof variables === "string" ? variables : variables.name;
-      showSuccess(
-        "Category Added! 🎉",
-        `Master category "${catName}" has been created successfully.`,
-      );
-    },
-    onError: (err) => {
-      setCategoryError(err.message || "Failed to create business category.");
-      showError(
-        "Category Error ⚠️",
-        err.message || "Could not create business category. Please try again.",
-      );
-    },
-  });
-
-  // Update Category Mutation
-  const updateCategoryMutation = useMutation({
-    mutationFn: ({ id, data }) => categoryApi.updateCategory(id, data),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
-      setCategoryError("");
-      showSuccess(
-        "Category Updated! ✏️",
-        `Business category "${variables.data.name || "item"}" has been updated successfully.`,
-      );
-    },
-    onError: (err) => {
-      showError(
-        "Update Failed ⚠️",
-        err.message || "Failed to update business category.",
-      );
-    },
-  });
-
-  // Delete Category Mutation
-  const deleteCategoryMutation = useMutation({
-    mutationFn: (id) => categoryApi.deleteCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
-      showSuccess(
-        "Category Removed 🗑️",
-        "Business category deleted successfully from database.",
-      );
-    },
-    onError: (err) => {
-      showError("Delete Error ⚠️", err.message || "Failed to delete category.");
-    },
-  });
-
-  // Create Template Category Mutation
-  const createTemplateCategoryMutation = useMutation({
-    mutationFn: (data) =>
-      typeof data === "string"
-        ? templateCategoryApi.createTemplateCategory({ name: data })
-        : templateCategoryApi.createTemplateCategory(data),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ACTIVITY });
-      setTemplateCategoryPage(1);
-      setTemplateCategoryError("");
-      const catName = typeof variables === "string" ? variables : variables.name;
-      showSuccess(
-        "Template Category Added! 🎉",
-        `Master template category "${catName}" has been created successfully.`,
-      );
-    },
-    onError: (err) => {
-      setTemplateCategoryError(err.message || "Failed to create template category.");
-      showError(
-        "Template Category Error ⚠️",
-        err.message || "Could not create template category. Please try again.",
-      );
-    },
-  });
-
-  // Update Template Category Mutation
-  const updateTemplateCategoryMutation = useMutation({
-    mutationFn: ({ id, data }) => templateCategoryApi.updateTemplateCategory(id, data),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
-      setTemplateCategoryError("");
-      showSuccess(
-        "Template Category Updated! ✏️",
-        `Template category "${variables.data.name || "item"}" has been updated successfully.`,
-      );
-    },
-    onError: (err) => {
-      setTemplateCategoryError(err.message || "Failed to update template category.");
-      showError(
-        "Update Error ⚠️",
-        err.message || "Failed to update template category.",
-      );
-    },
-  });
-
-  // Delete Template Category Mutation
-  const deleteTemplateCategoryMutation = useMutation({
-    mutationFn: (id) => templateCategoryApi.deleteTemplateCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATE_CATEGORIES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.CATEGORIES });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TEMPLATES.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ACTIVITY });
-      showSuccess(
-        "Template Category Removed 🗑️",
-        "Template category deleted successfully from database.",
-      );
-    },
-    onError: (err) => {
-      showError("Delete Error ⚠️", err.message || "Failed to delete template category.");
-    },
-  });
-
-  // Create SubAdmin Mutation
-  const createSubAdminMutation = useMutation({
-    mutationFn: (data) => authApi.createSubAdmin(data),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
-      setIsModalOpen(false);
-      reset();
-      showSuccess(
-        "SubAdmin Created! 🛡️",
-        `SubAdmin account "${variables.fullName}" has been created with assigned RBAC tab permissions.`,
-      );
-    },
-    onError: (err) => {
-      showError(
-        "SubAdmin Creation Failed ⚠️",
-        err.message || "Failed to create SubAdmin account.",
-      );
-    },
-  });
-
-  // Update SubAdmin Permissions Mutation
-  const updateSubAdminMutation = useMutation({
-    mutationFn: ({ id, data }) => authApi.updateSubAdmin(id, data),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
-      setEditingSubAdmin(null);
-      showSuccess(
-        "Permissions Updated! 🛡️",
-        "SubAdmin allowed tab permissions have been updated successfully.",
-      );
-    },
-    onError: (err) => {
-      showError(
-        "Update Failed ⚠️",
-        err.message || "Failed to update SubAdmin permissions.",
-      );
-    },
-  });
-
-  // Delete SubAdmin Mutation
-  const deleteSubAdminMutation = useMutation({
-    mutationFn: (id) => authApi.deleteSubAdmin(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUB_ADMINS.ALL });
-      showSuccess(
-        "SubAdmin Access Revoked 🗑️",
-        "SubAdmin account has been removed from database.",
-      );
-    },
-    onError: (err) => {
-      showError("Revoke Error ⚠️", err.message || "Failed to revoke SubAdmin.");
-    },
-  });
-
-  // Toggle User Active Account Status Mutation
-  const toggleUserStatusMutation = useMutation({
-    mutationFn: ({ userId, isActive }) => authApi.toggleUserStatus(userId, isActive),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USERS.ALL });
-      if (variables.isActive) {
-        showSuccess("Account Activated! 🟢", "User account has been activated successfully.");
-      } else {
-        showSuccess(
-          "Account Deactivated! 🚫",
-          "User account deactivated. All post creation & publishing capabilities have been blocked for this user.",
-        );
-      }
-    },
-    onError: (err) => {
-      showError("Action Failed ⚠️", err.message || "Failed to update user account status.");
-    },
-  });
-
-  // Admin Quota Top-Up Mutation
-  const topUpUserQuotaMutation = useMutation({
-    mutationFn: ({ userId, bonusPosts }) => billingApi.adminTopUpQuota(userId, bonusPosts),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USERS.ALL });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUBSCRIPTION.ALL });
-      showSuccess(
-        "Quota Top-Up Granted! 🎉",
-        `Successfully granted +${variables.bonusPosts || 10} bonus post quota to user.`,
-      );
-    },
-    onError: (err) => {
-      showError("Top-Up Failed ⚠️", err.message || "Failed to grant bonus post quota.");
-    },
-  });
-
-  // Admin Meta Agency Token Connect Mutation
-  const connectSocialTokenMutation = useMutation({
-    mutationFn: ({ userId, token }) => usersApi.connectSocialToken(userId, token),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.USERS.ALL });
-      showSuccess(
-        "Meta Assets Linked! 🚀",
-        res?.message || "Successfully connected Facebook Page and Instagram Account to client!",
-      );
-    },
-    onError: (err) => {
-      showError("Connection Failed ⚠️", err.message || "Failed to verify or connect Meta token.");
-    },
-  });
-
-  // React Hook Form for SubAdmin Creation
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(subAdminSchema),
-    defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-      allowedTabs: [...SUBADMIN_PERMITTED_TABS],
-    },
-  });
-
-  const selectedTabs = watch("allowedTabs") || [];
-
-  const handleTabToggle = (tabId) => {
-    if (selectedTabs.includes(tabId)) {
-      setValue(
-        "allowedTabs",
-        selectedTabs.filter((t) => t !== tabId),
-        { shouldValidate: true },
-      );
-    } else {
-      setValue("allowedTabs", [...selectedTabs, tabId], {
-        shouldValidate: true,
-      });
-    }
+  const handleNavigateTab = (tabId) => {
+    navigate(`/admin/${tabId}`);
   };
 
-  const handleAddCategory = (e) => {
-    e.preventDefault();
-    setCategoryError("");
-    if (!newCategory.trim()) return;
-    createCategoryMutation.mutate(newCategory.trim());
-  };
+  // Console Feature Navigation Modules
+  const FEATURE_MODULES = [
+    {
+      id: ADMIN_TABS.USERS,
+      label: "Business Users Directory",
+      desc: "Registered business accounts, payment plans & tenant monitoring",
+      icon: Users,
+      color: "text-blue-400",
+      borderColor: "hover:border-blue-500/50",
+      superAdminOnly: false,
+    },
+    {
+      id: ADMIN_TABS.SUB_ADMINS,
+      label: "SubAdmin Accounts",
+      desc: "SuperAdmin governance, staff management & RBAC privileges",
+      icon: Shield,
+      color: "text-amber-400",
+      borderColor: "hover:border-amber-500/50",
+      superAdminOnly: true,
+    },
+    {
+      id: ADMIN_TABS.SUB_ADMIN_ACTIVITY,
+      label: "SubAdmin Activity Feed",
+      desc: "Real-time audit log of templates, frames, events & categories created",
+      icon: Activity,
+      color: "text-purple-400",
+      borderColor: "hover:border-purple-500/50",
+      superAdminOnly: true,
+    },
+    {
+      id: ADMIN_TABS.FINANCE,
+      label: "Finance & Revenue",
+      desc: "Executive MRR/ARR, total revenue & transaction ledger",
+      icon: CreditCard,
+      color: "text-emerald-400",
+      borderColor: "hover:border-emerald-500/50",
+      superAdminOnly: true,
+    },
+    {
+      id: ADMIN_TABS.TEMPLATES,
+      label: "Graphic Templates",
+      desc: "Master templates library, promotional designs & AI layouts",
+      icon: FileCode2,
+      color: "text-cyan-400",
+      borderColor: "hover:border-cyan-500/50",
+      superAdminOnly: false,
+    },
+    {
+      id: ADMIN_TABS.TEMPLATE_CATEGORIES,
+      label: "Template Categories",
+      desc: "Organize visual themes, promotional styles & design classifications",
+      icon: FolderTree,
+      color: "text-teal-400",
+      borderColor: "hover:border-teal-500/50",
+      superAdminOnly: false,
+    },
+    {
+      id: ADMIN_TABS.FESTIVALS,
+      label: "Festival Calendar",
+      desc: "Configure upcoming cultural events & marketing days",
+      icon: Calendar,
+      color: "text-rose-400",
+      borderColor: "hover:border-rose-500/50",
+      superAdminOnly: false,
+    },
+    {
+      id: ADMIN_TABS.FRAMES,
+      label: "Brand Frames Studio",
+      desc: "Manage brand overlays, headers, footers & border styles",
+      icon: Layers,
+      color: "text-sky-400",
+      borderColor: "hover:border-sky-500/50",
+      superAdminOnly: false,
+    },
+    {
+      id: ADMIN_TABS.CATEGORIES,
+      label: "Business Categories",
+      desc: "Industry taxonomy, commercial niches & keyword taxonomies",
+      icon: FolderKanban,
+      color: "text-orange-400",
+      borderColor: "hover:border-orange-500/50",
+      superAdminOnly: true,
+    },
+    {
+      id: ADMIN_TABS.POSTS,
+      label: "Generated Posts Audit",
+      desc: "Audit & track posts by category, frame, template & festival",
+      icon: Sparkles,
+      color: "text-indigo-400",
+      borderColor: "hover:border-indigo-500/50",
+      superAdminOnly: false,
+    },
+  ];
 
-  const onCreateSubAdmin = (data) => {
-    createSubAdminMutation.mutate(data);
-  };
+  const visibleModules = FEATURE_MODULES.filter((item) => {
+    if (item.superAdminOnly) return isSuperAdmin;
+    if (isSuperAdmin) return true;
+    return userAllowedTabs.includes(item.id);
+  });
 
   return (
-    <>
-      <AdminDashboardView
-        user={user}
-        activeTab={activeTab}
-        handleTabChange={handleTabChange}
-        modalProps={modalProps}
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-        editingSubAdmin={editingSubAdmin}
-        setEditingSubAdmin={setEditingSubAdmin}
-        isUploadModalOpen={isUploadModalOpen}
-        setIsUploadModalOpen={setIsUploadModalOpen}
-        isMetricsOpen={isMetricsOpen}
-        setIsMetricsOpen={setIsMetricsOpen}
-        newCategory={newCategory}
-        setNewCategory={setNewCategory}
-        categoryError={categoryError}
-        subAdminPage={subAdminPage}
-        setSubAdminPage={setSubAdminPage}
-        subAdminLimit={subAdminLimit}
-        setSubAdminLimit={setSubAdminLimit}
-        subAdminSearch={subAdminSearch}
-        setSubAdminSearch={setSubAdminSearch}
-        subAdmins={subAdmins}
-        subAdminMeta={subAdminMeta}
-        isLoadingSubAdmins={isLoadingSubAdmins}
-        subAdminFetchError={subAdminFetchError}
-        userPage={userPage}
-        setUserPage={setUserPage}
-        userLimit={userLimit}
-        setUserLimit={setUserLimit}
-        userSearch={userSearch}
-        setUserSearch={setUserSearch}
-        users={users}
-        userMeta={userMeta}
+    <div className="space-y-6 animate-in fade-in duration-300 w-full">
+      {/* Dashboard Welcome Header */}
+      <div className="p-4 sm:p-6 rounded-2xl border border-[#2C384E] bg-gradient-to-r from-[#131B2A] via-[#1a2538] to-[#0B0F17] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Platform Statistics & Overview</span>
+          </div>
+          <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
+            Admin Console Dashboard
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400">
+            Real-time system metrics, registered tenant statistics, and quick navigation modules.
+          </p>
+        </div>
+      </div>
+
+      {/* Interactive Real-Time Statistics Header Cards */}
+      <AdminStatsHeader
+        usersTotal={userMeta?.totalItems ?? 0}
+        subAdminsTotal={subAdminMeta?.totalItems ?? 0}
+        categoriesTotal={categoryMeta?.totalItems ?? 0}
         isLoadingUsers={isLoadingUsers}
-        usersFetchError={usersFetchError}
-        categoryPage={categoryPage}
-        setCategoryPage={setCategoryPage}
-        categoryLimit={categoryLimit}
-        setCategoryLimit={setCategoryLimit}
-        categorySearch={categorySearch}
-        setCategorySearch={setCategorySearch}
-        categories={categories}
-        categoryMeta={categoryMeta}
+        isLoadingSubAdmins={isLoadingSubAdmins}
         isLoadingCategories={isLoadingCategories}
-        categoriesFetchError={categoriesFetchError}
-        // Template Categories Props
-        templateCategoryPage={templateCategoryPage}
-        setTemplateCategoryPage={setTemplateCategoryPage}
-        templateCategoryLimit={templateCategoryLimit}
-        setTemplateCategoryLimit={setTemplateCategoryLimit}
-        templateCategorySearch={templateCategorySearch}
-        setTemplateCategorySearch={setTemplateCategorySearch}
-        templateCategories={templateCategories}
-        templateCategoryMeta={templateCategoryMeta}
-        isLoadingTemplateCategories={isLoadingTemplateCategories}
-        templateCategoryError={templateCategoryError || templateCategoriesFetchError?.message}
-        createTemplateCategoryMutation={createTemplateCategoryMutation}
-        updateTemplateCategoryMutation={updateTemplateCategoryMutation}
-        deleteTemplateCategoryMutation={deleteTemplateCategoryMutation}
-        // Generated Posts Audit Props
-        posts={posts}
-        postMeta={postMeta}
-        isLoadingPosts={isLoadingPosts}
-        postsFetchError={postsFetchError}
-        postPage={postPage}
-        setPostPage={setPostPage}
-        setPostLimit={setPostLimit}
-        categoryFilter={categoryFilter}
-        setCategoryFilter={setCategoryFilter}
-        frameFilter={frameFilter}
-        setFrameFilter={setFrameFilter}
-        templateCategoryFilter={templateCategoryFilter}
-        setTemplateCategoryFilter={setTemplateCategoryFilter}
-        festivalFilter={festivalFilter}
-        setFestivalFilter={setFestivalFilter}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        postSearch={postSearch}
-        setPostSearch={setPostSearch}
-        allCategories={allBusinessCategories}
-        allFrames={allFrames}
-        allTemplateCategories={allTemplateCategories}
-        allFestivals={allFestivals}
-        postAnalytics={postAnalytics}
-        isLoadingPostAnalytics={isLoadingPostAnalytics}
-        createCategoryMutation={createCategoryMutation}
-        updateCategoryMutation={updateCategoryMutation}
-        deleteCategoryMutation={deleteCategoryMutation}
-        createSubAdminMutation={createSubAdminMutation}
-        updateSubAdminMutation={updateSubAdminMutation}
-        deleteSubAdminMutation={deleteSubAdminMutation}
-        toggleUserStatusMutation={toggleUserStatusMutation}
-        topUpUserQuotaMutation={topUpUserQuotaMutation}
-        connectSocialTokenMutation={connectSocialTokenMutation}
-        register={register}
-        handleSubmit={handleSubmit}
-        errors={errors}
-        selectedTabs={selectedTabs}
-        handleTabToggle={handleTabToggle}
-        handleAddCategory={handleAddCategory}
-        onCreateSubAdmin={onCreateSubAdmin}
-        queryClient={queryClient}
-        showSuccess={showSuccess}
+        onNavigateTab={handleNavigateTab}
+        isSuperAdmin={isSuperAdmin}
       />
+
+      {/* Platform Quick Access Modules Grid */}
+      <div className="space-y-4 pt-2">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <Shield className="w-4 h-4 text-amber-400" />
+          <span>Console Feature Modules</span>
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {visibleModules.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Card
+                key={item.id}
+                onClick={() => handleNavigateTab(item.id)}
+                className={`p-5 bg-[#131B2A] border-[#2C384E] cursor-pointer transition-all duration-200 group ${item.borderColor} hover:shadow-lg`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div
+                    className={`p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] ${item.color}`}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                </div>
+                <h3 className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
+                  {item.label}
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">{item.desc}</p>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
       <CelebrationWelcomeModal
         isOpen={isWelcomeModalOpen}
         onClose={() => setIsWelcomeModalOpen(false)}
         authType={welcomeAuthType}
         user={user}
       />
-    </>
+    </div>
   );
 };
+
+export default AdminDashboardPage;

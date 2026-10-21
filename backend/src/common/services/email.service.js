@@ -4,6 +4,7 @@ import { logger } from '../../config/logger.js';
 import { renderWelcomeEmail } from '../templates/welcome-email.template.js';
 import { renderPasswordResetEmail } from '../templates/password-reset-email.template.js';
 import { renderPostPublishedEmail } from '../templates/post-published-email.template.js';
+import { renderOtpEmail } from '../templates/otp-email.template.js';
 
 // Safe default fallback sender email (prevents fatal SMTP 550 syntax rejections if FROM_EMAIL is missing)
 const DEFAULT_FROM_EMAIL = env.FROM_EMAIL || env.SMTP_USER || 'noreply@brandflow.com';
@@ -269,3 +270,36 @@ export async function sendInvoiceEmail({ userId, transactionId }) {
     throw error;
   }
 }
+
+/**
+ * Send 4-digit Registration OTP verification email
+ * 
+ * @param {{ email: string, otp: string, fullName?: string, expiresInMinutes?: number }} params
+ */
+export async function sendOtpEmail({ email, otp, fullName, expiresInMinutes = 10 }) {
+  const htmlContent = renderOtpEmail({ fullName, otp, expiresInMinutes });
+  const textContent = `Hi ${fullName || 'there'},\n\nYour 4-digit BrandFlow verification code is: ${otp}\n\nThis code will expire in ${expiresInMinutes} minutes.\nNever share this code with anyone.\n\n- The BrandFlow Team`;
+
+  const mailOptions = {
+    from: `"BrandFlow Security" <${DEFAULT_FROM_EMAIL}>`,
+    to: email,
+    subject: `🔐 Your 4-Digit Verification Code: ${otp}`,
+    text: textContent,
+    html: htmlContent,
+  };
+
+  try {
+    if (transporter && isSmtpAvailable) {
+      const info = await transporter.sendMail(mailOptions);
+      logger.success(`✉️ Registration OTP email successfully sent to ${email} (MessageId: ${info.messageId})`);
+      return info;
+    } else {
+      logger.info(`✉️ [SMTP Simulation] Registration OTP generated for ${email}. Code: [ ${otp} ] (Valid for ${expiresInMinutes}m)`);
+      return { simulated: true, email, otp };
+    }
+  } catch (error) {
+    logger.error(`❌ Failed to send registration OTP email to ${email}:`, error.message);
+    throw error;
+  }
+}
+

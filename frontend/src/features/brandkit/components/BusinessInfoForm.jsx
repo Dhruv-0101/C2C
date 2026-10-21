@@ -5,7 +5,7 @@ import { Input } from '../../../components/ui/Input';
 
 export const BusinessInfoForm = ({ register, errors = {} }) => {
   return (
-    <Card className="p-5 bg-[#131B2A] border-[#2C384E] space-y-4">
+    <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] space-y-4 rounded-2xl">
       <div className="flex items-center gap-2 border-b border-[#2C384E] pb-3">
         <Building2 className="w-4 h-4 text-amber-400" />
         <h3 className="font-heading font-bold text-sm text-white">Business Information</h3>

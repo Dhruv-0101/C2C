@@ -5,8 +5,8 @@ import React from 'react';
  */
 export const Table = ({ children, className = '' }) => {
   return (
-    <div className={`overflow-x-auto border border-[#2C384E] rounded-xl bg-[#0B0F17] ${className}`}>
-      <table className="w-full text-left border-collapse text-xs">
+    <div className={`overflow-x-auto custom-scrollbar border border-[#2C384E] rounded-xl bg-[#0B0F17] ${className}`}>
+      <table className="w-full text-left border-collapse text-xs min-w-[720px]">
         {children}
       </table>
     </div>

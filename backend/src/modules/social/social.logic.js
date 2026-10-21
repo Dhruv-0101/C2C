@@ -11,6 +11,7 @@ import {
 import {
   sanitizeSocialAccount,
   sanitizeSocialAccounts,
+  createSignedOAuthState,
 } from './social.helper.js';
 import { SOCIAL_PLATFORMS } from './social.constants.js';
 import { encryptToken } from '../../common/helpers/encryption.helper.js';
@@ -39,7 +40,7 @@ export const getInstagramAuthUrl = async (userId, clientUrl) => {
     };
   }
 
-  const state = Buffer.from(JSON.stringify({ userId, clientUrl, timestamp: Date.now() })).toString('base64');
+  const state = createSignedOAuthState({ userId, clientUrl });
   const authUrl = instagramPublisherService.getOAuthUrl(state);
 
   return {
@@ -64,7 +65,7 @@ export const getLinkedinAuthUrl = async (userId, clientUrl) => {
     };
   }
 
-  const state = Buffer.from(JSON.stringify({ userId, clientUrl, timestamp: Date.now() })).toString('base64');
+  const state = createSignedOAuthState({ userId, clientUrl });
   const authUrl = linkedinPublisherService.getOAuthUrl(state);
 
   return {

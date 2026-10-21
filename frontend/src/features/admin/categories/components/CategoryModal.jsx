@@ -81,28 +81,28 @@ export const CategoryModal = ({
 
   return (
     <div
-      className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto"
+      className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-3 sm:p-5 animate-in fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-[#131B2A] border border-[#2C384E] rounded-2xl p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-150"
+        className="w-full max-w-lg max-h-[92vh] flex flex-col bg-[#131B2A] border border-[#2C384E] rounded-2xl shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2C384E] pb-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+        <div className="p-4 sm:p-5 border-b border-[#2C384E] flex items-start justify-between gap-3 shrink-0">
+          <div className="flex items-start gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
               {isEditing ? (
                 <Pencil className="w-4 h-4 text-amber-400" />
               ) : (
                 <FolderKanban className="w-4 h-4 text-amber-400" />
               )}
             </div>
-            <div>
-              <h3 className="font-heading font-bold text-base text-white">
+            <div className="min-w-0">
+              <h3 className="font-heading font-bold text-base text-white truncate">
                 {isEditing ? "Edit Business Category" : "Add Business Category"}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
                 {isEditing
                   ? `Updating industry category "${category.name}"`
                   : "Create a system-wide category for business targeting."}
@@ -112,14 +112,15 @@ export const CategoryModal = ({
 
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer shrink-0"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
           <div>
             <Input
               label="Category Name *"
@@ -130,9 +131,9 @@ export const CategoryModal = ({
 
             {/* Live Slug Preview */}
             {slugPreview && (
-              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-400">
+              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-400 flex-wrap">
                 <span className="text-slate-500">Slug:</span>
-                <span className="font-mono bg-[#0B0F17] px-2 py-0.5 rounded border border-[#2C384E] text-amber-300">
+                <span className="font-mono bg-[#0B0F17] px-2 py-0.5 rounded border border-[#2C384E] text-amber-300 truncate max-w-[250px]">
                   {slugPreview}
                 </span>
               </div>
@@ -163,13 +164,14 @@ export const CategoryModal = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2C384E]">
+          <div className="flex flex-col-reverse min-[380px]:flex-row items-stretch min-[380px]:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-[#2C384E]">
             <Button
               type="button"
               variant="outline"
               size="md"
               onClick={onClose}
               disabled={isPending}
+              className="w-full min-[380px]:w-auto min-h-[40px] justify-center"
             >
               Cancel
             </Button>
@@ -179,6 +181,7 @@ export const CategoryModal = ({
               size="md"
               icon={isEditing ? Pencil : Plus}
               isLoading={isPending}
+              className="w-full min-[380px]:w-auto min-h-[40px] justify-center"
             >
               {isEditing ? "Save Changes" : "Create Category"}
             </Button>

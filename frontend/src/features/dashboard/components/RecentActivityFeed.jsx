@@ -44,27 +44,27 @@ export const RecentActivityFeed = ({
       {recentPosts.map((post) => (
         <div
           key={post.id}
-          className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors"
+          className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors gap-2.5 min-w-0"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
             {post.finalGraphicUrl && (
               <img
                 src={post.finalGraphicUrl}
                 alt="Graphic Thumbnail"
-                className="w-10 h-10 rounded-lg object-cover border border-[#2C384E]"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-[#2C384E] shrink-0"
               />
             )}
-            <div>
-              <p className="text-xs font-semibold text-slate-200">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-200 truncate">
                 {post.occasionName || post.template?.title || post.festival?.name || "Branded Graphic Post"}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate">
                 Created {new Date(post.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
           <span
-            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold shrink-0 ${
               post.status === "PUBLISHED"
                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
                 : "bg-amber-500/10 text-amber-400 border border-amber-500/30"

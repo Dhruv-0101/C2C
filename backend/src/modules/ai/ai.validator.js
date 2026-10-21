@@ -6,6 +6,10 @@ import {
   DEFAULT_AI_LANGUAGE,
   AI_PLATFORMS,
   DEFAULT_AI_PLATFORM,
+  AI_IMAGE_STYLES,
+  DEFAULT_AI_IMAGE_STYLE,
+  AI_ASPECT_RATIOS,
+  DEFAULT_AI_ASPECT_RATIO,
 } from './ai.constants.js';
 
 /**
@@ -24,4 +28,29 @@ export const generateCaptionSchema = z.object({
     language: z.enum(AI_SUPPORTED_LANGUAGES).optional().default(DEFAULT_AI_LANGUAGE),
     platform: z.enum(AI_PLATFORMS).optional().default(DEFAULT_AI_PLATFORM),
   }),
+});
+
+export const generateImageSchema = z.object({
+  body: z.object({
+    prompt: z
+      .string({ required_error: 'Prompt is required' })
+      .trim()
+      .min(3, 'Prompt must be at least 3 characters')
+      .max(1000, 'Prompt must be under 1000 characters'),
+    style: z.enum(AI_IMAGE_STYLES).optional().default(DEFAULT_AI_IMAGE_STYLE),
+    aspectRatio: z.enum(AI_ASPECT_RATIOS).optional().default(DEFAULT_AI_ASPECT_RATIO),
+    negativePrompt: z.string().trim().optional(),
+    occasionName: z.string().trim().optional(),
+  }),
+});
+
+export const getAiJobStatusSchema = z.object({
+  params: z.object({
+    jobId: z.string({ required_error: 'Job ID is required' }).min(1, 'Job ID is required'),
+  }),
+  query: z
+    .object({
+      type: z.enum(['image', 'caption']).optional().default('image'),
+    })
+    .optional(),
 });

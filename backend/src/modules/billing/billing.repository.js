@@ -169,13 +169,125 @@ export const findTransactionById = async (id) => {
 };
 
 /**
+ * Find a transaction by gateway paymentId (for replay / double-spend detection)
+ *
+ * @param {string} paymentId - Payment ID
+ * @returns {Promise<Object|null>} Billing transaction
+ */
+export const findTransactionByPaymentId = async (paymentId) => {
+  if (!paymentId) return null;
+  return prisma.billingTransaction.findFirst({
+    where: { paymentId },
+  });
+};
+
+/**
+ * Find a transaction by gateway orderId (for order replay detection)
+ *
+ * @param {string} orderId - Order ID
+ * @returns {Promise<Object|null>} Billing transaction
+ */
+export const findTransactionByOrderId = async (orderId) => {
+  if (!orderId) return null;
+  return prisma.billingTransaction.findFirst({
+    where: { orderId },
+  });
+};
+
+/**
+ * Atomically checks and decrements 1 post credit from the user's active subscription.
+ * Handles plan posts first, then bonus posts, with row-level transaction safety.
+ *
+ * @param {string} userId - User ID
+ * @returns {Promise<{ success: boolean, reason?: string, subscription?: Object }>}
+ */
+export const deductPostCreditAtomic = async (userId) => {
+  return prisma.$transaction(async (tx) => {
+    const sub = await tx.subscription.findUnique({
+      where: { userId },
+    });
+
+    if (!sub) {
+      return { success: false, reason: 'NO_SUBSCRIPTION' };
+    }
+
+    const planRemaining = Math.max(0, sub.totalPostsAllowed - sub.postsUsed);
+    const bonusRemaining = Math.max(0, sub.bonusPostsAllowed - sub.bonusPostsUsed);
+    const totalRemaining = planRemaining + bonusRemaining;
+
+    if (totalRemaining <= 0 || sub.status === 'EXPIRED') {
+      return { success: false, reason: 'QUOTA_EXHAUSTED', sub };
+    }
+
+    let updateData = {};
+    if (planRemaining > 0) {
+      const newPostsUsed = sub.postsUsed + 1;
+      const isDepleted = sub.totalPostsAllowed - newPostsUsed <= 0 && bonusRemaining <= 0;
+      updateData = {
+        postsUsed: newPostsUsed,
+        status: isDepleted ? 'EXPIRED' : sub.status,
+      };
+    } else {
+      const newBonusUsed = sub.bonusPostsUsed + 1;
+      const isDepleted = sub.bonusPostsAllowed - newBonusUsed <= 0;
+      updateData = {
+        bonusPostsUsed: newBonusUsed,
+        status: isDepleted ? 'EXPIRED' : sub.status,
+      };
+    }
+
+    const updatedSub = await tx.subscription.update({
+      where: { userId },
+      data: updateData,
+    });
+
+    return { success: true, subscription: updatedSub };
+  });
+};
+
+/**
+ * Compensating transaction: refunds 1 post credit if post creation/upload fails
+ *
+ * @param {string} userId - User ID
+ * @returns {Promise<Object|null>}
+ */
+export const refundPostCreditAtomic = async (userId) => {
+  const sub = await prisma.subscription.findUnique({ where: { userId } });
+  if (!sub) return null;
+
+  if (sub.postsUsed > 0) {
+    return prisma.subscription.update({
+      where: { userId },
+      data: {
+        postsUsed: Math.max(0, sub.postsUsed - 1),
+        status: 'ACTIVE',
+      },
+    }).catch(() => null);
+  } else if (sub.bonusPostsUsed > 0) {
+    return prisma.subscription.update({
+      where: { userId },
+      data: {
+        bonusPostsUsed: Math.max(0, sub.bonusPostsUsed - 1),
+        status: 'ACTIVE',
+      },
+    }).catch(() => null);
+  }
+  return null;
+};
+
+/**
  * Billing Repository singleton for backward-compatible consumption
  */
 export const billingRepository = {
   findByUserId,
   upsertSubscription,
   incrementPostsUsed,
+  deductPostCreditAtomic,
+  refundPostCreditAtomic,
   createTransaction,
   findPaginatedUserTransactions,
   findTransactionById,
+  findTransactionByPaymentId,
+  findTransactionByOrderId,
 };
+

@@ -31,8 +31,8 @@ export const TermsOfServicePage = () => {
       sections={SECTIONS}
     >
       {/* 1. Agreement to Terms */}
-      <section id="agreement" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="agreement" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           1. Agreement to Terms
         </h2>
         <p>
@@ -44,8 +44,8 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 2. Accounts & Security */}
-      <section id="eligibility-accounts" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="eligibility-accounts" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           2. Accounts & Security
         </h2>
         <div className="space-y-3 text-xs sm:text-sm text-slate-300">
@@ -62,35 +62,35 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 3. Platform Services & AI Features */}
-      <section id="platform-services" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="platform-services" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           3. BrandFlow Services & AI Features
         </h2>
         <p>
           BrandFlow provides small businesses and creators with dynamic marketing frames, AI-generated captions, festival promotional templates, and automated publishing workflows.
         </p>
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 space-y-1">
+        <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 space-y-1">
           <strong className="text-amber-400 block font-bold">AI-Generated Content:</strong>
-          <span>
+          <span className="leading-relaxed block">
             Marketing captions, hashtags, and suggestions are generated using machine learning models. While we continuously tune these models for accuracy and brand safety, you are solely responsible for reviewing and verifying all generated copy before publishing to public channels.
           </span>
         </div>
       </section>
 
       {/* 4. Social Media Publishing & Meta Platform Compliance */}
-      <section id="social-publishing" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="social-publishing" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           4. Social Media Publishing & Meta Platform Compliance
         </h2>
         <p>
           BrandFlow connects with third-party social networks, including Meta (Facebook & Instagram) and LinkedIn, via official APIs.
         </p>
-        <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm text-slate-300">
+        <ul className="list-disc pl-4 sm:pl-5 space-y-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
           <li>
             <strong>Authorized Ownership:</strong> By connecting a Facebook Page or Instagram Professional account to BrandFlow, you warrant that you are an authorized administrator or editor of that page with full publishing permissions.
           </li>
           <li>
-            <strong>Meta Policies:</strong> You agree to comply with all applicable <a href="https://developers.facebook.com/terms/" target="_blank" rel="noreferrer" className="text-amber-400 underline">Meta Developer Terms</a> and <a href="https://www.facebook.com/communitystandards/" target="_blank" rel="noreferrer" className="text-amber-400 underline">Community Standards</a>.
+            <strong>Meta Policies:</strong> You agree to comply with all applicable <a href="https://developers.facebook.com/terms/" target="_blank" rel="noreferrer" className="text-amber-400 underline break-all">Meta Developer Terms</a> and <a href="https://www.facebook.com/communitystandards/" target="_blank" rel="noreferrer" className="text-amber-400 underline break-all">Community Standards</a>.
           </li>
           <li>
             <strong>Prohibited Content:</strong> You may not use BrandFlow to publish spam, misleading promotions, counterfeit goods, discriminatory or defamatory content, or any material infringing on third-party intellectual property.
@@ -99,14 +99,14 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 5. Intellectual Property & Content Rights */}
-      <section id="ip-ownership" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="ip-ownership" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           5. Intellectual Property & Content Rights
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="p-4 bg-[#131B2A] border-slate-800 space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+          <Card className="p-3.5 sm:p-4 bg-[#131B2A] border-slate-800 space-y-1.5 sm:space-y-2 rounded-xl sm:rounded-2xl">
             <h3 className="font-bold text-emerald-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>Your Content (100% Yours)</span>
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
@@ -114,9 +114,9 @@ export const TermsOfServicePage = () => {
             </p>
           </Card>
 
-          <Card className="p-4 bg-[#131B2A] border-slate-800 space-y-2">
+          <Card className="p-3.5 sm:p-4 bg-[#131B2A] border-slate-800 space-y-1.5 sm:space-y-2 rounded-xl sm:rounded-2xl">
             <h3 className="font-bold text-amber-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <Award className="w-4 h-4" />
+              <Award className="w-4 h-4 shrink-0" />
               <span>BrandFlow Platform Rights</span>
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
@@ -127,12 +127,12 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 6. Acceptable Use Policy */}
-      <section id="acceptable-use" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="acceptable-use" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           6. Acceptable Use Policy
         </h2>
         <p>When using BrandFlow, you agree NOT to:</p>
-        <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-300">
+        <ul className="list-disc pl-4 sm:pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
           <li>Reverse engineer, decompile, or extract the source code of BrandFlow.</li>
           <li>Bypass rate limits, subscription quotas, or API authentication mechanisms.</li>
           <li>Scrape, index, or harvest user data or marketing templates without authorization.</li>
@@ -142,11 +142,11 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 7. Subscription Plans & Post Quotas */}
-      <section id="billing-quotas" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="billing-quotas" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           7. Subscription Plans & Post Quotas
         </h2>
-        <div className="space-y-2 text-xs sm:text-sm text-slate-300">
+        <div className="space-y-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
           <p>
             <strong>Billing Cycles:</strong> Paid subscriptions renew automatically on a monthly or annual basis unless cancelled prior to the renewal date.
           </p>
@@ -160,8 +160,8 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 8. Disclaimers of Warranties */}
-      <section id="disclaimers" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="disclaimers" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           8. Disclaimers of Warranties
         </h2>
         <p className="text-xs text-slate-300 leading-relaxed uppercase tracking-wide">
@@ -170,8 +170,8 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 9. Limitation of Liability */}
-      <section id="limitation-liability" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="limitation-liability" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           9. Limitation of Liability
         </h2>
         <p className="text-xs text-slate-300 leading-relaxed">
@@ -180,8 +180,8 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 10. Termination & Suspension */}
-      <section id="termination" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="termination" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           10. Termination & Suspension
         </h2>
         <p>
@@ -190,16 +190,16 @@ export const TermsOfServicePage = () => {
       </section>
 
       {/* 11. Governing Law & Contact */}
-      <section id="governing-law" className="space-y-4">
-        <h2 className="text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
+      <section id="governing-law" className="space-y-4 scroll-mt-24">
+        <h2 className="text-lg sm:text-xl font-heading font-bold text-white border-b border-slate-800 pb-2">
           11. Governing Law & Contact Information
         </h2>
         <p>
           These Terms shall be governed by and construed in accordance with the laws of Delaware, United States, without regard to conflict of law principles.
         </p>
-        <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-1">
+        <div className="p-4 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800 text-xs space-y-1.5">
           <p className="font-semibold text-white">BrandFlow Legal Department</p>
-          <p className="text-slate-400">Email: <a href="mailto:legal@brandflow.io" className="text-amber-400 underline">legal@brandflow.io</a></p>
+          <p className="text-slate-400">Email: <a href="mailto:legal@brandflow.io" className="text-amber-400 underline break-all">legal@brandflow.io</a></p>
           <p className="text-slate-400">Headquarters: BrandFlow Technologies Inc.</p>
         </div>
       </section>

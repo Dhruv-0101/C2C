@@ -102,17 +102,14 @@ export const FrameManagerView = ({
   return (
     <div className="space-y-6">
       {/* 1. Studio Top Bar Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-4 sm:p-5 rounded-2xl shadow-xl">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-[#131B2A] border border-[#2C384E] p-3.5 sm:p-5 rounded-2xl shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
-            <Layout className="w-6 h-6" />
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
+            <Layout className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
+            <h2 className="font-heading font-extrabold text-base sm:text-lg text-white flex items-center gap-2 flex-wrap">
               <span>Interactive Frame Studio</span>
-              {/* <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                PRO BUILDER
-              </span> */}
             </h2>
             <p className="text-xs text-slate-400">
               Visual studio for designing transparent brand frame overlays & dynamic text/image slots.
@@ -121,27 +118,27 @@ export const FrameManagerView = ({
         </div>
 
         {/* Action Controls & Tab Switcher */}
-        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-          <div className="flex items-center gap-1.5 bg-[#0B0F17] p-1.5 rounded-xl border border-[#2C384E]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end">
+          <div className="flex items-center gap-1.5 bg-[#0B0F17] p-1 rounded-xl border border-[#2C384E] w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={() => setActiveTab("canva")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === "canva"
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${activeTab === "canva"
                 ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20"
                 : "text-slate-400 hover:text-white"
                 }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
               <span>Canvas Studio</span>
             </button>
 
             <button
               onClick={() => setActiveTab("manage")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${activeTab === "manage"
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${activeTab === "manage"
                 ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20"
                 : "text-slate-400 hover:text-white"
                 }`}
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Eye className="w-3.5 h-3.5 shrink-0" />
               <span>Active Frames ({framesPaginationMeta?.totalItems ?? frames?.length ?? 0})</span>
             </button>
           </div>
@@ -152,7 +149,7 @@ export const FrameManagerView = ({
               icon={CloudUpload}
               onClick={handlePublishCanvaFrame}
               isLoading={createFrameMutation.isPending}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-2 shadow-lg shadow-amber-500/20"
+              className="w-full sm:w-auto min-h-[40px] justify-center bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-2 shadow-lg shadow-amber-500/20"
             >
               Publish Frame PNG
             </Button>
@@ -174,55 +171,55 @@ export const FrameManagerView = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
           {/* LEFT STUDIO SIDEBAR (4 Cols): Tool Tabs & Drawers */}
-          <Card className="lg:col-span-4 border-[#2C384E] bg-[#131B2A] p-4 sm:p-5 space-y-4 shadow-xl">
+          <Card className="lg:col-span-4 border-[#2C384E] bg-[#131B2A] p-3.5 sm:p-5 space-y-4 shadow-xl">
             {/* Sidebar Internal Navigation Tabs */}
-            <div className="grid grid-cols-4 gap-1 p-1 bg-[#0B0F17] rounded-xl border border-[#2C384E] text-[11px] font-semibold">
+            <div className="grid grid-cols-4 gap-1 p-1 bg-[#0B0F17] rounded-xl border border-[#2C384E] text-[10px] sm:text-[11px] font-semibold">
               <button
                 type="button"
                 onClick={() => setSidebarTab("elements")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "elements"
+                className={`py-1.5 px-0.5 sm:px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition cursor-pointer ${sidebarTab === "elements"
                   ? "bg-amber-500 text-slate-950 font-bold shadow"
                   : "text-slate-400 hover:text-white"
                   }`}
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Elements</span>
+                <Plus className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Elements</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSidebarTab("presets")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "presets"
+                className={`py-1.5 px-0.5 sm:px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition cursor-pointer ${sidebarTab === "presets"
                   ? "bg-amber-500 text-slate-950 font-bold shadow"
                   : "text-slate-400 hover:text-white"
                   }`}
               >
-                <Grid className="w-3.5 h-3.5" />
-                <span>Presets</span>
+                <Grid className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Presets</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSidebarTab("layers")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "layers"
+                className={`py-1.5 px-0.5 sm:px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition cursor-pointer ${sidebarTab === "layers"
                   ? "bg-amber-500 text-slate-950 font-bold shadow"
                   : "text-slate-400 hover:text-white"
                   }`}
               >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Layers ({elements.length})</span>
+                <Layers className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Layers ({elements.length})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSidebarTab("info")}
-                className={`py-1.5 px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition ${sidebarTab === "info"
+                className={`py-1.5 px-0.5 sm:px-1 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1 transition cursor-pointer ${sidebarTab === "info"
                   ? "bg-amber-500 text-slate-950 font-bold shadow"
                   : "text-slate-400 hover:text-white"
                   }`}
               >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Details</span>
+                <FileText className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Details</span>
               </button>
             </div>
 
@@ -493,7 +490,7 @@ export const FrameManagerView = ({
           <div className="lg:col-span-5 space-y-4">
             <Card className="border-[#2C384E] bg-[#131B2A] p-4 sm:p-5 space-y-4 shadow-xl flex flex-col items-center">
               {/* Canvas Controls Header */}
-              <div className="w-full flex items-center justify-between border-b border-[#2C384E] pb-3 gap-2">
+              <div className="w-full flex flex-wrap items-center justify-between border-b border-[#2C384E] pb-3 gap-2">
                 <div className="flex items-center gap-1.5">
                   <Move className="w-4 h-4 text-amber-400 shrink-0" />
                   <span className="font-heading font-extrabold text-xs text-white uppercase tracking-wider">
@@ -501,11 +498,11 @@ export const FrameManagerView = ({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-[#0B0F17] p-1 rounded-xl border border-[#2C384E] text-[10px]">
+                <div className="flex items-center gap-1 bg-[#0B0F17] p-1 rounded-xl border border-[#2C384E] text-[10px] overflow-x-auto max-w-full custom-scrollbar">
                   <button
                     type="button"
                     onClick={() => setStageBgColor("WHITE")}
-                    className={`px-2 py-1 rounded-lg font-bold transition ${stageBgColor === "WHITE"
+                    className={`px-2 py-1 rounded-lg font-bold transition cursor-pointer shrink-0 ${stageBgColor === "WHITE"
                       ? "bg-white text-slate-950"
                       : "text-slate-400 hover:text-white"
                       }`}
@@ -515,7 +512,7 @@ export const FrameManagerView = ({
                   <button
                     type="button"
                     onClick={() => setStageBgColor("DARK")}
-                    className={`px-2 py-1 rounded-lg font-bold transition ${stageBgColor === "DARK"
+                    className={`px-2 py-1 rounded-lg font-bold transition cursor-pointer shrink-0 ${stageBgColor === "DARK"
                       ? "bg-slate-800 text-white"
                       : "text-slate-400 hover:text-white"
                       }`}
@@ -523,24 +520,12 @@ export const FrameManagerView = ({
                     Dark
                   </button>
 
-                  {/* {selectedElement && (
-                    <button
-                      type="button"
-                      onClick={() => centerSelectedElement && centerSelectedElement("BOTH")}
-                      className="px-2.5 py-1 rounded-lg font-bold transition bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 flex items-center gap-1 shadow-sm"
-                      title="Dead Center: Upar, Niche, Left, Right sab se center karein (1080x1080)"
-                    >
-                      <Crosshair className="w-3 h-3 text-amber-400" />
-                      <span>Center Both (X & Y)</span>
-                    </button>
-                  )} */}
-
                   <button
                     type="button"
                     onClick={() => setShowSelectionBox && setShowSelectionBox(!showSelectionBox)}
-                    className={`px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 ${showSelectionBox
+                    className={`px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 cursor-pointer shrink-0 ${showSelectionBox
                       ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                      : "text-slate-400"
+                      : "text-slate-400 hover:text-white"
                       }`}
                     title="Toggle selection box outline"
                   >
@@ -551,7 +536,7 @@ export const FrameManagerView = ({
                   <button
                     type="button"
                     onClick={handleClearStage}
-                    className="px-2 py-1 rounded-lg font-bold transition bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 flex items-center gap-1"
+                    className="px-2 py-1 rounded-lg font-bold transition bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 flex items-center gap-1 cursor-pointer shrink-0"
                     title="Clear canvas stage"
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -1308,10 +1293,10 @@ export const FrameManagerView = ({
 
       {/* 3. TAB 2: Active Published Frames Management */}
       {activeTab === "manage" && (
-        <Card className="border-[#2C384E] bg-[#131B2A] p-6 space-y-5 shadow-xl">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-[#2C384E] pb-4">
+        <Card className="border-[#2C384E] bg-[#131B2A] p-3.5 sm:p-5 md:p-6 space-y-4 sm:space-y-5 shadow-xl">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 border-b border-[#2C384E] pb-4">
             <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
-              <Eye className="w-5 h-5 text-amber-400" />
+              <Eye className="w-5 h-5 text-amber-400 shrink-0" />
               <span>Active Transparent PNG Frame Blueprints</span>
             </h3>
 
@@ -1374,7 +1359,7 @@ export const FrameManagerView = ({
             </div>
           ) : (
             <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {frames.map((f) => {
                   const displayImgUrl = f.previewUrl || f.overlayPngUrl;
                   return (
@@ -1497,20 +1482,20 @@ export const FrameManagerView = ({
       {/* 6. Delete Frame Confirmation Modal */}
       {frameToDelete && (
         <div
-          className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 animate-in fade-in overflow-y-auto"
+          className="modal-backdrop-overlay fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-3 sm:p-4 animate-in fade-in overflow-y-auto"
           onClick={() => setFrameToDelete(null)}
         >
           <div
-            className="w-full max-w-md bg-[#131B2A] border border-rose-500/30 rounded-2xl p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-150"
+            className="w-full max-w-md bg-[#131B2A] border border-rose-500/30 rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-in zoom-in-95 duration-150 mx-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between border-b border-[#2C384E] pb-3.5">
-              <div className="flex items-center gap-3">
+            <div className="flex items-start justify-between border-b border-[#2C384E] pb-3.5 gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
                   <AlertTriangle className="w-5 h-5 text-rose-400" />
                 </div>
-                <div>
-                  <h3 className="font-heading font-bold text-base text-white">
+                <div className="min-w-0">
+                  <h3 className="font-heading font-bold text-base text-white truncate">
                     Delete Frame Blueprint?
                   </h3>
                   <p className="text-xs text-slate-400 mt-0.5">
@@ -1522,13 +1507,13 @@ export const FrameManagerView = ({
               <button
                 type="button"
                 onClick={() => setFrameToDelete(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3">
               {(frameToDelete.previewUrl || frameToDelete.overlayPngUrl) && (
                 <img
                   src={frameToDelete.previewUrl || frameToDelete.overlayPngUrl}
@@ -1552,13 +1537,14 @@ export const FrameManagerView = ({
               Deleting this frame overlay will permanently remove it from the database. Any posts currently referencing this frame will keep their saved graphic, but future posts cannot apply this overlay.
             </p>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#2C384E]">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-[#2C384E]">
               <Button
                 type="button"
                 variant="outline"
                 size="md"
                 onClick={() => setFrameToDelete(null)}
                 disabled={deleteFrameMutation.isPending}
+                className="w-full sm:w-auto min-h-[40px] justify-center text-xs"
               >
                 Cancel
               </Button>
@@ -1573,6 +1559,7 @@ export const FrameManagerView = ({
                   });
                 }}
                 isLoading={deleteFrameMutation.isPending}
+                className="w-full sm:w-auto min-h-[40px] justify-center text-xs font-bold"
               >
                 Delete Frame
               </Button>
