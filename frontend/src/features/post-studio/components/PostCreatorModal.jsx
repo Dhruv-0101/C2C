@@ -17,6 +17,7 @@ import {
   Plus,
   Trash2,
   Eye,
+  ImageOff,
 } from 'lucide-react';
 import { useCanvasCompositor } from '@/features/post-studio/hooks/useCanvasCompositor';
 import { usePostCreator } from '@/features/post-studio/hooks/usePostCreator';
@@ -54,7 +55,7 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
   } = useSubscription();
 
   const [selectedFrame, setSelectedFrame] = useState(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplate?.id || '');
+  const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplate?.id || null);
   const [customBaseImage, setCustomBaseImage] = useState(null);
   const [previewCustomImageModal, setPreviewCustomImageModal] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(true);
@@ -152,16 +153,9 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
   }, [brandKit, selectedFrame]);
 
   const currentTemplate =
-    templates.find((t) => t.id === selectedTemplateId) ||
+    (selectedTemplateId ? templates.find((t) => t.id === selectedTemplateId) : null) ||
     initialTemplate ||
-    templates[0];
-
-  // Default select first template & first frame when data loads
-  useEffect(() => {
-    if (currentTemplate && !selectedTemplateId) {
-      setSelectedTemplateId(currentTemplate.id);
-    }
-  }, [currentTemplate, selectedTemplateId]);
+    null;
 
   // Default selectedFrame is null (No Frame selected by default)
 
@@ -350,6 +344,27 @@ export const PostCreatorModal = ({ isOpen, onClose, initialTemplate = null }) =>
                     </span>
                   </div>
                 )}
+
+                {/* Option 1: No Template (Clean Canvas) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTemplateId(null);
+                    setCustomBaseImage(null);
+                  }}
+                  className={`p-2 rounded-xl border text-center transition flex flex-col items-center justify-center relative aspect-square cursor-pointer ${
+                    !selectedTemplateId && !customBaseImage
+                      ? 'border-amber-500 bg-amber-500/10 text-white font-bold ring-2 ring-amber-500/50'
+                      : 'border-[#2C384E] bg-[#0B0F17] text-slate-400 hover:border-slate-600'
+                  }`}
+                  title="No template background (Clean AI Canvas)"
+                >
+                  {!selectedTemplateId && !customBaseImage && (
+                    <CheckCircle2 className="w-4 h-4 text-amber-400 absolute top-1.5 right-1.5" />
+                  )}
+                  <ImageOff className="w-6 h-6 text-slate-500 mb-1" />
+                  <span className="text-[11px] leading-tight font-semibold">No Template</span>
+                </button>
 
                 {/* DB Graphic Templates */}
                 {sortedTemplates.map((t) => {

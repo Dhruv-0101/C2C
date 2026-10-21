@@ -34,6 +34,7 @@ import {
   Gift,
   AlertCircle,
   ArrowUpRight,
+  ImageOff,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -44,6 +45,8 @@ import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { CanvasPreview } from './CanvasPreview';
 import { NanoBananaAiGenerator } from './NanoBananaAiGenerator';
 import { AiCaptionGeneratorModal } from './AiCaptionGeneratorModal';
+import { CarouselSlideStrip } from './CarouselSlideStrip';
+import { CarouselSlideEditor } from './CarouselSlideEditor';
 import { useTheme } from '@/shared/hooks';
 
 /**
@@ -116,9 +119,20 @@ export const PostStudioEditorView = ({
   planName = "FREE",
   openPlanModal,
   activateFreeMutation,
+  postFormat = "SINGLE",
+  setPostFormat,
+  carouselSlides = [],
+  activeSlideIndex = 0,
+  setActiveSlideIndex,
+  onAddSlide,
+  onDeleteSlide,
+  onMoveSlide,
+  onUpdateActiveSlide,
+  onOpenAiCarouselModal,
 }) => {
   const { isDark } = useTheme();
   const customFileInputRef = useRef(null);
+
 
   // Step 4 Export Sub-Tab State ('schedule' | 'download')
   const [exportTab, setExportTab] = useState("schedule");
@@ -147,8 +161,14 @@ export const PostStudioEditorView = ({
   // Mobile Studio View Switcher State ('editor' | 'preview')
   const [mobileStudioTab, setMobileStudioTab] = useState('editor');
 
-  // Step 1 Creative Workflow Mode ('AI' | 'TEMPLATES' | 'UPLOAD')
-  const [step1Mode, setStep1Mode] = useState('AI');
+  // Step 1 Creative Workflow Mode ('AI' | 'TEMPLATES' | 'UPLOAD' | 'CAROUSEL')
+  const [step1Mode, setStep1Mode] = useState(postFormat === 'CAROUSEL' ? 'CAROUSEL' : 'AI');
+
+  useEffect(() => {
+    if (postFormat === 'CAROUSEL' && step1Mode !== 'CAROUSEL') {
+      setStep1Mode('CAROUSEL');
+    }
+  }, [postFormat]);
 
   // AI Caption Modal State
   const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
@@ -391,7 +411,24 @@ export const PostStudioEditorView = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep1Mode("UPLOAD")}
+                    onClick={() => {
+                      setStep1Mode("CAROUSEL");
+                      if (setPostFormat) setPostFormat("CAROUSEL");
+                    }}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer whitespace-nowrap min-h-[34px] ${
+                      step1Mode === "CAROUSEL"
+                        ? "bg-amber-500 text-slate-950 font-extrabold shadow-sm"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>🎠 Carousel Deck</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep1Mode("UPLOAD");
+                      if (setPostFormat) setPostFormat("SINGLE");
+                    }}
                     className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer whitespace-nowrap min-h-[34px] ${
                       step1Mode === "UPLOAD"
                         ? "bg-amber-500 text-slate-950 font-extrabold shadow-sm"
@@ -401,6 +438,46 @@ export const PostStudioEditorView = ({
                     <span>📤 Custom Upload</span>
                   </button>
                 </div>
+
+                {/* 🎠 CAROUSEL STUDIO MODE */}
+                {step1Mode === "CAROUSEL" && (
+                  <div className="space-y-4 animate-in fade-in">
+                    {/* Hero AI Deck Generator Card */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-indigo-500/10 to-[#131B2A] border border-amber-500/30 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">
+                            Multi-Slide Carousel Deck
+                          </span>
+                          <h4 className="text-sm font-heading font-extrabold text-white">
+                            Create a Viral Social Media Carousel
+                          </h4>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            Generate complete multi-slide swipeable guides (Hook, step-by-step content points, CTA slide) tailored for {brandKit?.businessName || 'your business'}.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          icon={Sparkles}
+                          onClick={onOpenAiCarouselModal}
+                          className="shrink-0 py-2 px-3 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md cursor-pointer"
+                        >
+                          Generate with AI ✨
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Active Slide Editor */}
+                    <CarouselSlideEditor
+                      activeSlide={carouselSlides[activeSlideIndex]}
+                      activeSlideIndex={activeSlideIndex}
+                      totalSlides={carouselSlides.length}
+                      onChangeSlide={onUpdateActiveSlide}
+                      onOpenAiGenerator={onOpenAiCarouselModal}
+                    />
+                  </div>
+                )}
 
                 {/* 1. NANO BANANA AI CREATOR MODE */}
                 {step1Mode === "AI" && (
@@ -933,8 +1010,87 @@ export const PostStudioEditorView = ({
 
           {/* Graphic Background Templates Grid (Flex Fill Viewport Height - 100% Locked Card Height) */}
           {step1Mode === "TEMPLATES" && (
-            <div className="w-full flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar my-1">
+            <>
+              {/* No Template Quick Toggle Option (Mirrors No Frame design) */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3 py-2 rounded-xl bg-[#0B0F17] border border-[#2C384E] shrink-0 my-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className={`p-1 rounded-full shrink-0 ${!selectedTemplateId && !customBaseImage ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-400"}`}>
+                    {!selectedTemplateId && !customBaseImage ? <CheckCircle2 className="w-3.5 h-3.5" /> : <ImageOff className="w-3.5 h-3.5 text-slate-400" />}
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-slate-200 truncate">
+                      {!selectedTemplateId && !customBaseImage
+                        ? "No Template Selected (Clean AI Canvas)"
+                        : customBaseImage
+                        ? "Custom Upload Active"
+                        : `Selected: ${currentTemplate?.title || "Template Selected"}`}
+                    </p>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      {!selectedTemplateId && !customBaseImage
+                        ? "Clean solid background for AI posts, carousels, or direct frame branding."
+                        : "Graphic template active as canvas background."}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!selectedTemplateId && !customBaseImage) {
+                      if (templates.length > 0) setSelectedTemplateId(templates[0].id);
+                    } else {
+                      setSelectedTemplateId(null);
+                      setCustomBaseImage(null);
+                    }
+                  }}
+                  className={`w-full sm:w-auto px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer min-h-[34px] ${
+                    !selectedTemplateId && !customBaseImage
+                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-sm"
+                      : "bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                  }`}
+                >
+                  {!selectedTemplateId && !customBaseImage ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>No Template Active</span>
+                    </>
+                  ) : (
+                    <>
+                      <X className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Remove Template</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="w-full flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar my-1">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {/* Option: No Template (Clean Canvas) Card */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedTemplateId(null);
+                      setCustomBaseImage(null);
+                    }}
+                    className={`relative aspect-square rounded-xl border p-2 overflow-hidden transition group flex flex-col items-center justify-center text-center cursor-pointer ${
+                      !selectedTemplateId && !customBaseImage
+                        ? "border-amber-500 bg-gradient-to-b from-amber-500/20 to-[#131B2A] ring-2 ring-amber-500/50 shadow-glow"
+                        : "border-[#2C384E] bg-[#0B0F17] hover:border-slate-500"
+                    }`}
+                    title="Use clean canvas without template background"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                      <ImageOff className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-200">No Template</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">Clean AI Canvas</p>
+                    {!selectedTemplateId && !customBaseImage && (
+                      <div className="absolute top-2 right-2 p-1 rounded-full bg-amber-500 text-slate-950 font-bold shadow-lg">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                  </button>
+
                   {/* Pinned Active Custom Upload Card */}
                   {customBaseImage && (
                     <div
@@ -1025,7 +1181,8 @@ export const PostStudioEditorView = ({
                   )}
                 </div>
               </div>
-            )}
+            </>
+          )}
 
             {/* Pagination */}
             {step1Mode === "TEMPLATES" && templatesMeta && (
@@ -1762,13 +1919,13 @@ export const PostStudioEditorView = ({
                       <div className="flex justify-between items-center">
                         <span className="text-slate-400 font-semibold">Base Graphic:</span>
                         <span className="text-white font-bold truncate max-w-[200px] text-right">
-                          {currentTemplate?.title || "Custom Graphic"}
+                          {currentTemplate?.title || (customBaseImage ? "Custom Graphic" : "No Template (Clean Canvas)")}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-400 font-semibold">Brand Overlay:</span>
                         <span className="text-amber-400 font-bold truncate max-w-[200px] text-right">
-                          {selectedFrame?.title || "No Frame (Template Only)"}
+                          {selectedFrame?.title || "No Frame"}
                         </span>
                       </div>
                     </div>
@@ -1825,8 +1982,8 @@ export const PostStudioEditorView = ({
         </div>
 
         {/* RIGHT COLUMN (6 Cols): Persistent Live Real-Time Preview Stage */}
-        <div className={`lg:col-span-6 flex flex-col min-h-[420px] lg:h-[570px] lg:sticky lg:top-6 ${mobileStudioTab === "editor" ? "hidden lg:flex" : "flex"}`}>
-          <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between min-h-[420px] lg:h-[570px] lg:min-h-[570px] lg:max-h-[570px] overflow-hidden shrink-0 gap-2.5 shadow-2xl">
+        <div className={`lg:col-span-6 flex flex-col gap-3.5 ${mobileStudioTab === "editor" ? "hidden lg:flex" : "flex"}`}>
+          <Card className="p-3.5 sm:p-5 bg-[#131B2A] border-[#2C384E] flex flex-col justify-between shrink-0 gap-2.5 shadow-2xl">
             {/* Header matching Left Wizard Steps */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#2C384E] pb-2.5 shrink-0">
               <div className="min-w-0">
@@ -1835,10 +1992,47 @@ export const PostStudioEditorView = ({
                   <span className="truncate">Live Preview</span>
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                  1080×1080 HD composited view.
+                  {postFormat === "CAROUSEL"
+                    ? `Slide ${activeSlideIndex + 1} of ${carouselSlides.length} • 1080×1080 HD`
+                    : "1080×1080 HD composited view."}
                 </p>
               </div>
               <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                {/* Format Toggle Pill */}
+                <div className="flex items-center bg-[#0B0F17] p-0.5 rounded-xl border border-[#2C384E]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (setPostFormat) setPostFormat("SINGLE");
+                      setStep1Mode("AI");
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                      postFormat === "SINGLE"
+                        ? "bg-amber-500 text-slate-950 shadow-sm"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    Single
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (setPostFormat) setPostFormat("CAROUSEL");
+                      setStep1Mode("CAROUSEL");
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer ${
+                      postFormat === "CAROUSEL"
+                        ? "bg-amber-500 text-slate-950 shadow-sm"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>🎠 Carousel</span>
+                    <span className="px-1 py-0.2 rounded-full bg-slate-900/50 text-[9px]">
+                      {carouselSlides?.length || 5}
+                    </span>
+                  </button>
+                </div>
+
                 <span className="px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-extrabold flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>1080×1080 HD</span>
@@ -1853,11 +2047,30 @@ export const PostStudioEditorView = ({
             <div className="mt-auto shrink-0 pt-2 border-t border-[#2C384E] w-full flex items-center justify-between text-xs text-slate-400 px-1">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-semibold text-slate-300">Live HD Compositor</span>
+                <span className="font-semibold text-slate-300">
+                  {postFormat === "CAROUSEL"
+                    ? `Carousel Slide ${activeSlideIndex + 1}`
+                    : "Live HD Compositor"}
+                </span>
               </div>
               <span className="text-[11px] font-mono text-slate-400">1080×1080 • Square PNG</span>
             </div>
           </Card>
+
+          {/* Carousel Slide Strip placed right below the Canvas Card */}
+          {postFormat === "CAROUSEL" && (
+            <div className="w-full">
+              <CarouselSlideStrip
+                slides={carouselSlides}
+                activeSlideIndex={activeSlideIndex}
+                onSelectSlide={(idx) => setActiveSlideIndex && setActiveSlideIndex(idx)}
+                onAddSlide={onAddSlide}
+                onDeleteSlide={onDeleteSlide}
+                onMoveSlide={onMoveSlide}
+                onOpenAiGenerator={onOpenAiCarouselModal}
+              />
+            </div>
+          )}
         </div>
       </div>
 

@@ -53,7 +53,12 @@ export const App = () => {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <GoogleOAuthProvider clientId={googleClientId}>
-          <BrowserRouter>
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
             <AppContent />
           </BrowserRouter>
         </GoogleOAuthProvider>

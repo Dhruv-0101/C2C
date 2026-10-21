@@ -88,3 +88,9 @@ export const AI_JOB_STEPS = Object.freeze({
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',
 });
+
+// 🎠 Carousel Deck Generation Constants
+export const MIN_CAROUSEL_SLIDES = 2;
+export const MAX_CAROUSEL_SLIDES = 10;
+export const DEFAULT_CAROUSEL_SLIDES = 5;
+

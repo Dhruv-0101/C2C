@@ -396,3 +396,288 @@ export function getCuratedAestheticFallback({ prompt = '', style = '', categoryN
   // Universal premium commercial backdrop
   return 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
 }
+
+/**
+ * 🎠 BUILD CAROUSEL GENERATION PROMPT
+ * Instructs LLM (Gemini) to return a strictly validated JSON structure for multi-slide carousel decks.
+ *
+ * @param {Object} context - Live BrandKit details
+ * @param {Object} params - User request parameters
+ * @returns {string} Formatted prompt string requesting JSON output
+ */
+export function buildCarouselPrompt(context = {}, params = {}) {
+  const numberOfSlides = Math.max(2, Math.min(10, Number(params.numberOfSlides) || 5));
+  const topic = params.topic || 'Essential Business Tips';
+  const industry = params.industry || context.categoryName || 'General Business';
+  const targetAudience = params.targetAudience || context.targetAudience || 'General Audience';
+  const language = params.language || context.captionLanguage || 'English';
+  const tone = params.tone || 'PROMOTIONAL';
+
+  return `You are a world-class viral social media strategist specializing in high-converting Instagram and LinkedIn carousels.
+Create a high-impact, swipeable ${numberOfSlides}-slide carousel deck on the topic: "${topic}".
+
+Target Parameters:
+- Industry/Niche: ${industry}
+- Brand Name: "${context.businessName || 'Our Brand'}"
+- Tagline: "${context.tagline || ''}"
+- Target Audience: ${targetAudience}
+- Tone: ${tone}
+- Language: ${language}
+
+Slide Structure Requirements:
+- Slide 1 MUST be a HOOK slide (punchy, high-curiosity headline, clear promise of value, swipe indicator).
+- Slides 2 to ${numberOfSlides - 1} MUST be CONTENT slides (actionable tips, concise breakdown, digestible points).
+- Slide ${numberOfSlides} MUST be a CTA slide (recap, invitation to save/share/comment, contact/follow details).
+
+Format Requirements:
+Output ONLY a raw, valid JSON object without markdown code fencing, adhering strictly to this JSON schema:
+{
+  "title": "Short punchy title for this carousel deck",
+  "caption": "Compelling caption with emojis and call to action for the post",
+  "hashtags": ["#Tag1", "#Tag2", "#Tag3", "#Tag4", "#Tag5", "#Tag6", "#Tag7", "#Tag8"],
+  "slides": [
+    {
+      "slideNumber": 1,
+      "slideType": "HOOK",
+      "tagText": "SWIPE TO DISCOVER 👉",
+      "title": "Bold Catchy Title (Max 6-8 words)",
+      "subtitle": "Clear, compelling subtitle explaining why this matters",
+      "bulletPoints": [
+        "First key takeaway or hook teaser",
+        "Second teaser promising high value"
+      ],
+      "bgQuery": "relevant visual search keyword for this slide"
+    }
+  ]
+}
+Ensure exactly ${numberOfSlides} slide objects in the "slides" array. Output pure JSON only.`;
+}
+
+/**
+ * 🎠 SANITIZE CAROUSEL RESPONSE
+ * Validates, cleans, and structures raw LLM JSON output to match our strict Carousel schema.
+ *
+ * @param {Object} rawData
+ * @param {number} requestedSlides
+ * @returns {{ title: string, caption: string, hashtags: Array<string>, slides: Array<Object> }}
+ */
+export function sanitizeCarouselResponse(rawData = {}, requestedSlides = 5) {
+  const title = typeof rawData.title === 'string' && rawData.title.trim()
+    ? rawData.title.trim()
+    : 'Social Media Carousel';
+
+  const caption = typeof rawData.caption === 'string' && rawData.caption.trim()
+    ? rawData.caption.trim()
+    : 'Check out this swipeable carousel guide! 👉 Swipe through and save for later.';
+
+  const hashtags = Array.isArray(rawData.hashtags) && rawData.hashtags.length > 0
+    ? rawData.hashtags.map((tag) => (tag.startsWith('#') ? tag.trim() : `#${tag.trim()}`))
+    : [...DEFAULT_FALLBACK_HASHTAGS];
+
+  let rawSlides = Array.isArray(rawData.slides) ? rawData.slides : [];
+
+  // Guarantee slides array has valid items
+  if (rawSlides.length === 0) {
+    rawSlides = [
+      {
+        slideNumber: 1,
+        slideType: 'HOOK',
+        tagText: 'SWIPE TO LEARN',
+        title: title,
+        subtitle: 'Swipe through to learn more 👉',
+        bulletPoints: ['Essential key insights', 'Save this post for reference'],
+        bgQuery: 'business growth technology',
+      },
+      {
+        slideNumber: 2,
+        slideType: 'CTA',
+        tagText: 'TAKE ACTION',
+        title: 'Thank You For Reading',
+        subtitle: 'Share your thoughts in the comments below!',
+        bulletPoints: ['Follow for daily tips', 'Save & share with friends'],
+        bgQuery: 'success celebration office',
+      },
+    ];
+  }
+
+  const slides = rawSlides.map((slide, index) => {
+    const slideNumber = index + 1;
+    const isFirst = slideNumber === 1;
+    const isLast = slideNumber === rawSlides.length;
+
+    const defaultType = isFirst ? 'HOOK' : isLast ? 'CTA' : 'CONTENT';
+    const slideType = ['HOOK', 'CONTENT', 'CTA'].includes(slide.slideType)
+      ? slide.slideType
+      : defaultType;
+
+    const defaultTag = isFirst ? 'SWIPE TO LEARN 👉' : isLast ? 'SAVE & SHARE 🔖' : `STEP ${slideNumber - 1}`;
+    const tagText = typeof slide.tagText === 'string' && slide.tagText.trim()
+      ? slide.tagText.trim()
+      : defaultTag;
+
+    const slideTitle = typeof slide.title === 'string' && slide.title.trim()
+      ? slide.title.trim()
+      : `Slide ${slideNumber}`;
+
+    const subtitle = typeof slide.subtitle === 'string' ? slide.subtitle.trim() : '';
+
+    const bulletPoints = Array.isArray(slide.bulletPoints)
+      ? slide.bulletPoints.filter((bp) => typeof bp === 'string' && bp.trim().length > 0).map((bp) => bp.trim())
+      : [];
+
+    return {
+      slideNumber,
+      slideType,
+      tagText,
+      title: slideTitle,
+      subtitle,
+      bulletPoints: bulletPoints.length > 0 ? bulletPoints : ['Swipe to continue'],
+      bgQuery: typeof slide.bgQuery === 'string' ? slide.bgQuery.trim() : '',
+    };
+  });
+
+  return {
+    title,
+    caption,
+    hashtags,
+    slides,
+  };
+}
+
+/**
+ * 🎠 HIGH-PERFORMANCE SMART CAROUSEL SYNTHESIZER
+ * Zero-config instantaneous fallback providing high-converting multi-slide decks
+ * without requiring external LLM API calls.
+ *
+ * @param {Object} context - Live BrandKit context
+ * @param {Object} params - User request params
+ * @returns {Object} Structured carousel deck
+ */
+export function synthesizeSmartCarousel(context = {}, params = {}) {
+  const numberOfSlides = Math.max(2, Math.min(10, Number(params.numberOfSlides) || 5));
+  const topic = params.topic || 'Transform Your Business Strategy';
+  const businessName = context.businessName || 'Our Brand';
+  const categoryName = params.industry || context.categoryName || 'Business';
+
+  const slides = [];
+
+  // Slide 1: Hook
+  slides.push({
+    slideNumber: 1,
+    slideType: 'HOOK',
+    tagText: 'SWIPE TO LEARN 👉',
+    title: `${topic}: The Complete Step-by-Step Guide`,
+    subtitle: `Simple, proven strategies you can implement right now. Swipe to begin 👉`,
+    bulletPoints: [
+      'Save this post so you don’t lose it',
+      'Actionable insights tailored for you',
+    ],
+    bgQuery: `${categoryName} presentation modern minimal`,
+  });
+
+  // Middle Content Slides
+  const sampleInsights = [
+    {
+      title: '1. Establish Clear Foundations',
+      subtitle: 'Success starts with standardizing your daily workflows',
+      bullets: [
+        'Identify high-impact activities first',
+        'Eliminate repetitive bottlenecks with smart tools',
+      ],
+    },
+    {
+      title: '2. Prioritize Consistent Execution',
+      subtitle: 'Small compounded daily habits beat sporadic perfection',
+      bullets: [
+        'Set daily non-negotiable milestones',
+        'Track and measure weekly key indicators',
+      ],
+    },
+    {
+      title: '3. Leverage Modern Digital Solutions',
+      subtitle: 'Speed and agility define the top 1% in any field',
+      bullets: [
+        'Adopt automated workflows to save hours',
+        'Deliver exceptional client satisfaction consistently',
+      ],
+    },
+    {
+      title: '4. Continuous Optimization & Feedback',
+      subtitle: 'Listen closely to client and audience signals',
+      bullets: [
+        'Collect honest feedback regularly',
+        'Refine your offerings based on real data',
+      ],
+    },
+    {
+      title: '5. Scale With Confidence',
+      subtitle: 'Build repeatable systems that grow with your ambitions',
+      bullets: [
+        'Delegate low-leverage routine tasks',
+        'Focus on long-term brand equity and relationships',
+      ],
+    },
+    {
+      title: '6. Maintain Quality Under Growth',
+      subtitle: 'Never compromise core standards as volume increases',
+      bullets: [
+        'Document standard operating procedures',
+        'Invest in continuous learning and skill growth',
+      ],
+    },
+  ];
+
+  for (let i = 2; i < numberOfSlides; i++) {
+    const insightIndex = (i - 2) % sampleInsights.length;
+    const insight = sampleInsights[insightIndex];
+    slides.push({
+      slideNumber: i,
+      slideType: 'CONTENT',
+      tagText: `STEP ${i - 1} OF ${numberOfSlides - 2}`,
+      title: insight.title,
+      subtitle: insight.subtitle,
+      bulletPoints: insight.bullets,
+      bgQuery: `${categoryName} creative minimal`,
+    });
+  }
+
+  // Final Slide: CTA
+  slides.push({
+    slideNumber: numberOfSlides,
+    slideType: 'CTA',
+    tagText: 'SAVE & SHARE 🔖',
+    title: 'Ready To Level Up Your Game?',
+    subtitle: `Connect with ${businessName} to turn these ideas into measurable results.`,
+    bulletPoints: [
+      `Double-tap if you found this valuable ❤️`,
+      `Share this carousel with a colleague who needs this 🚀`,
+      `Follow @${businessName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'brandflow'} for more!`,
+    ],
+    bgQuery: `${categoryName} celebration achievement office`,
+  });
+
+  const baseTag = businessName.replace(/[^a-zA-Z0-9]/g, '');
+  const categoryTag = categoryName.replace(/[^a-zA-Z0-9]/g, '');
+  const topicTag = topic.replace(/[^a-zA-Z0-9]/g, '');
+
+  const hashtags = [
+    `#${baseTag || 'BrandFlow'}`,
+    `#${categoryTag || 'Marketing'}`,
+    `#${topicTag || 'GrowthTips'}`,
+    '#CarouselTips',
+    '#ContentCreator',
+    '#BusinessGrowth',
+    '#LearnOnInstagram',
+    '#ValuePost',
+  ];
+
+  const caption = `📊 ${topic}\n\nSwipe through this comprehensive guide to discover our step-by-step breakdown! 👉\n\nWhich slide resonated most with you? Let us know in the comments below! 👇\n\n🔖 Save this post for future reference and share it with someone who needs to see this!\n\n✨ Brought to you by ${businessName}.`;
+
+  return {
+    title: topic,
+    caption,
+    hashtags,
+    slides,
+  };
+}
+

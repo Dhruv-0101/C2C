@@ -130,6 +130,7 @@ export const API_ENDPOINTS = {
   AI: {
     GENERATE_CAPTION: '/ai/generate-caption',
     GENERATE_IMAGE: '/ai/generate-image',
+    GENERATE_CAROUSEL: '/ai/generate-carousel',
     JOB_STATUS: (jobId) => `/ai/jobs/${jobId}/status`,
   },
   CATEGORIES: {

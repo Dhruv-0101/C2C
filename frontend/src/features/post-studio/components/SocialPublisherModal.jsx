@@ -13,6 +13,9 @@ import {
   Flame,
   AlertTriangle,
   Zap,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
@@ -68,6 +71,18 @@ export const SocialPublisherModal = ({
     postData?.caption || postData?.captions?.[0]?.captionText || ""
   );
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [previewSlideIndex, setPreviewSlideIndex] = useState(0);
+
+  const previewSlides = Array.isArray(postData?.base64Slides) && postData.base64Slides.length > 0
+    ? postData.base64Slides
+    : Array.isArray(postData?.mediaUrls) && postData.mediaUrls.length > 0
+    ? postData.mediaUrls
+    : postData?.base64Graphic || postData?.finalGraphicUrl
+    ? [postData.base64Graphic || postData.finalGraphicUrl]
+    : [];
+
+  const isCarousel = postData?.postType === "CAROUSEL" || previewSlides.length > 1;
+
 
   const {
     instagramAccount,
@@ -305,6 +320,77 @@ export const SocialPublisherModal = ({
                   <span>Go to Integrations Page</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
+              </div>
+            )}
+
+            {/* Visual Media Preview (Swipeable for Carousel Decks) */}
+            {previewSlides.length > 0 && (
+              <div className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3">
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-700 shrink-0 bg-slate-900 group">
+                  <img
+                    src={previewSlides[previewSlideIndex]}
+                    alt={`Slide ${previewSlideIndex + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {isCarousel && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-between px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewSlideIndex((prev) =>
+                            prev > 0 ? prev - 1 : previewSlides.length - 1
+                          )
+                        }
+                        className="p-1 rounded bg-black/60 text-white hover:text-amber-400"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewSlideIndex((prev) =>
+                            prev < previewSlides.length - 1 ? prev + 1 : 0
+                          )
+                        }
+                        className="p-1 rounded bg-black/60 text-white hover:text-amber-400"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-mono text-[10px] font-bold border border-amber-500/30">
+                      {isCarousel ? `🎠 CAROUSEL (${previewSlides.length} SLIDES)` : '🖼️ SINGLE POST'}
+                    </span>
+                    {isCarousel && (
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        Viewing Slide {previewSlideIndex + 1}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-bold text-white truncate">
+                    {postData?.occasionName || postData?.template?.title || 'Social Post Graphic'}
+                  </p>
+                  {isCarousel && (
+                    <div className="flex items-center gap-1 pt-0.5">
+                      {previewSlides.map((_, dotIdx) => (
+                        <button
+                          key={dotIdx}
+                          type="button"
+                          onClick={() => setPreviewSlideIndex(dotIdx)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            dotIdx === previewSlideIndex
+                              ? 'bg-amber-400 w-4'
+                              : 'bg-slate-700 hover:bg-slate-500'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

@@ -122,6 +122,9 @@ export const processPostJob = async (jobData) => {
       }
     }
 
+    let targetPostType = jobData.postType || 'SINGLE';
+    let targetMediaUrls = Array.isArray(jobData.mediaUrls) ? jobData.mediaUrls : [];
+
     if (targetPostId) {
       try {
         const freshPost = await prisma.post.findUnique({
@@ -129,12 +132,20 @@ export const processPostJob = async (jobData) => {
           select: {
             finalGraphicUrl: true,
             customImageUrl: true,
+            postType: true,
+            mediaUrls: true,
             occasionName: true,
             captions: { select: { captionText: true }, take: 1 },
           },
         });
         if (freshPost?.finalGraphicUrl) {
           finalGraphicUrl = freshPost.finalGraphicUrl;
+        }
+        if (freshPost?.postType) {
+          targetPostType = freshPost.postType;
+        }
+        if (Array.isArray(freshPost?.mediaUrls) && freshPost.mediaUrls.length > 0) {
+          targetMediaUrls = freshPost.mediaUrls;
         }
         if (freshPost?.captions?.[0]?.captionText) {
           finalPostContent = freshPost.captions[0].captionText;
@@ -144,12 +155,14 @@ export const processPostJob = async (jobData) => {
       }
     }
 
-    // Call Live Social Publisher Service (with Instagram Meta Graph API support)
+    // Call Live Social Publisher Service (with Instagram Carousel & Meta Graph API support)
     const publishResult = await liveSocialPublisherService.publishToPlatforms({
       postId: postId || scheduledPostId,
       userId,
       postContent: finalPostContent,
       graphicUrl: finalGraphicUrl,
+      postType: targetPostType,
+      mediaUrls: targetMediaUrls,
       targetPlatforms: targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],
     });
 

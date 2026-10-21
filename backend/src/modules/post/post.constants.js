@@ -3,6 +3,13 @@
  * Central single source of truth for Post status lifecycles, target platforms, and sorting options.
  */
 
+// Post Format Types (Prisma PostType Enum)
+export const POST_TYPE = Object.freeze({
+  SINGLE: 'SINGLE',
+  CAROUSEL: 'CAROUSEL',
+});
+export const POST_TYPES = Object.freeze(Object.values(POST_TYPE));
+
 // Post Asset Lifecycle Statuses (Prisma PostStatus Enum)
 export const POST_STATUS = Object.freeze({
   DRAFT: 'DRAFT',

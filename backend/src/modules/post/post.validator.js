@@ -3,6 +3,7 @@ import { paginationQuerySchema } from '../../common/helpers/pagination.helper.js
 import {
   POST_STATUSES,
   POST_TARGET_PLATFORMS,
+  POST_TYPES,
 } from './post.constants.js';
 
 /**
@@ -29,6 +30,7 @@ export const createPostSchema = z.object({
     festivalId: optionalIdSchema,
     frameId: optionalIdSchema,
     categoryId: optionalIdSchema,
+    postType: z.enum(POST_TYPES).default('SINGLE'),
     occasionName: z.string().trim().max(200).optional().nullable(),
     caption: z.string().trim().optional().nullable(),
     hashtags: z.array(z.string().trim()).optional().nullable(),
@@ -36,6 +38,9 @@ export const createPostSchema = z.object({
     finalGraphicUrl: z.string().optional().nullable(),
     base64Graphic: z.string().optional().nullable(),
     base64Image: z.string().optional().nullable(),
+    mediaUrls: z.array(z.string()).optional().default([]),
+    base64Slides: z.array(z.string()).optional().default([]),
+    slides: z.any().optional().nullable(),
     userConfigJson: z.any().optional().nullable(),
     status: z.enum(POST_STATUSES).default('DRAFT'),
   }),

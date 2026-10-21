@@ -10,6 +10,9 @@ import {
   DEFAULT_AI_IMAGE_STYLE,
   AI_ASPECT_RATIOS,
   DEFAULT_AI_ASPECT_RATIO,
+  MIN_CAROUSEL_SLIDES,
+  MAX_CAROUSEL_SLIDES,
+  DEFAULT_CAROUSEL_SLIDES,
 } from './ai.constants.js';
 
 /**
@@ -54,3 +57,25 @@ export const getAiJobStatusSchema = z.object({
     })
     .optional(),
 });
+
+export const generateCarouselSchema = z.object({
+  body: z.object({
+    topic: z
+      .string({ required_error: 'Topic is required' })
+      .trim()
+      .min(3, 'Topic must be at least 3 characters')
+      .max(500, 'Topic must be under 500 characters'),
+    numberOfSlides: z
+      .number({ invalid_type_error: 'numberOfSlides must be a number' })
+      .int()
+      .min(MIN_CAROUSEL_SLIDES, `Minimum ${MIN_CAROUSEL_SLIDES} slides required`)
+      .max(MAX_CAROUSEL_SLIDES, `Maximum ${MAX_CAROUSEL_SLIDES} slides allowed`)
+      .optional()
+      .default(DEFAULT_CAROUSEL_SLIDES),
+    tone: z.enum(AI_TONES).optional().default(DEFAULT_AI_TONE),
+    language: z.enum(AI_SUPPORTED_LANGUAGES).optional().default(DEFAULT_AI_LANGUAGE),
+    industry: z.string().trim().optional(),
+    targetAudience: z.string().trim().optional(),
+  }),
+});
+

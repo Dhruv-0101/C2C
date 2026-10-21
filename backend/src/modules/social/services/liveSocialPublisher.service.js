@@ -16,7 +16,9 @@ export const liveSocialPublisherService = {
    * @param {string} params.postId - Database ID of post
    * @param {string} params.userId - Owner user ID
    * @param {string} params.postContent - Caption / title text
-   * @param {string} params.graphicUrl - Public Cloudinary image URL
+   * @param {string} [params.graphicUrl] - Public Cloudinary image URL
+   * @param {string[]} [params.mediaUrls] - Public Cloudinary slide image URLs for carousels
+   * @param {string} [params.postType] - Format type: 'SINGLE' | 'CAROUSEL'
    * @param {string[]} params.targetPlatforms - Array of target platforms e.g. ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN']
    * @returns {Promise<{ success: boolean, publishedAt: string, platformResults: Object }>}
    */
@@ -25,10 +27,12 @@ export const liveSocialPublisherService = {
     userId,
     postContent,
     graphicUrl,
+    mediaUrls = [],
+    postType = 'SINGLE',
     targetPlatforms,
   }) => {
     logger.info(
-      `🚀 [LiveSocialPublisher] Routing live publish job for Post ID: ${postId} across: ${targetPlatforms.join(', ')}`
+      `🚀 [LiveSocialPublisher] Routing live publish job (${postType}) for Post ID: ${postId} across: ${targetPlatforms.join(', ')}`
     );
 
     const platformResults = {};
@@ -81,6 +85,7 @@ export const liveSocialPublisherService = {
             igUserId: account.platformUserId,
             accessToken: decryptedToken,
             graphicUrl,
+            mediaUrls,
             caption: postContent,
           });
           platformResults.INSTAGRAM = {
