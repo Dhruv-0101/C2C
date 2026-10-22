@@ -10,6 +10,7 @@ export { AdminSubAdminsPage } from "./pages/AdminSubAdminsPage";
 export { AdminSubAdminActivityPage } from "./pages/AdminSubAdminActivityPage";
 export { AdminFinancePage } from "./pages/AdminFinancePage";
 export { AdminPostsPage } from "./pages/AdminPostsPage";
+export { AdminBroadcastsPage } from "./pages/AdminBroadcastsPage";
 export { default as AdminDashboardPageDefault } from "./pages/AdminDashboardPage";
 export * from "./components/AdminStatsHeader";
 export * from "./finance";
@@ -21,3 +22,5 @@ export * from "./sub-admins";
 export * from "./festivals";
 export * from "./frames";
 export * from "./posts";
+export * from "./broadcasts";
+

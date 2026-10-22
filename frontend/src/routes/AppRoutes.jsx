@@ -128,6 +128,11 @@ const AdminPostsPage = lazy(() =>
     default: m.AdminPostsPage || m.default,
   }))
 );
+const AdminBroadcastsPage = lazy(() =>
+  import("../features/admin/pages/AdminBroadcastsPage").then((m) => ({
+    default: m.AdminBroadcastsPage || m.default,
+  }))
+);
 const BrandKitPage = lazy(() =>
   import("../features/brandkit/pages/BrandKitPage").then((m) => ({
     default: m.BrandKitPage || m.default,
@@ -272,6 +277,9 @@ export const AppRoutes = () => {
             <Route element={<ProtectedRoute requireTab={ADMIN_TABS.POSTS} />}>
               <Route path="/admin/posts" element={<AdminPostsPage />} />
             </Route>
+
+            {/* Admin Broadcast Announcements & Push Campaigns */}
+            <Route path="/admin/broadcasts" element={<AdminBroadcastsPage />} />
 
             {/* SuperAdmin Exclusive Privileged Routes */}
             <Route element={<ProtectedRoute requireSuperAdmin />}>

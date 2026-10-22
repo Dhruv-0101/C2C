@@ -126,6 +126,18 @@ const envSchema = z.object({
   // AI API Keys
   OPENAI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+
+  // Web Push (VAPID) Keys for Browser & Mobile Push Notifications (OWASP: Secrets loaded strictly from .env)
+  VAPID_PUBLIC_KEY: z
+    .string()
+    .min(20, 'VAPID_PUBLIC_KEY is required in .env for web push notifications'),
+  VAPID_PRIVATE_KEY: z
+    .string()
+    .min(20, 'VAPID_PRIVATE_KEY is required in .env for web push notifications'),
+  VAPID_SUBJECT: z
+    .string()
+    .min(5, 'VAPID_SUBJECT must be a valid mailto: or https: URL')
+    .default('mailto:support@brandflow.in'),
 });
 
 

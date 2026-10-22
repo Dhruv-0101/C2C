@@ -7,8 +7,14 @@ import {
 } from './workers/post.worker.js';
 import { analyticsWorkerInstance, processAnalyticsJob } from './workers/analytics.worker.js';
 import { aiImageWorkerInstance, aiCaptionWorkerInstance } from './workers/ai.worker.js';
+import { notificationWorker } from './workers/notification.worker.js';
 import { initCronDispatcher, stopCronDispatcher, triggerScheduledPostsNow } from './cron/postCron.job.js';
 import { initAnalyticsCron, stopAnalyticsCron, syncAnalyticsMetrics } from './cron/analyticsCron.job.js';
+import {
+  initFestivalNotificationCron,
+  stopFestivalNotificationCron,
+  triggerFestivalNotificationNow,
+} from './cron/festivalNotificationCron.job.js';
 import { logger } from '../config/logger.js';
 
 /**
@@ -23,6 +29,9 @@ export function initWorkers() {
 
   // 2. Start 15-minute Social Analytics Sync Cron (*/15 * * * *)
   initAnalyticsCron();
+
+  // 3. Start Daily 9:00 AM Festival Advance Notification Cron (0 9 * * *)
+  initFestivalNotificationCron();
 }
 
 /**
@@ -34,9 +43,11 @@ export async function closeWorkers() {
   // Stop scheduled cron tasks
   stopCronDispatcher();
   stopAnalyticsCron();
+  stopFestivalNotificationCron();
 
   // Close BullMQ worker consumers cleanly
   if (emailWorker) await emailWorker.close().catch(() => {});
+  if (notificationWorker) await notificationWorker.close().catch(() => {});
   if (instantWorkerInstance) await instantWorkerInstance.close().catch(() => {});
   if (scheduledWorkerInstance) await scheduledWorkerInstance.close().catch(() => {});
   if (workerInstance && workerInstance !== scheduledWorkerInstance) await workerInstance.close().catch(() => {});
@@ -58,9 +69,13 @@ export {
   analyticsWorkerInstance,
   aiImageWorkerInstance,
   aiCaptionWorkerInstance,
+  notificationWorker,
   initCronDispatcher,
   stopCronDispatcher,
   initAnalyticsCron,
   stopAnalyticsCron,
+  initFestivalNotificationCron,
+  stopFestivalNotificationCron,
+  triggerFestivalNotificationNow,
 };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, ArrowLeft, LogOut } from 'lucide-react';
+import { NotificationBell } from '@/features/notifications';
 
 /**
  * Topbar with security status banner, mobile trigger & admin profile actions
@@ -43,6 +44,8 @@ export const AdminHeader = ({ user, isSuperAdmin, onOpenMobile, onLogout }) => {
 
       {/* Right Action Bar */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <NotificationBell />
+
         <button
           onClick={() => navigate('/dashboard')}
           className="px-2.5 sm:px-3 py-1.5 rounded-xl border border-[#2C384E] bg-[#0B0F17] hover:border-amber-500/50 text-xs font-semibold text-slate-300 hover:text-white transition flex items-center gap-1.5 sm:gap-2 cursor-pointer"
