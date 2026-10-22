@@ -59,6 +59,7 @@ export const AI_IMAGE_MODELS = Object.freeze({
 });
 
 export const AI_IMAGE_STYLES = Object.freeze([
+  'None',
   'Photorealistic',
   'Festive Luxury',
   'Modern Minimalist',
@@ -89,8 +90,4 @@ export const AI_JOB_STEPS = Object.freeze({
   FAILED: 'FAILED',
 });
 
-// 🎠 Carousel Deck Generation Constants
-export const MIN_CAROUSEL_SLIDES = 2;
-export const MAX_CAROUSEL_SLIDES = 10;
-export const DEFAULT_CAROUSEL_SLIDES = 5;
 

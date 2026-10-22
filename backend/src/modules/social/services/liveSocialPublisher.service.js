@@ -17,8 +17,8 @@ export const liveSocialPublisherService = {
    * @param {string} params.userId - Owner user ID
    * @param {string} params.postContent - Caption / title text
    * @param {string} [params.graphicUrl] - Public Cloudinary image URL
-   * @param {string[]} [params.mediaUrls] - Public Cloudinary slide image URLs for carousels
-   * @param {string} [params.postType] - Format type: 'SINGLE' | 'CAROUSEL'
+   * @param {string[]} [params.mediaUrls] - Array of public Cloudinary image URLs
+   * @param {string} [params.postType] - Format type: 'SINGLE'
    * @param {string[]} params.targetPlatforms - Array of target platforms e.g. ['INSTAGRAM', 'FACEBOOK', 'LINKEDIN']
    * @returns {Promise<{ success: boolean, publishedAt: string, platformResults: Object }>}
    */

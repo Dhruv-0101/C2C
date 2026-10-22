@@ -155,7 +155,7 @@ export const processPostJob = async (jobData) => {
       }
     }
 
-    // Call Live Social Publisher Service (with Instagram Carousel & Meta Graph API support)
+    // Call Live Social Publisher Service (with Meta Graph & LinkedIn API support)
     const publishResult = await liveSocialPublisherService.publishToPlatforms({
       postId: postId || scheduledPostId,
       userId,

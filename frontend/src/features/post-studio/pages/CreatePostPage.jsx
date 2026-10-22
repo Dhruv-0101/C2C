@@ -7,7 +7,7 @@ import { useTemplateCategories } from '@/features/admin/template-categories/hook
 import { useFrames } from '@/features/admin/frames/hooks/useFrames';
 import { useFestivals } from '@/features/calendar/hooks/useFestivals';
 import { useBrandKit } from '@/features/brandkit/hooks/useBrandKit';
-import { useCanvasCompositor, renderSlideOffscreen } from '@/features/post-studio/hooks/useCanvasCompositor';
+import { useCanvasCompositor } from '@/features/post-studio/hooks/useCanvasCompositor';
 import { useSubscription } from '@/features/billing/hooks/useSubscription';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { QUERY_KEYS } from '@/shared/constants';
@@ -15,55 +15,6 @@ import { PostStudioEditorView } from "../components/PostStudioEditorView";
 import { SocialPublisherModal } from "../components/SocialPublisherModal";
 import { PlanSelectionModal } from "@/features/billing/components/PlanSelectionModal";
 import { PaymentSuccessModal } from "@/features/billing/components/PaymentSuccessModal";
-import { AiCarouselGeneratorModal } from "../components/AiCarouselGeneratorModal";
-
-const DEFAULT_CAROUSEL_SLIDES = [
-  {
-    id: "slide-1",
-    slideNumber: 1,
-    slideType: "HOOK",
-    tagText: "SWIPE TO LEARN 👉",
-    title: "5 Essential Strategies For Success",
-    subtitle: "Proven actionable advice you can implement today",
-    bulletPoints: ["Save this post for later", "Compounded daily habits beat sporadic effort"],
-  },
-  {
-    id: "slide-2",
-    slideNumber: 2,
-    slideType: "CONTENT",
-    tagText: "STEP 1",
-    title: "1. Establish Clear Priorities",
-    subtitle: "Focus on high-leverage activities first",
-    bulletPoints: ["Eliminate non-essential distractions", "Set daily non-negotiable milestones"],
-  },
-  {
-    id: "slide-3",
-    slideNumber: 3,
-    slideType: "CONTENT",
-    tagText: "STEP 2",
-    title: "2. Leverage Smart Tools",
-    subtitle: "Automation frees up valuable strategic headspace",
-    bulletPoints: ["Automate repetitive manual tasks", "Focus on customer relationships & growth"],
-  },
-  {
-    id: "slide-4",
-    slideNumber: 4,
-    slideType: "CONTENT",
-    tagText: "STEP 3",
-    title: "3. Track & Optimize",
-    subtitle: "Consistent data-backed adjustments ensure progress",
-    bulletPoints: ["Measure weekly key metrics", "Refine what works, prune what doesn't"],
-  },
-  {
-    id: "slide-5",
-    slideNumber: 5,
-    slideType: "CTA",
-    tagText: "SAVE & SHARE 🔖",
-    title: "Ready To Level Up Your Brand?",
-    subtitle: "Share your thoughts in the comments below!",
-    bulletPoints: ["Double-tap if you found this valuable ❤️", "Follow for daily expert guidance 🚀"],
-  },
-];
 
 
 /**
@@ -118,84 +69,6 @@ export const CreatePostPage = () => {
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
   const [publisherInitialMode, setPublisherInitialMode] = useState("NOW");
-
-  // 🎠 Carousel Studio State
-  const [postFormat, setPostFormat] = useState(
-    reusePost?.postType || (reusePost?.mediaUrls?.length > 1 ? "CAROUSEL" : "SINGLE")
-  );
-  const [carouselSlides, setCarouselSlides] = useState(
-    Array.isArray(reusePost?.slides) && reusePost.slides.length > 0
-      ? reusePost.slides
-      : DEFAULT_CAROUSEL_SLIDES
-  );
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-  const [isAiCarouselModalOpen, setIsAiCarouselModalOpen] = useState(false);
-  const [carouselDeckMeta, setCarouselDeckMeta] = useState({
-    title: reusePost?.occasionName || "",
-    caption: reusePost?.caption || "",
-    hashtags: [],
-  });
-  const [renderedCarouselSlides, setRenderedCarouselSlides] = useState([]);
-
-  const handleAddSlide = () => {
-    if (carouselSlides.length >= 10) return;
-    const newSlideNumber = carouselSlides.length + 1;
-    const newSlide = {
-      id: `slide-${Date.now()}`,
-      slideNumber: newSlideNumber,
-      slideType: "CONTENT",
-      tagText: `STEP ${newSlideNumber - 1}`,
-      title: `${newSlideNumber - 1}. Actionable Key Takeaway`,
-      subtitle: "Clear, concise guidance for your followers",
-      bulletPoints: ["Actionable takeaway point", "Implementation advice"],
-    };
-    setCarouselSlides((prev) => [...prev, newSlide]);
-    setActiveSlideIndex(carouselSlides.length);
-  };
-
-  const handleDeleteSlide = (index) => {
-    if (carouselSlides.length <= 2) return;
-    const updated = carouselSlides.filter((_, idx) => idx !== index);
-    setCarouselSlides(updated);
-    setActiveSlideIndex((prev) => Math.min(prev, updated.length - 1));
-  };
-
-  const handleMoveSlide = (from, to) => {
-    if (to < 0 || to >= carouselSlides.length) return;
-    const updated = [...carouselSlides];
-    const [moved] = updated.splice(from, 1);
-    updated.splice(to, 0, moved);
-    setCarouselSlides(updated);
-    setActiveSlideIndex(to);
-  };
-
-  const handleUpdateActiveSlide = (updatedSlide) => {
-    setCarouselSlides((prev) => {
-      const copy = [...prev];
-      copy[activeSlideIndex] = updatedSlide;
-      return copy;
-    });
-  };
-
-  const handleApplyAiDeck = (deck) => {
-    if (!deck || !Array.isArray(deck.slides)) return;
-    setCarouselDeckMeta({
-      title: deck.title || "",
-      caption: deck.caption || "",
-      hashtags: deck.hashtags || [],
-    });
-    setCarouselSlides(
-      deck.slides.map((s, idx) => ({
-        ...s,
-        id: `slide-${idx + 1}-${Date.now()}`,
-        slideNumber: idx + 1,
-      }))
-    );
-    setPostFormat("CAROUSEL");
-    setActiveSlideIndex(0);
-    setSaveSuccess(`🎉 AI Carousel Deck generated with ${deck.slides.length} slides!`);
-    setTimeout(() => setSaveSuccess(""), 4000);
-  };
 
   // Template Category & Festival Filter States
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -390,29 +263,12 @@ export const CreatePostPage = () => {
     currentTemplate?.fileUrl ||
     currentTemplate?.bannerUrl;
 
-  // HTML5 Canvas Compositor Engine Hook
-  const activeSlideData = useMemo(() => {
-    if (postFormat !== "CAROUSEL" || !carouselSlides[activeSlideIndex]) {
-      return null;
-    }
-    return {
-      ...carouselSlides[activeSlideIndex],
-      slideNumber: activeSlideIndex + 1,
-      totalSlides: carouselSlides.length,
-    };
-  }, [postFormat, carouselSlides, activeSlideIndex]);
-
-  const compositorCustomDetails = useMemo(() => ({
-    ...customDetails,
-    activeSlide: activeSlideData,
-  }), [customDetails, activeSlideData]);
-
   const { isRendering, dataUrl } = useCanvasCompositor(
     canvasRef,
     baseImageUrl,
     selectedFrame,
     brandKit,
-    compositorCustomDetails,
+    customDetails,
   );
 
   useEffect(() => {
@@ -449,29 +305,16 @@ export const CreatePostPage = () => {
     base64Graphic: dataUrl,
     finalGraphicUrl: reusePost?.finalGraphicUrl || null,
     occasionName:
-      postFormat === "CAROUSEL" && carouselDeckMeta.title
-        ? carouselDeckMeta.title
-        : reusePost?.occasionName ||
-          reusePost?.post?.occasionName ||
-          currentTemplate?.title ||
-          selectedFrame?.title ||
-          "Branded Graphic Post",
+      reusePost?.occasionName ||
+      reusePost?.post?.occasionName ||
+      currentTemplate?.title ||
+      selectedFrame?.title ||
+      "Branded Graphic Post",
     caption:
-      postFormat === "CAROUSEL" && carouselDeckMeta.caption
-        ? `${carouselDeckMeta.caption}${
-            carouselDeckMeta.hashtags?.length ? `\n\n${carouselDeckMeta.hashtags.join(" ")}` : ""
-          }`
-        : reusePost?.captions?.[0]?.captionText || reusePost?.caption || "",
-    postType: postFormat === "CAROUSEL" ? "CAROUSEL" : "SINGLE",
-    base64Slides:
-      postFormat === "CAROUSEL" && renderedCarouselSlides.length > 0
-        ? renderedCarouselSlides
-        : undefined,
-    slides: postFormat === "CAROUSEL" ? carouselSlides : undefined,
+      reusePost?.captions?.[0]?.captionText || reusePost?.caption || "",
+    postType: "SINGLE",
     userConfigJson: {
       ...customDetails,
-      postFormat,
-      carouselSlides: postFormat === "CAROUSEL" ? carouselSlides : undefined,
       frameId: selectedFrame?.id || reusePost?.frameId || reusePost?.post?.frameId || null,
       selectedFrame: selectedFrame
         ? {
@@ -606,55 +449,6 @@ export const CreatePostPage = () => {
       }
     });
 
-    if (postFormat === "CAROUSEL") {
-      try {
-        const renderedSlides = await Promise.all(
-          carouselSlides.map((slide, idx) =>
-            renderSlideOffscreen({
-              slide,
-              slideNumber: idx + 1,
-              totalSlides: carouselSlides.length,
-              baseImageUrl: slide.bgUrl || baseImageUrl,
-              selectedFrame,
-              brandKit,
-              customDetails: {
-                ...customDetails,
-                activeSlide: {
-                  ...slide,
-                  slideNumber: idx + 1,
-                  totalSlides: carouselSlides.length,
-                },
-              },
-            })
-          )
-        );
-
-        savePostMutation.mutate({
-          templateId: currentTemplate?.id || null,
-          festivalId: currentTemplate?.festivalId || null,
-          frameId: selectedFrame?.id || null,
-          occasionName:
-            carouselDeckMeta.title ||
-            currentTemplate?.title ||
-            selectedFrame?.title ||
-            "Branded Carousel Post",
-          base64Graphic: renderedSlides[0] || dataUrl,
-          postType: "CAROUSEL",
-          base64Slides: renderedSlides,
-          slides: carouselSlides,
-          userConfigJson: {
-            ...sanitizedConfig,
-            carouselSlides,
-          },
-          status: "DRAFT",
-        });
-      } catch (err) {
-        setSaveError("Failed to render carousel slides: " + err.message);
-        setTimeout(() => setSaveError(""), 5000);
-      }
-      return;
-    }
-
     savePostMutation.mutate({
       templateId: currentTemplate?.id || null,
       festivalId: currentTemplate?.festivalId || null,
@@ -677,11 +471,7 @@ export const CreatePostPage = () => {
 
     // 1. Download 1080x1080 HD PNG to user's system
     const link = document.createElement("a");
-    link.download = `${
-      postFormat === "CAROUSEL"
-        ? `Carousel-Slide-${activeSlideIndex + 1}`
-        : currentTemplate?.title || "BrandFlow-Post"
-    }-1080x1080.png`;
+    link.download = `${currentTemplate?.title || "BrandFlow-Post"}-1080x1080.png`;
     link.href = dataUrl;
     link.click();
 
@@ -695,38 +485,10 @@ export const CreatePostPage = () => {
     handleSaveToDb();
   };
 
-  const handleOpenPublisher = async (mode = "NOW") => {
+  const handleOpenPublisher = (mode = "NOW") => {
     if (isExpired || postsRemaining <= 0) {
       openPlanModal();
       return;
-    }
-
-    if (postFormat === "CAROUSEL") {
-      try {
-        const rendered = await Promise.all(
-          carouselSlides.map((slide, idx) =>
-            renderSlideOffscreen({
-              slide,
-              slideNumber: idx + 1,
-              totalSlides: carouselSlides.length,
-              baseImageUrl: slide.bgUrl || baseImageUrl,
-              selectedFrame,
-              brandKit,
-              customDetails: {
-                ...customDetails,
-                activeSlide: {
-                  ...slide,
-                  slideNumber: idx + 1,
-                  totalSlides: carouselSlides.length,
-                },
-              },
-            })
-          )
-        );
-        setRenderedCarouselSlides(rendered);
-      } catch (e) {
-        console.warn("Failed to render slides for publisher:", e);
-      }
     }
 
     setPublisherInitialMode(mode);
@@ -802,23 +564,6 @@ export const CreatePostPage = () => {
         planName={planName}
         openPlanModal={openPlanModal}
         activateFreeMutation={activateFreeMutation}
-        postFormat={postFormat}
-        setPostFormat={setPostFormat}
-        carouselSlides={carouselSlides}
-        activeSlideIndex={activeSlideIndex}
-        setActiveSlideIndex={setActiveSlideIndex}
-        onAddSlide={handleAddSlide}
-        onDeleteSlide={handleDeleteSlide}
-        onMoveSlide={handleMoveSlide}
-        onUpdateActiveSlide={handleUpdateActiveSlide}
-        onOpenAiCarouselModal={() => setIsAiCarouselModalOpen(true)}
-      />
-
-      <AiCarouselGeneratorModal
-        isOpen={isAiCarouselModalOpen}
-        onClose={() => setIsAiCarouselModalOpen(false)}
-        brandKit={brandKit}
-        onApplyDeck={handleApplyAiDeck}
       />
 
       <SocialPublisherModal

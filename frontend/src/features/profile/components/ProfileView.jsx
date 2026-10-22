@@ -125,6 +125,13 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
   const isAdminBonus = subscription?.paymentGateway === 'ADMIN_BONUS' || (!hasPlan && hasBonusCredits);
   const isPaidPlan = Boolean(subscription?.paymentGateway === 'RAZORPAY' || subscription?.paymentGateway === 'STRIPE');
   const isFreePlan = subscription?.plan === 'FREE' && totalPostsAllowed > 0;
+  const hasClaimedFree = Boolean(
+    subscription?.hasClaimedFree ||
+    subscription?.isFreeClaimed ||
+    subscription?.plan === 'FREE' ||
+    subscription?.plan === 'PRO' ||
+    totalPostsAllowed > 0
+  );
 
   let planDisplayTitle = "NO ACTIVE PLAN";
   let planBadgeColor = "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
@@ -373,28 +380,34 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
               </div>
               <div className="space-y-1">
                 <h3 className="font-heading font-extrabold text-xl text-white">
-                  No Active Subscription Plan
+                  {!hasClaimedFree ? "No Active Subscription Plan" : "Free Plan Completed - Upgrade to Pro"}
                 </h3>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  You have not purchased or activated any subscription plan yet. Activate the Free starter plan (5 Posts) or purchase a Pro plan to start generating post graphics.
+                  {!hasClaimedFree
+                    ? "You have not purchased or activated any subscription plan yet. Activate the Free starter plan (5 Posts) or purchase a Pro plan to start generating post graphics."
+                    : "Your complimentary 1-time Free Starter trial has ended. Upgrade to a Pro plan to continue generating and publishing post graphics."}
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <Button
-                  variant="primary"
-                  onClick={() => freePlanMutation.mutate()}
-                  isLoading={freePlanMutation.isPending}
-                  className="py-2.5 px-5 text-xs font-bold"
-                >
-                  <PlusCircle className="w-4 h-4 mr-1.5" />
-                  Activate Free Starter Plan (5 Posts)
-                </Button>
+                {!hasClaimedFree && (
+                  <Button
+                    variant="primary"
+                    onClick={() => freePlanMutation.mutate()}
+                    isLoading={freePlanMutation.isPending}
+                    className="py-2.5 px-5 text-xs font-bold"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-1.5" />
+                    Activate Free Starter Plan (5 Posts)
+                  </Button>
+                )}
 
                 <Button
-                  variant="outline"
+                  variant={!hasClaimedFree ? "outline" : "primary"}
                   onClick={() => navigate("/dashboard")}
-                  className="py-2.5 px-5 text-xs text-amber-400 border-[#2C384E] hover:bg-amber-500/10"
+                  className={`py-2.5 px-5 text-xs font-bold ${
+                    !hasClaimedFree ? "text-amber-400 border-[#2C384E] hover:bg-amber-500/10" : ""
+                  }`}
                 >
                   <span>Explore Paid Pro Plans</span>
                   <ArrowRight className="w-4 h-4 ml-1.5" />
@@ -403,8 +416,8 @@ export const ProfileView = ({ profile, subscription, brandKit, isLoading, error 
             </Card>
           ) : (
             <div className="space-y-6">
-              {/* Option to Activate Free Plan if user has bonus credits but no plan yet */}
-              {!hasPlan && (
+              {/* Option to Activate Free Plan ONLY if user has bonus credits and has NEVER claimed free plan before */}
+              {!hasPlan && !hasClaimedFree && (
                 <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <h4 className="text-amber-300 font-bold text-xs flex items-center gap-1.5">

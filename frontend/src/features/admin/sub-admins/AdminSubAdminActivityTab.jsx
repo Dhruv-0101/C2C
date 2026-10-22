@@ -315,7 +315,7 @@ export const AdminSubAdminActivityTab = ({ onNavigateTab }) => {
         </div>
       </div>
 
-      {/* 3. SubAdmin Contributor Quick Filter Carousel / Strip */}
+      {/* 3. SubAdmin Contributor Quick Filter Strip */}
       <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#131B2A]/80 border border-[#2C384E] space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">

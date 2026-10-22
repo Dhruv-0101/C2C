@@ -193,19 +193,9 @@ export const instagramPublisherService = {
    * @param {string} params.accessToken - Page or Long-Lived User Access Token
    * @param {string} [params.graphicUrl] - Public Cloudinary PNG image URL
    * @param {string} params.caption - Post caption & hashtags
-   * @param {string[]} [params.mediaUrls] - Array of slide image URLs for carousels
+   * @param {string[]} [params.mediaUrls] - Array of image URLs
    */
   publishToInstagram: async ({ igUserId, accessToken, graphicUrl, mediaUrls, caption }) => {
-    // Multi-Slide Branch: If 2 or more mediaUrls are provided, dispatch as Instagram Carousel
-    if (Array.isArray(mediaUrls) && mediaUrls.length > 1) {
-      return instagramPublisherService.publishCarouselToInstagram({
-        igUserId,
-        accessToken,
-        mediaUrls,
-        caption,
-      });
-    }
-
     logger.info(`📸 [InstagramPublisher] Publishing media container to IG User ID: ${igUserId}...`);
 
     const targetUrl = graphicUrl || (Array.isArray(mediaUrls) && mediaUrls[0]);
@@ -280,122 +270,7 @@ export const instagramPublisherService = {
       publishedAt: new Date().toISOString(),
     };
   },
-
-  /**
-   * Publish Multi-Slide Carousel to Instagram via Meta Graph API Containers Protocol
-   * Protocol:
-   * 1. Create individual item containers for each slide (is_carousel_item = true)
-   * 2. Poll/verify child containers readiness
-   * 3. Create master parent CAROUSEL container referencing children
-   * 4. Publish master carousel container to Instagram Feed
-   */
-  publishCarouselToInstagram: async ({ igUserId, accessToken, mediaUrls, caption }) => {
-    logger.info(`📸 [InstagramPublisher] Publishing ${mediaUrls.length}-slide Carousel to IG User ID: ${igUserId}...`);
-
-    if (!Array.isArray(mediaUrls) || mediaUrls.length < 2) {
-      throw new Error('At least 2 slide URLs are required to publish an Instagram Carousel.');
-    }
-
-    // Meta allows maximum 10 items in a carousel
-    const cappedUrls = mediaUrls.slice(0, 10);
-
-    // Step 1: Create child item containers for each slide
-    const childContainerIds = [];
-    for (let i = 0; i < cappedUrls.length; i++) {
-      const slideUrl = cappedUrls[i];
-      logger.info(`📦 [InstagramPublisher] Creating carousel item container ${i + 1}/${cappedUrls.length}...`);
-
-      const itemRes = await axios.post(
-        `${META_GRAPH_URL}/${igUserId}/media`,
-        null,
-        {
-          params: {
-            image_url: slideUrl,
-            is_carousel_item: true,
-            access_token: accessToken,
-          },
-        }
-      );
-
-      if (!itemRes.data?.id) {
-        throw new Error(`Failed to create carousel item container for slide ${i + 1}`);
-      }
-      childContainerIds.push(itemRes.data.id);
-    }
-
-    // Step 2: Allow Meta to ingest child images
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-
-    // Step 3: Create Master Carousel Container
-    logger.info(`📦 [InstagramPublisher] Creating master CAROUSEL container with ${childContainerIds.length} children...`);
-    const carouselRes = await axios.post(
-      `${META_GRAPH_URL}/${igUserId}/media`,
-      null,
-      {
-        params: {
-          media_type: 'CAROUSEL',
-          children: childContainerIds.join(','),
-          caption: caption || 'Created with BrandFlow 🚀',
-          access_token: accessToken,
-        },
-      }
-    );
-
-    const carouselContainerId = carouselRes.data.id;
-    logger.info(`📦 [InstagramPublisher] Master Carousel container created. ID: ${carouselContainerId}`);
-
-    // Step 4: Poll master container readiness
-    let isReady = false;
-    for (let attempt = 1; attempt <= 5; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, attempt === 1 ? 2500 : 2000));
-      try {
-        const statusRes = await axios.get(`${META_GRAPH_URL}/${carouselContainerId}`, {
-          params: {
-            fields: 'status_code,status',
-            access_token: accessToken,
-          },
-        });
-        const statusCode = statusRes.data?.status_code;
-        if (statusCode === 'FINISHED') {
-          isReady = true;
-          break;
-        }
-        if (statusCode === 'ERROR') {
-          throw new Error(`Meta carousel container processing failed: ${statusRes.data?.status || 'Media rendering error'}`);
-        }
-      } catch (pollErr) {
-        if (pollErr.message.includes('Meta carousel container processing failed')) throw pollErr;
-        break;
-      }
-    }
-
-    // Step 5: Publish Container to Instagram Feed
-    const publishRes = await axios.post(
-      `${META_GRAPH_URL}/${igUserId}/media_publish`,
-      null,
-      {
-        params: {
-          creation_id: carouselContainerId,
-          access_token: accessToken,
-        },
-      }
-    );
-
-    const mediaId = publishRes.data.id;
-    const postUrl = `https://instagram.com/p/${mediaId}`;
-
-    logger.info(`🎉 [InstagramPublisher] Successfully published Carousel to Instagram! Post ID: ${mediaId}`);
-
-    return {
-      status: 'SUCCESS',
-      platform: 'INSTAGRAM',
-      mediaId,
-      postUrl,
-      postType: 'CAROUSEL',
-      slidesCount: cappedUrls.length,
-      publishedAt: new Date().toISOString(),
-    };
-  },
 };
 
 export default instagramPublisherService;
+

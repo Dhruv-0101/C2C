@@ -30,6 +30,8 @@ import {
   findTransactionById,
   findTransactionByPaymentId,
   findTransactionByOrderId,
+  hasUserEverClaimedFreePlan,
+  executeFreePlanActivation,
 } from './billing.repository.js';
 import { buildInvoicePdfBuffer } from './billing.pdf.js';
 import { parsePaginationParams, buildPaginatedResponse } from '../../common/helpers/pagination.helper.js';
@@ -50,7 +52,10 @@ export const getSubscriptionStatus = async (userId) => {
   return getOrSetCache(
     cacheKey,
     async () => {
-      const sub = await findByUserId(userId);
+      const [sub, hasClaimed] = await Promise.all([
+        findByUserId(userId),
+        hasUserEverClaimedFreePlan(userId),
+      ]);
 
       if (!sub) {
         return {
@@ -71,10 +76,12 @@ export const getSubscriptionStatus = async (userId) => {
           isExpired: true,
           hasPlan: false,
           canCreatePost: false,
+          hasClaimedFree: Boolean(hasClaimed),
+          isFreeClaimed: Boolean(hasClaimed),
         };
       }
 
-      return sanitizeSubscription(sub);
+      return sanitizeSubscription(sub, hasClaimed);
     },
     CACHE_TTL.FIFTEEN_MINUTES
   );
@@ -82,63 +89,24 @@ export const getSubscriptionStatus = async (userId) => {
 
 /**
  * Activate / Select Free Plan (5 Posts Quota)
+ * Strictly enforced: Only ONE-TIME per account in lifetime at any cost.
  *
  * @param {string} userId - User ID
  * @returns {Promise<Object>} Activation outcome
  */
 export const activateFreePlan = async (userId) => {
-  const existing = await findByUserId(userId);
+  // Execute atomic free plan activation with immutable ledger validation
+  const { sub, freeTx } = await executeFreePlanActivation(userId);
 
-  // Free Starter Plan can strictly only be activated ONCE per account
-  if (existing) {
-    if (existing.plan === BILLING_PLANS.FREE) {
-      throw new BadRequestError(
-        'Free Starter Plan has already been activated for this account. Please upgrade to a Pro Plan to get more post credits.'
-      );
-    }
-    if (existing.plan === BILLING_PLANS.PRO) {
-      throw new BadRequestError(
-        'You already have an active Pro Plan. Free plan activation is not available.'
-      );
-    }
-  }
-
-  const sub = await upsertSubscription(userId, {
-    plan: BILLING_PLANS.FREE,
-    status: SUBSCRIPTION_STATUSES.ACTIVE,
-    totalPostsAllowed: FREE_PLAN_LIMITS.POST_LIMIT,
-    postsUsed: 0, // Reset plan posts used for Free Plan
-    bonusPostsAllowed: existing?.bonusPostsAllowed || 0,
-    bonusPostsUsed: existing?.bonusPostsUsed || 0,
-    pricePaid: 0,
-    currency: BILLING_CURRENCIES.INR,
-    paymentGateway: PAYMENT_GATEWAYS.FREE,
-  });
-
-  // Purge user's billing cache
+  // Purge user's billing cache across Redis
   await deleteCachePattern(CACHE_KEYS.BILLING_PATTERN(userId));
 
   // Log transaction and dispatch BullMQ Invoice Email job
-  const timestamp = Date.now();
-  const freeTx = await createTransaction({
-    userId,
-    plan: BILLING_PLANS.FREE,
-    transactionType: TRANSACTION_TYPES.PLAN_ACTIVATION,
-    paymentGateway: PAYMENT_GATEWAYS.FREE,
-    pricePaid: 0,
-    currency: BILLING_CURRENCIES.INR,
-    postCount: FREE_PLAN_LIMITS.POST_LIMIT,
-    orderId: `FREE_ORD_${timestamp}`,
-    paymentId: `FREE_ACT_${timestamp}`,
-    status: TRANSACTION_STATUSES.COMPLETED,
-  }).catch(() => null);
-
-
   if (freeTx?.id) {
     addInvoiceEmailJob({ userId, transactionId: freeTx.id }).catch(() => {});
   }
 
-  const sanitizedSub = sanitizeSubscription(sub);
+  const sanitizedSub = sanitizeSubscription(sub, true);
 
   return {
     message: 'Free Plan activated successfully! You have 5 plan posts allowed.',

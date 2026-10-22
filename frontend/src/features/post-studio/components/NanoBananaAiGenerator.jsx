@@ -1,52 +1,27 @@
 import React, { useState, useRef } from 'react';
 import {
   Sparkles,
-  Zap,
   Wand2,
   RefreshCw,
-  CheckCircle2,
   Info,
-  Layers,
-  Flame,
-  ArrowRight,
-  Eye,
   Trash2,
   Mic,
   MicOff,
   Globe,
   X,
-  Gift,
-  AlertCircle,
-  ArrowUpRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAiPostImage } from '../hooks/useAiPostImage';
 import { useVoiceInput } from '../hooks/useVoiceInput';
 import { useAiJobTracker } from '../hooks/useAiJobTracker';
 import { AiQueueTrackerCard } from './AiQueueTrackerCard';
+import { generatePuterImage, isPuterExhausted } from '../services/puter.service';
 
-const PROMPT_PRESETS = [
-  { label: '🪔 Festive Celebration', prompt: 'Grand Indian Diwali festive celebration with glowing clay diyas, elegant golden sparkles, and traditional marigold floral decor' },
-  { label: '🏷️ 50% Flash Sale', prompt: 'Modern bold 50% OFF weekend flash sale promotional visual with dynamic gradient lighting and floating confetti' },
-  { label: '💎 Luxury Jewellery', prompt: 'Ultra-luxurious diamond and gold necklace display on velvet podium with soft dramatic spotlight and cinematic reflections' },
-  { label: '☕ Cafe & Dining Promo', prompt: 'Artisanal cappuccino with latte art and freshly baked croissants on a rustic warm wooden cafe table with morning sunlight' },
-  { label: '🏡 Modern Real Estate', prompt: 'Stunning luxury modern architectural villa with landscaped garden, glass facade, warm interior lighting at golden hour sunset' },
-  { label: '✨ New Arrival', prompt: 'Exclusive new collection launch showcase on minimalist marble pedestal with pastel silk backdrop and soft studio shadows' },
-];
-
-const STYLE_PRESETS = [
-  { id: 'Photorealistic', label: 'Photorealistic', icon: '📸' },
-  { id: 'Festive Luxury', label: 'Festive Luxury', icon: '🪔' },
-  { id: 'Modern Minimalist', label: 'Minimalist', icon: '🏛️' },
-  { id: 'Studio Product', label: 'Studio Product', icon: '📦' },
-  { id: 'Vibrant 3D Render', label: '3D Render', icon: '🎨' },
-  { id: 'Warm Indian Heritage', label: 'Indian Heritage', icon: '🚩' },
-];
 
 /**
  * 🍌 NanoBananaAiGenerator Component
- * State-of-the-art commercial AI creative visual studio powered by Google Gemini Nano Banana 2.1.
- * Mobile-first, touch-optimized, and resilient with native Voice-to-Prompt support.
+ * State-of-the-art commercial AI creative visual studio powered by Google Gemini Nano Banana 2.1
+ * and Puter.js client-side zero-cost engine with seamless fallback to Gemini server queue.
  */
 export const NanoBananaAiGenerator = ({
   onSelectImage,
@@ -62,8 +37,9 @@ export const NanoBananaAiGenerator = ({
   activateFreeMutation,
 }) => {
   const [prompt, setPrompt] = useState('');
-  const [selectedStyle, setSelectedStyle] = useState('Photorealistic');
+  const [selectedStyle] = useState('Photorealistic');
   const [generationNotice, setGenerationNotice] = useState(null);
+  const [isPuterGenerating, setIsPuterGenerating] = useState(false);
   const basePromptRef = useRef('');
 
   const { generatePostImage, isGeneratingImage, imageError } = useAiPostImage();
@@ -78,7 +54,7 @@ export const NanoBananaAiGenerator = ({
         if (completedResult.isPendingBilling && completedResult.message) {
           setGenerationNotice(completedResult.message);
         } else {
-          setGenerationNotice('Creative generated successfully with Nano Banana 2.1 ✨');
+          setGenerationNotice('Creative visual generated successfully ✨');
         }
       }
     },
@@ -116,16 +92,62 @@ export const NanoBananaAiGenerator = ({
     toggleListening();
   };
 
-  const handleApplyPreset = (preset) => {
-    setPrompt(preset.prompt);
-    basePromptRef.current = preset.prompt;
-  };
 
   const handleClearPrompt = () => {
     setPrompt('');
     basePromptRef.current = '';
     if (isListening) {
       stopListening();
+    }
+  };
+
+  /**
+   * Execute Google Gemini server-side BullMQ generation
+   */
+  const executeGeminiGeneration = async () => {
+    const res = await generatePostImage({
+      prompt: prompt.trim(),
+      style: selectedStyle,
+      aspectRatio: '1:1',
+      occasionName: brandKit?.businessName || '',
+    });
+
+    const resData = res?.data || res;
+
+    if (resData?.isQueued) {
+      // Enqueued in BullMQ Queue - start live countdown and position tracking
+      jobTracker.startTracking(resData);
+    } else {
+      // Immediate synchronous completion or fallback
+      const imgUrl = resData?.result?.imageUrl || resData?.imageUrl;
+      if (imgUrl) {
+        onSelectImage(imgUrl);
+        if (resData?.result?.isPendingBilling && resData?.result?.message) {
+          setGenerationNotice(resData.result.message);
+        } else {
+          setGenerationNotice('Creative visual generated successfully ✨');
+        }
+      }
+    }
+  };
+
+  const handleGeminiError = (err) => {
+    console.error('AI image generation failed:', err);
+    const isPlanError =
+      err?.response?.status === 403 ||
+      err?.response?.data?.code === 'PLAN_REQUIRED' ||
+      err?.response?.data?.code === 'PLAN_EXPIRED' ||
+      err?.response?.data?.message?.toLowerCase().includes('plan');
+
+    if (isPlanError) {
+      setGenerationNotice(
+        err?.response?.data?.message || 'A subscription plan is required to generate AI visuals. Please activate your free posts or upgrade.'
+      );
+      if (openPlanModal) {
+        openPlanModal();
+      }
+    } else {
+      setGenerationNotice(err?.response?.data?.message || 'Failed to generate visual. Please try again.');
     }
   };
 
@@ -139,50 +161,33 @@ export const NanoBananaAiGenerator = ({
 
     setGenerationNotice(null);
 
+    // 1. Fast Browser Visual Generation (if Puter quota active in this cycle)
+    if (!isPuterExhausted()) {
+      setIsPuterGenerating(true);
+      try {
+        const res = await generatePuterImage({
+          prompt: prompt.trim(),
+          style: selectedStyle,
+        });
+
+        if (res?.imageUrl) {
+          onSelectImage(res.imageUrl);
+          setGenerationNotice('Creative visual generated successfully ✨');
+          setIsPuterGenerating(false);
+          return;
+        }
+      } catch (puterErr) {
+        console.warn('Fast browser generator unavailable, seamlessly switching to server engine:', puterErr);
+      } finally {
+        setIsPuterGenerating(false);
+      }
+    }
+
+    // 2. Seamless Server Queue Fallback
     try {
-      const res = await generatePostImage({
-        prompt: prompt.trim(),
-        style: selectedStyle,
-        aspectRatio: '1:1',
-        occasionName: brandKit?.businessName || '',
-      });
-
-      // API Response Envelope: res = { success: true, message: "...", data: { isQueued, ... } }
-      const resData = res?.data || res;
-
-      if (resData?.isQueued) {
-        // Enqueued in BullMQ Queue - start live countdown and position tracking
-        jobTracker.startTracking(resData);
-      } else {
-        // Immediate synchronous completion or fallback
-        const imgUrl = resData?.result?.imageUrl || resData?.imageUrl;
-        if (imgUrl) {
-          onSelectImage(imgUrl);
-          if (resData?.result?.isPendingBilling && resData?.result?.message) {
-            setGenerationNotice(resData.result.message);
-          } else {
-            setGenerationNotice('Creative generated successfully with Nano Banana 2.1 ✨');
-          }
-        }
-      }
+      await executeGeminiGeneration();
     } catch (err) {
-      console.error('AI image generation failed:', err);
-      const isPlanError =
-        err?.response?.status === 403 ||
-        err?.response?.data?.code === 'PLAN_REQUIRED' ||
-        err?.response?.data?.code === 'PLAN_EXPIRED' ||
-        err?.response?.data?.message?.toLowerCase().includes('plan');
-
-      if (isPlanError) {
-        setGenerationNotice(
-          err?.response?.data?.message || 'A subscription plan is required to generate AI visuals. Please activate your free posts or upgrade.'
-        );
-        if (openPlanModal) {
-          openPlanModal();
-        }
-      } else {
-        setGenerationNotice(err?.response?.data?.message || 'Failed to generate visual. Please try again.');
-      }
+      handleGeminiError(err);
     }
   };
 
@@ -192,19 +197,14 @@ export const NanoBananaAiGenerator = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-[#2C384E]/80 pb-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 flex items-center justify-center font-extrabold text-lg shadow-glow shrink-0">
-            🍌
+            ✨
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-heading font-extrabold text-xs sm:text-sm text-white truncate">
-                Nano Banana 2.1 AI Visual Creator
-              </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
-                Gemini Vision
-              </span>
-            </div>
+            <h3 className="font-heading font-extrabold text-xs sm:text-sm text-white truncate">
+              AI Images
+            </h3>
             <p className="text-[11px] text-slate-400 truncate">
-              Generate commercial post backdrops without rigid static templates.
+              Generate images with AI
             </p>
           </div>
         </div>
@@ -221,81 +221,6 @@ export const NanoBananaAiGenerator = ({
             <span>Reset Graphic</span>
           </Button>
         )}
-      </div>
-
-      {/* Plan Notice Banner inside Nano Banana AI Generator */}
-      {(!subscription?.hasPlan || postsRemaining <= 0) && (
-        <div className={`p-3 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${
-          !subscription?.hasPlan
-            ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
-            : 'bg-rose-500/10 border-rose-500/30 text-rose-200'
-        }`}>
-          <div className="flex items-center gap-2 min-w-0">
-            {!subscription?.hasPlan ? (
-              <Gift className="w-4 h-4 text-amber-400 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            )}
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-white block">
-                {!subscription?.hasPlan
-                  ? 'Plan Required to Generate'
-                  : 'Post Quota Exhausted'}
-              </span>
-              <span className="text-[11px] text-slate-300 block truncate">
-                {!subscription?.hasPlan
-                  ? 'Activate 5 Free Posts or choose a plan to create visuals.'
-                  : 'Upgrade your plan to generate more AI backdrops.'}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
-            {!subscription?.hasPlan && activateFreeMutation && (
-              <Button
-                type="button"
-                size="sm"
-                variant="primary"
-                onClick={() => activateFreeMutation.mutate()}
-                disabled={activateFreeMutation.isPending}
-                className="text-xs font-bold py-1 px-3 min-h-[30px]"
-              >
-                {activateFreeMutation.isPending ? 'Activating...' : 'Activate Free (5 Posts)'}
-              </Button>
-            )}
-            {openPlanModal && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={openPlanModal}
-                className="text-xs py-1 px-2.5 min-h-[30px] border-[#2C384E] text-slate-200 hover:text-white"
-              >
-                <span>{!subscription?.hasPlan ? 'Plans' : 'Upgrade'}</span>
-                <ArrowUpRight className="w-3 h-3 ml-1" />
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Quick Prompt Presets */}
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-          <Zap className="w-3 h-3 text-amber-400" />
-          <span>Quick Inspiration Presets (Tap to fill)</span>
-        </label>
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar -mx-0.5 px-0.5">
-          {PROMPT_PRESETS.map((preset) => (
-            <button
-              key={preset.label}
-              type="button"
-              onClick={() => handleApplyPreset(preset)}
-              className="px-2.5 py-1.5 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-amber-500/40 text-[11px] font-semibold text-slate-300 hover:text-white transition whitespace-nowrap shrink-0 cursor-pointer active:scale-95 min-h-[32px]"
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Prompt Input Box with Voice to Prompt */}
@@ -330,11 +255,10 @@ export const NanoBananaAiGenerator = ({
             <button
               type="button"
               onClick={handleToggleVoice}
-              className={`px-2.5 sm:px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95 shrink-0 min-h-[30px] ${
-                isListening
+              className={`px-2.5 sm:px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95 shrink-0 min-h-[30px] ${isListening
                   ? 'bg-rose-500/20 border border-rose-500 text-rose-300 animate-pulse shadow-glow'
                   : 'bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25'
-              }`}
+                }`}
             >
               {isListening ? (
                 <>
@@ -407,40 +331,14 @@ export const NanoBananaAiGenerator = ({
         </div>
 
         {/* Helpful User Instruction */}
-        <div className="flex items-center justify-between text-[11px] text-slate-400">
+        {/* <div className="flex items-center justify-between text-[11px] text-slate-400">
           <span className="flex items-center gap-1 text-slate-400/90">
             💡 <span>Bolne ke baad aap text me kuch bhi edit ya change kar sakte hain.</span>
           </span>
           <span className="text-[10px] text-slate-500 font-mono shrink-0">{prompt.length}/500</span>
-        </div>
+        </div> */}
       </div>
 
-      {/* Visual Style Selector Chips */}
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          Aesthetic Art Style
-        </label>
-        <div className="grid grid-cols-2 min-[480px]:grid-cols-3 gap-2">
-          {STYLE_PRESETS.map((style) => {
-            const isSelected = selectedStyle === style.id;
-            return (
-              <button
-                key={style.id}
-                type="button"
-                onClick={() => setSelectedStyle(style.id)}
-                className={`px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer min-h-[38px] ${
-                  isSelected
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-sm'
-                    : 'bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:text-white hover:border-slate-600'
-                }`}
-              >
-                <span className="text-sm shrink-0">{style.icon}</span>
-                <span className="truncate">{style.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Live BullMQ Queue & Dynamic Countdown Tracker */}
       {jobTracker.isTracking && (
@@ -450,7 +348,7 @@ export const NanoBananaAiGenerator = ({
           countdownSeconds={jobTracker.countdownSeconds}
           progress={jobTracker.progress}
           step={jobTracker.step}
-          title="Google Gemini Nano Banana 2.1"
+          title="AI Image Generator"
           onMinimize={() => jobTracker.stopTracking()}
         />
       )}
@@ -478,10 +376,15 @@ export const NanoBananaAiGenerator = ({
           type="button"
           variant="primary"
           onClick={handleGenerate}
-          disabled={!prompt.trim() || isGeneratingImage || jobTracker.isTracking}
+          disabled={!prompt.trim() || isGeneratingImage || isPuterGenerating || jobTracker.isTracking}
           className="flex-1 py-2.5 sm:py-3 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-glow flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[42px]"
         >
-          {jobTracker.isTracking ? (
+          {isPuterGenerating ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+              <span>Generating Images with AI...</span>
+            </>
+          ) : jobTracker.isTracking ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
               <span>
@@ -493,12 +396,12 @@ export const NanoBananaAiGenerator = ({
           ) : isGeneratingImage ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-              <span>Connecting to Queue Engine...</span>
+              <span>Generating Images with AI...</span>
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              <span>Generate with Nano Banana 2.1</span>
+              <span>Generate Images with AI ✨</span>
             </>
           )}
         </Button>

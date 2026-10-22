@@ -70,14 +70,6 @@ export const PostGridItem = ({
               onClick={() => onLightbox?.(post)}
             />
 
-            {/* Carousel Badge */}
-            {(post.postType === "CAROUSEL" || post.mediaUrls?.length > 1) && (
-              <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase z-10 backdrop-blur-md shadow-sm border bg-slate-900/80 text-amber-300 border-amber-500/40 flex items-center gap-1 font-mono">
-                <span>🎠</span>
-                <span>{post.mediaUrls?.length || (Array.isArray(post.slides) ? post.slides.length : "Carousel")} Slides</span>
-              </span>
-            )}
-
             {/* Status Pill - Clean status badge only */}
             {(() => {
               const isPublished = post.status === "PUBLISHED" || post.scheduledPost?.status === "SUCCESS";

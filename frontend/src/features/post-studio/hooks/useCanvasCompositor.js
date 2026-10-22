@@ -105,9 +105,8 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
 
   // Deterministic signature to decouple reference changes from rendering triggers
   const renderSignature = useMemo(() => {
-    const effectiveBase = customDetails?.activeSlide?.bgUrl || baseImageUrl;
     return JSON.stringify({
-      base: effectiveBase,
+      base: baseImageUrl,
       frameId: selectedFrame?.id || null,
       frameOverlay: selectedFrame?.overlayPngUrl || null,
       frameConfig: selectedFrame?.configJson || null,
@@ -134,17 +133,6 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         showUpiQr: customDetails?.showUpiQr,
         showPhone: customDetails?.showPhone,
         showAddress: customDetails?.showAddress,
-        activeSlide: customDetails?.activeSlide
-          ? {
-              title: customDetails.activeSlide.title,
-              subtitle: customDetails.activeSlide.subtitle,
-              tagText: customDetails.activeSlide.tagText,
-              bulletPoints: customDetails.activeSlide.bulletPoints,
-              slideNumber: customDetails.activeSlide.slideNumber,
-              totalSlides: customDetails.activeSlide.totalSlides,
-              bgUrl: customDetails.activeSlide.bgUrl,
-            }
-          : null,
       },
     });
   }, [baseImageUrl, selectedFrame, brandKit, customDetails]);
@@ -173,7 +161,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
 
   const renderCanvas = useCallback(async () => {
     const canvas = canvasRef.current;
-    const effectiveBaseUrl = customDetails?.activeSlide?.bgUrl || baseImageUrl;
+    const effectiveBaseUrl = baseImageUrl;
     if (!canvas) {
       setIsRendering(false);
       return;
@@ -333,9 +321,8 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         : [];
 
       // Load cached image assets
-      const effectiveBaseUrl = customDetails?.activeSlide?.bgUrl || baseImageUrl;
       const [baseImg, logoImg, avatarImg, upiQrImg, frameOverlayImg] = await Promise.all([
-        loadImageCached(effectiveBaseUrl),
+        loadImageCached(baseImageUrl),
         loadImageCached(showLogo ? activeLogoUrl : null),
         loadImageCached(showAvatar ? activeAvatarUrl : null),
         loadImageCached(showUpiQr ? activeUpiQrUrl : null),
@@ -352,7 +339,7 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
 
       // 1. LAYER 1: Base Graphic Background (Aspect Cover for templates, Aspect Contain for custom uploaded images)
       if (baseImg) {
-        if (effectiveBaseUrl && (effectiveBaseUrl.startsWith('data:') || effectiveBaseUrl.startsWith('blob:'))) {
+        if (baseImageUrl && (baseImageUrl.startsWith('data:') || baseImageUrl.startsWith('blob:'))) {
           drawImageAspectContain(ctx, baseImg, 0, 0, 1080, 1080);
         } else {
           drawImageAspectCover(ctx, baseImg, 0, 0, 1080, 1080);
@@ -365,147 +352,6 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
         ctx.fillRect(0, 0, 1080, 1080);
       }
 
-      // 🌟 CAROUSEL SLIDE CONTENT LAYER (If customDetails.activeSlide is present)
-      if (customDetails.activeSlide) {
-        const slide = customDetails.activeSlide;
-        const slideNumber = slide.slideNumber || 1;
-        const totalSlides = slide.totalSlides || 5;
-
-        // A. Subtle contrast scrim overlay to ensure typography pops crisply
-        const scrim = ctx.createLinearGradient(0, 0, 0, 1080);
-        scrim.addColorStop(0, 'rgba(11, 15, 23, 0.55)');
-        scrim.addColorStop(0.5, 'rgba(11, 15, 23, 0.75)');
-        scrim.addColorStop(1, 'rgba(11, 15, 23, 0.95)');
-        ctx.fillStyle = scrim;
-        ctx.fillRect(0, 0, 1080, 1080);
-
-        // B. Top Slide Indicator Pill (Top Right)
-        const indicatorText = `${slideNumber} / ${totalSlides} ⏩`;
-        ctx.font = 'bold 20px "Space Grotesk", sans-serif';
-        const indMetrics = ctx.measureText(indicatorText);
-        const indW = indMetrics.width + 36;
-        const indH = 40;
-        const indX = 1080 - indW - 60;
-        const indY = 60;
-
-        ctx.save();
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-        ctx.strokeStyle = '#EAB308';
-        ctx.lineWidth = 1.5;
-        drawRoundedRect(ctx, indX, indY, indW, indH, 20);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#EAB308';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(indicatorText, indX + indW / 2, indY + indH / 2);
-        ctx.restore();
-
-        // C. Slide Tag Pill (Top Left, above title)
-        if (slide.tagText) {
-          ctx.save();
-          const tagStr = slide.tagText.toUpperCase();
-          ctx.font = 'bold 18px "Space Grotesk", sans-serif';
-          const tagMetrics = ctx.measureText(tagStr);
-          const tagW = tagMetrics.width + 32;
-          const tagH = 38;
-          const tagX = 70;
-          const tagY = 160;
-
-          const tagGrad = ctx.createLinearGradient(tagX, tagY, tagX + tagW, tagY);
-          tagGrad.addColorStop(0, '#F59E0B');
-          tagGrad.addColorStop(1, '#D97706');
-          ctx.fillStyle = tagGrad;
-          drawRoundedRect(ctx, tagX, tagY, tagW, tagH, 19);
-          ctx.fill();
-
-          ctx.fillStyle = '#0B0F17';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(tagStr, tagX + tagW / 2, tagY + tagH / 2);
-          ctx.restore();
-        }
-
-        // D. Slide Title
-        let currentY = slide.tagText ? 230 : 180;
-        ctx.save();
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 44px "Space Grotesk", sans-serif';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetY = 3;
-        currentY = drawWrappedText(ctx, slide.title || '', 70, currentY, 940, 56, 3);
-        ctx.restore();
-
-        // E. Slide Subtitle
-        if (slide.subtitle) {
-          ctx.save();
-          ctx.fillStyle = '#CBD5E1';
-          ctx.font = '500 24px "Space Grotesk", sans-serif';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
-          currentY = drawWrappedText(ctx, slide.subtitle, 70, currentY + 14, 940, 36, 2);
-          ctx.restore();
-        }
-
-        // F. Bullet Points (Cards)
-        if (Array.isArray(slide.bulletPoints) && slide.bulletPoints.length > 0) {
-          let bulletY = currentY + 28;
-          const maxBullets = 4;
-          const points = slide.bulletPoints.slice(0, maxBullets);
-
-          points.forEach((point) => {
-            if (bulletY + 80 > 910) return; // don't overlap footer brand bar
-
-            ctx.save();
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-            ctx.lineWidth = 1;
-            drawRoundedRect(ctx, 70, bulletY, 940, 72, 14);
-            ctx.fill();
-            ctx.stroke();
-
-            // Accent bullet icon
-            ctx.fillStyle = '#EAB308';
-            ctx.font = 'bold 22px "Space Grotesk", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('✓', 105, bulletY + 36);
-
-            // Point Text
-            ctx.fillStyle = '#F8FAFC';
-            ctx.font = '600 22px "Space Grotesk", sans-serif';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(point, 135, bulletY + 36, 850);
-
-            ctx.restore();
-            bulletY += 86;
-          });
-        }
-
-        // G. Swipe / CTA guidance banner (just above footer)
-        if (slideNumber < totalSlides) {
-          ctx.save();
-          ctx.fillStyle = '#94A3B8';
-          ctx.font = '600 18px "Space Grotesk", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('👉 Swipe for next slide', 540, 905);
-          ctx.restore();
-        } else {
-          ctx.save();
-          ctx.fillStyle = '#FBBF24';
-          ctx.font = 'bold 19px "Space Grotesk", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('🔖 Save this post & share with friends', 540, 905);
-          ctx.restore();
-        }
-      }
 
       // 2. LAYER 2: Transparent PNG Frame Overlay & Static Vector Shapes
       // A frame is strictly an OVERLAY on top of Layer 1 (Base Graphic). It must NEVER overwrite or blank out Layer 1.
@@ -932,219 +778,4 @@ export const useCanvasCompositor = (canvasRef, baseImageUrl, selectedFrame, bran
   return { isRendering, dataUrl, reRender: renderCanvas };
 };
 
-/**
- * Render any individual slide to a base64 PNG dataUrl using an offscreen canvas
- * Useful for concurrent rendering of all carousel slides prior to Cloudinary upload.
- */
-export async function renderSlideOffscreen({
-  slide,
-  slideNumber,
-  totalSlides,
-  baseImageUrl,
-  selectedFrame,
-  brandKit,
-  customDetails = {},
-}) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1080;
-  canvas.height = 1080;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-
-  // 1. Load Background Image
-  const bgSrc = slide?.bgUrl || baseImageUrl;
-  let bgImg = null;
-  if (bgSrc) {
-    try {
-      bgImg = await new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = bgSrc;
-      });
-    } catch (e) {}
-  }
-
-  // 2. Draw Background
-  if (bgImg) {
-    drawImageAspectCover(ctx, bgImg, 0, 0, 1080, 1080);
-  } else {
-    ctx.fillStyle = '#0B0F17';
-    ctx.fillRect(0, 0, 1080, 1080);
-  }
-
-  // 3. Contrast Scrim
-  const scrim = ctx.createLinearGradient(0, 0, 0, 1080);
-  scrim.addColorStop(0, 'rgba(11, 15, 23, 0.55)');
-  scrim.addColorStop(0.5, 'rgba(11, 15, 23, 0.75)');
-  scrim.addColorStop(1, 'rgba(11, 15, 23, 0.95)');
-  ctx.fillStyle = scrim;
-  ctx.fillRect(0, 0, 1080, 1080);
-
-  // 4. Slide Indicator (Top Right)
-  const indicatorText = `${slideNumber} / ${totalSlides} ⏩`;
-  ctx.font = 'bold 20px "Space Grotesk", sans-serif';
-  const indMetrics = ctx.measureText(indicatorText);
-  const indW = indMetrics.width + 36;
-  const indH = 40;
-  const indX = 1080 - indW - 60;
-  const indY = 60;
-
-  ctx.save();
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-  ctx.strokeStyle = '#EAB308';
-  ctx.lineWidth = 1.5;
-  drawRoundedRect(ctx, indX, indY, indW, indH, 20);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = '#EAB308';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(indicatorText, indX + indW / 2, indY + indH / 2);
-  ctx.restore();
-
-  // 5. Slide Tag Pill
-  if (slide?.tagText) {
-    ctx.save();
-    const tagStr = slide.tagText.toUpperCase();
-    ctx.font = 'bold 18px "Space Grotesk", sans-serif';
-    const tagMetrics = ctx.measureText(tagStr);
-    const tagW = tagMetrics.width + 32;
-    const tagH = 38;
-    const tagX = 70;
-    const tagY = 160;
-
-    const tagGrad = ctx.createLinearGradient(tagX, tagY, tagX + tagW, tagY);
-    tagGrad.addColorStop(0, '#F59E0B');
-    tagGrad.addColorStop(1, '#D97706');
-    ctx.fillStyle = tagGrad;
-    drawRoundedRect(ctx, tagX, tagY, tagW, tagH, 19);
-    ctx.fill();
-
-    ctx.fillStyle = '#0B0F17';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(tagStr, tagX + tagW / 2, tagY + tagH / 2);
-    ctx.restore();
-  }
-
-  // 6. Slide Title
-  let currentY = slide?.tagText ? 230 : 180;
-  ctx.save();
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 44px "Space Grotesk", sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetY = 3;
-  currentY = drawWrappedText(ctx, slide?.title || '', 70, currentY, 940, 56, 3);
-  ctx.restore();
-
-  // 7. Subtitle
-  if (slide?.subtitle) {
-    ctx.save();
-    ctx.fillStyle = '#CBD5E1';
-    ctx.font = '500 24px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    currentY = drawWrappedText(ctx, slide.subtitle, 70, currentY + 14, 940, 36, 2);
-    ctx.restore();
-  }
-
-  // 8. Bullet Points
-  if (Array.isArray(slide?.bulletPoints) && slide.bulletPoints.length > 0) {
-    let bulletY = currentY + 28;
-    slide.bulletPoints.slice(0, 4).forEach((point) => {
-      if (bulletY + 80 > 910) return;
-      ctx.save();
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, 70, bulletY, 940, 72, 14);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#EAB308';
-      ctx.font = 'bold 22px "Space Grotesk", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('✓', 105, bulletY + 36);
-
-      ctx.fillStyle = '#F8FAFC';
-      ctx.font = '600 22px "Space Grotesk", sans-serif';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(point, 135, bulletY + 36, 850);
-      ctx.restore();
-      bulletY += 86;
-    });
-  }
-
-  // 9. Swipe Hint
-  if (slideNumber < totalSlides) {
-    ctx.save();
-    ctx.fillStyle = '#94A3B8';
-    ctx.font = '600 18px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('👉 Swipe for next slide', 540, 905);
-    ctx.restore();
-  } else {
-    ctx.save();
-    ctx.fillStyle = '#FBBF24';
-    ctx.font = 'bold 19px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🔖 Save this post & share with friends', 540, 905);
-    ctx.restore();
-  }
-
-  // 10. Draw Brand Footer / Frame (Bottom 120px)
-  const businessName = customDetails.businessName || brandKit?.businessName || 'BrandFlow';
-  const phone = customDetails.phone || brandKit?.phone || brandKit?.whatsapp || '';
-  const instagram = customDetails.instagramHandle || brandKit?.instagramHandle || '';
-
-  ctx.save();
-  ctx.fillStyle = 'rgba(11, 15, 23, 0.95)';
-  ctx.fillRect(0, 950, 1080, 130);
-
-  // Top border line
-  ctx.strokeStyle = '#EAB308';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, 950);
-  ctx.lineTo(1080, 950);
-  ctx.stroke();
-
-  // Business Name
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 26px "Space Grotesk", sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(businessName, 50, 1010, 480);
-
-  // Phone / Contact
-  if (phone) {
-    ctx.fillStyle = '#EAB308';
-    ctx.font = 'bold 22px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(`📞 ${phone}`, 1030, 995, 450);
-  }
-
-  // Instagram Handle
-  if (instagram) {
-    ctx.fillStyle = '#94A3B8';
-    ctx.font = '500 20px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(instagram.startsWith('@') ? instagram : `@${instagram}`, 1030, 1030, 450);
-  }
-  ctx.restore();
-
-  return canvas.toDataURL('image/png', 0.95);
-}
-
 export default useCanvasCompositor;
-

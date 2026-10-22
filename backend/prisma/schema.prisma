@@ -27,7 +27,7 @@ enum Role {
 
 // 🌐 Supported Social Media Publishing Networks
 enum SocialPlatform {
-  INSTAGRAM  // Meta Instagram Graph API (Feed, Carousels, Stories)
+  INSTAGRAM  // Meta Instagram Graph API (Feed, Stories)
   FACEBOOK   // Meta Facebook Pages API
   LINKEDIN   // LinkedIn Community Management API
 }
@@ -35,7 +35,7 @@ enum SocialPlatform {
 // 🎞️ Format Type of a Creative Post
 enum PostType {
   SINGLE     // Standard single graphic image post (1080x1080)
-  CAROUSEL   // Multi-slide swipeable carousel post (2 to 10 slides)
+  CAROUSEL   // Deprecated legacy format
 }
 
 // 🎨 Lifecycle Status of a Creative Post Asset
@@ -326,9 +326,9 @@ model Post {
   occasionName    String?                             // Free-text occasion title (e.g. "Grand Opening Sale")//something like post title or post name
   customImageUrl  String?                             // User-uploaded product or swapped graphic URL
   finalGraphicUrl String?                             // Sharp composited high-res rendered final image URL
-  postType        PostType     @default(SINGLE)       // Creative format (SINGLE or CAROUSEL)
-  mediaUrls       String[]     @default([])           // Ordered array of Cloudinary slide image URLs for multi-slide carousels
-  slides          Json?                               // Structured slide deck data (headlines, bullet points, layout configs)
+  postType        PostType     @default(SINGLE)       // Creative format (SINGLE)
+  mediaUrls       String[]     @default([])           // Array of Cloudinary image URLs
+  slides          Json?                               // Optional legacy slide data
   userConfigJson  Json?                               // Coordinate positions, colors, font sizes for re-editing
   status          PostStatus   @default(DRAFT)        // Post lifecycle state (DRAFT, SCHEDULED, PUBLISHED, etc.)
   createdAt       DateTime     @default(now())

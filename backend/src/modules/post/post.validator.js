@@ -39,8 +39,6 @@ export const createPostSchema = z.object({
     base64Graphic: z.string().optional().nullable(),
     base64Image: z.string().optional().nullable(),
     mediaUrls: z.array(z.string()).optional().default([]),
-    base64Slides: z.array(z.string()).optional().default([]),
-    slides: z.any().optional().nullable(),
     userConfigJson: z.any().optional().nullable(),
     status: z.enum(POST_STATUSES).default('DRAFT'),
   }),

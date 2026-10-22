@@ -26,6 +26,7 @@ import { useAiCaption } from '@/features/post-studio/hooks/useAiCaption';
 import { useBrandKit } from '@/features/brandkit/hooks/useBrandKit';
 import { useAiJobTracker } from '@/features/post-studio/hooks/useAiJobTracker';
 import { AiQueueTrackerCard } from './AiQueueTrackerCard';
+import { generatePuterCaption, isPuterSupported, isPuterExhausted } from '../services/puter.service';
 
 const TONES = [
   { id: "PROMOTIONAL", label: "Promotional", icon: "🚀", desc: "High conversion & sales pitch" },
@@ -73,6 +74,8 @@ export const AiCaptionGeneratorModal = ({
   const [tone, setTone] = useState("PROMOTIONAL");
   const [language, setLanguage] = useState("ENGLISH");
   const [platform, setPlatform] = useState("INSTAGRAM");
+  const [aiEngine, setAiEngine] = useState("PUTER"); // 'PUTER' | 'GEMINI'
+  const [isPuterGenerating, setIsPuterGenerating] = useState(false);
 
   // Local Editable State for Output
   const [editableCaption, setEditableCaption] = useState("");
@@ -110,45 +113,91 @@ export const AiCaptionGeneratorModal = ({
 
   if (!isOpen) return null;
 
+  /**
+   * Execute Google Gemini server-side BullMQ caption generation
+   */
+  const executeGeminiCaption = async () => {
+    const res = await generateCaption({
+      topic: topic || "Business Special Offer",
+      offerText,
+      customText,
+      tone,
+      language,
+      platform,
+      targetAudience: brandKit?.targetAudience || undefined,
+      businessUsps: brandKit?.businessUsps || undefined,
+    });
+
+    const resData = res?.data || res;
+
+    if (resData?.isQueued) {
+      // Enqueued in BullMQ Queue
+      captionJobTracker.startTracking(resData);
+    } else {
+      // Instant synchronous execution
+      const data = resData?.result || resData;
+      setAiSource(data?.source || "AI");
+      setEditableCaption(data?.captionText || "");
+      setHashtagsList(data?.hashtags || []);
+    }
+  };
+
+  const handleGeminiError = (err) => {
+    console.error("Failed to generate AI caption:", err);
+    const isPlanError =
+      err?.response?.status === 403 ||
+      err?.response?.data?.code === "PLAN_REQUIRED" ||
+      err?.response?.data?.code === "PLAN_EXPIRED" ||
+      err?.response?.data?.message?.toLowerCase().includes("plan");
+
+    if (isPlanError && openPlanModal) {
+      onClose();
+      openPlanModal();
+    }
+  };
+
   const handleGenerate = async (e) => {
     e?.preventDefault();
+
+    // Engine Branch 1: Puter.js Client-Side (if quota active)
+    if (aiEngine === 'PUTER' && !isPuterExhausted()) {
+      setIsPuterGenerating(true);
+      try {
+        const res = await generatePuterCaption({
+          topic: topic || "Business Special Offer",
+          offerText,
+          tone,
+          language,
+          platform,
+          targetAudience: brandKit?.targetAudience || undefined,
+          businessUsps: brandKit?.businessUsps || undefined,
+        });
+
+        if (res && res.captionText) {
+          setAiSource(res.source || 'PUTER_AI');
+          setEditableCaption(res.captionText);
+          setHashtagsList(res.hashtags || []);
+        } else {
+          throw new Error('Puter returned an invalid response');
+        }
+      } catch (puterErr) {
+        console.warn("Puter AI caption generation failed, falling back to Gemini:", puterErr);
+        try {
+          await executeGeminiCaption();
+        } catch (geminiErr) {
+          handleGeminiError(geminiErr);
+        }
+      } finally {
+        setIsPuterGenerating(false);
+      }
+      return;
+    }
+
+    // Engine Branch 2: Google Gemini Server Queue
     try {
-      const res = await generateCaption({
-        topic: topic || "Business Special Offer",
-        offerText,
-        customText,
-        tone,
-        language,
-        platform,
-        targetAudience: brandKit?.targetAudience || undefined,
-        businessUsps: brandKit?.businessUsps || undefined,
-      });
-
-      // API Response Envelope: res = { success: true, message: "...", data: { isQueued, ... } }
-      const resData = res?.data || res;
-
-      if (resData?.isQueued) {
-        // Enqueued in BullMQ Queue
-        captionJobTracker.startTracking(resData);
-      } else {
-        // Instant synchronous execution
-        const data = resData?.result || resData;
-        setAiSource(data?.source || "AI");
-        setEditableCaption(data?.captionText || "");
-        setHashtagsList(data?.hashtags || []);
-      }
+      await executeGeminiCaption();
     } catch (err) {
-      console.error("Failed to generate AI caption:", err);
-      const isPlanError =
-        err?.response?.status === 403 ||
-        err?.response?.data?.code === "PLAN_REQUIRED" ||
-        err?.response?.data?.code === "PLAN_EXPIRED" ||
-        err?.response?.data?.message?.toLowerCase().includes("plan");
-
-      if (isPlanError && openPlanModal) {
-        onClose();
-        openPlanModal();
-      }
+      handleGeminiError(err);
     }
   };
 
@@ -255,6 +304,44 @@ export const AiCaptionGeneratorModal = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pr-1">
           {/* Left Column: Generator Form Controls */}
           <div className="space-y-4">
+            {/* AI Copywriting Engine Selector */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E]">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <span>AI Copy Engine:</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setAiEngine('PUTER')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    aiEngine === 'PUTER'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm'
+                      : 'text-slate-400 hover:text-white border border-transparent'
+                  }`}
+                >
+                  <span>🍌 Puter AI</span>
+                  <span className="text-[9px] font-extrabold px-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    FREE
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiEngine('GEMINI')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                    aiEngine === 'GEMINI'
+                      ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/60 shadow-sm'
+                      : 'text-slate-400 hover:text-white border border-transparent'
+                  }`}
+                >
+                  <span>⚡ Gemini</span>
+                  <span className="text-[9px] font-extrabold px-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    API
+                  </span>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1.5">
                 Topic / Occasion / Product Name
@@ -348,11 +435,16 @@ export const AiCaptionGeneratorModal = ({
 
             <Button
               type="button"
-              disabled={isGenerating || captionJobTracker.isTracking}
+              disabled={isGenerating || isPuterGenerating || captionJobTracker.isTracking}
               onClick={handleGenerate}
               className="w-full py-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {captionJobTracker.isTracking ? (
+              {isPuterGenerating ? (
+                <>
+                  <Wand2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Drafting Copy with Puter AI...</span>
+                </>
+              ) : captionJobTracker.isTracking ? (
                 <>
                   <Wand2 className="w-4 h-4 animate-spin text-white" />
                   <span>
@@ -364,12 +456,16 @@ export const AiCaptionGeneratorModal = ({
               ) : isGenerating ? (
                 <>
                   <Wand2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Connecting to AI Engine...</span>
+                  <span>Connecting to Gemini Engine...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 text-amber-200" />
-                  <span>Generate Caption with AI ✨</span>
+                  <span>
+                    {aiEngine === 'PUTER'
+                      ? 'Generate with Puter AI (Free) 🍌'
+                      : 'Generate with Gemini AI ⚡'}
+                  </span>
                 </>
               )}
             </Button>
@@ -384,6 +480,16 @@ export const AiCaptionGeneratorModal = ({
                   <Edit3 className="w-4 h-4 text-amber-400" />
                   <span>Editable Caption Copy</span>
                 </span>
+                {aiSource === 'PUTER_AI' && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                    🍌 Puter AI (Free)
+                  </span>
+                )}
+                {aiSource && aiSource !== 'PUTER_AI' && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
+                    ⚡ Google Gemini
+                  </span>
+                )}
               </div>
 
               {/* Editable Text Area for Caption */}

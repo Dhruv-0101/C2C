@@ -72,29 +72,11 @@ export async function getJobStatus(req, res, next) {
   }
 }
 
-/**
- * POST /api/v1/ai/generate-carousel
- * Generate comprehensive multi-slide social media carousel deck (Hook, Content slides, CTA, Caption & Tags)
- */
-export async function generateCarousel(req, res, next) {
-  try {
-    const result = await aiLogic.generateCarousel(req.user.id, req.body);
-
-    return sendSuccessResponse(res, {
-      statusCode: HTTP_STATUS.OK,
-      message: 'AI Carousel deck generated successfully 🎠✨',
-      data: result,
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
 // Backwards-compatible object export
 export const aiController = {
   generateCaption,
   generatePostImage,
   getJobStatus,
-  generateCarousel,
 };
+
 

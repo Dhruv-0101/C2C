@@ -21,6 +21,7 @@ export const Header = () => {
     postsRemaining,
     isExpired,
     hasPlan,
+    hasClaimedFree,
     planName,
     isPlanModalOpen,
     openPlanModal,
@@ -177,6 +178,7 @@ export const Header = () => {
         onClose={closePlanModal}
         currentPlan={planName}
         postsRemaining={postsRemaining}
+        hasClaimedFree={hasClaimedFree}
         onSuccess={(resData) => setSuccessData(resData)}
       />
 

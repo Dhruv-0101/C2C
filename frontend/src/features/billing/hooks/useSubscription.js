@@ -34,6 +34,13 @@ export const useSubscription = () => {
   const isExpired = subscription?.isExpired || postsRemaining <= 0;
   const planName = subscription?.plan || null;
   const canCreatePost = postsRemaining > 0;
+  const hasClaimedFree = Boolean(
+    subscription?.hasClaimedFree ||
+    subscription?.isFreeClaimed ||
+    subscription?.plan === 'FREE' ||
+    subscription?.plan === 'PRO' ||
+    (subscription?.totalPostsAllowed || 0) > 0
+  );
 
 
   // Activate Free Plan Mutation
@@ -75,6 +82,7 @@ export const useSubscription = () => {
     bonusRemaining,
     isExpired,
     hasPlan,
+    hasClaimedFree,
     canCreatePost,
     planName,
     isPlanModalOpen,

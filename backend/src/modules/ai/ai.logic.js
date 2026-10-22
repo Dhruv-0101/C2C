@@ -20,9 +20,6 @@ import {
   sanitizeCaptionResponse,
   buildNanoBananaPrompt,
   getCuratedAestheticFallback,
-  buildCarouselPrompt,
-  sanitizeCarouselResponse,
-  synthesizeSmartCarousel,
 } from './ai.helper.js';
 
 /**
@@ -78,14 +75,14 @@ export async function generateCaption(userId, params = {}) {
   if (geminiKey && !geminiKey.includes('dummy')) {
     try {
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: promptText }] }],
           }),
-          signal: AbortSignal.timeout(6000),
+          signal: AbortSignal.timeout(15000),
         }
       );
 
@@ -416,88 +413,6 @@ export async function getAiJobStatus(jobId, type = 'image') {
   return statusData;
 }
 
-/**
- * 🎠 Generate Structured Multi-Slide Social Carousel Deck
- * Queries Gemini 1.5 Flash using JSON output mode or falls back to Smart Synthesizer.
- *
- * @param {string} userId - Authenticated user UUID
- * @param {Object} params - Carousel generation parameters
- * @returns {Promise<{ title: string, caption: string, hashtags: Array<string>, slides: Array<Object>, source: string }>}
- */
-export async function generateCarousel(userId, params = {}) {
-  // 1. Fetch live BrandKit context to inject business identity
-  let brandKit = null;
-  try {
-    brandKit = await aiRepository.findBrandKitByUserId(userId);
-  } catch (err) {
-    logger.warn(`Could not load brandKit context for AI carousel: ${err.message}`);
-  }
-
-  const context = {
-    businessName: brandKit?.businessName || 'Our Business',
-    tagline: brandKit?.tagline || '',
-    categoryName: brandKit?.category?.name || '',
-    targetAudience: brandKit?.targetAudience || 'General Audience',
-    captionLanguage: params.language || brandKit?.captionLanguage || 'English',
-    businessUsps: brandKit?.businessUsps || '',
-    ...params,
-  };
-
-  const requestedSlides = Math.max(2, Math.min(10, Number(params.numberOfSlides) || 5));
-  const promptText = buildCarouselPrompt(context, params);
-  const geminiKey = env.GEMINI_API_KEY;
-
-  // 2. Query Google Gemini Flash with strict JSON mode
-  if (geminiKey && !geminiKey.includes('dummy')) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }],
-            generationConfig: {
-              responseMimeType: 'application/json',
-            },
-          }),
-          signal: AbortSignal.timeout(10000),
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok) {
-        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawText) {
-          const cleanJsonStr = rawText
-            .replace(/^```json\s*/i, '')
-            .replace(/^```\s*/i, '')
-            .replace(/```$/g, '')
-            .trim();
-          const parsed = JSON.parse(cleanJsonStr);
-          const sanitized = sanitizeCarouselResponse(parsed, requestedSlides);
-
-          return {
-            ...sanitized,
-            source: AI_SOURCES.GEMINI,
-          };
-        }
-      } else {
-        logger.warn(`Gemini Carousel API HTTP Error (${response.status}): ${JSON.stringify(data)}`);
-      }
-    } catch (err) {
-      logger.warn(`Gemini Carousel call failed, falling back to Smart AI Synthesizer: ${err.message}`);
-    }
-  }
-
-  // 3. High-Performance Zero-Config Fallback
-  const fallbackResult = synthesizeSmartCarousel(context, params);
-  return {
-    ...fallbackResult,
-    source: AI_SOURCES.SMART_SYNTHESIZER,
-  };
-}
-
 // Backwards-compatible object export
 export const aiLogic = {
   generateCaption,
@@ -505,8 +420,8 @@ export const aiLogic = {
   generatePostImage,
   enqueuePostImage,
   getAiJobStatus,
-  generateCarousel,
 };
+
 
 
 

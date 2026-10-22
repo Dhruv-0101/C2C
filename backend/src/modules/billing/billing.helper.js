@@ -59,7 +59,7 @@ export const calculatePlanPricing = (postCount, currency = BILLING_CURRENCIES.IN
  * @param {Object|null} sub - Raw subscription from database
  * @returns {Object|null} Sanitized subscription object
  */
-export const sanitizeSubscription = (sub) => {
+export const sanitizeSubscription = (sub, hasClaimedFree = null) => {
   if (!sub) return null;
 
   const planRemaining = Math.max(0, (sub.totalPostsAllowed || 0) - (sub.postsUsed || 0));
@@ -75,6 +75,16 @@ export const sanitizeSubscription = (sub) => {
   } else if (isExpired) {
     computedStatus = SUBSCRIPTION_STATUSES.EXPIRED;
   }
+
+  // User has claimed free if explicitly passed, or if they have ever held a plan or posts
+  const isFreeClaimed = hasClaimedFree !== null
+    ? Boolean(hasClaimedFree)
+    : Boolean(
+        sub.plan === 'FREE' ||
+        sub.plan === 'PRO' ||
+        (sub.totalPostsAllowed || 0) > 0 ||
+        sub.paymentGateway === 'FREE'
+      );
 
   return {
     id: sub.id,
@@ -96,6 +106,8 @@ export const sanitizeSubscription = (sub) => {
     isExpired,
     hasPlan,
     canCreatePost: postsRemaining > 0,
+    hasClaimedFree: isFreeClaimed,
+    isFreeClaimed,
     createdAt: sub.createdAt,
     updatedAt: sub.updatedAt,
   };

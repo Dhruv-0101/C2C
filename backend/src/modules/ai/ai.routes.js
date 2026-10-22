@@ -8,7 +8,6 @@ import {
   generateCaptionSchema,
   generateImageSchema,
   getAiJobStatusSchema,
-  generateCarouselSchema,
 } from './ai.validator.js';
 
 const router = Router();
@@ -38,14 +37,6 @@ router.post(
   enforceActivePlanQuota,
   validate(generateImageSchema),
   aiController.generatePostImage
-);
-
-// 🎠 POST /api/v1/ai/generate-carousel (Generates complete multi-slide content deck)
-router.post(
-  '/generate-carousel',
-  enforceActivePlanQuota,
-  validate(generateCarouselSchema),
-  aiController.generateCarousel
 );
 
 export default router;

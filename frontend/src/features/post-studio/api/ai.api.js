@@ -38,26 +38,10 @@ export async function getAiJobStatus(jobId, type = 'image') {
   return res.data;
 }
 
-/**
- * Generate Structured Multi-Slide Carousel Deck with AI
- * @param {Object} params
- * @param {string} params.topic
- * @param {number} [params.numberOfSlides]
- * @param {string} [params.tone]
- * @param {string} [params.language]
- * @param {string} [params.industry]
- * @param {string} [params.targetAudience]
- * @returns {Promise<Object>}
- */
-export async function generateAiCarousel(params) {
-  const res = await api.post(API_ENDPOINTS.AI.GENERATE_CAROUSEL, params);
-  return res.data;
-}
-
 export default {
   generateAiCaption,
   generateAiPostImage,
   getAiJobStatus,
-  generateAiCarousel,
 };
+
 

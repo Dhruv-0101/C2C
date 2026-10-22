@@ -43,6 +43,7 @@ export const YourPlanPage = () => {
     planRemaining,
     bonusRemaining,
     hasPlan,
+    hasClaimedFree,
     isExpired,
     planName,
     isPlanModalOpen,
@@ -167,67 +168,111 @@ export const YourPlanPage = () => {
 
       {/* 🚀 Active Plan Hero Section */}
       {!hasPlan ? (
-        /* NO_PLAN State: Prompt 1-Click Free Plan Activation */
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1A253A] via-[#121A29] to-[#0A0F19] border-2 border-amber-500/40 p-6 sm:p-8 shadow-2xl shadow-amber-500/10">
-          <div className="absolute -top-24 -right-24 w-60 h-60 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+        !hasClaimedFree ? (
+          /* NO_PLAN State (Brand New User): Prompt 1-Click Free Plan Activation */
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1A253A] via-[#121A29] to-[#0A0F19] border-2 border-amber-500/40 p-6 sm:p-8 shadow-2xl shadow-amber-500/10">
+            <div className="absolute -top-24 -right-24 w-60 h-60 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-            <div className="space-y-3 max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                <Sparkles className="w-3.5 h-3.5" /> No Active Subscription Plan
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight">
-                Activate Your Free Starter Plan (5 Posts)
-              </h2>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                You get 5 complimentary AI visual post generations and multi-platform publishing credits to test BrandFlow for your business. No credit card required!
-              </p>
-              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-400 font-medium">
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-400" /> 5 Free Live Social Posts
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-3 max-w-2xl">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <Sparkles className="w-3.5 h-3.5" /> No Active Subscription Plan
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-400" /> Nano Banana 2.1 AI Visuals
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-400" /> Multi-Platform Auto Scheduling
-                </span>
+                <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight">
+                  Activate Your Free Starter Plan (5 Posts)
+                </h2>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  You get 5 complimentary AI visual post generations and multi-platform publishing credits to test BrandFlow for your business. Strictly 1-time activation per account.
+                </p>
+                <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-400 font-medium">
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-400" /> 5 Free Live Social Posts
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-400" /> AI Visual Creator
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-400" /> Multi-Platform Auto Scheduling
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={handleActivateFree}
+                  disabled={activateFreeMutation.isPending}
+                  className="py-3 px-6 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-glow flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {activateFreeMutation.isPending ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                      <span>Activating Free Plan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 fill-slate-950" />
+                      <span>Activate 5 Free Posts Now 🚀</span>
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={openPlanModal}
+                  className="py-3 px-5 rounded-2xl text-xs sm:text-sm font-bold border-[#2A3B55] text-white hover:bg-slate-800/80 cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>View Pro Pricing</span>
+                  <ArrowUpRight className="w-4 h-4 text-amber-400" />
+                </Button>
               </div>
             </div>
+          </div>
+        ) : (
+          /* NO_PLAN State (Existing User who has already claimed Free): Prompt Pro Upgrade */
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1F182A] via-[#141224] to-[#0A0A14] border-2 border-indigo-500/40 p-6 sm:p-8 shadow-2xl shadow-indigo-500/10">
+            <div className="absolute -top-24 -right-24 w-60 h-60 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-              <Button
-                type="button"
-                variant="primary"
-                onClick={handleActivateFree}
-                disabled={activateFreeMutation.isPending}
-                className="py-3 px-6 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-glow flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {activateFreeMutation.isPending ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                    <span>Activating Free Plan...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4 fill-slate-950" />
-                    <span>Activate 5 Free Posts Now 🚀</span>
-                  </>
-                )}
-              </Button>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-3 max-w-2xl">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <Lock className="w-3.5 h-3.5 text-indigo-400" /> Free Plan Already Claimed (1x Only)
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight">
+                  Upgrade to Pro to Continue Creating Posts
+                </h2>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  Your complimentary 1-time Free Starter trial has ended. Select a Pro pack from 10 to 100+ posts with volume discounts to keep generating and publishing high-performing content.
+                </p>
+                <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-400 font-medium">
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-400" /> Up to 30% Bulk Volume Discount
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-400" /> High-Resolution AI Graphics
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-emerald-400" /> Official Tax Invoices & Receipts
+                  </span>
+                </div>
+              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={openPlanModal}
-                className="py-3 px-5 rounded-2xl text-xs sm:text-sm font-bold border-[#2A3B55] text-white hover:bg-slate-800/80 cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <span>View Pro Pricing</span>
-                <ArrowUpRight className="w-4 h-4 text-amber-400" />
-              </Button>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={openPlanModal}
+                  className="py-3 px-6 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-glow flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 fill-slate-950" />
+                  <span>Upgrade to Pro Plan 🚀</span>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )
       ) : (
         /* ACTIVE PLAN State: Complete Quota, Bonus & Breakdown Card */
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#162032] via-[#0E1624] to-[#080C14] border border-[#24344D] p-5 sm:p-8 shadow-2xl">
@@ -572,6 +617,7 @@ export const YourPlanPage = () => {
           onClose={closePlanModal}
           currentPlan={planName || 'FREE'}
           postsRemaining={postsRemaining}
+          hasClaimedFree={hasClaimedFree}
           onSuccess={(data) => {
             setSuccessData(data);
             refetchSubscription();

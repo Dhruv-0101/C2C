@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Button from '../../../components/ui/Button';
 import { billingApi } from '@/features/billing/api/billing.api';
+import { useSubscription } from '../hooks/useSubscription';
 import StripeElementsModal from './StripeElementsModal';
 
 // Dynamic pricing calculation constants for frontend slider
@@ -50,8 +51,18 @@ export const PlanSelectionModal = ({
   onClose,
   currentPlan = 'FREE',
   postsRemaining = 0,
+  hasClaimedFree: propHasClaimedFree,
   onSuccess,
 }) => {
+  const { hasClaimedFree: hookHasClaimedFree } = useSubscription();
+  const hasClaimedFree = propHasClaimedFree !== undefined ? propHasClaimedFree : hookHasClaimedFree;
+  const isFreeUnavailable = Boolean(
+    hasClaimedFree ||
+    currentPlan === 'PRO' ||
+    currentPlan === 'FREE' ||
+    postsRemaining > 0
+  );
+
   const [currency, setCurrency] = useState('INR');
   const [postCount, setPostCount] = useState(15);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -261,7 +272,7 @@ export const PlanSelectionModal = ({
               <div>
                 <h3 className="text-lg font-bold text-white">Starter Trial Plan</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Allows max 5 post creations. Automatically expires after 5th post.
+                  Allows max 5 post creations. Strictly limited to 1 activation per account in lifetime.
                 </p>
               </div>
 
@@ -274,23 +285,32 @@ export const PlanSelectionModal = ({
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Full BrandKit Overlay Support</span>
                 </li>
-                <li className="flex items-center gap-2 text-slate-500">
-                  <Lock className="w-4 h-4 text-slate-500 shrink-0" />
-                  <span>Auto-Expires upon 5th post completion</span>
+                <li className="flex items-center gap-2 text-amber-400/90 font-medium">
+                  <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>Strictly 1-time trial per account</span>
                 </li>
               </ul>
             </div>
 
-            <Button
-              variant="outline"
-              disabled={isProcessing || (currentPlan === 'FREE' && postsRemaining <= 0)}
-              onClick={handleActivateFree}
-              className="w-full justify-center py-3 text-xs font-bold border-[#2C384E]"
-            >
-              {currentPlan === 'FREE' && postsRemaining <= 0
-                ? 'Free Plan Expired'
-                : 'Activate Free Plan (5 Posts)'}
-            </Button>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                disabled={isProcessing || isFreeUnavailable}
+                onClick={handleActivateFree}
+                className={`w-full justify-center py-3 text-xs font-bold border-[#2C384E] ${
+                  isFreeUnavailable ? 'opacity-60 cursor-not-allowed bg-slate-900/80 text-slate-400' : ''
+                }`}
+              >
+                {isFreeUnavailable
+                  ? (currentPlan === 'PRO' ? 'Pro Plan Active (Free Claimed)' : 'Free Plan Already Claimed')
+                  : (isProcessing ? 'Activating Free Plan...' : 'Activate Free Plan (5 Posts)')}
+              </Button>
+              {isFreeUnavailable && (
+                <p className="text-[10px] text-center text-amber-400/80 font-medium">
+                  🔒 Free Plan is strictly 1-time only. Please upgrade to Pro for more posts.
+                </p>
+              )}
+            </div>
           </div>
 
           {/* CARD 2: PAID PRO PLAN WITH INTERACTIVE SLIDER */}

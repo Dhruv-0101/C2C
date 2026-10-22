@@ -18,8 +18,8 @@ import { logger } from '../../config/logger.js';
 import { deleteCachePattern } from '../../common/utils/cache.util.js';
 import { CACHE_KEYS } from '../../common/constants/cache.constants.js';
 import {
+  POST_TYPE,
   POST_STATUS,
-
   SCHEDULED_POST_STATUS,
   POST_TARGET_PLATFORMS,
 } from './post.constants.js';
@@ -189,35 +189,6 @@ export async function schedulePost(userId, payload) {
  */
 export async function createPost(userId, payload, fileBuffer) {
   let finalGraphicUrl = payload.finalGraphicUrl || null;
-  let mediaUrls = Array.isArray(payload.mediaUrls) ? [...payload.mediaUrls] : [];
-
-  // Handle multi-slide base64 uploads for Carousel posts
-  if (Array.isArray(payload.base64Slides) && payload.base64Slides.length > 0) {
-    try {
-      const uploadedSlideUrls = await Promise.all(
-        payload.base64Slides.map(async (slideBase64) => {
-          try {
-            let cleanBase64 = slideBase64;
-            if (cleanBase64.includes(';base64,')) {
-              cleanBase64 = cleanBase64.split(';base64,').pop();
-            }
-            const buffer = Buffer.from(cleanBase64, 'base64');
-            const uploadResult = await uploadPostBuffer(buffer);
-            return uploadResult.url;
-          } catch (err) {
-            logger.warn(`Slide Cloudinary upload warning: ${err.message}`);
-            return null;
-          }
-        })
-      );
-      const validUploadedUrls = uploadedSlideUrls.filter(Boolean);
-      if (validUploadedUrls.length > 0) {
-        mediaUrls = validUploadedUrls;
-      }
-    } catch (slideErr) {
-      logger.warn(`Carousel multi-slide upload error: ${slideErr.message}`);
-    }
-  }
 
   // Upload composited post image buffer or base64 to Cloudinary brandflow/posts
   if (fileBuffer) {
@@ -242,12 +213,8 @@ export async function createPost(userId, payload, fileBuffer) {
     }
   }
 
-  // If carousel has slides and no explicit single cover graphic, default to first slide
-  if (!finalGraphicUrl && mediaUrls.length > 0) {
-    finalGraphicUrl = mediaUrls[0];
-  }
-
-  const postType = payload.postType || (mediaUrls.length > 1 ? 'CAROUSEL' : 'SINGLE');
+  const mediaUrls = finalGraphicUrl ? [finalGraphicUrl] : [];
+  const postType = POST_TYPE.SINGLE;
 
   // 1. Enforce post quota: Atomically deduct 1 post credit with ACID transaction safety (Prevents TOCTOU race conditions)
   const deductionResult = await billingRepository.deductPostCreditAtomic(userId);
