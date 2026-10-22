@@ -15,6 +15,7 @@ export const ADMIN_TABS = Object.freeze({
   SUB_ADMIN_ACTIVITY: 'subadmin-activity',
   FINANCE: 'finance',
   POSTS: 'posts',
+  BROADCASTS: 'broadcasts',
 });
 
 /**

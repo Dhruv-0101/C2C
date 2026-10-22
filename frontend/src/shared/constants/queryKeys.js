@@ -75,6 +75,14 @@ export const QUERY_KEYS = {
     OVERVIEW: ['admin', 'finance', 'overview'],
     TRANSACTIONS: (params = {}) => ['admin', 'finance', 'transactions', params],
   },
+  NOTIFICATIONS: {
+    ALL: ['notifications'],
+    FEED: (params = {}) => ['notifications', 'feed', params],
+    UNREAD_COUNT: ['notifications', 'unreadCount'],
+    VAPID_KEY: ['notifications', 'vapidKey'],
+    BROADCASTS: (params = {}) => ['admin', 'notifications', 'broadcasts', params],
+    AUDIENCE_ESTIMATE: (audience) => ['admin', 'notifications', 'estimate', audience],
+  },
   ANALYTICS: {
     ALL: ['analytics'],
     OVERVIEW: (range, platform) => ['analytics', 'overview', range, platform],

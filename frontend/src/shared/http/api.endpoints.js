@@ -193,6 +193,19 @@ export const API_ENDPOINTS = {
     ADMIN_UPDATE_STATUS: '/social/admin/update-status',
     ADMIN_CONNECT_TOKEN: '/social/admin/connect-user-token',
   },
+  NOTIFICATIONS: {
+    BASE: '/notifications',
+    VAPID_KEY: '/notifications/vapid-public-key',
+    SUBSCRIBE: '/notifications/subscribe',
+    UNSUBSCRIBE: '/notifications/unsubscribe',
+    FEED: '/notifications',
+    READ: (id) => `/notifications/${id}/read`,
+    READ_ALL: '/notifications/read-all',
+    TEST_SEND: '/notifications/test-send',
+    ADMIN_BROADCAST: '/notifications/admin/broadcast',
+    ADMIN_ESTIMATE: '/notifications/admin/audience-estimate',
+    ADMIN_BROADCASTS: '/notifications/admin/broadcasts',
+  },
 };
 
 export const HTTP_STATUS = {

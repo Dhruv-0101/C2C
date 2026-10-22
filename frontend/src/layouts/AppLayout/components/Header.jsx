@@ -9,6 +9,7 @@ import { TwoFactorSettingsModal } from '@/features/auth/components/TwoFactorSett
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import PlanSelectionModal from '@/features/billing/components/PlanSelectionModal';
 import PaymentSuccessModal from '@/features/billing/components/PaymentSuccessModal';
+import { NotificationBell } from '@/features/notifications';
 import { Zap } from 'lucide-react';
 
 
@@ -82,6 +83,9 @@ export const Header = () => {
 
             {isAuthenticated ? (
               <div className="flex items-center gap-1.5 sm:gap-3">
+                {/* 1-Day Festival & Web Push Notification Bell */}
+                <NotificationBell />
+
                 {/* Subscription Plan Badge & Modal Trigger */}
                 <button
                   type="button"

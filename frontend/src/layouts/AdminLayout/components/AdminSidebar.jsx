@@ -17,6 +17,7 @@ import {
   Activity,
   CheckCircle2,
   X,
+  Megaphone,
 } from "lucide-react";
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
@@ -58,6 +59,12 @@ const ADMIN_NAVIGATION_SECTIONS = [
     items: [
       { id: ADMIN_TABS.FINANCE, label: "Finance & Revenue", icon: CreditCard, superAdminOnly: true },
       { id: ADMIN_TABS.POSTS, label: "Generated Posts Audit", icon: Sparkles },
+    ],
+  },
+  {
+    title: "Messaging & Outreach",
+    items: [
+      { id: ADMIN_TABS.BROADCASTS, label: "Push Broadcasts", icon: Megaphone },
     ],
   },
 ];

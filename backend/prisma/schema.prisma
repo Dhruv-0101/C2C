@@ -103,6 +103,9 @@ model User {
   templateCategoriesCreated TemplateCategory[]   @relation("TemplateCategoryCreator") // Template categories created if user is admin/subadmin
   framesCreated             Frame[]              @relation("FrameCreator") // Frames created if user is admin/subadmin
   postAnalytics             PostAnalytics[]                  // Aggregated social media engagement metrics
+  pushSubscriptions         PushSubscription[]               // Registered device web push endpoints
+  notifications             Notification[]                   // In-app alert history and bell notifications
+  broadcastsSent            NotificationBroadcast[]          // Admin manual broadcast history
 
   @@index([email])
   @@index([googleId])
@@ -483,5 +486,64 @@ model PostAnalytics {
   @@index([userId, platform])
   @@index([userId, createdAt])
   @@index([lastSyncedAt])
+  @@index([createdAt])
+}
+
+// ==============================================================================
+// 🔔 PUSH NOTIFICATIONS & IN-APP NOTIFICATIONS
+// ==============================================================================
+
+// 📱 Browser Push Subscriptions (Web Push / Service Worker endpoint tokens)
+model PushSubscription {
+  id         String   @id @default(uuid())
+  userId     String                                 // Foreign key referencing User
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint   String   @unique                       // Unique browser push service URL (FCM / APNs)
+  p256dh     String                                 // User public encryption key
+  auth       String                                 // Auth secret
+  userAgent  String?                                // Browser / platform details
+  deviceType String   @default("MOBILE")            // MOBILE, DESKTOP, TABLET
+  isActive   Boolean  @default(true)                // Set false if push service returns 410 Gone / 404
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+// 📬 In-App Notifications (Notification Bell Feed & History)
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String                                 // Foreign key referencing User
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String                                 // E.g. "Diwali Alert 🪔"
+  message   String                                 // E.g. "Tomorrow is Diwali! Your branded creative is ready."
+  type      String   @default("FESTIVAL_ALERT")    // FESTIVAL_ALERT, BILLING, SYSTEM, SOCIAL_PUBLISHED
+  linkUrl   String?                                // Deep link target: e.g. "/studio?festival=diwali"
+  metadata  Json?                                  // Custom payload (festivalId, postId, etc.)
+  isRead    Boolean  @default(false)               // Unread flag for bell badge counter
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+// 📢 Admin Broadcast Campaigns History
+model NotificationBroadcast {
+  id              String   @id @default(uuid())
+  adminId         String                                 // Foreign key referencing User (sender)
+  admin           User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  title           String
+  message         String
+  type            String   @default("PROMOTION")         // PROMOTION, SYSTEM_ALERT, MAINTENANCE, UPDATE
+  targetAudience  String   @default("ALL")               // ALL, FREE_USERS, PRO_USERS
+  linkUrl         String?
+  imageUrl        String?
+  recipientCount  Int      @default(0)                   // Total users targeted
+  deliveredCount  Int      @default(0)                   // Push devices queued
+  createdAt       DateTime @default(now())
+
+  @@index([adminId])
   @@index([createdAt])
 }
