@@ -1,10 +1,11 @@
 import React from 'react';
-import { Maximize2, Trash2, Download, Calendar, Clock, Share2 } from 'lucide-react';
+import { Maximize2, Trash2, Download, Calendar, Clock, Share2, Film, Play } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
+import { getPostMedia, downloadMediaAsset } from '@/shared/utils';
 
 /**
  * PostGridItem
- * Clean enterprise-grade single post preview, lightbox inspection, download, and deletion card.
+ * Clean enterprise-grade single post preview, lightbox inspection, video player trigger, download, and deletion card.
  */
 export const PostGridItem = ({
   post,
@@ -16,37 +17,32 @@ export const PostGridItem = ({
     post.occasionName ||
     post.template?.title ||
     post.festival?.name ||
-    "Branded Graphic Post";
+    "Branded Post";
+
+  const media = getPostMedia(post);
+  const isVideo = media.isVideo;
+  const displayUrl = media.posterUrl || media.mediaUrl;
 
   // Internal fallback download if onDownload prop is omitted
   const handleInternalDownload = (e) => {
     e.stopPropagation();
     if (onDownload) {
-      onDownload(post.finalGraphicUrl, occasionTitle);
+      onDownload(media.mediaUrl || displayUrl, occasionTitle);
       return;
     }
-    if (!post.finalGraphicUrl) return;
-
-    // Trigger direct browser download or new tab fallback
-    const link = document.createElement("a");
-    link.href = post.finalGraphicUrl;
-    link.download = `${occasionTitle.replace(/[^a-zA-Z0-9_-]/g, "_")}.png`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadMediaAsset(media.mediaUrl || displayUrl, occasionTitle);
   };
 
   const handleShare = async (e) => {
     e.stopPropagation();
-    if (!post.finalGraphicUrl) return;
+    const shareUrl = media.mediaUrl || displayUrl;
+    if (!shareUrl) return;
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
           title: occasionTitle,
           text: post.captions?.[0]?.captionText || occasionTitle,
-          url: post.finalGraphicUrl,
+          url: shareUrl,
         });
       } catch {
         // User cancelled share
@@ -60,15 +56,35 @@ export const PostGridItem = ({
       className="p-3.5 sm:p-4 bg-[#131B2A] border-[#2C384E] space-y-3.5 sm:space-y-4 flex flex-col justify-between group hover:border-slate-500/80 transition-all duration-300 rounded-2xl shadow-lg hover:shadow-xl relative min-w-0"
     >
       <div className="space-y-3">
-        {/* Image Preview Container */}
-        {post.finalGraphicUrl ? (
+        {/* Media Preview Container */}
+        {displayUrl ? (
           <div className="relative aspect-square rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] group/img">
             <img
-              src={post.finalGraphicUrl}
+              src={displayUrl}
               alt={occasionTitle}
               className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500 cursor-pointer"
               onClick={() => onLightbox?.(post)}
             />
+
+            {/* Video Reel Tag if Video */}
+            {isVideo && (
+              <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase z-10 backdrop-blur-md shadow-sm border bg-pink-500/30 text-pink-200 border-pink-400/40 flex items-center gap-1">
+                <Film className="w-3 h-3 text-pink-400" />
+                <span>{media.postType === 'REEL' ? 'Reel' : 'Video'}{media.duration ? ` • ${media.duration}s` : ''}</span>
+              </span>
+            )}
+
+            {/* Center Play Icon for Video */}
+            {isVideo && (
+              <div 
+                onClick={() => onLightbox?.(post)}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+              >
+                <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-xl group-hover/img:scale-110 transition-transform">
+                  <Play className="w-5 h-5 ml-0.5 fill-white text-white" />
+                </div>
+              </div>
+            )}
 
             {/* Status Pill - Clean status badge only */}
             {(() => {
@@ -92,29 +108,30 @@ export const PostGridItem = ({
             {/* Hover Quick View Overlay */}
             <div
               onClick={() => onLightbox?.(post)}
-              className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-[2px] cursor-pointer"
+              className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-[2px] cursor-pointer z-20"
             >
               <div className="w-11 h-11 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/30 transform scale-90 group-hover/img:scale-100 transition-transform">
-                <Maximize2 className="w-5 h-5" />
+                {isVideo ? <Play className="w-5 h-5 ml-0.5 fill-current" /> : <Maximize2 className="w-5 h-5" />}
               </div>
               <span className="text-[11px] font-bold text-white bg-slate-900/90 px-3 py-1 rounded-full border border-slate-700 shadow">
-                View Fullscreen
+                {isVideo ? "Play Video" : "View Fullscreen"}
               </span>
             </div>
           </div>
         ) : (
           <div className="aspect-square rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-center text-xs text-slate-500">
-            No Preview Image
+            No Media Preview
           </div>
         )}
 
         {/* Content Details */}
         <div className="space-y-2">
           <h4
-            className="font-bold text-sm text-white line-clamp-1 group-hover:text-amber-400 transition-colors"
+            className="font-bold text-sm text-white line-clamp-1 group-hover:text-amber-400 transition-colors flex items-center gap-1.5"
             title={occasionTitle}
           >
-            {occasionTitle}
+            {isVideo && <Film className="w-3.5 h-3.5 text-pink-400 shrink-0" />}
+            <span className="truncate">{occasionTitle}</span>
           </h4>
 
           {/* Post Dates (Created / Scheduled) */}
@@ -156,14 +173,23 @@ export const PostGridItem = ({
           type="button"
           onClick={() => onLightbox?.(post)}
           className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 py-2.5 px-2 sm:px-3 rounded-xl bg-[#0B0F17] hover:bg-slate-800 text-slate-200 hover:text-white border border-[#2C384E] hover:border-slate-500 text-xs font-semibold transition cursor-pointer active:scale-95 min-h-[38px]"
-          title="View Full Resolution Graphic"
+          title={isVideo ? "Play High-Res Video Reel" : "View Full Resolution Graphic"}
         >
-          <Maximize2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span className="truncate">View HD</span>
+          {isVideo ? (
+            <>
+              <Play className="w-3.5 h-3.5 text-pink-400 fill-pink-400 shrink-0" />
+              <span className="truncate">Play Reel</span>
+            </>
+          ) : (
+            <>
+              <Maximize2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">View HD</span>
+            </>
+          )}
         </button>
 
         {/* 1-Tap Mobile Share Trigger (WhatsApp / Social Media) */}
-        {post.finalGraphicUrl && typeof navigator !== "undefined" && navigator.share && (
+        {displayUrl && typeof navigator !== "undefined" && navigator.share && (
           <button
             type="button"
             onClick={handleShare}
@@ -174,15 +200,15 @@ export const PostGridItem = ({
           </button>
         )}
 
-        {/* Direct Download Graphic Trigger */}
-        {post.finalGraphicUrl && (
+        {/* Direct Download Media Trigger */}
+        {displayUrl && (
           <button
             type="button"
             onClick={handleInternalDownload}
             className="p-2 sm:p-2.5 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition cursor-pointer active:scale-95 shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
-            title="Download HD Graphic PNG"
+            title={isVideo ? "Download Video (MP4)" : "Download HD Graphic PNG"}
           >
-            <Download className="w-4 h-4" />
+            {isVideo ? <Film className="w-4 h-4 text-pink-400" /> : <Download className="w-4 h-4" />}
           </button>
         )}
 

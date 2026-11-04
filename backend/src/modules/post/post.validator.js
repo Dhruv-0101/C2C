@@ -36,11 +36,16 @@ export const createPostSchema = z.object({
     hashtags: z.array(z.string().trim()).optional().nullable(),
     customImageUrl: z.string().optional().nullable(),
     finalGraphicUrl: z.string().optional().nullable(),
+    videoUrl: z.string().optional().nullable(),
+    thumbnailUrl: z.string().optional().nullable(),
+    durationSeconds: z.number().int().min(3, 'Video duration must be at least 3 seconds.').max(900, 'Video duration cannot exceed 15 minutes.').optional().nullable(),
+    fileSize: z.number().int().positive().optional().nullable(),
     base64Graphic: z.string().optional().nullable(),
     base64Image: z.string().optional().nullable(),
     mediaUrls: z.array(z.string()).optional().default([]),
     userConfigJson: z.any().optional().nullable(),
     status: z.enum(POST_STATUSES).default('DRAFT'),
+    isCreditAlreadyPaid: z.boolean().optional().default(false),
   }),
 });
 

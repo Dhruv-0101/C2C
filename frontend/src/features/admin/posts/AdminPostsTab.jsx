@@ -11,12 +11,15 @@ import {
   CheckCircle2,
   AlertCircle,
   Eye,
+  Play,
+  Film,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import { getPostMedia } from '@/shared/utils';
 import { FilterSearchablePicker } from "./components/FilterSearchablePicker";
 import { AdminPostAnalyticsBar } from "./components/AdminPostAnalyticsBar";
 import { categoryApi } from '@/features/admin/categories/api/category.api';
@@ -531,7 +534,8 @@ export const AdminPostsTab = ({
               const templateTitle = post.template?.title || "Custom Graphic";
               const templateCategoryName = post.template?.templateCategory?.name || "General";
               const festivalName = post.festival?.name || "-";
-              const graphicUrl = post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl;
+              const media = getPostMedia(post);
+              const graphicUrl = media.posterUrl || media.mediaUrl || post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl;
 
               return (
                 <div
@@ -544,9 +548,17 @@ export const AdminPostsTab = ({
                     <div
                       onClick={() => setSelectedPostForLightbox(post)}
                       className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] relative group cursor-pointer shrink-0 shadow-sm"
-                      title="Tap to preview high-res graphic"
+                      title={media.isVideo ? "Tap to play Reel" : "Tap to preview high-res graphic"}
                     >
-                      {graphicUrl ? (
+                      {media.isVideo && !media.posterUrl ? (
+                        <video
+                          src={media.mediaUrl}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-200 bg-black"
+                          preload="metadata"
+                          muted
+                          playsInline
+                        />
+                      ) : graphicUrl ? (
                         <img
                           src={graphicUrl}
                           alt={post.occasionName || "Post preview"}
@@ -557,9 +569,19 @@ export const AdminPostsTab = ({
                           <Image className="w-5 h-5" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <Eye className="w-4 h-4 text-white" />
-                      </div>
+
+                      {/* Video / Reel overlay or eye overlay */}
+                      {media.isVideo ? (
+                        <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                            <Play className="w-3 h-3 ml-0.5 fill-current" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                          <Eye className="w-4 h-4 text-white" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Creator User & Status */}
@@ -675,17 +697,27 @@ export const AdminPostsTab = ({
                   const templateTitle = post.template?.title || "Custom Graphic";
                   const templateCategoryName = post.template?.templateCategory?.name || "General";
                   const festivalName = post.festival?.name || "-";
-                  const graphicUrl = post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl;
+                  const media = getPostMedia(post);
+                  const graphicUrl = media.posterUrl || media.mediaUrl || post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl;
 
                   return (
                     <tr key={post.id} className="hover:bg-slate-50/80 dark:hover:bg-[#1A2333]/50 transition">
-                      {/* Image Thumbnail */}
+                      {/* Image / Video Thumbnail */}
                       <td className="py-2.5 px-3">
                         <div
                           onClick={() => setSelectedPostForLightbox(post)}
                           className="w-11 h-11 rounded-xl overflow-hidden bg-slate-100 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E] relative group cursor-pointer shrink-0 shadow-sm"
+                          title={media.isVideo ? "Click to play Reel" : "Click to view graphic"}
                         >
-                          {graphicUrl ? (
+                          {media.isVideo && !media.posterUrl ? (
+                            <video
+                              src={media.mediaUrl}
+                              className="w-full h-full object-cover group-hover:scale-110 transition duration-200 bg-black"
+                              preload="metadata"
+                              muted
+                              playsInline
+                            />
+                          ) : graphicUrl ? (
                             <img
                               src={graphicUrl}
                               alt={post.occasionName || "Post preview"}
@@ -696,9 +728,18 @@ export const AdminPostsTab = ({
                               <Image className="w-4 h-4" />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                            <Eye className="w-4 h-4 text-white" />
-                          </div>
+
+                          {media.isVideo ? (
+                            <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                              <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                                <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                              <Eye className="w-4 h-4 text-white" />
+                            </div>
+                          )}
                         </div>
                       </td>
 
@@ -833,16 +874,15 @@ export const AdminPostsTab = ({
         </div>
       )}
 
-      {/* Lightbox Modal for Post Preview */}
+      {/* Lightbox Modal for Post Preview (Images & Video Reels) */}
       {selectedPostForLightbox && (
         <ImageLightbox
           isOpen={Boolean(selectedPostForLightbox)}
           item={{
             ...selectedPostForLightbox,
-            title: selectedPostForLightbox.occasionName || selectedPostForLightbox.template?.title || "User Generated Post",
+            title: selectedPostForLightbox.occasionName || selectedPostForLightbox.template?.title || (getPostMedia(selectedPostForLightbox).isVideo ? "User Video Reel" : "User Generated Post"),
             category: `Category: ${selectedPostForLightbox.category?.name || "General"} | Frame: ${selectedPostForLightbox.frame?.title || "None"}`,
           }}
-          imageUrl={selectedPostForLightbox.finalGraphicUrl || selectedPostForLightbox.customImageUrl}
           onClose={() => setSelectedPostForLightbox(null)}
         />
       )}

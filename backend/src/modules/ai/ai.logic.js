@@ -2,7 +2,8 @@ import * as aiRepository from './ai.repository.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
 import { uploadToCloudinaryBuffer, CLOUDINARY_FOLDERS } from '../../config/cloudinary.js';
-import { NotFoundError } from '../../common/errors/custom-errors.js';
+import * as billingRepository from '../billing/billing.repository.js';
+import { ForbiddenError, NotFoundError } from '../../common/errors/custom-errors.js';
 import { AI_SOURCES, AI_IMAGE_MODELS } from './ai.constants.js';
 import {
   aiImageQueue,
@@ -175,9 +176,32 @@ export async function generateCaption(userId, params = {}) {
  * @returns {Promise<{ imageUrl: string, prompt: string, style: string, model: string, source: string, isPendingBilling: boolean }>}
  */
 export async function generatePostImage(userId, params = {}, onProgress = null) {
-  const { prompt, style = 'Photorealistic', aspectRatio = '1:1', occasionName = '' } = params;
+  const {
+    prompt,
+    style = 'Photorealistic',
+    aspectRatio = '1:1',
+    occasionName = '',
+    referenceImage = null,
+  } = params;
 
-  if (typeof onProgress === 'function') await onProgress(20).catch(() => {});
+  const reportProgress = async (percent) => {
+    if (typeof onProgress === 'function') {
+      try {
+        await onProgress(percent);
+      } catch (_) {}
+    }
+  };
+
+  // Option A Protection: Atomically deduct 1 post credit before calling Google Gemini compute
+  const deductionResult = await billingRepository.deductPostCreditAtomic(userId);
+  if (!deductionResult.success) {
+    throw new ForbiddenError(
+      'Your post quota has been exhausted. Please upgrade your plan or top up to generate visuals with Google Gemini.'
+    );
+  }
+
+  try {
+    await reportProgress(15);
 
   // 1. Fetch user's BrandKit context to inject domain & business niche intelligence
   let brandKit = null;
@@ -190,30 +214,84 @@ export async function generatePostImage(userId, params = {}, onProgress = null) 
   const categoryName = brandKit?.category?.name || '';
   const businessName = brandKit?.businessName || '';
 
-  // 2. Engineer commercial-grade visual prompt for Nano Banana 2.1
+  // 2. Process optional reference image buffer (Base64 data URI, HTTP URL, or raw Base64)
+  let imageBase64Data = null;
+  let imageMimeType = 'image/jpeg';
+
+  if (referenceImage) {
+    try {
+      const ref = referenceImage.trim();
+      if (ref.startsWith('data:')) {
+        const match = ref.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+        if (match) {
+          imageMimeType = match[1];
+          imageBase64Data = match[2];
+        } else {
+          const commaIdx = ref.indexOf(',');
+          if (commaIdx !== -1) {
+            imageBase64Data = ref.slice(commaIdx + 1);
+          }
+        }
+      } else if (ref.startsWith('http://') || ref.startsWith('https://')) {
+        logger.info(`Fetching external reference image for multimodal AI: ${ref}`);
+        const imgRes = await fetch(ref, { signal: AbortSignal.timeout(10000) });
+        if (imgRes.ok) {
+          const arrayBuf = await imgRes.arrayBuffer();
+          imageMimeType = imgRes.headers.get('content-type') || 'image/jpeg';
+          imageBase64Data = Buffer.from(arrayBuf).toString('base64');
+        }
+      } else {
+        imageBase64Data = ref;
+      }
+    } catch (err) {
+      logger.warn(`Failed to process reference image buffer for user ${userId}: ${err.message}`);
+    }
+  }
+
+  // 3. Engineer commercial-grade visual prompt for Nano Banana 2.1
   const engineeredPrompt = buildNanoBananaPrompt({
     prompt,
     style,
     categoryName,
     businessName,
     occasionName,
+    hasReferenceImage: Boolean(imageBase64Data),
   });
 
-  if (typeof onProgress === 'function') await onProgress(40).catch(() => {});
+  await reportProgress(40);
 
   const geminiKey = env.GEMINI_API_KEY;
-  const primaryModel = AI_IMAGE_MODELS.NANO_BANANA_2_1 || 'gemini-nano-banana-2.1';
+  const requestedModel = params.model;
+  const primaryModel = requestedModel || AI_IMAGE_MODELS.NANO_BANANA_2_1 || 'gemini-nano-banana-2.1';
   const candidateModels = [
     primaryModel,
-    AI_IMAGE_MODELS.NANO_BANANA_PRO || 'nano-banana-pro-preview',
     AI_IMAGE_MODELS.FLASH_IMAGE_3_1 || 'gemini-3.1-flash-image',
-  ];
+    AI_IMAGE_MODELS.NANO_BANANA_PRO || 'nano-banana-pro-preview',
+  ].filter(Boolean);
 
-  // 3. Attempt Live Nano Banana Generation via Google Generative Language API
+  // 4. Attempt Live Nano Banana Generation via Google Generative Language API
   if (geminiKey && !geminiKey.includes('dummy')) {
     for (const targetModel of candidateModels) {
       try {
-        logger.info(`Invoking Google Creative Model (${targetModel}) for user ${userId}...`);
+        logger.info(
+          `Invoking Google Creative Model (${targetModel}) for user ${userId} [Multimodal: ${Boolean(
+            imageBase64Data
+          )}]...`
+        );
+
+        // Prepare multimodal contents (Image Part + Text Part)
+        const parts = [];
+        if (imageBase64Data) {
+          parts.push({
+            inlineData: {
+              mimeType: imageMimeType || 'image/jpeg',
+              data: imageBase64Data,
+            },
+          });
+        }
+        parts.push({
+          text: engineeredPrompt,
+        });
 
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${geminiKey}`,
@@ -221,11 +299,7 @@ export async function generatePostImage(userId, params = {}, onProgress = null) 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [
-                {
-                  parts: [{ text: engineeredPrompt }],
-                },
-              ],
+              contents: [{ parts }],
               generationConfig: {
                 responseModalities: ['IMAGE', 'TEXT'],
               },
@@ -237,29 +311,37 @@ export async function generatePostImage(userId, params = {}, onProgress = null) 
 
         if (response.ok) {
           const candidate = data.candidates?.[0];
-          const parts = candidate?.content?.parts || [];
+          const responseParts = candidate?.content?.parts || [];
 
           // Find the image part in the multi-modal response
-          const imagePart = parts.find((p) => p.inlineData?.data);
+          const imagePart = responseParts.find((p) => p.inlineData?.data);
 
           if (imagePart?.inlineData?.data) {
-            if (typeof onProgress === 'function') await onProgress(70).catch(() => {});
+            await reportProgress(70);
             const buffer = Buffer.from(imagePart.inlineData.data, 'base64');
 
-            logger.info(`Model ${targetModel} returned image buffer (${buffer.length} bytes). Uploading to Cloudinary...`);
-            if (typeof onProgress === 'function') await onProgress(85).catch(() => {});
-            const uploadResult = await uploadToCloudinaryBuffer(buffer, CLOUDINARY_FOLDERS.AI_GENERATED);
+            logger.info(
+              `Model ${targetModel} returned image buffer (${buffer.length} bytes). Uploading to Cloudinary...`
+            );
+            await reportProgress(85);
+            const uploadResult = await uploadToCloudinaryBuffer(
+              buffer,
+              CLOUDINARY_FOLDERS.AI_GENERATED
+            );
 
-            if (typeof onProgress === 'function') await onProgress(100).catch(() => {});
+            await reportProgress(100);
 
             return {
               imageUrl: uploadResult.url,
-              prompt,
+              prompt: engineeredPrompt,
               style,
               aspectRatio,
               model: targetModel,
               source: 'NANO_BANANA_2_1',
               isPendingBilling: false,
+              creditDeducted: true,
+              isCreditAlreadyPaid: true,
+              message: '1 Post Credit used for Google Gemini generation ✨',
             };
           }
         } else {
@@ -277,22 +359,29 @@ export async function generatePostImage(userId, params = {}, onProgress = null) 
     }
   }
 
-  // 4. Resilient Fallback: If Google Cloud Billing is still syncing or key is waiting for project linking,
+  // 5. Resilient Fallback: If Google Cloud Billing is still syncing or key is waiting for project linking,
   // return curated aesthetic visual matching user prompt/niche so user experience is smooth!
-  if (typeof onProgress === 'function') await onProgress(90).catch(() => {});
+  await reportProgress(90);
   const fallbackUrl = getCuratedAestheticFallback({ prompt, style, categoryName });
-  if (typeof onProgress === 'function') await onProgress(100).catch(() => {});
+  await reportProgress(100);
 
-  return {
-    imageUrl: fallbackUrl,
-    prompt,
-    style,
-    aspectRatio,
-    model: primaryModel,
-    source: 'CURATED_AESTHETIC_PREVIEW',
-    isPendingBilling: true,
-    message: 'Google Cloud Billing is finalizing. Generated high-resolution commercial creative preview ready for studio stage!',
-  };
+    return {
+      imageUrl: fallbackUrl,
+      prompt: engineeredPrompt || prompt,
+      style,
+      aspectRatio,
+      model: primaryModel,
+      source: 'CURATED_AESTHETIC_PREVIEW',
+      isPendingBilling: true,
+      creditDeducted: true,
+      isCreditAlreadyPaid: true,
+      message: 'Generated high-resolution commercial creative preview ready for studio stage!',
+    };
+  } catch (genErr) {
+    // Refund credit if image generation failed completely before returning
+    await billingRepository.refundPostCreditAtomic(userId);
+    throw genErr;
+  }
 }
 
 /**

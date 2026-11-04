@@ -16,12 +16,15 @@ import {
   Linkedin,
   Layers,
   Share2,
+  Play,
+  Film,
 } from 'lucide-react';
 import { useAdminPosts } from '@/features/admin/posts/hooks/useAdminPosts';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import Pagination from '@/components/ui/Pagination';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { formatDate } from '@/shared/utils/date.util';
+import { getPostMedia } from '@/shared/utils';
 
 /**
  * TemplatePostsModal Component
@@ -233,7 +236,8 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
             ) : (
               <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {posts.map((post) => {
-                  const finalImage = post.finalGraphicUrl || post.customImageUrl || templateImage;
+                  const media = getPostMedia(post);
+                  const finalImage = media.posterUrl || media.mediaUrl || post.finalGraphicUrl || post.customImageUrl || templateImage;
                   const user = post.user || {};
                   const businessName = user.brandKit?.businessName || user.fullName || 'Tenant';
                   const isPublished = post.status === 'PUBLISHED';
@@ -247,26 +251,37 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
                       key={post.id}
                       className="group relative border border-[#2C384E] rounded-2xl overflow-hidden hover:border-amber-500/60 transition-all bg-[#0B0F17] flex flex-col justify-between shadow-sm"
                     >
-                      {/* Image Preview with Hover Overlay */}
+                      {/* Image / Video Preview with Hover Overlay */}
                       <div
                         className="aspect-square relative overflow-hidden bg-slate-950 cursor-pointer"
                         onClick={() =>
                           setLightboxPost({
-                            title: post.occasionName || template.title,
-                            imageUrl: finalImage,
+                            ...post,
+                            title: post.occasionName || template.title || (media.isVideo ? "Social Reel" : "Template Creative"),
+                            imageUrl: media.mediaUrl || finalImage,
                             caption: `${businessName} • ${post.status}`,
                           })
                         }
                       >
-                        <img
-                          src={finalImage}
-                          alt={post.occasionName || 'User Post'}
-                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                          loading="lazy"
-                        />
+                        {media.isVideo && !media.posterUrl ? (
+                          <video
+                            src={media.mediaUrl}
+                            className="w-full h-full object-cover group-hover:scale-105 transition duration-300 bg-black"
+                            preload="metadata"
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={finalImage}
+                            alt={post.occasionName || 'User Post'}
+                            className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                            loading="lazy"
+                          />
+                        )}
 
                         {/* Status Pill on Top Left */}
-                        <div className="absolute top-2 left-2 z-10">
+                        <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 flex-wrap">
                           <span
                             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold backdrop-blur-md shadow-md ${
                               isPublished
@@ -287,15 +302,30 @@ export const TemplatePostsModal = ({ isOpen, onClose, template }) => {
                             />
                             <span>{post.status}</span>
                           </span>
+
+                          {media.isVideo && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-gradient-to-r from-pink-500/90 to-purple-600/90 text-white backdrop-blur-md shadow-md border border-white/20">
+                              <Film className="w-3 h-3 text-pink-200" />
+                              <span>Reel</span>
+                            </span>
+                          )}
                         </div>
 
-                        {/* Hover Overlay Button */}
-                        <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 gap-1.5 text-center pointer-events-none">
-                          <span className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold shadow flex items-center gap-1">
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>View Creative</span>
-                          </span>
-                        </div>
+                        {/* Hover Overlay Button / Center Play Overlay */}
+                        {media.isVideo ? (
+                          <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                              <Play className="w-4 h-4 ml-0.5 fill-current" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 gap-1.5 text-center pointer-events-none">
+                            <span className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold shadow flex items-center gap-1">
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>View Creative</span>
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Post Card Footer: Business & Details */}

@@ -16,6 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  Play,
+  Film,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
@@ -170,11 +172,79 @@ export const SocialPublisherModal = ({
       return;
     }
 
-    // All selected platforms are verified connected! Proceed with submit
+    // Video Platform Requirements Validation (Instagram: 15m/1GB, Facebook: 90s/500MB/.mp4, LinkedIn: 10m/200MB/.mp4)
+    if (postData?.videoUrl) {
+      const dur = Number(postData?.durationSeconds) || 0;
+      const isMov = Boolean(
+        postData?.videoFormat === 'mov' ||
+        postData?.videoUrl?.toLowerCase()?.includes('.mov')
+      );
+      const sizeBytes = Number(postData?.fileSize) || 0;
+
+      // Universal minimum duration: 3s
+      if (dur > 0 && dur < 3) {
+        setValidationError("⚠️ Video duration must be at least 3 seconds on all social networks.");
+        return;
+      }
+
+      // 1. Instagram Reels: .mp4, .mov | 3s - 15m (900s) | Max 1 GB
+      if (selectedPlatforms.includes("INSTAGRAM")) {
+        if (dur > 900) {
+          setValidationError(`⚠️ Instagram Reels allows a maximum duration of 15 minutes (your video is ${dur}s). Please deselect Instagram or trim your video.`);
+          return;
+        }
+        if (sizeBytes > 1024 * 1024 * 1024) {
+          setValidationError("⚠️ Instagram Reels allows a maximum file size of 1 GB. Please deselect Instagram or compress your video.");
+          return;
+        }
+      }
+
+      // 2. Facebook Reels: strictly .mp4 | 3s - 90s | Max 500 MB
+      if (selectedPlatforms.includes("FACEBOOK")) {
+        if (isMov) {
+          setValidationError("⚠️ Facebook Reels strictly requires .mp4 format (.mov is not supported on Facebook Reels). Please deselect Facebook or convert to MP4.");
+          return;
+        }
+        if (dur > 90) {
+          setValidationError(`⚠️ Facebook Reels only supports videos up to 90 seconds (your video is ${dur}s). Please deselect Facebook or trim your video.`);
+          return;
+        }
+        if (sizeBytes > 500 * 1024 * 1024) {
+          setValidationError("⚠️ Facebook Reels allows a maximum file size of 500 MB. Please deselect Facebook or compress your video.");
+          return;
+        }
+      }
+
+      // 3. LinkedIn Video: strictly .mp4 | 3s - 10 min (600s) | Max 200 MB
+      if (selectedPlatforms.includes("LINKEDIN")) {
+        if (isMov) {
+          setValidationError("⚠️ LinkedIn Video strictly requires .mp4 format (.mov is not supported on LinkedIn Video). Please deselect LinkedIn or convert to MP4.");
+          return;
+        }
+        if (dur > 600) {
+          setValidationError(`⚠️ LinkedIn Video allows a maximum duration of 10 minutes (600s). Your video is ${dur}s. Please deselect LinkedIn or shorten your video.`);
+          return;
+        }
+        if (sizeBytes > 200 * 1024 * 1024) {
+          setValidationError("⚠️ LinkedIn Video allows a maximum file size of 200 MB. Please deselect LinkedIn or compress your video.");
+          return;
+        }
+      }
+    }
+
+    // All selected platforms and video specs verified! Proceed with submit
     onSubmitPublish({
       postData: {
         ...postData,
         caption: captionText,
+        videoUrl: postData?.videoUrl || undefined,
+        thumbnailUrl: postData?.thumbnailUrl || undefined,
+        durationSeconds: postData?.durationSeconds || undefined,
+        fileSize: postData?.fileSize || undefined,
+        videoWidth: postData?.videoWidth || undefined,
+        videoHeight: postData?.videoHeight || undefined,
+        videoFormat: postData?.videoFormat || undefined,
+        postType: postData?.videoUrl ? 'REEL' : (postData?.postType || 'SINGLE'),
       },
       selectedPlatforms,
       publishMode,
@@ -313,25 +383,54 @@ export const SocialPublisherModal = ({
               </div>
             )}
 
-            {/* Visual Media Preview */}
-            {previewGraphic && (
+            {/* Visual Media Preview (Video / Reel or Graphic) */}
+            {(postData?.videoUrl || previewGraphic) && (
               <div className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3">
-                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-700 shrink-0 bg-slate-900">
-                  <img
-                    src={previewGraphic}
-                    alt={postData?.occasionName || "Post Graphic"}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-700 shrink-0 bg-slate-900 flex items-center justify-center">
+                  {postData?.videoUrl ? (
+                    <div className="relative w-full h-full">
+                      {postData.thumbnailUrl ? (
+                        <img
+                          src={postData.thumbnailUrl}
+                          alt="Reel Cover"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <video
+                          src={postData.videoUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
+                        <Play className="w-5 h-5 fill-white" />
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={previewGraphic}
+                      alt={postData?.occasionName || "Post Graphic"}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-1">
-                  <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-mono text-[10px] font-bold border border-amber-500/30">
-                    🖼️ GRAPHIC POST
+                  <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border ${
+                    postData?.videoUrl
+                      ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                      : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  }`}>
+                    {postData?.videoUrl ? "🎬 REEL VIDEO POST" : "🖼️ GRAPHIC POST"}
                   </span>
                   <p className="text-xs font-bold text-white truncate">
-                    {postData?.occasionName || postData?.template?.title || 'Social Post Graphic'}
+                    {postData?.occasionName || postData?.template?.title || (postData?.videoUrl ? 'Reel Video Post' : 'Social Post Graphic')}
                   </p>
-                  <p className="text-[11px] text-slate-400">1080×1080 HD</p>
+                  <p className="text-[11px] text-slate-400">
+                    {postData?.videoUrl
+                      ? `${postData?.durationSeconds ? `${postData.durationSeconds}s • ` : ''}9:16 Vertical Reel`
+                      : '1080×1080 HD'}
+                  </p>
                 </div>
               </div>
             )}
@@ -347,16 +446,48 @@ export const SocialPublisherModal = ({
                   const isConnected = platformConnectionMap[platform.id];
                   const handleName = handleNameMap[platform.id];
 
+                  // Video Platform Compliance Check
+                  let videoWarning = null;
+                  let videoSpecPill = null;
+                  if (postData?.videoUrl) {
+                    const dur = Number(postData?.durationSeconds) || 0;
+                    const isMov = Boolean(
+                      postData?.videoFormat === 'mov' ||
+                      postData?.videoUrl?.toLowerCase()?.includes('.mov')
+                    );
+                    const sizeBytes = Number(postData?.fileSize) || 0;
+
+                    if (platform.id === 'INSTAGRAM') {
+                      videoSpecPill = '9:16 • 3s-15m • 1GB';
+                      if (dur > 900) videoWarning = `Exceeds 15m (${dur}s)`;
+                      else if (sizeBytes > 1024 * 1024 * 1024) videoWarning = 'Exceeds 1 GB';
+                    } else if (platform.id === 'FACEBOOK') {
+                      videoSpecPill = '9:16 • 3s-90s • 500MB';
+                      if (isMov) videoWarning = 'Requires MP4 (no MOV)';
+                      else if (dur > 90) videoWarning = `Exceeds 90s (${dur}s)`;
+                      else if (sizeBytes > 500 * 1024 * 1024) videoWarning = 'Exceeds 500 MB';
+                    } else if (platform.id === 'LINKEDIN') {
+                      videoSpecPill = '1:1 / 16:9 / 9:16 • 10m • 200MB';
+                      if (isMov) videoWarning = 'Requires MP4 (no MOV)';
+                      else if (dur > 600) videoWarning = `Exceeds 10m (${dur}s)`;
+                      else if (sizeBytes > 200 * 1024 * 1024) videoWarning = 'Exceeds 200 MB';
+                    }
+                  }
+
+                  const hasVideoConflict = Boolean(videoWarning);
+
                   return (
                     <button
                       key={platform.id}
                       type="button"
                       onClick={() => togglePlatform(platform.id)}
                       className={`p-2.5 rounded-xl border text-left transition flex flex-col justify-between gap-1.5 relative ${
-                        isSelected && isConnected
-                          ? "bg-amber-500/10 border-amber-500 text-white shadow-sm"
-                          : isSelected && !isConnected
+                        isSelected && !isConnected
                           ? "bg-rose-500/10 border-rose-500/80 text-rose-200"
+                          : isSelected && hasVideoConflict
+                          ? "bg-amber-500/10 border-amber-500/80 text-white shadow-sm ring-1 ring-amber-500/50"
+                          : isSelected && isConnected
+                          ? "bg-amber-500/10 border-amber-500 text-white shadow-sm"
                           : "bg-[#0B0F17] border-[#2C384E] text-slate-400 hover:text-white"
                       }`}
                     >
@@ -378,6 +509,11 @@ export const SocialPublisherModal = ({
                         <span className="text-xs font-bold block truncate">
                           {platform.name}
                         </span>
+                        {videoSpecPill && (
+                          <span className="text-[8px] text-slate-400 font-mono block truncate mt-0.5">
+                            {videoSpecPill}
+                          </span>
+                        )}
                         {isConnected && handleName && (
                           <span className="text-[9px] text-emerald-300 font-mono block truncate mt-0.5">
                             {handleName}
@@ -386,6 +522,11 @@ export const SocialPublisherModal = ({
                         {!isConnected && isSelected && (
                           <span className="text-[9px] text-rose-400 font-semibold block mt-0.5">
                             ⚠️ Connect first
+                          </span>
+                        )}
+                        {isConnected && isSelected && videoWarning && (
+                          <span className="text-[9px] text-amber-300 font-semibold block mt-1 bg-amber-500/20 px-1 py-0.5 rounded border border-amber-500/30">
+                            ⚠️ {videoWarning}
                           </span>
                         )}
                       </div>

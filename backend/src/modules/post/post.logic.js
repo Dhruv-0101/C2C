@@ -1,5 +1,10 @@
 import * as postRepository from './post.repository.js';
-import { uploadPostBuffer, deleteFromCloudinary } from '../../config/cloudinary.js';
+import {
+  uploadPostBuffer,
+  uploadVideoToCloudinaryBuffer,
+  CLOUDINARY_FOLDERS,
+  deleteFromCloudinary,
+} from '../../config/cloudinary.js';
 import { addInstantPostJob, addScheduledPostJob } from '../../queues/post.queue.js';
 import {
   parsePaginationParams,
@@ -115,13 +120,25 @@ export async function getScheduledPosts(userId, queryParams = {}) {
 export async function publishNow(userId, payload) {
   const post = await createPost(userId, { ...payload, status: POST_STATUS.PUBLISHING });
 
+  // Enforce Platform Video Specifications (Instagram: 15m/1GB, FB: 90s/500MB, LinkedIn: 10m/200MB)
+  if (post.videoUrl || payload.videoUrl) {
+    validatePlatformVideoSpecs(payload.targetPlatforms || [...POST_TARGET_PLATFORMS], {
+      durationSeconds: post.durationSeconds || payload.durationSeconds,
+      videoUrl: post.videoUrl || payload.videoUrl,
+      fileSize: payload.fileSize,
+    });
+  }
+
   const jobPayload = {
     postId: post.id,
     userId,
     targetPlatforms: payload.targetPlatforms || [...POST_TARGET_PLATFORMS],
     postContent: payload.caption || payload.occasionName || 'Branded Graphic Post',
-    graphicUrl: post.finalGraphicUrl,
-    postType: post.postType || 'SINGLE',
+    graphicUrl: post.finalGraphicUrl || post.thumbnailUrl,
+    videoUrl: post.videoUrl || payload.videoUrl || null,
+    thumbnailUrl: post.thumbnailUrl || payload.thumbnailUrl || null,
+    durationSeconds: post.durationSeconds || payload.durationSeconds || null,
+    postType: post.postType || payload.postType || (post.videoUrl || payload.videoUrl ? 'REEL' : 'SINGLE'),
     mediaUrls: Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0 ? post.mediaUrls : (post.finalGraphicUrl ? [post.finalGraphicUrl] : []),
   };
 
@@ -150,6 +167,15 @@ export async function schedulePost(userId, payload) {
 
   const post = await createPost(userId, { ...payload, status: POST_STATUS.SCHEDULED });
 
+  // Enforce Platform Video Specifications (Instagram: 15m/1GB, FB: 90s/500MB, LinkedIn: 10m/200MB)
+  if (post.videoUrl || payload.videoUrl) {
+    validatePlatformVideoSpecs(payload.targetPlatforms || [...POST_TARGET_PLATFORMS], {
+      durationSeconds: post.durationSeconds || payload.durationSeconds,
+      videoUrl: post.videoUrl || payload.videoUrl,
+      fileSize: payload.fileSize,
+    });
+  }
+
   const scheduledPost = await postRepository.createScheduledPost({
     postId: post.id,
     scheduledAt: scheduledDate,
@@ -165,8 +191,11 @@ export async function schedulePost(userId, payload) {
       userId,
       targetPlatforms: payload.targetPlatforms || [...POST_TARGET_PLATFORMS],
       postContent: payload.caption || payload.occasionName || 'Branded Graphic Post',
-      graphicUrl: post.finalGraphicUrl,
-      postType: post.postType || 'SINGLE',
+      graphicUrl: post.finalGraphicUrl || post.thumbnailUrl,
+      videoUrl: post.videoUrl || payload.videoUrl || null,
+      thumbnailUrl: post.thumbnailUrl || payload.thumbnailUrl || null,
+      durationSeconds: post.durationSeconds || payload.durationSeconds || null,
+      postType: post.postType || payload.postType || (post.videoUrl || payload.videoUrl ? 'REEL' : 'SINGLE'),
       mediaUrls: Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0 ? post.mediaUrls : (post.finalGraphicUrl ? [post.finalGraphicUrl] : []),
     },
     scheduledDate
@@ -213,15 +242,25 @@ export async function createPost(userId, payload, fileBuffer) {
     }
   }
 
-  const mediaUrls = finalGraphicUrl ? [finalGraphicUrl] : [];
-  const postType = POST_TYPE.SINGLE;
+  const isVideo = Boolean(payload.videoUrl) || payload.postType === POST_TYPE.REEL || payload.postType === POST_TYPE.VIDEO;
+  const postType = isVideo ? (payload.postType || POST_TYPE.REEL) : POST_TYPE.SINGLE;
+  const videoUrl = payload.videoUrl || null;
+  const thumbnailUrl = payload.thumbnailUrl || (videoUrl ? videoUrl.replace(/\.[a-zA-Z0-9]+$/, '.jpg') : null) || finalGraphicUrl || null;
+  const durationSeconds = payload.durationSeconds || null;
 
-  // 1. Enforce post quota: Atomically deduct 1 post credit with ACID transaction safety (Prevents TOCTOU race conditions)
-  const deductionResult = await billingRepository.deductPostCreditAtomic(userId);
-  if (!deductionResult.success) {
-    throw new ForbiddenError(
-      'Your post quota has been exhausted. Please purchase a plan or post credits to continue creating or scheduling posts.'
-    );
+  const mediaUrls = videoUrl ? [videoUrl] : (finalGraphicUrl ? [finalGraphicUrl] : []);
+
+  // 1. Enforce post quota: Only deduct if credit was NOT already paid during AI visual generation (Option A)
+  const isCreditAlreadyPaid = Boolean(payload.isCreditAlreadyPaid);
+  if (!isCreditAlreadyPaid) {
+    const deductionResult = await billingRepository.deductPostCreditAtomic(userId);
+    if (!deductionResult.success) {
+      throw new ForbiddenError(
+        'Your post quota has been exhausted. Please purchase a plan or post credits to continue creating or scheduling posts.'
+      );
+    }
+  } else {
+    logger.info(`[Option A Protection] Post credit was already deducted during AI generation for user ${userId}. Skipping duplicate deduction.`);
   }
 
   // Auto-resolve business category from active BrandKit if not explicitly passed
@@ -239,7 +278,10 @@ export async function createPost(userId, payload, fileBuffer) {
     frameId: payload.frameId || null,
     occasionName: payload.occasionName || null,
     customImageUrl: payload.customImageUrl || null,
-    finalGraphicUrl: finalGraphicUrl,
+    finalGraphicUrl: finalGraphicUrl || thumbnailUrl,
+    videoUrl,
+    thumbnailUrl,
+    durationSeconds,
     postType,
     mediaUrls,
     slides: payload.slides || null,
@@ -261,8 +303,10 @@ export async function createPost(userId, payload, fileBuffer) {
       hashtags: resolvedHashtags,
     });
   } catch (postErr) {
-    // Compensating transaction: refund post credit if database insertion fails
-    await billingRepository.refundPostCreditAtomic(userId);
+    // Compensating transaction: refund post credit only if it was deducted in this transaction
+    if (!isCreditAlreadyPaid) {
+      await billingRepository.refundPostCreditAtomic(userId);
+    }
     throw postErr;
   }
 
@@ -498,6 +542,121 @@ export async function updatePostGraphic(userId, postId, payload = {}, fileBuffer
   return sanitizePost(updatedPost);
 }
 
+/**
+ * Upload Reel / Video to Cloudinary Video Storage (Max 100MB)
+ * Extracts video duration, dimensions, format, and poster thumbnail.
+ *
+ * @param {string} userId
+ * @param {Buffer} fileBuffer
+ * @param {string} originalName
+ * @returns {Promise<{ videoUrl: string, thumbnailUrl: string, duration: number, width: number, height: number, format: string, public_id: string }>}
+ */
+export async function uploadVideo(userId, fileBuffer, originalName = 'reel.mp4') {
+  if (!fileBuffer || !Buffer.isBuffer(fileBuffer)) {
+    throw new BadRequestError('Please provide a valid video file buffer for upload.');
+  }
+
+  try {
+    const uploadResult = await uploadVideoToCloudinaryBuffer(
+      fileBuffer,
+      CLOUDINARY_FOLDERS.REELS,
+      originalName
+    );
+
+    return {
+      videoUrl: uploadResult.url,
+      thumbnailUrl: uploadResult.thumbnailUrl,
+      duration: uploadResult.duration,
+      width: uploadResult.width,
+      height: uploadResult.height,
+      format: uploadResult.format,
+      public_id: uploadResult.public_id,
+    };
+  } catch (err) {
+    logger.error(`❌ Video upload failed for user ${userId}: ${err.message}`);
+    throw new BadRequestError(err.message || 'Failed to upload video to Cloudinary.');
+  }
+}
+
+/**
+ * Upload custom cover / thumbnail image (JPEG/PNG) or frame snapshot for Reels/Videos
+ * @param {string} userId - User UUID
+ * @param {Buffer} fileBuffer - Image buffer
+ * @returns {Promise<{ thumbnailUrl: string, width: number, height: number }>}
+ */
+export async function uploadThumbnail(userId, fileBuffer) {
+  if (!fileBuffer || !Buffer.isBuffer(fileBuffer)) {
+    throw new BadRequestError('Please provide a valid image buffer for thumbnail upload.');
+  }
+
+  try {
+    const uploadResult = await uploadPostBuffer(fileBuffer);
+    return {
+      thumbnailUrl: uploadResult.url,
+      width: uploadResult.width,
+      height: uploadResult.height,
+    };
+  } catch (err) {
+    logger.error(`❌ Thumbnail upload failed for user ${userId}: ${err.message}`);
+    throw new BadRequestError(err.message || 'Failed to upload custom thumbnail to Cloudinary.');
+  }
+}
+
+/**
+ * Validate Platform Video Requirements according to Meta & LinkedIn specifications:
+ * 1. Instagram Reels: .mp4, .mov (H.264 / AAC) | 9:16 | 3s - 15min (900s) | Max 1GB
+ * 2. Facebook Reels: .mp4 | 9:16 | 3s - 90s | Max 500MB
+ * 3. LinkedIn Video: .mp4 | 1:1, 16:9, 9:16 | 3s - 10min (600s) | Max 200MB
+ */
+export function validatePlatformVideoSpecs(targetPlatforms = [], videoMeta = {}) {
+  const { durationSeconds, videoUrl, fileSize } = videoMeta;
+  if (!videoUrl && !durationSeconds) return;
+
+  const platforms = targetPlatforms.map((p) => p.toUpperCase());
+  const isMov = videoUrl?.toLowerCase()?.includes('.mov');
+
+  // Universal Minimum Duration: 3 seconds
+  if (durationSeconds && durationSeconds < 3) {
+    throw new BadRequestError('Video duration must be at least 3 seconds on all social networks.');
+  }
+
+  // 1. Instagram Reels Requirements: .mp4, .mov | Max 15 min (900s) | Max 1GB
+  if (platforms.includes('INSTAGRAM')) {
+    if (durationSeconds && durationSeconds > 900) {
+      throw new BadRequestError('Instagram Reels allows a maximum duration of 15 minutes (900 seconds).');
+    }
+    if (fileSize && fileSize > 1024 * 1024 * 1024) {
+      throw new BadRequestError('Instagram Reels allows a maximum file size of 1 GB.');
+    }
+  }
+
+  // 2. Facebook Reels Requirements: .mp4 strictly | 3s - 90s | Max 500MB
+  if (platforms.includes('FACEBOOK')) {
+    if (isMov) {
+      throw new BadRequestError('Facebook Reels strictly requires .mp4 format. Please upload an MP4 video or deselect Facebook.');
+    }
+    if (durationSeconds && durationSeconds > 90) {
+      throw new BadRequestError(`Facebook Reels only supports videos up to 90 seconds (your video is ${durationSeconds}s). Please shorten your video or deselect Facebook.`);
+    }
+    if (fileSize && fileSize > 500 * 1024 * 1024) {
+      throw new BadRequestError('Facebook Reels allows a maximum file size of 500 MB.');
+    }
+  }
+
+  // 3. LinkedIn Video Requirements: .mp4 | 3s - 10 min (600s) | Max 200MB
+  if (platforms.includes('LINKEDIN')) {
+    if (isMov) {
+      throw new BadRequestError('LinkedIn Video strictly requires .mp4 format. Please upload an MP4 video or deselect LinkedIn.');
+    }
+    if (durationSeconds && durationSeconds > 600) {
+      throw new BadRequestError(`LinkedIn Video allows a maximum duration of 10 minutes (600 seconds). Your video is ${durationSeconds}s.`);
+    }
+    if (fileSize && fileSize > 200 * 1024 * 1024) {
+      throw new BadRequestError('LinkedIn Video allows a maximum file size of 200 MB.');
+    }
+  }
+}
+
 // Backwards-compatible object export (strictly required by brandkit.logic.js)
 export const postLogic = {
   getUserPosts,
@@ -505,6 +664,8 @@ export const postLogic = {
   publishNow,
   schedulePost,
   createPost,
+  uploadVideo,
+  uploadThumbnail,
   getAdminPosts,
   getAdminPostAnalytics,
   deletePost,

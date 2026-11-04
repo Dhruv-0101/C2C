@@ -27,12 +27,16 @@ export const liveSocialPublisherService = {
     userId,
     postContent,
     graphicUrl,
+    videoUrl,
+    thumbnailUrl,
     mediaUrls = [],
     postType = 'SINGLE',
     targetPlatforms,
   }) => {
+    const isVideoOrReel = Boolean(videoUrl) || postType === 'REEL' || postType === 'VIDEO';
+
     logger.info(
-      `🚀 [LiveSocialPublisher] Routing live publish job (${postType}) for Post ID: ${postId} across: ${targetPlatforms.join(', ')}`
+      `🚀 [LiveSocialPublisher] Routing live publish job (${postType}${isVideoOrReel ? ' 🎬 REEL/VIDEO' : ''}) for Post ID: ${postId} across: ${targetPlatforms.join(', ')}`
     );
 
     const platformResults = {};
@@ -80,14 +84,26 @@ export const liveSocialPublisherService = {
       // 3. Dispatch to platform-specific publisher service
       if (platformUpper === 'INSTAGRAM') {
         try {
-          logger.info(`🌐 [LiveSocialPublisher] Publishing to Live Instagram Account (@${account.accountName})...`);
-          const result = await instagramPublisherService.publishToInstagram({
-            igUserId: account.platformUserId,
-            accessToken: decryptedToken,
-            graphicUrl,
-            mediaUrls,
-            caption: postContent,
-          });
+          let result;
+          if (isVideoOrReel && videoUrl) {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing REEL to Live Instagram Account (@${account.accountName})...`);
+            result = await instagramPublisherService.publishReelToInstagram({
+              igUserId: account.platformUserId,
+              accessToken: decryptedToken,
+              videoUrl,
+              caption: postContent,
+              thumbnailUrl: thumbnailUrl || graphicUrl,
+            });
+          } else {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing photo to Live Instagram Account (@${account.accountName})...`);
+            result = await instagramPublisherService.publishToInstagram({
+              igUserId: account.platformUserId,
+              accessToken: decryptedToken,
+              graphicUrl,
+              mediaUrls,
+              caption: postContent,
+            });
+          }
           platformResults.INSTAGRAM = {
             ...result,
             accountName: account.accountName,
@@ -104,13 +120,25 @@ export const liveSocialPublisherService = {
         }
       } else if (platformUpper === 'FACEBOOK') {
         try {
-          logger.info(`🌐 [LiveSocialPublisher] Publishing to Live Facebook Page (@${account.accountName})...`);
-          const result = await facebookPublisherService.publishToFacebookPage({
-            pageId: account.platformUserId,
-            accessToken: decryptedToken,
-            graphicUrl,
-            caption: postContent,
-          });
+          let result;
+          if (isVideoOrReel && videoUrl) {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing REEL/VIDEO to Live Facebook Page (@${account.accountName})...`);
+            result = await facebookPublisherService.publishReelToFacebookPage({
+              pageId: account.platformUserId,
+              accessToken: decryptedToken,
+              videoUrl,
+              caption: postContent,
+              title: postContent?.slice(0, 50) || 'BrandFlow Reel',
+            });
+          } else {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing photo to Live Facebook Page (@${account.accountName})...`);
+            result = await facebookPublisherService.publishToFacebookPage({
+              pageId: account.platformUserId,
+              accessToken: decryptedToken,
+              graphicUrl,
+              caption: postContent,
+            });
+          }
           platformResults.FACEBOOK = {
             ...result,
             accountName: account.accountName,
@@ -127,13 +155,25 @@ export const liveSocialPublisherService = {
         }
       } else if (platformUpper === 'LINKEDIN') {
         try {
-          logger.info(`🌐 [LiveSocialPublisher] Publishing to Live LinkedIn Profile (@${account.accountName})...`);
-          const result = await linkedinPublisherService.publishToLinkedin({
-            personUrn: account.platformUserId,
-            accessToken: decryptedToken,
-            graphicUrl,
-            caption: postContent,
-          });
+          let result;
+          if (isVideoOrReel && videoUrl) {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing VIDEO to Live LinkedIn Profile (@${account.accountName})...`);
+            result = await linkedinPublisherService.publishVideoToLinkedin({
+              personUrn: account.platformUserId,
+              accessToken: decryptedToken,
+              videoUrl,
+              caption: postContent,
+              title: postContent?.slice(0, 50) || 'BrandFlow Video',
+            });
+          } else {
+            logger.info(`🌐 [LiveSocialPublisher] Publishing to Live LinkedIn Profile (@${account.accountName})...`);
+            result = await linkedinPublisherService.publishToLinkedin({
+              personUrn: account.platformUserId,
+              accessToken: decryptedToken,
+              graphicUrl,
+              caption: postContent,
+            });
+          }
           platformResults.LINKEDIN = {
             ...result,
             accountName: account.accountName,

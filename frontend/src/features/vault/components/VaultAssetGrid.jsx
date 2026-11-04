@@ -1,16 +1,22 @@
 import React from 'react';
-import { ImageIcon, Maximize2, Download, Trash2, Calendar, Check, User } from 'lucide-react';
+import { ImageIcon, Maximize2, Download, Trash2, Calendar, Check, User, Film, Play } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import Pagination from '@/components/ui/Pagination';
 import { SkeletonGrid } from '@/components/feedback/SkeletonLoader';
+import { getPostMedia, downloadMediaAsset } from '@/shared/utils';
 
 
 /**
  * GraphicCard
- * Visual card component for rendering 1:1 ratio graphics with hover zoom overlay and action bars.
+ * Visual card component for rendering 1:1 / 9:16 media graphics or video reels with hover zoom/play overlay and action bars.
  */
 export const GraphicCard = ({
   imageUrl,
+  mediaUrl,
+  posterUrl,
+  isVideo = false,
+  postType,
+  duration,
   title,
   category,
   date,
@@ -26,17 +32,36 @@ export const GraphicCard = ({
     <Card className={`p-3 bg-[#0B0F17] border-[#2C384E] transition group space-y-3 flex flex-col justify-between relative ${
       isSelected ? "ring-2 ring-amber-500 border-amber-500 bg-amber-500/5" : "hover:border-amber-500/50"
     }`}>
-      {/* Aspect Ratio Image Container */}
+      {/* Aspect Ratio Media Container */}
       <div
         onClick={onPreview}
         className="aspect-square rounded-xl bg-[#131B2A] overflow-hidden relative border border-[#2C384E] cursor-pointer group/img"
-        title="Click for Full Screen View"
+        title={isVideo ? "Click to Watch Video Reel" : "Click for Full Screen View"}
       >
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300 bg-[#0B0F17]"
-        />
+        {isVideo && !posterUrl ? (
+          <video
+            src={mediaUrl || imageUrl}
+            className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300 bg-black"
+            preload="metadata"
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={posterUrl || imageUrl || mediaUrl}
+            alt={title}
+            className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300 bg-[#0B0F17]"
+          />
+        )}
+
+        {/* Video / Reel Indicator Badge */}
+        {isVideo && (
+          <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-pink-500/90 to-purple-600/90 backdrop-blur-md text-white text-[10px] font-bold shadow-lg border border-white/20">
+            <Film className="w-3 h-3 text-pink-200" />
+            <span>{postType === "REEL" ? "Reel" : "Video"}</span>
+            {duration ? <span className="opacity-75">• {duration}s</span> : null}
+          </div>
+        )}
 
         {/* Selection Checkbox Badge */}
         {onToggleSelect && (
@@ -57,17 +82,28 @@ export const GraphicCard = ({
           </button>
         )}
 
-        {/* Hover Zoom Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 backdrop-blur-[2px]">
-          <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/30 transform scale-90 group-hover/img:scale-100 transition-transform">
-            <Maximize2 className="w-5 h-5" />
+        {/* Center Play Button for Videos or Zoom Overlay for Images */}
+        {isVideo ? (
+          <div className="absolute inset-0 bg-black/30 group-hover/img:bg-black/50 transition-colors flex flex-col items-center justify-center gap-1.5">
+            <div className="w-11 h-11 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow-lg shadow-pink-500/40 transform group-hover/img:scale-110 transition-transform">
+              <Play className="w-5 h-5 ml-0.5 fill-current" />
+            </div>
+            <span className="text-[10px] font-bold text-white bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-slate-700">
+              Play Reel
+            </span>
           </div>
-          <span className="text-[10px] font-bold text-white bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-slate-700">
-            Full Screen View
-          </span>
-        </div>
+        ) : (
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 backdrop-blur-[2px]">
+            <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/30 transform scale-90 group-hover/img:scale-100 transition-transform">
+              <Maximize2 className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] font-bold text-white bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-slate-700">
+              Full Screen View
+            </span>
+          </div>
+        )}
 
-        {category && (
+        {!isVideo && category && (
           <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-bold text-[10px] uppercase shadow z-10">
             {category}
           </span>
@@ -81,9 +117,9 @@ export const GraphicCard = ({
           <div className="min-w-0 flex-1">
             <h4
               className="font-heading font-bold text-xs text-white truncate"
-              title={title || "Social Graphic"}
+              title={title || (isVideo ? "Social Reel" : "Social Graphic")}
             >
-              {title || "Social Graphic"}
+              {title || (isVideo ? "Social Reel" : "Social Graphic")}
             </h4>
             {date && (
               <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
@@ -119,10 +155,10 @@ export const GraphicCard = ({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onDownload(imageUrl, title);
+                    onDownload(mediaUrl || imageUrl, title);
                   }}
                   className="p-1.5 rounded-lg bg-[#131B2A] border border-[#2C384E] text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition cursor-pointer min-w-[34px] min-h-[34px] flex items-center justify-center shrink-0 active:scale-95"
-                  title="Download HD PNG"
+                  title={isVideo ? "Download Video (MP4)" : "Download HD PNG"}
                 >
                   <Download className="w-3.5 h-3.5" />
                 </button>
@@ -192,21 +228,39 @@ export const VaultAssetGrid = ({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
-        {vaultItems.map((item) => (
-          <GraphicCard
-            key={item.id}
-            imageUrl={item.post?.finalGraphicUrl || item.graphicUrl}
-            title={item.post?.occasionName || item.post?.template?.title || item.occasionName || "Social Graphic"}
-            category={item.post?.category?.name || item.post?.festival?.name || item.categoryName || "General"}
-            date={new Date(item.createdAt).toLocaleDateString()}
-            onPreview={() => onPreview?.(item)}
-            onDownload={() => onDownload?.(item.post?.finalGraphicUrl || item.graphicUrl, item.post?.occasionName || item.occasionName)}
-            onDelete={() => onDelete?.(item.id)}
-            isDeleting={isDeleting}
-            isSelected={selectedIds.includes(item.id)}
-            onToggleSelect={() => onToggleSelect?.(item.id)}
-          />
-        ))}
+        {vaultItems.map((item) => {
+          const media = getPostMedia(item.post || item);
+          const title = item.post?.occasionName || item.post?.template?.title || item.occasionName || (media.isVideo ? "Social Reel" : "Social Graphic");
+          const category = item.post?.category?.name || item.post?.festival?.name || item.categoryName || (media.isVideo ? "Reels" : "General");
+          const targetDownloadUrl = media.mediaUrl || item.post?.finalGraphicUrl || item.graphicUrl;
+
+          return (
+            <GraphicCard
+              key={item.id}
+              imageUrl={media.mediaUrl || item.post?.finalGraphicUrl || item.graphicUrl}
+              mediaUrl={media.mediaUrl}
+              posterUrl={media.posterUrl}
+              isVideo={media.isVideo}
+              postType={media.postType}
+              duration={media.duration}
+              title={title}
+              category={category}
+              date={new Date(item.createdAt).toLocaleDateString()}
+              onPreview={() => onPreview?.(item)}
+              onDownload={() => {
+                if (onDownload) {
+                  onDownload(targetDownloadUrl, title);
+                } else {
+                  downloadMediaAsset(targetDownloadUrl, title);
+                }
+              }}
+              onDelete={() => onDelete?.(item.id)}
+              isDeleting={isDeleting}
+              isSelected={selectedIds.includes(item.id)}
+              onToggleSelect={() => onToggleSelect?.(item.id)}
+            />
+          );
+        })}
       </div>
 
       <Pagination

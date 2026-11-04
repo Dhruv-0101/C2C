@@ -21,11 +21,15 @@ import {
   List,
   CalendarDays,
   ArrowRight,
+  Film,
+  Play,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import Pagination from "@/components/ui/Pagination";
+import { ImageLightbox } from "@/components/ui/ImageLightbox";
+import { getPostMedia } from "@/shared/utils";
 import { useTheme, useMediaQuery } from '@/shared/hooks';
 
 /**
@@ -79,6 +83,7 @@ export const FestivalCalendarView = ({
   const { isDark } = useTheme();
   // Default to 'grid' (Month Grid) across all screen sizes
   const [activeViewMode, setActiveViewMode] = useState("grid");
+  const [previewMediaItem, setPreviewMediaItem] = useState(null);
   const currentViewMode = activeViewMode || "grid";
 
   // Escape key listener for day details drawer modal
@@ -503,44 +508,62 @@ export const FestivalCalendarView = ({
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            {scheduledList.map((item) => (
-                              <div
-                                key={`agenda-sched-${item.id}`}
-                                className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3"
-                              >
-                                {item.post?.finalGraphicUrl ? (
-                                  <img
-                                    src={item.post.finalGraphicUrl}
-                                    alt="Scheduled graphic"
-                                    className="w-12 h-12 rounded-lg object-cover border border-[#2C384E] shrink-0"
-                                  />
-                                ) : (
-                                  <div className="w-12 h-12 rounded-lg bg-slate-900 border border-[#2C384E] flex items-center justify-center shrink-0">
-                                    <Clock className="w-5 h-5 text-teal-400" />
-                                  </div>
-                                )}
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-bold text-white truncate">
-                                    {item.post?.occasionName || item.post?.template?.title || "Scheduled Post"}
-                                  </p>
-                                  <p className="text-[11px] text-teal-400 font-mono mt-0.5">
-                                    ⏰ {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </p>
-                                  {item.targetPlatforms && item.targetPlatforms.length > 0 && (
-                                    <div className="flex items-center gap-1 mt-1 flex-wrap">
-                                      {item.targetPlatforms.map((p) => (
-                                        <span
-                                          key={p}
-                                          className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700"
-                                        >
-                                          {p}
-                                        </span>
-                                      ))}
+                            {scheduledList.map((item) => {
+                              const media = getPostMedia(item.post);
+                              const hasMedia = Boolean(media.mediaUrl || media.posterUrl || item.post?.finalGraphicUrl);
+
+                              return (
+                                <div
+                                  key={`agenda-sched-${item.id}`}
+                                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3"
+                                >
+                                  {hasMedia ? (
+                                    <div
+                                      onClick={() => setPreviewMediaItem(item.post)}
+                                      className="w-12 h-12 rounded-lg overflow-hidden border border-[#2C384E] relative shrink-0 cursor-pointer group/thumb bg-black"
+                                      title={media.isVideo ? "Play Reel" : "Preview Graphic"}
+                                    >
+                                      <img
+                                        src={media.posterUrl || media.mediaUrl || item.post?.finalGraphicUrl}
+                                        alt="Scheduled graphic"
+                                        className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                                      />
+                                      {media.isVideo && (
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                          <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                                            <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-lg bg-slate-900 border border-[#2C384E] flex items-center justify-center shrink-0">
+                                      <Clock className="w-5 h-5 text-teal-400" />
                                     </div>
                                   )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-bold text-white truncate">
+                                      {item.post?.occasionName || item.post?.template?.title || (media.isVideo ? "Scheduled Reel" : "Scheduled Post")}
+                                    </p>
+                                    <p className="text-[11px] text-teal-400 font-mono mt-0.5">
+                                      ⏰ {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                    {item.targetPlatforms && item.targetPlatforms.length > 0 && (
+                                      <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                        {item.targetPlatforms.map((p) => (
+                                          <span
+                                            key={p}
+                                            className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700"
+                                          >
+                                            {p}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -553,28 +576,46 @@ export const FestivalCalendarView = ({
                             <span>Live Published Posts ({publishedList.length})</span>
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            {publishedList.map((post) => (
-                              <div
-                                key={`agenda-pub-${post.id}`}
-                                className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3"
-                              >
-                                {post.finalGraphicUrl && (
-                                  <img
-                                    src={post.finalGraphicUrl}
-                                    alt="Published graphic"
-                                    className="w-12 h-12 rounded-lg object-cover border border-[#2C384E] shrink-0"
-                                  />
-                                )}
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-bold text-white truncate">
-                                    {post.occasionName || post.template?.title || "Published Graphic"}
-                                  </p>
-                                  <span className="text-[10px] text-emerald-400 font-semibold">
-                                    🚀 Live on Social Media
-                                  </span>
+                            {publishedList.map((post) => {
+                              const media = getPostMedia(post);
+                              const hasMedia = Boolean(media.mediaUrl || media.posterUrl || post.finalGraphicUrl);
+
+                              return (
+                                <div
+                                  key={`agenda-pub-${post.id}`}
+                                  className="p-2.5 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center gap-3"
+                                >
+                                  {hasMedia && (
+                                    <div
+                                      onClick={() => setPreviewMediaItem(post)}
+                                      className="w-12 h-12 rounded-lg overflow-hidden border border-[#2C384E] relative shrink-0 cursor-pointer group/thumb bg-black"
+                                      title={media.isVideo ? "Play Reel" : "Preview Graphic"}
+                                    >
+                                      <img
+                                        src={media.posterUrl || media.mediaUrl || post.finalGraphicUrl}
+                                        alt="Published graphic"
+                                        className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                                      />
+                                      {media.isVideo && (
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                          <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                                            <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-bold text-white truncate">
+                                      {post.occasionName || post.template?.title || (media.isVideo ? "Published Reel" : "Published Graphic")}
+                                    </p>
+                                    <span className="text-[10px] text-emerald-400 font-semibold">
+                                      🚀 Live on Social Media
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -956,59 +997,77 @@ export const FestivalCalendarView = ({
                     </div>
 
                     <div className="grid grid-cols-1 gap-2.5">
-                      {safeScheduledPosts.map((item) => (
-                        <div
-                          key={item.id}
-                          className="p-3 rounded-xl border flex items-center justify-between gap-3"
-                          style={{
-                            backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
-                            borderColor: isDark ? "#2C384E" : "#E2E8F0",
-                          }}
-                        >
-                          <div className="flex items-center gap-3">
-                            {item.post?.finalGraphicUrl && (
-                              <img
-                                src={item.post.finalGraphicUrl}
-                                alt="Scheduled graphic"
-                                className="w-12 h-12 rounded-lg object-cover border"
-                                style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
-                              />
-                            )}
-                            <div>
-                              <p
-                                className="text-xs font-bold"
-                                style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
-                              >
-                                {item.post?.occasionName || item.post?.template?.title || "Scheduled Graphic"}
-                              </p>
-                              <p className="text-[11px] text-teal-600 dark:text-teal-400 font-mono mt-0.5">
-                                Scheduled Time: {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                              {item.targetPlatforms && item.targetPlatforms.length > 0 && (
-                                <div className="flex items-center gap-1.5 mt-1.5">
-                                  {item.targetPlatforms.map((p) => (
-                                    <span
-                                      key={p}
-                                      className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border"
-                                      style={{
-                                        backgroundColor: isDark ? "#1E293B" : "#E2E8F0",
-                                        color: isDark ? "#CBD5E1" : "#334155",
-                                        borderColor: isDark ? "#334155" : "#CBD5E1",
-                                      }}
-                                    >
-                                      {p}
-                                    </span>
-                                  ))}
+                      {safeScheduledPosts.map((item) => {
+                        const media = getPostMedia(item.post);
+                        const hasMedia = Boolean(media.mediaUrl || media.posterUrl || item.post?.finalGraphicUrl);
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="p-3 rounded-xl border flex items-center justify-between gap-3"
+                            style={{
+                              backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                              borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              {hasMedia && (
+                                <div
+                                  onClick={() => setPreviewMediaItem(item.post)}
+                                  className="w-12 h-12 rounded-lg overflow-hidden border relative shrink-0 cursor-pointer group/thumb bg-black"
+                                  style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
+                                  title={media.isVideo ? "Play Reel" : "Preview Graphic"}
+                                >
+                                  <img
+                                    src={media.posterUrl || media.mediaUrl || item.post.finalGraphicUrl}
+                                    alt="Scheduled graphic"
+                                    className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                                  />
+                                  {media.isVideo && (
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                      <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                                        <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
+                              <div>
+                                <p
+                                  className="text-xs font-bold"
+                                  style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                                >
+                                  {item.post?.occasionName || item.post?.template?.title || (media.isVideo ? "Scheduled Reel" : "Scheduled Graphic")}
+                                </p>
+                                <p className="text-[11px] text-teal-600 dark:text-teal-400 font-mono mt-0.5">
+                                  Scheduled Time: {new Date(item.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                                {item.targetPlatforms && item.targetPlatforms.length > 0 && (
+                                  <div className="flex items-center gap-1.5 mt-1.5">
+                                    {item.targetPlatforms.map((p) => (
+                                      <span
+                                        key={p}
+                                        className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border"
+                                        style={{
+                                          backgroundColor: isDark ? "#1E293B" : "#E2E8F0",
+                                          color: isDark ? "#CBD5E1" : "#334155",
+                                          borderColor: isDark ? "#334155" : "#CBD5E1",
+                                        }}
+                                      >
+                                        {p}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
 
-                          <span className="px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-300 border border-teal-500/40 text-[10px] font-extrabold uppercase">
-                            {item.status}
-                          </span>
-                        </div>
-                      ))}
+                            <span className="px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-300 border border-teal-500/40 text-[10px] font-extrabold uppercase">
+                              {item.status}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -1023,34 +1082,52 @@ export const FestivalCalendarView = ({
                       <CheckCircle2 className="w-4 h-4" /> Published Posts ({safePublishedPosts.length})
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {safePublishedPosts.map((post) => (
-                        <div
-                          key={post.id}
-                          className="p-3 rounded-xl border flex items-center gap-3"
-                          style={{
-                            backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
-                            borderColor: isDark ? "#2C384E" : "#E2E8F0",
-                          }}
-                        >
-                          {post.finalGraphicUrl && (
-                            <img
-                              src={post.finalGraphicUrl}
-                              alt="Published Graphic"
-                              className="w-12 h-12 rounded-lg object-cover border"
-                              style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
-                            />
-                          )}
-                          <div>
-                            <p
-                              className="text-xs font-bold line-clamp-1"
-                              style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
-                            >
-                              {post.occasionName || post.template?.title || post.festival?.name || "Live Social Post"}
-                            </p>
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">🚀 Successfully Published</span>
+                      {safePublishedPosts.map((post) => {
+                        const media = getPostMedia(post);
+                        const hasMedia = Boolean(media.mediaUrl || media.posterUrl || post.finalGraphicUrl);
+
+                        return (
+                          <div
+                            key={post.id}
+                            className="p-3 rounded-xl border flex items-center gap-3"
+                            style={{
+                              backgroundColor: isDark ? "#0B0F17" : "#F8FAFC",
+                              borderColor: isDark ? "#2C384E" : "#E2E8F0",
+                            }}
+                          >
+                            {hasMedia && (
+                              <div
+                                onClick={() => setPreviewMediaItem(post)}
+                                className="w-12 h-12 rounded-lg overflow-hidden border relative shrink-0 cursor-pointer group/thumb bg-black"
+                                style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
+                                title={media.isVideo ? "Play Reel" : "Preview Graphic"}
+                              >
+                                <img
+                                  src={media.posterUrl || media.mediaUrl || post.finalGraphicUrl}
+                                  alt="Published Graphic"
+                                  className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                                />
+                                {media.isVideo && (
+                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                                      <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <div>
+                              <p
+                                className="text-xs font-bold line-clamp-1"
+                                style={{ color: isDark ? "#FFFFFF" : "#0F172A" }}
+                              >
+                                {post.occasionName || post.template?.title || (media.isVideo ? "Published Reel" : "Live Social Post")}
+                              </p>
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">🚀 Successfully Published</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -1445,6 +1522,8 @@ export const FestivalCalendarView = ({
                           const sched = post.scheduledPost;
                           const isLive = post.status === "PUBLISHED" || sched?.status === "SUCCESS";
                           const hasSchedule = Boolean(sched?.scheduledAt);
+                          const media = getPostMedia(post);
+                          const hasMedia = Boolean(media.mediaUrl || media.posterUrl || post.finalGraphicUrl);
 
                           return (
                             <div
@@ -1455,13 +1534,26 @@ export const FestivalCalendarView = ({
                                 borderColor: isDark ? "#2C384E" : "#E2E8F0",
                               }}
                             >
-                              {post.finalGraphicUrl ? (
-                                <img
-                                  src={post.finalGraphicUrl}
-                                  alt="Crafted Graphic"
-                                  className="w-12 h-12 rounded-lg object-cover border shrink-0"
+                              {hasMedia ? (
+                                <div
+                                  onClick={() => setPreviewMediaItem(post)}
+                                  className="w-12 h-12 rounded-lg overflow-hidden border relative shrink-0 cursor-pointer group/thumb bg-black"
                                   style={{ borderColor: isDark ? "#2C384E" : "#E2E8F0" }}
-                                />
+                                  title={media.isVideo ? "Play Reel" : "Preview Graphic"}
+                                >
+                                  <img
+                                    src={media.posterUrl || media.mediaUrl || post.finalGraphicUrl}
+                                    alt="Crafted Graphic"
+                                    className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                                  />
+                                  {media.isVideo && (
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                      <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                                        <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               ) : (
                                 <div
                                   className="w-12 h-12 rounded-lg border flex items-center justify-center shrink-0"
@@ -1532,6 +1624,13 @@ export const FestivalCalendarView = ({
           </div>,
           document.body,
         )}
+
+      {/* Fullscreen Interactive Lightbox for Graphics & Video Reels */}
+      <ImageLightbox
+        isOpen={Boolean(previewMediaItem)}
+        item={previewMediaItem}
+        onClose={() => setPreviewMediaItem(null)}
+      />
     </div>
   );
 };

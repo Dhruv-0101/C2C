@@ -276,4 +276,187 @@ export const linkedinPublisherService = {
       }
     }
   },
+
+  /**
+   * Register and Upload Binary Video Asset to LinkedIn Digital Media Storage
+   */
+  uploadVideoAsset: async ({ personUrn, accessToken, videoUrl }) => {
+    logger.info('📹 [LinkedinPublisher] Registering digital media video asset on LinkedIn...');
+
+    const registerResponse = await axios.post(
+      `${LINKEDIN_API_URL}/assets?action=registerUpload`,
+      {
+        registerUploadRequest: {
+          recipes: ['urn:li:digitalmediaRecipe:feedshare-video'],
+          owner: personUrn,
+          serviceRelationships: [
+            {
+              relationshipType: 'OWNER',
+              identifier: 'urn:li:userGeneratedContent',
+            },
+          ],
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'X-Restli-Protocol-Version': '2.0.0',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const uploadUrl = registerResponse.data?.value?.uploadMechanism?.['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']?.uploadUrl;
+    const assetUrn = registerResponse.data?.value?.asset;
+
+    if (!uploadUrl || !assetUrn) {
+      throw new Error('Failed to obtain LinkedIn video asset upload URL.');
+    }
+
+    logger.info(`🌐 [LinkedinPublisher] Streaming video binary to LinkedIn asset URN: ${assetUrn}...`);
+
+    const videoStreamRes = await axios.get(videoUrl, {
+      responseType: 'arraybuffer',
+      timeout: 120000,
+    });
+
+    const contentType = videoStreamRes.headers['content-type'] || 'video/mp4';
+
+    await axios.post(uploadUrl, videoStreamRes.data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': contentType,
+      },
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+      timeout: 180000,
+    });
+
+    logger.info(`✅ [LinkedinPublisher] Successfully uploaded video to LinkedIn digital media asset: ${assetUrn}`);
+    return assetUrn;
+  },
+
+  /**
+   * Publish Video Post to LinkedIn via UGC Posts API
+   */
+  publishVideoToLinkedin: async ({ personUrn, accessToken, videoUrl, caption, title }) => {
+    logger.info(`📢 [LinkedinPublisher] Publishing Video Post for LinkedIn URN: ${personUrn}...`);
+
+    if (!personUrn) {
+      throw new Error('Valid LinkedIn person URN is required for posting.');
+    }
+
+    let assetUrn = null;
+    if (videoUrl) {
+      try {
+        assetUrn = await linkedinPublisherService.uploadVideoAsset({ personUrn, accessToken, videoUrl });
+      } catch (err) {
+        logger.warn(`⚠️ [LinkedinPublisher] Native video asset upload warning (${err.message}). Falling back to video URL share...`);
+      }
+    }
+
+    try {
+      let mediaArray = [];
+      let shareMediaCategory = 'NONE';
+
+      if (assetUrn) {
+        shareMediaCategory = 'VIDEO';
+        mediaArray = [
+          {
+            status: 'READY',
+            media: assetUrn,
+            title: { text: title || (caption ? caption.slice(0, 100) : 'BrandFlow Video') },
+          },
+        ];
+      } else if (videoUrl) {
+        shareMediaCategory = 'ARTICLE';
+        mediaArray = [
+          {
+            status: 'READY',
+            originalUrl: videoUrl,
+            title: { text: title || 'BrandFlow Video' },
+          },
+        ];
+      }
+
+      const payload = {
+        author: personUrn,
+        lifecycleState: 'PUBLISHED',
+        specificContent: {
+          'com.linkedin.ugc.ShareContent': {
+            shareCommentary: {
+              text: caption || 'Created with BrandFlow 🚀',
+            },
+            shareMediaCategory,
+            media: mediaArray,
+          },
+        },
+        visibility: {
+          'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+        },
+      };
+
+      const response = await axios.post(`${LINKEDIN_API_URL}/ugcPosts`, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'X-Restli-Protocol-Version': '2.0.0',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const postId = response.data?.id;
+      const cleanId = postId ? postId.replace('urn:li:share:', '').replace('urn:li:ugcPost:', '') : '';
+      const postUrl = cleanId ? `https://www.linkedin.com/feed/update/${postId}` : 'https://www.linkedin.com/feed';
+
+      logger.info(`🎉 [LinkedinPublisher] Successfully published video post to LinkedIn! Post ID: ${postId}`);
+
+      return {
+        status: 'SUCCESS',
+        platform: 'LINKEDIN',
+        postId,
+        postUrl,
+        isVideo: true,
+        publishedAt: new Date().toISOString(),
+      };
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message;
+      logger.warn(`⚠️ [LinkedinPublisher] UGC Video post failed (${errorMsg}). Retrying text link fallback...`);
+
+      const textPayload = {
+        author: personUrn,
+        lifecycleState: 'PUBLISHED',
+        specificContent: {
+          'com.linkedin.ugc.ShareContent': {
+            shareCommentary: {
+              text: `${caption || 'Created with BrandFlow 🚀'}\n\n${videoUrl || ''}`.trim(),
+            },
+            shareMediaCategory: 'NONE',
+          },
+        },
+        visibility: {
+          'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+        },
+      };
+
+      const textRes = await axios.post(`${LINKEDIN_API_URL}/ugcPosts`, textPayload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'X-Restli-Protocol-Version': '2.0.0',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const postId = textRes.data?.id;
+      const postUrl = postId ? `https://www.linkedin.com/feed/update/${postId}` : 'https://www.linkedin.com/feed';
+
+      return {
+        status: 'SUCCESS',
+        platform: 'LINKEDIN',
+        postId,
+        postUrl,
+        isVideo: true,
+        publishedAt: new Date().toISOString(),
+      };
+    }
+  },
 };

@@ -36,11 +36,27 @@ export const generateImageSchema = z.object({
       .string({ required_error: 'Prompt is required' })
       .trim()
       .min(3, 'Prompt must be at least 3 characters')
-      .max(1000, 'Prompt must be under 1000 characters'),
+      .max(1500, 'Prompt must be under 1500 characters'),
     style: z.enum(AI_IMAGE_STYLES).optional().default(DEFAULT_AI_IMAGE_STYLE),
     aspectRatio: z.enum(AI_ASPECT_RATIOS).optional().default(DEFAULT_AI_ASPECT_RATIO),
     negativePrompt: z.string().trim().optional(),
     occasionName: z.string().trim().optional(),
+    referenceImage: z
+      .string()
+      .trim()
+      .nullable()
+      .optional()
+      .refine(
+        (val) => {
+          if (!val) return true;
+          return (
+            val.startsWith('data:image/') ||
+            val.startsWith('http://') ||
+            val.startsWith('https://')
+          );
+        },
+        { message: 'referenceImage must be a valid base64 data URI or image URL' }
+      ),
   }),
 });
 

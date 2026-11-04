@@ -39,6 +39,7 @@ export const CLOUDINARY_FOLDERS = Object.freeze({
   FRAMES_PREVIEWS: 'brandflow/frames/previews',
   POSTS: 'brandflow/posts',
   AI_GENERATED: 'brandflow/ai-creatives',
+  REELS: 'brandflow/reels',
 });
 
 /**
@@ -215,6 +216,102 @@ export const uploadFrameBuffer = (buffer, subfolder = '') => {
 export const uploadFrameOverlayBuffer = (buffer) => uploadToCloudinaryBuffer(buffer, CLOUDINARY_FOLDERS.FRAMES_OVERLAYS);
 export const uploadFramePreviewBuffer = (buffer) => uploadToCloudinaryBuffer(buffer, CLOUDINARY_FOLDERS.FRAMES_PREVIEWS);
 export const uploadPostBuffer = (buffer) => uploadToCloudinaryBuffer(buffer, CLOUDINARY_FOLDERS.POSTS);
+
+/**
+ * Upload a video buffer (MP4 / MOV) directly to Cloudinary Video API
+ * Automatically extracts duration, dimensions, format, and generates poster thumbnail URL.
+ *
+ * @param {Buffer} buffer - Video buffer from Multer
+ * @param {string} folder - Target Cloudinary folder (default: brandflow/reels)
+ * @param {string} originalFilename - Original filename for mime-type detection
+ * @returns {Promise<{ url: string, public_id: string, width: number, height: number, duration: number, format: string, thumbnailUrl: string }>}
+ */
+export async function uploadVideoToCloudinaryBuffer(
+  buffer,
+  folder = CLOUDINARY_FOLDERS.REELS,
+  originalFilename = 'reel.mp4'
+) {
+  if (!buffer || !Buffer.isBuffer(buffer)) {
+    throw new Error('Invalid video buffer provided for Cloudinary upload.');
+  }
+
+  const cloudName = env.CLOUDINARY_CLOUD_NAME || 'dksdc3q6y';
+  const apiKey = env.CLOUDINARY_API_KEY || '116287269373311';
+  const apiSecret = env.CLOUDINARY_API_SECRET || 'qlLxvVZDj1CCj1HyoAw7shuxdRM';
+
+  const isMov = originalFilename?.toLowerCase()?.endsWith('.mov');
+  const mimeType = isMov ? 'video/quicktime' : 'video/mp4';
+  const extension = isMov ? 'mov' : 'mp4';
+
+  const maxRetries = 3;
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const timestamp = Math.floor(Date.now() / 1000);
+
+      // Generate SHA-1 Signature for Cloudinary Video REST API
+      const signatureString = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+      const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
+
+      const formData = new FormData();
+      const blob = new Blob([buffer], { type: mimeType });
+      formData.append('file', blob, `video_${Date.now()}.${extension}`);
+      formData.append('api_key', apiKey);
+      formData.append('timestamp', timestamp.toString());
+      formData.append('signature', signature);
+      formData.append('folder', folder);
+
+      logger.info(`📹 Uploading video (${(buffer.length / (1024 * 1024)).toFixed(2)} MB) to Cloudinary Video endpoint...`);
+
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+        formData,
+        {
+          headers: {},
+          httpsAgent: cloudinaryHttpsAgent,
+          timeout: 300000, // 5 minutes for large video uploads (up to 1GB)
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+        }
+      );
+
+      const secureUrl = response.data.secure_url;
+      // Derive high-resolution video frame poster thumbnail (.jpg)
+      const thumbnailUrl = secureUrl.replace(/\.[a-zA-Z0-9]+$/, '.jpg');
+
+      logger.info(`✅ Video uploaded successfully: ${secureUrl} (Duration: ${response.data.duration}s)`);
+
+      return {
+        url: secureUrl,
+        public_id: response.data.public_id,
+        width: response.data.width,
+        height: response.data.height,
+        duration: Math.round(response.data.duration || 0),
+        format: response.data.format,
+        thumbnailUrl,
+      };
+    } catch (error) {
+      lastError = error;
+      const errorMsg = error?.response?.data?.error?.message || error?.message || 'Unknown network error';
+
+      if (attempt < maxRetries) {
+        const backoffMs = attempt * 1500;
+        logger.warn(`⚠️ Cloudinary Video Upload Attempt ${attempt}/${maxRetries} failed (${errorMsg}). Retrying in ${backoffMs}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, backoffMs));
+        continue;
+      }
+
+      logger.error(`❌ Cloudinary Video Upload Error after ${attempt} attempts: ${errorMsg}`);
+      throw new Error(errorMsg || 'Failed to upload video to Cloudinary storage.');
+    }
+  }
+
+  throw lastError || new Error('Failed to upload video to Cloudinary storage after maximum retries.');
+}
+
+export const uploadReelBuffer = (buffer, filename) => uploadVideoToCloudinaryBuffer(buffer, CLOUDINARY_FOLDERS.REELS, filename);
+
 
 
 

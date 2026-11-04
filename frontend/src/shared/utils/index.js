@@ -5,3 +5,4 @@ export * from './file.util';
 export * from './logger.util';
 export * from './pagination.util';
 export * from './storage.util';
+export * from './media.util';

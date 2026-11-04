@@ -110,4 +110,60 @@ export const facebookPublisherService = {
       throw new Error(`Facebook API error: ${errorMsg}`);
     }
   },
+
+  /**
+   * Publish Video / Reel to a Facebook Page via Meta Graph /videos API
+   *
+   * @param {Object} params
+   * @param {string} params.pageId - Facebook Page ID
+   * @param {string} params.accessToken - Page Access Token
+   * @param {string} params.videoUrl - Public Cloudinary MP4 video URL
+   * @param {string} [params.caption] - Video / Reel description
+   * @param {string} [params.title] - Video title
+   */
+  publishReelToFacebookPage: async ({ pageId, accessToken, videoUrl, caption, title }) => {
+    logger.info(`📢 [FacebookPublisher] Publishing Reel/Video to Facebook Page ID: ${pageId || 'me'}...`);
+
+    if (!videoUrl) {
+      throw new Error('Valid public video URL is required for Facebook Reel posting.');
+    }
+
+    const targetNode = pageId || 'me';
+
+    try {
+      const videoRes = await axios.post(
+        `${META_GRAPH_URL}/${targetNode}/videos`,
+        null,
+        {
+          params: {
+            file_url: videoUrl,
+            description: caption || 'Created with BrandFlow 🚀',
+            title: title || 'BrandFlow Reel',
+            access_token: accessToken,
+          },
+          timeout: 60000,
+        }
+      );
+
+      const videoId = videoRes.data?.id;
+      const postUrl = pageId
+        ? `https://facebook.com/${pageId}/videos/${videoId}`
+        : `https://facebook.com/watch/?v=${videoId}`;
+
+      logger.info(`🎉 [FacebookPublisher] Successfully published Reel/Video to Facebook Page! Video ID: ${videoId} | URL: ${postUrl}`);
+
+      return {
+        status: 'SUCCESS',
+        platform: 'FACEBOOK',
+        postId: videoId,
+        postUrl,
+        isReel: true,
+        publishedAt: new Date().toISOString(),
+      };
+    } catch (err) {
+      const errorMsg = err.response?.data?.error?.message || err.message;
+      logger.error(`❌ [FacebookPublisher] Facebook video publishing error: ${errorMsg}`);
+      throw new Error(`Facebook Reel API error: ${errorMsg}`);
+    }
+  },
 };

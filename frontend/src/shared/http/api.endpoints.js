@@ -168,6 +168,8 @@ export const API_ENDPOINTS = {
     SCHEDULED: '/posts/scheduled',
     PUBLISH_NOW: '/posts/publish-now',
     SCHEDULE: '/posts/schedule',
+    UPLOAD_VIDEO: '/posts/upload-video',
+    UPLOAD_THUMBNAIL: '/posts/upload-thumbnail',
     ADMIN_ALL: '/posts/admin/all',
     ADMIN_ANALYTICS: '/posts/admin/analytics',
     BY_ID: (id) => `/posts/${id}`,

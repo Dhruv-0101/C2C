@@ -308,6 +308,7 @@ export function buildNanoBananaPrompt({
   categoryName = '',
   businessName = '',
   occasionName = '',
+  hasReferenceImage = false,
 }) {
   const styleDirectives = {
     None: 'Natural authentic photographic look, faithful directly to the user concept description without extra stylized filters, clear balanced commercial lighting.',
@@ -329,13 +330,25 @@ export function buildNanoBananaPrompt({
     .filter(Boolean)
     .join(' ');
 
-  return `Create a high-impact social media marketing background graphic.
-Subject & Concept: ${prompt}.
+  const subjectDirective = hasReferenceImage
+    ? `CRITICAL SUBJECT IDENTITY PRESERVATION:
+The person or subject in the attached reference image MUST be the primary focal hero of this post.
+Retain their exact facial features, likeness, hair, skin tone, and physical characteristics without morphing or distortion.
+Seamlessly integrate them into a commercial social media poster matching the creative prompt with natural studio lighting, harmonious shadows, and reflections.`
+    : `Subject & Concept: ${prompt}.`;
+
+  const negativeConstraints = hasReferenceImage
+    ? `Negative Constraints: Absolutely NO distorted faces, NO morphed likeness, NO low-resolution artifacts, NO blurry elements, NO extra limbs or deformed fingers.`
+    : `Negative Constraints: Absolutely NO words, NO text, NO typography, NO letters, NO watermarks, NO blurry elements, NO low-resolution artifacts.`;
+
+  return `Create a high-impact commercial social media poster.
+${subjectDirective}
+${hasReferenceImage ? `Creative Brief & Scenario: ${prompt}.` : ''}
 ${contextHints}
 Visual Style: ${styleClause}
-Composition Requirements: Beautifully composed square 1:1 image, clean center-weighted or balanced layout, ample negative space around borders for brand overlays.
-Cultural & Multi-Lingual Interpretation: If the concept is provided in Hindi, Hinglish, Gujarati, Marathi, or any regional Indian language, translate and interpret the core commercial products, festival, food items, ornaments, or promotional themes into a stunning visual reality.
-Negative Constraints: Absolutely NO words, NO text, NO typography, NO letters, NO watermarks, NO blurry elements, NO low-resolution artifacts.`;
+Composition Requirements: Beautifully composed square 1:1 image, clean center-weighted or balanced layout, crisp commercial finish, 8k resolution studio quality.
+Cultural & Multi-Lingual Interpretation: If the concept is provided in Hindi, Hinglish, Gujarati, Marathi, or any regional Indian language, translate and interpret the core commercial products, festival, food items, celebrations, or promotional themes into a stunning visual reality.
+${negativeConstraints}`;
 }
 
 /**
@@ -352,7 +365,7 @@ export function getCuratedAestheticFallback({ prompt = '', style = '', categoryN
   const curatedCollection = [
     {
       keywords: ['diwali', 'deepavali', 'diya', 'light', 'festive', 'luxury', 'gold', 'puja', 'dussehra', 'navratri', 'eid', 'rakhi', 'tyohar'],
-      url: 'https://images.unsplash.com/photo-1605647540924-852290f6b0d5?auto=format&fit=crop&w=1200&q=80',
+      url: 'https://images.unsplash.com/photo-1605651202774-7d573fd3f12d?auto=format&fit=crop&w=1200&q=80',
     },
     {
       keywords: ['holi', 'color', 'festival', 'gulal', 'vibrant', 'rang'],
@@ -381,6 +394,18 @@ export function getCuratedAestheticFallback({ prompt = '', style = '', categoryN
     {
       keywords: ['real estate', 'property', 'home', 'house', 'interior', 'flat', 'makan', 'plot', 'zameen', 'ghar'],
       url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['birthday', 'janamdin', 'anniversary', 'celebration', 'party', 'cake', 'wishes', 'mubarak', 'badhai'],
+      url: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['employee', 'team', 'welcome', 'joining', 'award', 'performer', 'star', 'achievement', 'success', 'promotion', 'congratulations', 'office', 'work'],
+      url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
+    },
+    {
+      keywords: ['doctor', 'clinic', 'hospital', 'patient', 'medical', 'dental', 'dentist', 'health', 'care'],
+      url: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80',
     },
     {
       keywords: ['tech', 'software', 'digital', 'ai', 'modern', 'laptop', 'agency', 'mobile'],

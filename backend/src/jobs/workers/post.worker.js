@@ -122,8 +122,10 @@ export const processPostJob = async (jobData) => {
       }
     }
 
-    let targetPostType = jobData.postType || 'SINGLE';
+    let targetPostType = jobData.postType || (jobData.videoUrl ? 'REEL' : 'SINGLE');
     let targetMediaUrls = Array.isArray(jobData.mediaUrls) ? jobData.mediaUrls : [];
+    let targetVideoUrl = jobData.videoUrl || null;
+    let targetThumbnailUrl = jobData.thumbnailUrl || null;
 
     if (targetPostId) {
       try {
@@ -132,6 +134,9 @@ export const processPostJob = async (jobData) => {
           select: {
             finalGraphicUrl: true,
             customImageUrl: true,
+            videoUrl: true,
+            thumbnailUrl: true,
+            durationSeconds: true,
             postType: true,
             mediaUrls: true,
             occasionName: true,
@@ -140,6 +145,12 @@ export const processPostJob = async (jobData) => {
         });
         if (freshPost?.finalGraphicUrl) {
           finalGraphicUrl = freshPost.finalGraphicUrl;
+        }
+        if (freshPost?.videoUrl) {
+          targetVideoUrl = freshPost.videoUrl;
+        }
+        if (freshPost?.thumbnailUrl) {
+          targetThumbnailUrl = freshPost.thumbnailUrl;
         }
         if (freshPost?.postType) {
           targetPostType = freshPost.postType;
@@ -161,6 +172,8 @@ export const processPostJob = async (jobData) => {
       userId,
       postContent: finalPostContent,
       graphicUrl: finalGraphicUrl,
+      videoUrl: targetVideoUrl,
+      thumbnailUrl: targetThumbnailUrl,
       postType: targetPostType,
       mediaUrls: targetMediaUrls,
       targetPlatforms: targetPlatforms || ["INSTAGRAM", "FACEBOOK", "LINKEDIN"],

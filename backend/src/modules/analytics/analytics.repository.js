@@ -270,11 +270,38 @@ export const seedDemoAnalytics = async (userId) => {
   // If user has no posts yet, create sample posts so analytics can be visualized
   if (posts.length === 0) {
     const mockPostsData = [
-      { occasionName: 'Diwali Festive Sale Offer', status: 'PUBLISHED' },
-      { occasionName: 'New Product Launch Banner', status: 'PUBLISHED' },
-      { occasionName: 'Weekend Promo Special', status: 'PUBLISHED' },
-      { occasionName: 'Customer Testimonial Spotlight', status: 'PUBLISHED' },
-      { occasionName: 'Independence Day Greeting', status: 'PUBLISHED' },
+      {
+        occasionName: 'Festive Mega Offer Video Reel 🎬',
+        status: 'PUBLISHED',
+        postType: 'REEL',
+        videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1689255260/cld-sample-video.mp4',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&auto=format&fit=crop&q=80',
+        durationSeconds: 15,
+      },
+      {
+        occasionName: 'Diwali Festive Sale Offer',
+        status: 'PUBLISHED',
+        postType: 'SINGLE',
+        finalGraphicUrl: 'https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=800&auto=format&fit=crop&q=80',
+      },
+      {
+        occasionName: 'New Product Launch Banner',
+        status: 'PUBLISHED',
+        postType: 'SINGLE',
+        finalGraphicUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&auto=format&fit=crop&q=80',
+      },
+      {
+        occasionName: 'Weekend Promo Special',
+        status: 'PUBLISHED',
+        postType: 'SINGLE',
+        finalGraphicUrl: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=800&auto=format&fit=crop&q=80',
+      },
+      {
+        occasionName: 'Customer Testimonial Spotlight',
+        status: 'PUBLISHED',
+        postType: 'SINGLE',
+        finalGraphicUrl: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=800&auto=format&fit=crop&q=80',
+      },
     ];
 
     for (const p of mockPostsData) {
@@ -283,6 +310,11 @@ export const seedDemoAnalytics = async (userId) => {
           userId,
           occasionName: p.occasionName,
           status: 'PUBLISHED',
+          postType: p.postType || 'SINGLE',
+          videoUrl: p.videoUrl || null,
+          thumbnailUrl: p.thumbnailUrl || null,
+          finalGraphicUrl: p.finalGraphicUrl || null,
+          durationSeconds: p.durationSeconds || null,
         },
       });
       posts.push(created);

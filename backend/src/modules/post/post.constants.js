@@ -6,6 +6,9 @@
 // Post Format Types (Prisma PostType Enum)
 export const POST_TYPE = Object.freeze({
   SINGLE: 'SINGLE',
+  CAROUSEL: 'CAROUSEL',
+  REEL: 'REEL',
+  VIDEO: 'VIDEO',
 });
 export const POST_TYPES = Object.freeze(Object.values(POST_TYPE));
 

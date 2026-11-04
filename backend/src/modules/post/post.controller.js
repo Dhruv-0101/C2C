@@ -99,6 +99,52 @@ export async function createPost(req, res, next) {
 }
 
 /**
+ * POST /api/v1/posts/upload-video
+ * Upload video file (MP4/MOV up to 100MB) to Cloudinary for Reels/Videos
+ */
+export async function uploadVideo(req, res, next) {
+  try {
+    const fileBuffer = req.fileBuffer || req.file?.buffer;
+    const originalName = req.file?.originalname || 'reel.mp4';
+    const result = await postLogic.uploadVideo(req.user.id, fileBuffer, originalName);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.CREATED,
+      message: 'Reel video uploaded successfully 🎬',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/v1/posts/upload-thumbnail
+ * Upload custom cover / thumbnail image (JPEG/PNG up to 10MB) or frame snapshot for Reels/Videos
+ */
+export async function uploadThumbnail(req, res, next) {
+  try {
+    const directUrl = req.body?.thumbnailUrl || req.body?.fileUrl;
+    if (directUrl && typeof directUrl === 'string') {
+      return sendSuccessResponse(res, {
+        statusCode: HTTP_STATUS.OK,
+        message: 'Reel cover thumbnail set successfully 🖼️',
+        data: { thumbnailUrl: directUrl },
+      });
+    }
+
+    const fileBuffer = req.fileBuffer || req.file?.buffer;
+    const result = await postLogic.uploadThumbnail(req.user.id, fileBuffer);
+    return sendSuccessResponse(res, {
+      statusCode: HTTP_STATUS.CREATED,
+      message: 'Reel cover thumbnail uploaded successfully 🖼️',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * PUT /api/v1/posts/:id/graphic
  * Update composited graphic for an existing post (e.g. sync with latest BrandKit)
  */

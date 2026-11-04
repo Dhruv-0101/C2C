@@ -266,10 +266,22 @@ export const getPostsAnalytics = async (userId, queryParams = {}) => {
       ? analytics.map((a) => a.platform)
       : ['INSTAGRAM', 'FACEBOOK'];
 
+    // Detect and resolve media format (Video Reel vs Square Graphic)
+    const isVideo = Boolean(post.videoUrl) || post.postType === 'REEL' || post.postType === 'VIDEO' || (typeof post.finalGraphicUrl === 'string' && post.finalGraphicUrl.toLowerCase().endsWith('.mp4'));
+    const resolvedVideoUrl = post.videoUrl || (isVideo ? post.finalGraphicUrl : null);
+    const resolvedThumbnailUrl = post.thumbnailUrl || (resolvedVideoUrl ? resolvedVideoUrl.replace(/\.[a-zA-Z0-9]+$/, '.jpg') : null) || post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl || null;
+
     return {
       id: post.id,
-      title: post.occasionName || post.template?.title || 'Branded Graphic Post',
-      graphicUrl: post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl || null,
+      title: post.occasionName || post.template?.title || (isVideo ? 'Branded Reel Video' : 'Branded Graphic Post'),
+      graphicUrl: post.finalGraphicUrl || post.customImageUrl || post.template?.baseImageUrl || resolvedThumbnailUrl || null,
+      videoUrl: resolvedVideoUrl,
+      thumbnailUrl: resolvedThumbnailUrl,
+      postType: post.postType || (isVideo ? 'REEL' : 'SINGLE'),
+      durationSeconds: post.durationSeconds || null,
+      mediaUrls: Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0
+        ? post.mediaUrls
+        : (resolvedVideoUrl ? [resolvedVideoUrl] : (post.finalGraphicUrl ? [post.finalGraphicUrl] : [])),
       caption: post.captions?.[0]?.captionText || '',
       hashtags: post.captions?.[0]?.hashtags || [],
       festivalName: post.festival?.name || null,

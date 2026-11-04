@@ -3,7 +3,11 @@ import { authenticate } from '../../common/middleware/auth.middleware.js';
 import { requireTabPermission } from '../../common/middleware/role.middleware.js';
 import { ADMIN_TABS } from '../auth/auth.constants.js';
 import { validate } from '../../common/middleware/validate.middleware.js';
-import { validateOptionalImageUpload } from '../../common/middleware/upload.middleware.js';
+import {
+  validateOptionalImageUpload,
+  uploadSingleVideo,
+  uploadSingleImage,
+} from '../../common/middleware/upload.middleware.js';
 import {
   createPostSchema,
   getAdminPostsQuerySchema,
@@ -45,6 +49,17 @@ router.post('/publish-now', validate(publishNowSchema), postController.publishNo
 
 // POST /api/v1/posts/schedule (Schedule for Future Date/Time)
 router.post('/schedule', validate(schedulePostSchema), postController.schedulePost);
+
+// POST /api/v1/posts/upload-video (Upload video for Reels/Videos)
+router.post('/upload-video', uploadSingleVideo('video'), postController.uploadVideo);
+
+// POST /api/v1/posts/upload-thumbnail (Upload custom thumbnail / frame snapshot for Reels/Videos)
+router.post(
+  '/upload-thumbnail',
+  uploadSingleImage('thumbnail', { required: false }),
+  validateOptionalImageUpload,
+  postController.uploadThumbnail
+);
 
 // POST /api/v1/posts (Save generated post)
 router.post(

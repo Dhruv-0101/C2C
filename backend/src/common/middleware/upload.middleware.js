@@ -222,6 +222,65 @@ export function uploadBrandKitFiles(req, res, next) {
   });
 }
 
+// Maximum video size limit: 1GB (Instagram Reels maximum standard)
+const MAX_VIDEO_SIZE_BYTES = 1024 * 1024 * 1024; // 1GB (1024MB)
+
+const videoFileFilter = (req, file, cb) => {
+  const allowedMimeTypes = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'];
+  if (file.mimetype && (allowedMimeTypes.includes(file.mimetype) || file.mimetype.startsWith('video/'))) {
+    cb(null, true);
+  } else {
+    cb(new BadRequestError('Only video files (MP4, MOV, WEBM) are allowed for Reels/Videos.'), false);
+  }
+};
+
+const videoMulterInstance = multer({
+  storage,
+  limits: { fileSize: MAX_VIDEO_SIZE_BYTES },
+  fileFilter: videoFileFilter,
+});
+
+/**
+ * Single Video Upload Middleware (Handles up to 100MB MP4/MOV)
+ * Standardizes req.file and req.fileBuffer for video controllers.
+ *
+ * @param {string} fieldName - Form field name (default: 'video')
+ */
+export function uploadSingleVideo(fieldName = 'video') {
+  const handler = videoMulterInstance.fields([
+    { name: fieldName, maxCount: 1 },
+    { name: 'video', maxCount: 1 },
+    { name: 'file', maxCount: 1 },
+    { name: 'media', maxCount: 1 },
+  ]);
+
+  return (req, res, next) => {
+    handler(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return next(new BadRequestError('Uploaded video exceeds the maximum 1 GB size limit.'));
+        }
+        return next(new BadRequestError(`Video upload error: ${err.message}`));
+      } else if (err) {
+        return next(err);
+      }
+
+      const uploadedFile =
+        req.files?.[fieldName]?.[0] ||
+        req.files?.video?.[0] ||
+        req.files?.file?.[0] ||
+        req.files?.media?.[0];
+
+      if (uploadedFile) {
+        req.file = uploadedFile;
+        req.fileBuffer = uploadedFile.buffer;
+      }
+
+      return next();
+    });
+  };
+}
+
 /**
  * ==================================================================================================
  * 📚 BRANDFLOW IMAGE UPLOAD ARCHITECTURE & DEVELOPER IMPLEMENTATION GUIDE

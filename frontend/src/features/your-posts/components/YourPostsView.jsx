@@ -13,6 +13,8 @@ import {
   Plus,
   Download,
   Tag,
+  Film,
+  Play,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { SearchBar } from '@/components/ui/SearchBar';
@@ -20,6 +22,7 @@ import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import Pagination from '@/components/ui/Pagination';
 import { SkeletonGrid } from '@/components/feedback/SkeletonLoader';
 import { PostGridItem } from "./PostGridItem";
+import { getPostMedia, downloadMediaAsset } from '@/shared/utils';
 
 /**
  * YourPostsView
@@ -132,17 +135,9 @@ export const YourPostsView = ({
     postsMeta?.counts?.drafts ??
     (posts || []).filter((p) => p.status === "DRAFT").length;
 
-  // Global Image Download handler
-  const handleDownload = (graphicUrl, title) => {
-    if (!graphicUrl) return;
-    const link = document.createElement("a");
-    link.href = graphicUrl;
-    link.download = `${(title || "BrandFlow-Post").replace(/[^a-zA-Z0-9_-]/g, "_")}.png`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Global Media Download handler (supports both MP4 videos and PNG graphics)
+  const handleDownload = (mediaUrl, title) => {
+    downloadMediaAsset(mediaUrl, title);
   };
 
   // Platform badge helper
@@ -406,16 +401,20 @@ export const YourPostsView = ({
                   })
                 : null;
 
+              const media = getPostMedia(item.post || item);
               const postForLightbox = {
                 ...(item.post || {}),
                 id: item.post?.id || item.id,
                 title: postTitle,
                 occasionName: postTitle,
                 finalGraphicUrl: item.post?.finalGraphicUrl,
+                videoUrl: item.post?.videoUrl,
+                thumbnailUrl: item.post?.thumbnailUrl,
+                postType: item.post?.postType || media.postType,
                 caption: item.post?.captions?.[0]?.captionText,
                 captions: item.post?.captions || [],
                 hashtags: item.post?.captions?.[0]?.hashtags || [],
-                categoryName: item.post?.category?.name || item.post?.festival?.name || "Scheduled Post",
+                categoryName: item.post?.category?.name || item.post?.festival?.name || (media.isVideo ? "Scheduled Reel" : "Scheduled Post"),
                 scheduledAt: item.scheduledAt,
                 createdAt: item.createdAt || item.post?.createdAt,
               };
@@ -427,30 +426,39 @@ export const YourPostsView = ({
                 >
                   {/* Left: Thumbnail & Details */}
                   <div className="flex items-start sm:items-center gap-3 sm:gap-3.5 flex-1 min-w-0 w-full">
-                    {item.post?.finalGraphicUrl ? (
-                      <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] shrink-0 group/img cursor-pointer">
+                    {media.posterUrl || media.mediaUrl ? (
+                      <div 
+                        onClick={() => setLightboxImage(postForLightbox)}
+                        className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-[#2C384E] bg-[#0B0F17] shrink-0 group/img cursor-pointer"
+                      >
                         <img
-                          src={item.post.finalGraphicUrl}
+                          src={media.posterUrl || media.mediaUrl}
                           alt={postTitle}
-                          onClick={() => setLightboxImage(postForLightbox)}
                           className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
                         />
+                        {media.isVideo && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                            <div className="w-6 h-6 rounded-full bg-black/70 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white">
+                              <Play className="w-3 h-3 ml-0.5 fill-white text-white" />
+                            </div>
+                          </div>
+                        )}
                         <div
-                          onClick={() => setLightboxImage(postForLightbox)}
                           className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center"
                         >
-                          <Maximize2 className="w-4 h-4 text-white" />
+                          {media.isVideo ? <Play className="w-4 h-4 text-white fill-white" /> : <Maximize2 className="w-4 h-4 text-white" />}
                         </div>
                       </div>
                     ) : (
                       <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-center text-[10px] text-slate-500 shrink-0">
-                        No Graphic
+                        No Media
                       </div>
                     )}
 
                     <div className="space-y-1.5 min-w-0 flex-1">
-                      <h4 className="font-bold text-xs sm:text-sm text-white truncate" title={postTitle}>
-                        {postTitle}
+                      <h4 className="font-bold text-xs sm:text-sm text-white truncate flex items-center gap-1.5" title={postTitle}>
+                        {media.isVideo && <Film className="w-3.5 h-3.5 text-pink-400 shrink-0" />}
+                        <span className="truncate">{postTitle}</span>
                       </h4>
 
                       {/* Dual Dates: Created Date & Scheduled Date */}
@@ -521,27 +529,27 @@ export const YourPostsView = ({
                         <Sparkles className="w-4 h-4" />
                       </button>
 
-                      {/* Preview Full HD Graphic */}
-                      {item.post?.finalGraphicUrl && (
+                      {/* Preview Full HD / Play Video */}
+                      {(media.mediaUrl || media.posterUrl) && (
                         <button
                           type="button"
                           onClick={() => setLightboxImage(postForLightbox)}
                           className="p-2 sm:p-2.5 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-slate-500 text-slate-300 hover:text-white transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0 active:scale-95"
-                          title="View Full HD Graphic & Caption"
+                          title={media.isVideo ? "Play Video Reel & View Caption" : "View Full HD Graphic & Caption"}
                         >
-                          <Maximize2 className="w-4 h-4" />
+                          {media.isVideo ? <Play className="w-4 h-4 text-pink-400 fill-pink-400" /> : <Maximize2 className="w-4 h-4" />}
                         </button>
                       )}
 
-                      {/* Download Graphic PNG */}
-                      {item.post?.finalGraphicUrl && (
+                      {/* Download Media (Video MP4 or Graphic PNG) */}
+                      {(media.mediaUrl || media.posterUrl) && (
                         <button
                           type="button"
-                          onClick={() => handleDownload(item.post.finalGraphicUrl, postTitle)}
+                          onClick={() => handleDownload(media.mediaUrl || media.posterUrl, postTitle)}
                           className="p-2 sm:p-2.5 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#2C384E] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0 active:scale-95"
-                          title="Download Graphic PNG"
+                          title={media.isVideo ? "Download Video (MP4)" : "Download Graphic (PNG)"}
                         >
-                          <Download className="w-4 h-4" />
+                          {media.isVideo ? <Film className="w-4 h-4 text-pink-400" /> : <Download className="w-4 h-4" />}
                         </button>
                       )}
 

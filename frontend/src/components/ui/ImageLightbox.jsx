@@ -1,32 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Maximize2, Download, X, Copy, Check, MessageSquare } from "lucide-react";
+import { Maximize2, Download, X, Copy, Check, MessageSquare, Film, Play } from "lucide-react";
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/shared/hooks';
+import { getPostMedia, downloadMediaAsset } from '@/shared/utils';
 
 /**
  * ImageLightbox
- * Reusable full-screen high-resolution image modal lightbox with caption inspector.
+ * Reusable full-screen high-resolution modal lightbox supporting both Images and Video Reels with full playback & caption inspector.
  *
  * @param {Object} props
  * @param {boolean} [props.isOpen] - Whether the lightbox modal is currently visible.
- * @param {Object|string} [props.item] - Image item object or URL string.
- * @param {string} [props.imageUrl] - Direct image URL prop fallback.
+ * @param {Object|string} [props.item] - Post item object or URL string.
+ * @param {string} [props.imageUrl] - Direct image/video URL prop fallback.
  * @param {Function} props.onClose - Callback function triggered to close the lightbox.
- * @param {Function} [props.onDownload] - Optional callback function to trigger high-res PNG download.
+ * @param {Function} [props.onDownload] - Optional callback function to trigger custom download.
  */
 export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDownload }) => {
   const [copied, setCopied] = useState(false);
   const { isDark } = useTheme();
 
-  const activeUrl =
-    directUrl ||
-    (typeof item === "string" ? item : null) ||
-    item?.post?.finalGraphicUrl ||
-    item?.finalGraphicUrl ||
-    item?.graphicUrl ||
-    item?.baseImageUrl ||
-    item?.url;
+  const media = getPostMedia(item || directUrl);
+  const activeUrl = directUrl || media.mediaUrl || media.posterUrl;
+  const isVideo = media.isVideo;
 
   const isVisible = isOpen !== undefined ? isOpen : Boolean(activeUrl);
 
@@ -55,10 +51,10 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
 
   const title =
     (typeof item === "object" && (item?.post?.occasionName || item?.occasionName || item?.title || item?.name)) ||
-    "High-Resolution Branded Graphic";
+    (isVideo ? "Branded Video Reel" : "High-Resolution Branded Graphic");
   const category =
     (typeof item === "object" && (item?.post?.category?.name || item?.post?.festival?.name || item?.categoryName || item?.category?.name || item?.festival?.name)) ||
-    "1080x1080 Square Post";
+    (isVideo ? "9:16 Vertical Video Reel" : "1080x1080 Square Post");
 
   const captionText =
     (typeof item === "object" &&
@@ -80,13 +76,9 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
 
   const handleDownloadClick = () => {
     if (onDownload) {
-      onDownload(activeUrl, title);
+      onDownload(media.mediaUrl || activeUrl, title);
     } else {
-      const link = document.createElement("a");
-      link.href = activeUrl;
-      link.download = `${title.replace(/[^a-z0-9]/gi, "-")}-1080x1080.png`;
-      link.target = "_blank";
-      link.click();
+      downloadMediaAsset(media.mediaUrl || activeUrl, title);
     }
   };
 
@@ -117,8 +109,17 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
             color: isDark ? "#FFFFFF" : "#0F172A",
           }}
         >
-          <Maximize2 className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-          <span>High-Res 1080x1080 Graphic Preview</span>
+          {isVideo ? (
+            <>
+              <Film className="w-4 h-4 text-pink-400" />
+              <span>{media.postType === 'REEL' ? 'High-Res 9:16 Reel Video Player' : 'High-Res Video Player'}</span>
+            </>
+          ) : (
+            <>
+              <Maximize2 className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+              <span>High-Res 1080x1080 Graphic Preview</span>
+            </>
+          )}
         </div>
 
         <button
@@ -135,19 +136,35 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
         </button>
       </div>
 
-      {/* Center Image Container - 100% Uncropped & Uncovered View */}
+      {/* Center Media Container - Video Player or Uncropped Image */}
       <div
         onClick={(e) => e.stopPropagation()}
         className="flex-1 min-h-0 w-full flex items-center justify-center p-3 sm:p-4 cursor-default overflow-hidden"
       >
-        <img
-          src={activeUrl}
-          alt={title}
-          className="max-h-full max-w-full aspect-square rounded-2xl shadow-2xl border-2 border-amber-500/80 object-contain block shrink-0 select-none"
-          style={{
-            backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
-          }}
-        />
+        {isVideo ? (
+          <div className="relative max-h-[75vh] flex items-center justify-center">
+            <video
+              src={media.videoUrl || media.mediaUrl}
+              poster={media.posterUrl}
+              controls
+              autoPlay
+              playsInline
+              className="max-h-[72vh] max-w-full rounded-2xl shadow-2xl border-2 border-pink-500/80 object-contain block shrink-0"
+              style={{
+                backgroundColor: isDark ? "#000000" : "#0F172A",
+              }}
+            />
+          </div>
+        ) : (
+          <img
+            src={activeUrl}
+            alt={title}
+            className="max-h-full max-w-full aspect-square rounded-2xl shadow-2xl border-2 border-amber-500/80 object-contain block shrink-0 select-none"
+            style={{
+              backgroundColor: isDark ? "#0B0F17" : "#FFFFFF",
+            }}
+          />
+        )}
       </div>
 
       {/* Lightbox Bottom Details & Action Control Bar */}
@@ -162,12 +179,13 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
         <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between gap-2.5 sm:gap-3">
           <div className="truncate pr-2">
             <h3
-              className="font-heading font-extrabold text-sm sm:text-base truncate"
+              className="font-heading font-extrabold text-sm sm:text-base truncate flex items-center gap-2"
               style={{
                 color: isDark ? "#FFFFFF" : "#0F172A",
               }}
             >
-              {title}
+              {isVideo && <Film className="w-4 h-4 text-pink-400 shrink-0" />}
+              <span className="truncate">{title}</span>
             </h3>
             <p
               className="text-xs truncate mt-0.5"
@@ -182,11 +200,15 @@ export const ImageLightbox = ({ isOpen, item, imageUrl: directUrl, onClose, onDo
           <div className="flex items-center gap-2 shrink-0 w-full min-[480px]:w-auto justify-end">
             <Button
               variant="primary"
-              icon={Download}
+              icon={isVideo ? Film : Download}
               onClick={handleDownloadClick}
-              className="py-1.5 px-3 sm:px-4 text-xs font-extrabold bg-amber-500 text-slate-950 hover:bg-amber-400 border-0 min-h-[36px] flex-1 min-[480px]:flex-initial justify-center"
+              className={`py-1.5 px-3 sm:px-4 text-xs font-extrabold border-0 min-h-[36px] flex-1 min-[480px]:flex-initial justify-center ${
+                isVideo
+                  ? "bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-white"
+                  : "bg-amber-500 text-slate-950 hover:bg-amber-400"
+              }`}
             >
-              Download HD PNG
+              {isVideo ? "Download Video (MP4)" : "Download HD PNG"}
             </Button>
 
             <button

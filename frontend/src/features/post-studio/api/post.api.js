@@ -69,6 +69,52 @@ export const postApi = {
   },
 
   /**
+   * POST /api/v1/posts/upload-video
+   * Uploads an MP4 / MOV video file (up to 100MB) for Reels / Videos
+   *
+   * @param {FormData} formData - FormData containing 'video' file
+   * @param {(percent: number) => void} [onProgress] - Optional upload progress callback
+   * @returns {Promise<{ videoUrl: string, thumbnailUrl: string, duration: number, format: string, width: number, height: number }>}
+   */
+  uploadVideo: async (formData, onProgress) => {
+    const response = await api.post(API_ENDPOINTS.POSTS.UPLOAD_VIDEO, formData, {
+      timeout: 300000, // 5 minutes for video upload (up to 1GB)
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && onProgress) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percentCompleted);
+        }
+      },
+    });
+    return response.data?.data || response.data;
+  },
+
+  /**
+   * POST /api/v1/posts/upload-thumbnail
+   * Uploads custom thumbnail image (JPEG/PNG) or frame snapshot for Reels/Videos
+   *
+   * @param {FormData | Object} payload - FormData with 'thumbnail' file or { base64Graphic: string }
+   * @returns {Promise<{ thumbnailUrl: string, width: number, height: number }>}
+   */
+  uploadThumbnail: async (payload) => {
+    let response;
+    if (payload instanceof FormData) {
+      response = await api.post(API_ENDPOINTS.POSTS.UPLOAD_THUMBNAIL, payload, {
+        timeout: 60000,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+      });
+    } else {
+      response = await api.post(API_ENDPOINTS.POSTS.UPLOAD_THUMBNAIL, payload, {
+        timeout: 60000,
+      });
+    }
+    return response.data?.data || response.data;
+  },
+
+  /**
    * POST /api/v1/posts
    * Saves a composited 1080x1080 graphic post to Cloudinary CDN, User Vault, and PostgreSQL database.
    *

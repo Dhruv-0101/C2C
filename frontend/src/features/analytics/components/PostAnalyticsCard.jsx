@@ -11,9 +11,12 @@ import {
   Calendar,
   Sparkles,
   BarChart2,
+  Film,
+  Play,
 } from 'lucide-react';
-import { Card } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { getPostMedia } from '@/shared/utils';
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return '0';
@@ -27,7 +30,6 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
 
   const {
     title,
-    graphicUrl,
     caption,
     festivalName,
     publishedAt,
@@ -36,6 +38,8 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
     metrics = {},
     platformBreakdown = [],
   } = post;
+
+  const media = getPostMedia(post);
 
   const formattedDate = new Date(publishedAt || createdAt).toLocaleDateString('en-US', {
     month: 'short',
@@ -46,17 +50,55 @@ export const PostAnalyticsCard = ({ post, onSelectPost }) => {
   return (
     <Card className="p-3.5 sm:p-4 bg-white dark:bg-[#131B2A] border-slate-200 dark:border-[#2C384E] hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between group shadow-sm dark:shadow-lg rounded-2xl">
       <div className="space-y-3">
-        {/* Top Graphic + Platform Badge */}
-        <div className="relative aspect-video sm:aspect-square w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-[#2C384E] flex items-center justify-center">
-          {graphicUrl ? (
+        {/* Top Media (Image or Video Reel) + Platform Badge */}
+        <div
+          onClick={() => onSelectPost?.(post)}
+          className="relative aspect-video sm:aspect-square w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-[#2C384E] flex items-center justify-center cursor-pointer select-none"
+          title={media.isVideo ? 'Click to inspect video reel metrics' : 'Click to inspect post metrics'}
+        >
+          {media.isVideo ? (
+            media.posterUrl ? (
+              <img
+                src={media.posterUrl}
+                alt={title}
+                className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+            ) : (
+              <video
+                src={media.videoUrl}
+                className="w-full h-full object-cover"
+                preload="metadata"
+                muted
+                playsInline
+              />
+            )
+          ) : media.posterUrl || media.mediaUrl ? (
             <img
-              src={graphicUrl}
+              src={media.posterUrl || media.mediaUrl}
               alt={title}
               className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <span className="text-slate-400 dark:text-slate-600 text-xs font-mono">No Image</span>
+            <span className="text-slate-400 dark:text-slate-600 text-xs font-mono">No Media</span>
+          )}
+
+          {/* Video Reel Play Icon Overlay */}
+          {media.isVideo && (
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+              <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform">
+                <Play className="w-5 h-5 ml-0.5 fill-white text-white" />
+              </div>
+            </div>
+          )}
+
+          {/* Video Format Badge */}
+          {media.isVideo && (
+            <div className="absolute top-2 left-12 px-2 py-0.5 rounded-md bg-gradient-to-r from-purple-600 to-pink-600 text-white font-extrabold text-[9px] uppercase tracking-wider flex items-center gap-1 shadow-md">
+              <Film className="w-2.5 h-2.5" />
+              <span>{media.postType === 'REEL' ? 'Reel' : 'Video'}</span>
+            </div>
           )}
 
           {/* Platform Pills Overlay */}

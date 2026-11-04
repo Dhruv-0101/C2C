@@ -26,7 +26,7 @@ import { useAiCaption } from '@/features/post-studio/hooks/useAiCaption';
 import { useBrandKit } from '@/features/brandkit/hooks/useBrandKit';
 import { useAiJobTracker } from '@/features/post-studio/hooks/useAiJobTracker';
 import { AiQueueTrackerCard } from './AiQueueTrackerCard';
-import { generatePuterCaption, isPuterSupported, isPuterExhausted } from '../services/puter.service';
+import { generatePuterCaption, isPuterExhausted, markPuterExhausted, isPuterConnected } from '../services/puter.service';
 
 const TONES = [
   { id: "PROMOTIONAL", label: "Promotional", icon: "🚀", desc: "High conversion & sales pitch" },
@@ -74,8 +74,9 @@ export const AiCaptionGeneratorModal = ({
   const [tone, setTone] = useState("PROMOTIONAL");
   const [language, setLanguage] = useState("ENGLISH");
   const [platform, setPlatform] = useState("INSTAGRAM");
-  const [aiEngine, setAiEngine] = useState("PUTER"); // 'PUTER' | 'GEMINI'
+  const [aiEngine, setAiEngine] = useState('PUTER'); // 'PUTER' | 'GEMINI'
   const [isPuterGenerating, setIsPuterGenerating] = useState(false);
+  const [captionNotice, setCaptionNotice] = useState(null);
 
   // Local Editable State for Output
   const [editableCaption, setEditableCaption] = useState("");
@@ -158,42 +159,62 @@ export const AiCaptionGeneratorModal = ({
 
   const handleGenerate = async (e) => {
     e?.preventDefault();
+    setCaptionNotice(null);
 
-    // Engine Branch 1: Puter.js Client-Side (if quota active)
-    if (aiEngine === 'PUTER' && !isPuterExhausted()) {
-      setIsPuterGenerating(true);
-      try {
-        const res = await generatePuterCaption({
-          topic: topic || "Business Special Offer",
-          offerText,
-          tone,
-          language,
-          platform,
-          targetAudience: brandKit?.targetAudience || undefined,
-          businessUsps: brandKit?.businessUsps || undefined,
-        });
+    // 1. FREE PUTER ENGINE (Zero-cost client engine for free-tier copywriting)
+    if (aiEngine === 'PUTER') {
+      if (!isPuterExhausted()) {
+        if (isPuterConnected()) {
+          setIsPuterGenerating(true);
+          setCaptionNotice('Drafting copy with Puter AI (Free Plan)... 🍌');
+          try {
+            const res = await generatePuterCaption({
+              topic: topic || "Business Special Offer",
+              offerText,
+              tone,
+              language,
+              platform,
+              targetAudience: brandKit?.targetAudience || undefined,
+              businessUsps: brandKit?.businessUsps || undefined,
+            });
 
-        if (res && res.captionText) {
-          setAiSource(res.source || 'PUTER_AI');
-          setEditableCaption(res.captionText);
-          setHashtagsList(res.hashtags || []);
+            if (res && res.captionText) {
+              setAiSource(res.source || 'PUTER_AI');
+              setEditableCaption(res.captionText);
+              setHashtagsList(res.hashtags || []);
+              setCaptionNotice('Caption generated successfully with Puter AI ✨');
+              setIsPuterGenerating(false);
+              return;
+            }
+          } catch (puterErr) {
+            console.warn('Puter AI caption unavailable:', puterErr.message);
+            const errMsg = (puterErr?.message || '').toLowerCase();
+            const isQuota =
+              errMsg.includes('funding') ||
+              errMsg.includes('balance') ||
+              errMsg.includes('quota') ||
+              errMsg.includes('credit') ||
+              errMsg.includes('limit') ||
+              errMsg.includes('subscription');
+
+            if (isQuota) {
+              markPuterExhausted();
+              setCaptionNotice('⚡ Puter quota reached. Now drafting copy with Google Gemini AI Engine...');
+            } else {
+              setCaptionNotice('⚡ Puter service busy. Drafting copy with Google Gemini AI Engine...');
+            }
+          } finally {
+            setIsPuterGenerating(false);
+          }
         } else {
-          throw new Error('Puter returned an invalid response');
+          setCaptionNotice('⚡ Puter not connected. Drafting copy with Google Gemini AI Engine...');
         }
-      } catch (puterErr) {
-        console.warn("Puter AI caption generation failed, falling back to Gemini:", puterErr);
-        try {
-          await executeGeminiCaption();
-        } catch (geminiErr) {
-          handleGeminiError(geminiErr);
-        }
-      } finally {
-        setIsPuterGenerating(false);
+      } else {
+        setCaptionNotice('⚡ Puter quota reached. Drafting copy with Google Gemini AI Engine...');
       }
-      return;
     }
 
-    // Engine Branch 2: Google Gemini Server Queue
+    // 2. Google Gemini Server Queue Engine
     try {
       await executeGeminiCaption();
     } catch (err) {
@@ -420,6 +441,23 @@ export const AiCaptionGeneratorModal = ({
               </div>
             </div>
 
+            {/* Puter Free Plan Ended Notice */}
+            {isPuterExhausted() && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-indigo-950/40 to-amber-500/10 border border-amber-500/30 text-amber-200 text-xs animate-in fade-in">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                <span className="text-[11px] leading-tight">
+                  <strong className="text-white">Notice:</strong> Your Puter free plan has ended. Copy is now being generated with <strong className="text-amber-300">Google Gemini AI ⚡</strong>
+                </span>
+              </div>
+            )}
+
+            {/* Live Status Notice */}
+            {captionNotice && (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2 animate-in fade-in">
+                <span className="text-[11px] font-medium leading-relaxed">{captionNotice}</span>
+              </div>
+            )}
+
             {/* Live BullMQ Queue & Dynamic Countdown Tracker */}
             {captionJobTracker.isTracking && (
               <AiQueueTrackerCard
@@ -442,7 +480,7 @@ export const AiCaptionGeneratorModal = ({
               {isPuterGenerating ? (
                 <>
                   <Wand2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Drafting Copy with Puter AI...</span>
+                  <span>Drafting Copy with Puter Free Plan...</span>
                 </>
               ) : captionJobTracker.isTracking ? (
                 <>
@@ -461,11 +499,7 @@ export const AiCaptionGeneratorModal = ({
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 text-amber-200" />
-                  <span>
-                    {aiEngine === 'PUTER'
-                      ? 'Generate with Puter AI (Free) 🍌'
-                      : 'Generate with Gemini AI ⚡'}
-                  </span>
+                  <span>Generate with AI Copywriter ✨</span>
                 </>
               )}
             </Button>

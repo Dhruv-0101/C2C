@@ -10,14 +10,16 @@ import {
   TrendingUp,
   Instagram,
   Facebook,
-  Linkedin,
   ExternalLink,
   Calendar,
   Sparkles,
   Tag,
   ShieldCheck,
   Calculator,
+  Film,
+  Download,
 } from 'lucide-react';
+import { getPostMedia, downloadMediaAsset } from '@/shared/utils';
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return '0';
@@ -31,9 +33,7 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
 
   const {
     title,
-    graphicUrl,
     caption,
-    hashtags = [],
     festivalName,
     categoryName,
     createdAt,
@@ -42,6 +42,8 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
     metrics = {},
     platformBreakdown = [],
   } = post;
+
+  const media = getPostMedia(post);
 
   const formattedDate = new Date(publishedAt || createdAt).toLocaleDateString('en-US', {
     month: 'short',
@@ -60,31 +62,72 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
       maxWidth="max-w-3xl"
     >
       <div className="space-y-5 sm:space-y-6 text-xs text-slate-700 dark:text-slate-300 max-h-[82vh] overflow-y-auto custom-scrollbar pr-0.5 sm:pr-1">
-        {/* Main Content Grid: Graphic + Summary */}
+        {/* Main Content Grid: Graphic / Video + Summary */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#2C384E]">
-          {/* Post Graphic Preview */}
-          <div className={`md:col-span-5 aspect-square w-full max-w-[280px] md:max-w-none mx-auto flex items-center justify-center bg-black/40 rounded-xl overflow-hidden relative group shadow-xl ${graphicUrl ? 'border-2 border-amber-500/80' : 'border border-slate-200 dark:border-[#2C384E]'}`}>
-            {graphicUrl ? (
-              <img
-                src={graphicUrl}
-                alt={title}
-                className="w-full h-full object-contain transition duration-300 group-hover:scale-105"
-              />
+          {/* Post Media Preview (Video Player or High-Res Image) */}
+          <div
+            className={`md:col-span-5 w-full max-w-[280px] md:max-w-none mx-auto flex flex-col items-center justify-center bg-black/60 rounded-xl overflow-hidden relative group shadow-xl ${
+              media.mediaUrl
+                ? media.isVideo
+                  ? 'border-2 border-purple-500/80'
+                  : 'border-2 border-amber-500/80'
+                : 'border border-slate-200 dark:border-[#2C384E]'
+            }`}
+          >
+            {media.isVideo ? (
+              <div className="relative w-full aspect-[9/16] sm:aspect-square flex items-center justify-center bg-black overflow-hidden rounded-lg">
+                <video
+                  src={media.videoUrl}
+                  poster={media.posterUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-extrabold text-[9px] uppercase tracking-wider flex items-center gap-1 shadow-md pointer-events-none">
+                  <Film className="w-2.5 h-2.5" />
+                  <span>{media.postType === 'REEL' ? 'Reel Video' : 'Video Post'}</span>
+                </div>
+              </div>
+            ) : media.posterUrl || media.mediaUrl ? (
+              <div className="relative aspect-square w-full flex items-center justify-center overflow-hidden">
+                <img
+                  src={media.posterUrl || media.mediaUrl}
+                  alt={title}
+                  className="w-full h-full object-contain transition duration-300 group-hover:scale-105"
+                />
+                <a
+                  href={media.posterUrl || media.mediaUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/70 text-white hover:bg-black/90 text-[10px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shadow"
+                >
+                  <span>Full Image</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             ) : (
               <div className="h-44 sm:h-48 w-full flex items-center justify-center text-slate-400 font-mono text-xs">
-                No Graphic Available
+                No Media Available
               </div>
             )}
-            {graphicUrl && (
-              <a
-                href={graphicUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/70 text-white hover:bg-black/90 text-[10px] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition"
-              >
-                <span>Full Image</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+
+            {/* Quick Download Action Pill below media */}
+            {(media.videoUrl || media.mediaUrl) && (
+              <div className="w-full p-2 bg-[#131B2A] border-t border-[#2C384E] flex items-center justify-between gap-2">
+                <span className="text-[10px] font-mono text-slate-400 truncate">
+                  {media.isVideo ? '9:16 Video (MP4)' : '1080×1080 (PNG)'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => downloadMediaAsset(media.videoUrl || media.mediaUrl, title)}
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer"
+                  title={media.isVideo ? 'Download Video File' : 'Download Image File'}
+                >
+                  <Download className="w-3 h-3" />
+                  <span>{media.isVideo ? 'Download MP4' : 'Download HD'}</span>
+                </button>
+              </div>
             )}
           </div>
 
@@ -125,6 +168,11 @@ export const PostDetailsModal = ({ isOpen, onClose, post }) => {
 
               {/* Tags & Categories */}
               <div className="flex items-center gap-2 flex-wrap text-[10px]">
+                {media.isVideo && (
+                  <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-300 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/30 flex items-center gap-1 font-bold">
+                    <Film className="w-3 h-3" /> Reel Format
+                  </span>
+                )}
                 {festivalName && (
                   <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-300 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30 flex items-center gap-1 font-bold">
                     <Sparkles className="w-3 h-3" /> {festivalName}

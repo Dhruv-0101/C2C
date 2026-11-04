@@ -4,6 +4,7 @@ import { useVault } from '@/features/vault/hooks/useVault';
 import { vaultApi } from '@/features/vault/api/vault.api';
 import { useFeedbackModal } from '@/components/feedback/FeedbackModal';
 import { QUERY_KEYS } from '@/shared/constants';
+import { downloadMediaAsset } from '@/shared/utils';
 import { VaultView } from "../components/VaultView";
 
 /**
@@ -91,13 +92,9 @@ export const VaultPage = () => {
     }
   };
 
-  // Handle Download Image
-  const handleDownload = (graphicUrl, title) => {
-    const link = document.createElement("a");
-    link.href = graphicUrl;
-    link.download = `${title || "BrandFlow-Vault-Post"}.png`;
-    link.target = "_blank";
-    link.click();
+  // Handle Download Image / Video Asset
+  const handleDownload = (mediaUrl, title) => {
+    downloadMediaAsset(mediaUrl, title);
   };
 
   return (

@@ -270,6 +270,124 @@ export const instagramPublisherService = {
       publishedAt: new Date().toISOString(),
     };
   },
+
+  /**
+   * Publish Video / Reel to Instagram Business via Meta Graph Reels API
+   *
+   * @param {Object} params
+   * @param {string} params.igUserId - Instagram Business User ID
+   * @param {string} params.accessToken - Page or Long-Lived User Access Token
+   * @param {string} params.videoUrl - Public Cloudinary MP4 video URL
+   * @param {string} [params.caption] - Reel caption & hashtags
+   * @param {string} [params.thumbnailUrl] - Poster cover image URL
+   */
+  publishReelToInstagram: async ({ igUserId, accessToken, videoUrl, caption, thumbnailUrl }) => {
+    logger.info(`🎬 [InstagramPublisher] Initiating Reel media container for IG User ID: ${igUserId}...`);
+
+    if (!videoUrl) {
+      throw new Error('Valid public video URL is required for Instagram Reel publishing.');
+    }
+
+    // Step 1: Create Instagram Reel Media Container
+    const containerParams = {
+      media_type: 'REELS',
+      video_url: videoUrl,
+      caption: caption || 'Created with BrandFlow 🚀',
+      share_to_feed: true,
+      access_token: accessToken,
+    };
+
+    if (thumbnailUrl && thumbnailUrl.startsWith('http')) {
+      containerParams.cover_url = thumbnailUrl;
+    }
+
+    let containerId = null;
+    try {
+      const containerRes = await axios.post(
+        `${META_GRAPH_URL}/${igUserId}/media`,
+        null,
+        { params: containerParams }
+      );
+      containerId = containerRes.data?.id;
+    } catch (err) {
+      const metaMsg = err.response?.data?.error?.message || err.message;
+      logger.error(`❌ [InstagramPublisher] Reel container creation failed: ${metaMsg}`);
+      throw new Error(`Meta Reel creation failed: ${metaMsg}`);
+    }
+
+    if (!containerId) {
+      throw new Error('Meta Graph API failed to return a container ID for Reel.');
+    }
+
+    logger.info(`📦 [InstagramPublisher] Reel container created: ${containerId}. Polling transcoding status...`);
+
+    // Step 2: Poll Meta Reel Transcoding Status until FINISHED (up to 60 seconds)
+    const maxPollAttempts = 20;
+    let isReady = false;
+
+    for (let attempt = 1; attempt <= maxPollAttempts; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      try {
+        const statusRes = await axios.get(`${META_GRAPH_URL}/${containerId}`, {
+          params: {
+            fields: 'status_code,status',
+            access_token: accessToken,
+          },
+        });
+
+        const statusCode = statusRes.data?.status_code;
+        logger.info(`⏳ [InstagramPublisher] Reel Container status [${attempt}/${maxPollAttempts}]: ${statusCode}`);
+
+        if (statusCode === 'FINISHED') {
+          isReady = true;
+          break;
+        }
+
+        if (statusCode === 'ERROR') {
+          const detail = statusRes.data?.status || 'Video processing failed in Meta.';
+          throw new Error(`Meta Reel container processing failed: ${detail}`);
+        }
+
+        if (statusCode === 'EXPIRED') {
+          throw new Error('Meta Reel container expired before publishing.');
+        }
+      } catch (pollErr) {
+        if (pollErr.message.includes('Meta Reel container')) throw pollErr;
+        logger.warn(`⚠️ [InstagramPublisher] Reel status poll warning: ${pollErr.message}`);
+      }
+    }
+
+    if (!isReady) {
+      logger.warn(`⚠️ [InstagramPublisher] Reel transcoding still in progress after timeout. Attempting publish anyway...`);
+    }
+
+    // Step 3: Publish Reel Container
+    const publishRes = await axios.post(
+      `${META_GRAPH_URL}/${igUserId}/media_publish`,
+      null,
+      {
+        params: {
+          creation_id: containerId,
+          access_token: accessToken,
+        },
+      }
+    );
+
+    const mediaId = publishRes.data?.id;
+    const postUrl = `https://instagram.com/reel/${mediaId}`;
+
+    logger.info(`🎉 [InstagramPublisher] Successfully published Reel to Instagram! Media ID: ${mediaId} | URL: ${postUrl}`);
+
+    return {
+      status: 'SUCCESS',
+      platform: 'INSTAGRAM',
+      mediaId,
+      postUrl,
+      isReel: true,
+      publishedAt: new Date().toISOString(),
+    };
+  },
 };
 
 export default instagramPublisherService;

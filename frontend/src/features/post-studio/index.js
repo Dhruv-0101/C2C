@@ -16,3 +16,4 @@ export * from './components/FrameSelectorBar';
 export * from './components/PostCreatorModal';
 export * from './components/PostStudioEditorView';
 export * from './components/SocialPublisherModal';
+export * from './components/ReelVideoUploader';

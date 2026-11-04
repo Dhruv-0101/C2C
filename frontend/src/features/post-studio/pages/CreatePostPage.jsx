@@ -66,6 +66,18 @@ export const CreatePostPage = () => {
     null
   );
   const [customBaseImage, setCustomBaseImage] = useState(initialBaseImage);
+  const [isCreditAlreadyPaid, setIsCreditAlreadyPaid] = useState(false);
+  const [activeVideo, setActiveVideo] = useState(
+    reusePost?.videoUrl
+      ? {
+          videoUrl: reusePost.videoUrl,
+          thumbnailUrl: reusePost.thumbnailUrl,
+          duration: reusePost.durationSeconds,
+          format: 'mp4',
+          postType: 'REEL',
+        }
+      : null
+  );
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
   const [publisherInitialMode, setPublisherInitialMode] = useState("NOW");
@@ -302,17 +314,25 @@ export const CreatePostPage = () => {
     templateId: currentTemplate?.id || reusePost?.templateId || null,
     festivalId: currentTemplate?.festivalId || reusePost?.festivalId || null,
     frameId: selectedFrame?.id || reusePost?.frameId || reusePost?.post?.frameId || null,
-    base64Graphic: dataUrl,
-    finalGraphicUrl: reusePost?.finalGraphicUrl || null,
+    base64Graphic: activeVideo?.videoUrl ? undefined : dataUrl,
+    finalGraphicUrl: activeVideo?.thumbnailUrl || reusePost?.finalGraphicUrl || null,
+    videoUrl: activeVideo?.videoUrl || reusePost?.videoUrl || null,
+    thumbnailUrl: activeVideo?.thumbnailUrl || reusePost?.thumbnailUrl || null,
+    durationSeconds: activeVideo?.duration || reusePost?.durationSeconds || null,
+    fileSize: activeVideo?.fileSize || null,
+    videoWidth: activeVideo?.width || null,
+    videoHeight: activeVideo?.height || null,
+    videoFormat: activeVideo?.format || null,
+    isCreditAlreadyPaid: Boolean(isCreditAlreadyPaid),
     occasionName:
       reusePost?.occasionName ||
       reusePost?.post?.occasionName ||
       currentTemplate?.title ||
       selectedFrame?.title ||
-      "Branded Graphic Post",
+      (activeVideo?.videoUrl ? "Branded Reel Video" : "Branded Graphic Post"),
     caption:
       reusePost?.captions?.[0]?.captionText || reusePost?.caption || "",
-    postType: "SINGLE",
+    postType: activeVideo?.videoUrl ? "REEL" : "SINGLE",
     userConfigJson: {
       ...customDetails,
       frameId: selectedFrame?.id || reusePost?.frameId || reusePost?.post?.frameId || null,
@@ -428,7 +448,7 @@ export const CreatePostPage = () => {
       return;
     }
 
-    if (!dataUrl) {
+    if (!activeVideo?.videoUrl && !dataUrl) {
       setSaveError("Canvas graphic is still rendering. Please wait a moment and try again.");
       setTimeout(() => setSaveError(""), 4000);
       return;
@@ -449,6 +469,24 @@ export const CreatePostPage = () => {
       }
     });
 
+    if (activeVideo?.videoUrl) {
+      savePostMutation.mutate({
+        templateId: currentTemplate?.id || null,
+        festivalId: currentTemplate?.festivalId || null,
+        frameId: selectedFrame?.id || null,
+        occasionName: activeVideo.fileName ? activeVideo.fileName.replace(/\.[^/.]+$/, "") : (currentTemplate?.title || "Branded Reel Video"),
+        videoUrl: activeVideo.videoUrl,
+        thumbnailUrl: activeVideo.thumbnailUrl,
+        durationSeconds: activeVideo.duration,
+        finalGraphicUrl: activeVideo.thumbnailUrl,
+        postType: "REEL",
+        userConfigJson: sanitizedConfig,
+        status: "DRAFT",
+        isCreditAlreadyPaid: Boolean(isCreditAlreadyPaid),
+      });
+      return;
+    }
+
     savePostMutation.mutate({
       templateId: currentTemplate?.id || null,
       festivalId: currentTemplate?.festivalId || null,
@@ -458,11 +496,12 @@ export const CreatePostPage = () => {
       postType: "SINGLE",
       userConfigJson: sanitizedConfig,
       status: "DRAFT",
+      isCreditAlreadyPaid: Boolean(isCreditAlreadyPaid),
     });
   };
 
   const handleDownloadHD = () => {
-    if (isExpired || postsRemaining <= 0) {
+    if (!isCreditAlreadyPaid && (isExpired || postsRemaining <= 0)) {
       openPlanModal();
       return;
     }
@@ -486,7 +525,7 @@ export const CreatePostPage = () => {
   };
 
   const handleOpenPublisher = (mode = "NOW") => {
-    if (isExpired || postsRemaining <= 0) {
+    if (!isCreditAlreadyPaid && (isExpired || postsRemaining <= 0)) {
       openPlanModal();
       return;
     }
@@ -509,6 +548,8 @@ export const CreatePostPage = () => {
         setSelectedTemplateId={setSelectedTemplateId}
         customBaseImage={customBaseImage}
         setCustomBaseImage={setCustomBaseImage}
+        activeVideo={activeVideo}
+        setActiveVideo={setActiveVideo}
         saveSuccess={saveSuccess}
         saveError={saveError}
         selectedCategory={selectedCategory}
@@ -564,6 +605,8 @@ export const CreatePostPage = () => {
         planName={planName}
         openPlanModal={openPlanModal}
         activateFreeMutation={activateFreeMutation}
+        isCreditAlreadyPaid={isCreditAlreadyPaid}
+        setIsCreditAlreadyPaid={setIsCreditAlreadyPaid}
       />
 
       <SocialPublisherModal

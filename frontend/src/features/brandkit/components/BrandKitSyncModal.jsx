@@ -9,11 +9,14 @@ import {
   Layers,
   ArrowRight,
   ExternalLink,
+  Play,
+  Film,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { postApi } from "@/features/post-studio/api/post.api";
 import { renderCompositeGraphicToDataUrl } from "@/features/post-studio/utils/canvasRenderer.util";
+import { getPostMedia } from "@/shared/utils";
 
 /**
  * BrandKitSyncModal Component
@@ -216,7 +219,8 @@ export const BrandKitSyncModal = ({
               item.post?.template?.title ||
               item.post?.festival?.name ||
               "Scheduled Post";
-            const status = statusMap[item.id] || statusMap[postId];
+            const media = getPostMedia(item.post);
+            const displayImage = media.posterUrl || media.mediaUrl || item.post?.finalGraphicUrl;
 
             return (
               <div
@@ -224,12 +228,21 @@ export const BrandKitSyncModal = ({
                 className="p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex items-center justify-between gap-3 text-xs"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  {item.post?.finalGraphicUrl ? (
-                    <img
-                      src={item.post.finalGraphicUrl}
-                      alt={postTitle}
-                      className="w-11 h-11 rounded-lg object-cover border border-[#2C384E] bg-slate-950 shrink-0"
-                    />
+                  {displayImage ? (
+                    <div className="w-11 h-11 rounded-lg overflow-hidden border border-[#2C384E] bg-black shrink-0 relative">
+                      <img
+                        src={displayImage}
+                        alt={postTitle}
+                        className="w-full h-full object-cover"
+                      />
+                      {media.isVideo && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                            <Play className="w-2 h-2 ml-0.5 fill-current" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="w-11 h-11 rounded-lg bg-slate-900 border border-[#2C384E] flex items-center justify-center text-[10px] text-slate-500 shrink-0">
                       Graphic

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Calendar, Sparkles, AlertCircle } from "lucide-react";
+import { Clock, Calendar, Sparkles, AlertCircle, Play, Film } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Alert } from "../../../components/ui/Alert";
 import { SearchBar } from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import { getPostMedia } from '@/shared/utils';
 import { useYourPosts } from '@/features/your-posts/hooks/useYourPosts';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 
@@ -16,6 +18,7 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 export const ScheduledPostsQueueView = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [previewItem, setPreviewItem] = useState(null);
   const debouncedSearch = useDebounce(search, 300);
 
   const {
@@ -108,6 +111,7 @@ export const ScheduledPostsQueueView = () => {
               try { config = JSON.parse(config); } catch (e) {}
             }
             const brandKitNeedsReview = Boolean(config?.brandKitNeedsReview);
+            const media = getPostMedia(item.post);
 
             return (
               <div
@@ -115,12 +119,25 @@ export const ScheduledPostsQueueView = () => {
                 className="p-3 min-[380px]:p-4 rounded-xl bg-[#0B0F17] border border-[#2C384E] flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 min-w-0"
               >
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 w-full">
-                  {item.post?.finalGraphicUrl ? (
-                    <img
-                      src={item.post.finalGraphicUrl}
-                      alt="Scheduled Graphic"
-                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg object-cover border border-[#2C384E] shrink-0"
-                    />
+                  {media.mediaUrl || media.posterUrl || item.post?.finalGraphicUrl ? (
+                    <div
+                      onClick={() => setPreviewItem(item.post)}
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg overflow-hidden border border-[#2C384E] relative shrink-0 cursor-pointer group/thumb bg-black"
+                      title={media.isVideo ? "Click to play Reel" : "Click to preview graphic"}
+                    >
+                      <img
+                        src={media.posterUrl || media.mediaUrl || item.post?.finalGraphicUrl}
+                        alt="Scheduled Media"
+                        className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-300"
+                      />
+                      {media.isVideo ? (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                            <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
                   ) : (
                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-slate-900 border border-[#2C384E] flex items-center justify-center shrink-0">
                       <Clock className="w-5 h-5 text-teal-400" />
@@ -204,7 +221,12 @@ export const ScheduledPostsQueueView = () => {
           onLimitChange={setScheduledLimit}
           pageSizeOptions={[5, 10, 20]}
         />
-      )}
+      {/* Lightbox Preview for Graphics & Video Reels */}
+      <ImageLightbox
+        isOpen={Boolean(previewItem)}
+        item={previewItem}
+        onClose={() => setPreviewItem(null)}
+      />
     </Card>
   );
 };

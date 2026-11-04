@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wand2, Plus, ArrowRight } from 'lucide-react';
+import { Wand2, Plus, ArrowRight, Play, Film } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
+import { getPostMedia } from '@/shared/utils';
 
 /**
  * RecentActivityFeed
@@ -41,28 +42,43 @@ export const RecentActivityFeed = ({
 
   return (
     <div className="space-y-2">
-      {recentPosts.map((post) => (
-        <div
-          key={post.id}
-          className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors gap-2.5 min-w-0"
-        >
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-            {post.finalGraphicUrl && (
-              <img
-                src={post.finalGraphicUrl}
-                alt="Graphic Thumbnail"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-[#2C384E] shrink-0"
-              />
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-slate-200 truncate">
-                {post.occasionName || post.template?.title || post.festival?.name || "Branded Graphic Post"}
-              </p>
-              <p className="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate">
-                Created {new Date(post.createdAt).toLocaleDateString()}
-              </p>
+      {recentPosts.map((post) => {
+        const media = getPostMedia(post);
+        const displayImage = media.posterUrl || media.mediaUrl || post.finalGraphicUrl;
+
+        return (
+          <div
+            key={post.id}
+            className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-[#0B0F17] border border-[#2C384E] hover:border-slate-700 transition-colors gap-2.5 min-w-0 cursor-pointer"
+            onClick={() => navigate('/your-posts')}
+            title="Click to view in Your Posts"
+          >
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+              {displayImage && (
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border border-[#2C384E] shrink-0 relative bg-black">
+                  <img
+                    src={displayImage}
+                    alt="Media Thumbnail"
+                    className="w-full h-full object-cover"
+                  />
+                  {media.isVideo && (
+                    <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                      <div className="w-4 h-4 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow">
+                        <Play className="w-2 h-2 ml-0.5 fill-current" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-slate-200 truncate">
+                  {post.occasionName || post.template?.title || post.festival?.name || (media.isVideo ? "Social Reel Post" : "Branded Graphic Post")}
+                </p>
+                <p className="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate">
+                  Created {new Date(post.createdAt).toLocaleDateString()}
+                </p>
+              </div>
             </div>
-          </div>
           <span
             className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold shrink-0 ${
               post.status === "PUBLISHED"
